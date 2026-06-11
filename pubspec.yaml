@@ -1,0 +1,9 @@
+name: ecluse_workspace
+description: Monorepo Écluse — le sas RGPD entre vos prompts et les LLM.
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dev_dependencies:
+  melos: ^6.1.0
