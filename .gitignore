@@ -29,3 +29,5 @@ doc/api/
 .flutter-plugins-dependencies
 .idea/
 *.iml
+bench/corpus.jsonl
+bench/predictions_*.jsonl
