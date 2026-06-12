@@ -30,10 +30,13 @@ def build_engine(blank: bool):
     if not blank:
         return AnalyzerEngine()
 
+    import os
+    import tempfile
+
     import spacy
     from presidio_analyzer.nlp_engine import NlpEngineProvider
 
-    path = "/tmp/presidio_blank_en"
+    path = os.path.join(tempfile.gettempdir(), "presidio_blank_en")
     spacy.blank("en").to_disk(path)
     conf = {
         "nlp_engine_name": "spacy",
