@@ -1,9 +1,16 @@
 /// Types d'entités personnelles détectables par Écluse.
 ///
-/// La liste s'étendra au fil des détecteurs (RPPS, FINESS, IBAN, etc.).
+/// La liste s'étendra au fil des détecteurs (FINESS, téléphones, etc.).
 enum EntityType {
   /// Numéro d'Inscription au Répertoire (numéro de sécurité sociale français).
   nir,
+
+  /// Numéro RPPS — Répertoire Partagé des Professionnels de Santé
+  /// (identifiant national des professionnels de santé français).
+  rpps,
+
+  /// IBAN français (International Bank Account Number, préfixe FR).
+  iban,
 }
 
 /// Une entité personnelle détectée dans un texte.
@@ -38,9 +45,10 @@ final class DetectedEntity {
 
   /// Niveau de confiance de la détection, entre 0 et 1.
   ///
-  /// 1.0 signifie une validation structurelle complète (ex. clé de
-  /// contrôle NIR vérifiée). Les détections purement syntaxiques ont une
-  /// confiance plus faible.
+  /// 1.0 signifie une validation structurelle complète : champs internes
+  /// vérifiés ET clé de contrôle discriminante (ex. NIR, IBAN).
+  /// Une validation plus faible (ex. Luhn seul sur le RPPS, sans structure
+  /// interne vérifiable) donne une confiance légèrement inférieure.
   final double confidence;
 
   @override
