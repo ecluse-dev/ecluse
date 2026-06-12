@@ -1,0 +1,14 @@
+name: ecluse_bench
+description: Harnais de benchmark d'Écluse (exécution des détecteurs sur un corpus annoté).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  ecluse_core:
+    path: ../ecluse_core
+
+dev_dependencies:
+  lints: ^4.0.0
