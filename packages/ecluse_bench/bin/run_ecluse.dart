@@ -44,5 +44,6 @@ Future<void> main(List<String> args) async {
 
   await sink.flush();
   await sink.close();
-  stdout.writeln('Écluse : $documents documents, $entityCount entités -> $outPath');
+  stdout.writeln(
+      'Écluse : $documents documents, $entityCount entités -> $outPath');
 }

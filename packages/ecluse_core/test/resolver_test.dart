@@ -2,7 +2,8 @@ import 'package:ecluse_core/ecluse_core.dart';
 import 'package:test/test.dart';
 
 DetectedEntity e(EntityType t, int s, int end, [double c = 1.0]) =>
-    DetectedEntity(type: t, start: s, end: end, value: 'x' * (end - s), confidence: c);
+    DetectedEntity(
+        type: t, start: s, end: end, value: 'x' * (end - s), confidence: c);
 
 void main() {
   group('resolveOverlaps', () {
