@@ -27,7 +27,7 @@ Trois niveaux nommés, le risque étant 1/F (F = taille de classe
 d'équivalence estimée) :
 
 | Niveau     | F minimum | Risque max | Usage                              |
-|------------|-----------|------------|------------------------------------|
+|------------|-----------|------------|-------------------------------------|
 | Standard   | ≥ 10      | 0,10       | cas courant (défaut)               |
 | Renforcé   | ≥ 20      | 0,05       | santé sensible (pathologie, psy)   |
 | Strict     | ≥ 50      | 0,02       | cas les plus exposés               |
