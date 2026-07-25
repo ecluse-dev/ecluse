@@ -51,7 +51,7 @@ final class AdresseDetector implements EntityDetector {
   static final RegExp _pattern = RegExp(
     "\\d{1,4}\\s*,?\\s*(?:${_voies.join('|')})"
     "\\s+[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]+?,?\\s*"
-    "$_codePostalCommune",
+    '$_codePostalCommune',
     caseSensitive: false,
   );
 
