@@ -21,6 +21,31 @@ void main() {
       expect(entities.single.value, '1 85 05 78 006 084 91');
     });
 
+    test('détecte un NIR avec espaces multiples et une tabulation', () {
+      // Espacement irrégulier typique d'un document recopié à la main ou
+      // d'un export PDF/tableau — un séparateur simple par groupe ne
+      // suffit pas, il faut neutraliser toute la séquence d'espaces.
+      const text = 'NIR : 1  85 05\t78   006 084 91.';
+      final entities = detector.detect(text);
+      expect(entities, hasLength(1));
+      // La valeur masquée préserve l'espacement d'origine (nécessaire pour
+      // que `Ecluse.restore` reproduise le texte exactement).
+      expect(entities.single.value, '1  85 05\t78   006 084 91');
+      expect(
+        text.substring(entities.single.start, entities.single.end),
+        entities.single.value,
+      );
+    });
+
+    test('détecte un NIR avec espaces insécables (export bureautique)', () {
+      const nbsp = '\u00A0';
+      final text =
+          '1$nbsp' '85$nbsp' '05$nbsp' '78$nbsp' '006$nbsp' '084$nbsp' '91';
+      final entities = detector.detect(text);
+      expect(entities, hasLength(1));
+      expect(entities.single.value, text);
+    });
+
     test('détecte un NIR avec points', () {
       final entities = detector.detect('Sécu 2.94.02.75.017.412.42 ok');
       expect(entities, hasLength(1));
@@ -89,6 +114,17 @@ void main() {
 
     test('ignore un numéro de téléphone français', () {
       expect(detector.detect('Appelez le 06 12 34 56 78.'), isEmpty);
+    });
+
+    test(
+        'rejette "1 48 03 69 256 042 88" quel que soit l\'espacement '
+        '(clé de contrôle invalide, pas un défaut de normalisation)', () {
+      // Corps 1480369256042 : la clé attendue est 89, pas 88. La
+      // normalisation des espaces (voir tests ci-dessus) ne doit jamais
+      // faire passer un NIR dont la clé est structurellement fausse — sinon
+      // le taux de faux positifs qui justifie la confiance 1.0 s'effondre.
+      expect(detector.detect('1 48 03 69 256 042 88'), isEmpty);
+      expect(detector.detect('1  48   03 69\t256 042 88'), isEmpty);
     });
 
     test('texte vide', () {
