@@ -23,5 +23,31 @@ void main() {
           .detect('14 avenue Foch, 54000 Nancy-Saint-Nicolas est proche.');
       expect(entities, hasLength(1));
     });
+
+    test('code postal + commune seul, sans numéro ni type de voie', () {
+      final entities = detector.detect('70160 Saint Rémy en Comté');
+      expect(entities, hasLength(1));
+      expect(entities.single.value, '70160 Saint Rémy en Comté');
+      expect(entities.single.confidence, 0.55);
+    });
+
+    test('code postal isolé, sans commune qui suit -> non détecté', () {
+      final entities = detector.detect('Il habite dans le 70160.');
+      expect(entities, isEmpty);
+    });
+
+    test(
+        'adresse complète + adresse code postal/commune seule sur une '
+        'autre ligne -> deux entités distinctes', () {
+      final entities = detector.detect(
+        '8 rue Robert Roy 70170 Port sur Saône\n'
+        '70160 Saint Rémy en Comté',
+      );
+      expect(entities, hasLength(2));
+      expect(entities[0].value, '8 rue Robert Roy 70170 Port sur Saône');
+      expect(entities[0].confidence, 0.7);
+      expect(entities[1].value, '70160 Saint Rémy en Comté');
+      expect(entities[1].confidence, 0.55);
+    });
   });
 }
