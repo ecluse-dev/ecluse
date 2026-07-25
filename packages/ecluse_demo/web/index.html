@@ -4,15 +4,25 @@
 <style>
   :root {
     color-scheme: light dark;
-    --bg: #f7f7f5;
+    --bg: #f2f5f8;
     --panel-bg: #ffffff;
-    --text: #1c1c1a;
-    --muted: #62615c;
-    --border: #dedcd4;
-    --accent: #1f5c4d;
+    --text: #101c30;
+    --muted: #5b6b83;
+    --border: #d7e0ea;
+
+    --navy: #0b2545;
+    --navy-2: #123463;
+    --navy-contrast: #ffffff;
+
+    --teal: #0f9488;
+    --teal-dark: #0b6f66;
+    --teal-light: #e3f8f5;
+    --counter-fg: #0b2545;
+
+    --accent: var(--teal);
     --accent-contrast: #ffffff;
-    --danger: #8a2c2c;
-    --danger-bg: #fbeaea;
+    --danger: #b3261e;
+    --danger-bg: #fdecea;
 
     --tag-nir-bg: #dbeafe;      --tag-nir-fg: #1e3a8a;
     --tag-rpps-bg: #ccfbf1;     --tag-rpps-fg: #115e59;
@@ -27,13 +37,23 @@
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #17181a;
-      --panel-bg: #1f2123;
-      --text: #edece7;
-      --muted: #a3a196;
-      --border: #38393c;
-      --accent: #4fae93;
-      --accent-contrast: #0b1210;
+      --bg: #0d1420;
+      --panel-bg: #132033;
+      --text: #e8eef7;
+      --muted: #93a3bc;
+      --border: #25344b;
+
+      --navy: #0a1a2e;
+      --navy-2: #0f2743;
+      --navy-contrast: #eaf2ff;
+
+      --teal: #2dd4bf;
+      --teal-dark: #14b8a6;
+      --teal-light: #0f2f2c;
+      --counter-fg: #eafff9;
+
+      --accent: var(--teal);
+      --accent-contrast: #04211d;
       --danger: #f2a3a3;
       --danger-bg: #3a1f1f;
 
@@ -53,22 +73,49 @@
 
   body {
     margin: 0;
-    padding: 1.5rem;
+    padding: 0;
     background: var(--bg);
     color: var(--text);
     font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.4;
   }
 
-  header h1 {
-    margin: 0 0 0.2rem;
-    font-size: 1.4rem;
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
   }
 
-  header p {
-    margin: 0 0 1.2rem;
-    color: var(--muted);
-    max-width: 70ch;
+  .site-header {
+    background: linear-gradient(135deg, var(--navy), var(--navy-2));
+  }
+
+  .site-header .container {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding-top: 2rem;
+    padding-bottom: 1.75rem;
+  }
+
+  .brand-icon {
+    flex: 0 0 auto;
+    color: var(--teal);
+    margin-top: 0.2rem;
+  }
+
+  .site-header h1 {
+    margin: 0 0 0.35rem;
+    color: var(--navy-contrast);
+    font-size: 1.45rem;
+    letter-spacing: -0.01em;
+  }
+
+  .site-header p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.78);
+    max-width: 68ch;
+    font-size: 0.95rem;
   }
 
   .controls {
@@ -76,49 +123,66 @@
     flex-wrap: wrap;
     gap: 0.6rem;
     align-items: center;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.9rem;
   }
 
   button, .btn {
     font: inherit;
-    padding: 0.5rem 0.9rem;
-    border-radius: 6px;
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
     border: 1px solid var(--border);
     background: var(--panel-bg);
     color: var(--text);
+    font-weight: 600;
     cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
   }
 
-  button:hover:not(:disabled) { border-color: var(--accent); }
-  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  button:hover:not(:disabled) { border-color: var(--teal); color: var(--teal-dark); }
+  button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  button:focus-visible, textarea:focus-visible, input[type=text]:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 1px;
+  }
 
   #send-btn {
     background: var(--accent);
     color: var(--accent-contrast);
     border-color: var(--accent);
-    font-weight: 600;
+    font-weight: 700;
+  }
+
+  #send-btn:hover:not(:disabled) {
+    border-color: var(--teal-dark);
+    color: var(--accent-contrast);
   }
 
   .field {
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.9rem;
   }
 
   .field label {
     font-size: 0.85rem;
+    font-weight: 600;
     color: var(--muted);
   }
 
   textarea, input[type=text] {
     font: inherit;
-    padding: 0.5rem;
-    border-radius: 6px;
+    padding: 0.6rem 0.7rem;
+    border-radius: 8px;
     border: 1px solid var(--border);
     background: var(--panel-bg);
     color: var(--text);
     resize: vertical;
+  }
+
+  textarea:focus, input[type=text]:focus {
+    border-color: var(--teal);
   }
 
   #free-text { min-height: 8rem; }
@@ -127,45 +191,147 @@
     min-height: 1.4rem;
     margin: 0.4rem 0 1rem;
     font-size: 0.9rem;
+    color: var(--muted);
   }
 
   #status.error {
     color: var(--danger);
     background: var(--danger-bg);
-    padding: 0.4rem 0.6rem;
-    border-radius: 6px;
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
   }
 
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0 0 1.4rem;
+  }
+
+  .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    padding: 0.28rem 0.65rem 0.28rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .legend mark {
+    width: 0.85em;
+    height: 0.85em;
+    padding: 0;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  /* --- Séquence des 4 panneaux (le trajet du texte à travers le sas) --- */
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
     gap: 1rem;
+    margin-top: 0.25rem;
   }
 
-  @media (max-width: 900px) {
-    .grid { grid-template-columns: 1fr; }
+  .flow-arrow {
+    flex: 0 0 auto;
+    align-self: center;
+    display: flex;
+    color: var(--teal);
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  @media (max-width: 1100px) {
+    .flow-arrow { display: none; }
+  }
+
+  @media (max-width: 700px) {
+    .flow { flex-direction: column; }
+
+    .panel:not(:first-child) {
+      position: relative;
+      margin-top: 1.4rem;
+    }
+
+    .panel:not(:first-child)::before {
+      content: "↓";
+      position: absolute;
+      top: -1.6rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--teal);
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
   }
 
   .panel {
+    flex: 1 1 260px;
+    min-width: 220px;
     background: var(--panel-bg);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.8rem;
+    border-radius: 12px;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
-    min-height: 220px;
+    min-height: 240px;
+    box-shadow: 0 1px 2px rgba(11, 37, 69, 0.05);
   }
 
-  .panel h2 {
-    margin: 0 0 0.4rem;
-    font-size: 1rem;
+  .panel-head {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 0.65rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid var(--border);
   }
+
+  .step-badge {
+    flex: 0 0 auto;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--navy-contrast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .panel-head h2 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .counter-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    align-self: flex-start;
+    background: var(--teal-light);
+    border: 1px solid var(--teal);
+    color: var(--counter-fg);
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 0.7rem;
+  }
+
+  .counter-icon { flex: 0 0 auto; color: var(--teal-dark); }
 
   .counter {
-    font-size: 0.85rem;
-    color: var(--accent);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 700;
   }
 
   .panel-content {
@@ -173,19 +339,22 @@
     overflow: auto;
     white-space: pre-wrap;
     font-family: "SF Mono", Consolas, "Cascadia Code", monospace;
-    font-size: 0.85rem;
-    max-height: 40vh;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    max-height: 42vh;
   }
 
   .panel-content.empty {
     color: var(--muted);
     font-family: inherit;
     font-style: italic;
+    font-size: 0.85rem;
   }
 
   mark {
-    border-radius: 3px;
-    padding: 0 0.15em;
+    border-radius: 4px;
+    padding: 0.05em 0.3em;
+    font-weight: 600;
     color: inherit;
   }
 
@@ -198,29 +367,27 @@
   .tag-telephone { background: var(--tag-telephone-bg); color: var(--tag-telephone-fg); }
   .tag-email { background: var(--tag-email-bg); color: var(--tag-email-fg); }
   .tag-etablissement { background: var(--tag-etablissement-bg); color: var(--tag-etablissement-fg); }
-
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-bottom: 1rem;
-  }
-
-  .legend span mark { margin-right: 0.3em; }
 </style>
 
-<header>
-  <h1>Écluse — le sas RGPD entre vos prompts et les LLM</h1>
-  <p>
-    Un texte part masqué vers l'IA, et revient complet avec les vraies
-    informations remises en place localement. La table de correspondance
-    entre jetons et valeurs réelles ne quitte jamais ce serveur.
-  </p>
+<header class="site-header">
+  <div class="container">
+    <svg class="brand-icon" width="30" height="30" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <rect x="2" y="4" width="6" height="20" rx="1.5" fill="currentColor" opacity="0.9" />
+      <rect x="20" y="4" width="6" height="20" rx="1.5" fill="currentColor" opacity="0.9" />
+      <path d="M10 14h8M15 10l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <div>
+      <h1>Écluse — le sas RGPD entre vos prompts et les LLM</h1>
+      <p>
+        Un texte part masqué vers l'IA, et revient complet avec les vraies
+        informations remises en place localement. La table de correspondance
+        entre jetons et valeurs réelles ne quitte jamais ce serveur.
+      </p>
+    </div>
+  </div>
 </header>
 
-<main>
+<main class="container">
   <div class="controls">
     <button id="sample-0-btn" type="button">Charger : contrat de travail</button>
     <button id="sample-1-btn" type="button">Charger : compte rendu de réunion</button>
@@ -244,31 +411,55 @@
 
   <div class="legend" id="legend"></div>
 
-  <div class="grid">
+  <div class="flow">
     <section class="panel">
-      <h2>1. Document d'origine</h2>
+      <div class="panel-head">
+        <span class="step-badge">1</span>
+        <h2>Document d'origine</h2>
+      </div>
       <div class="panel-content empty" id="panel-original">
         En attente d'un texte à traiter.
       </div>
     </section>
 
+    <div class="flow-arrow" aria-hidden="true">→</div>
+
     <section class="panel">
-      <h2>2. Ce qui part vers l'IA</h2>
-      <div class="counter" id="counter"></div>
+      <div class="panel-head">
+        <span class="step-badge">2</span>
+        <h2>Ce qui part vers l'IA</h2>
+      </div>
+      <div class="counter-wrap">
+        <svg class="counter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 10V7a6 6 0 1112 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" stroke-width="2" />
+        </svg>
+        <div class="counter" id="counter"></div>
+      </div>
       <div class="panel-content empty" id="panel-masked">
         Le texte masqué apparaîtra ici.
       </div>
     </section>
 
+    <div class="flow-arrow" aria-hidden="true">→</div>
+
     <section class="panel">
-      <h2>3. Réponse de l'IA</h2>
+      <div class="panel-head">
+        <span class="step-badge">3</span>
+        <h2>Réponse de l'IA</h2>
+      </div>
       <div class="panel-content empty" id="panel-llm">
         La réponse brute du LLM (jetons visibles) apparaîtra ici.
       </div>
     </section>
 
+    <div class="flow-arrow" aria-hidden="true">→</div>
+
     <section class="panel">
-      <h2>4. Résultat final restauré</h2>
+      <div class="panel-head">
+        <span class="step-badge">4</span>
+        <h2>Résultat final restauré</h2>
+      </div>
       <div class="panel-content empty" id="panel-restored">
         Le texte restauré apparaîtra ici.
       </div>
