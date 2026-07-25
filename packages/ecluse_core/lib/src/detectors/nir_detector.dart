@@ -1,4 +1,5 @@
 import '../detector.dart';
+import '../digit_compaction.dart';
 import '../entity.dart';
 
 /// Détecteur de NIR — Numéro d'Inscription au Répertoire, plus connu
@@ -52,16 +53,30 @@ final class NirDetector implements EntityDetector {
 
   @override
   List<DetectedEntity> detect(String text) {
+    // Neutralise d'abord les espaces (multiples, insécables, tabulations)
+    // internes à une séquence de chiffres — un RIB en tableau ou un NIR
+    // recopié à la main n'utilise pas toujours un séparateur simple.
+    // `_candidate` tolère déjà un séparateur unique par groupe, donc ce
+    // repli sur le format « collé » suffit à couvrir les deux cas.
+    final compaction = DigitCompaction(text);
+
     final results = <DetectedEntity>[];
-    for (final match in _candidate.allMatches(text)) {
-      final raw = match.group(0)!;
-      final normalized = raw.replaceAll(_separators, '').toUpperCase();
+    for (final match in _candidate.allMatches(compaction.compact)) {
+      final start = compaction.originalStart(match.start);
+      final end = compaction.originalEnd(match.end);
+      final raw = text.substring(start, end);
+      // Normalise depuis le match *compact* (déjà nettoyé des espaces
+      // internes, quels qu'ils soient) plutôt que depuis `raw` : `raw`
+      // vient du texte d'origine et peut encore contenir des séparateurs
+      // que `_separators` ne connaît pas (tabulation, espace insécable).
+      final normalized =
+          match.group(0)!.replaceAll(_separators, '').toUpperCase();
       if (_isValidNir(normalized)) {
         results.add(
           DetectedEntity(
             type: EntityType.nir,
-            start: match.start,
-            end: match.end,
+            start: start,
+            end: end,
             value: raw,
             confidence: 1.0,
           ),

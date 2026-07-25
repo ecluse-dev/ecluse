@@ -39,11 +39,22 @@ def make_nir(rng: random.Random) -> str:
     return f"{body}{nir_key(body):02d}"
 
 
+
+# Séparateurs à espacement irrégulier (RIB en tableau, NIR recopié à la
+# main, export PDF) : espaces multiples, tabulation, espace insécable.
+# Couvre ce que `DigitCompaction` (packages/ecluse_core) neutralise avant
+# détection — un séparateur simple (" ", ".", "-") était déjà couvert par
+# les styles "spaced"/"dotted" ci-dessous, sans avoir besoin de ce style.
+IRREGULAR_SEPARATORS = ["  ", "   ", '\t', '\xa0', '\xa0\xa0', ' \xa0']
+
+
 def fmt_nir(nir: str, rng: random.Random) -> str:
-    style = rng.choice(["compact", "spaced", "dotted"])
+    style = rng.choice(["compact", "spaced", "dotted", "irregular"])
     if style == "compact":
         return nir
     parts = [nir[0], nir[1:3], nir[3:5], nir[5:7], nir[7:10], nir[10:13], nir[13:15]]
+    if style == "irregular":
+        return rng.choice(IRREGULAR_SEPARATORS).join(parts)
     return (" " if style == "spaced" else ".").join(parts)
 
 
@@ -92,9 +103,13 @@ def make_iban(rng: random.Random) -> str:
 
 
 def fmt_iban(iban: str, rng: random.Random) -> str:
-    if rng.random() < 0.5:
+    style = rng.choice(["compact", "spaced", "irregular"])
+    if style == "compact":
         return iban
-    return " ".join(iban[i:i + 4] for i in range(0, len(iban), 4))
+    groups = [iban[i:i + 4] for i in range(0, len(iban), 4)]
+    if style == "irregular":
+        return rng.choice(IRREGULAR_SEPARATORS).join(groups)
+    return " ".join(groups)
 
 
 # ---------------------------------------------------------------------------

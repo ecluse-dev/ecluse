@@ -75,6 +75,97 @@ IBAN_RE = re.compile(
 )
 
 
+# --- Normalisation des espaces avant détection (NIR, IBAN) -----------------
+# Port de packages/ecluse_core/lib/src/digit_compaction.dart. Neutralise les
+# espaces (multiples, insécables, tabulation) internes à une séquence de
+# chiffres avant de lancer NIR_RE/IBAN_RE -- y compris quand une unique
+# lettre majuscule s'y intercale (2A/2B corse, lettre de compte IBAN) --
+# sans neutraliser un espace de mot ordinaire (ex. "IBAN 1234" ne doit
+# jamais devenir "IBAN1234", sous peine de casser le lookbehind de
+# IBAN_RE). Toute divergence avec la version Dart est un bug à signaler.
+
+_WHITESPACE = {" ", '\t', '\xa0', '\u202f'}
+
+
+def _is_digit(ch: str) -> bool:
+    return "0" <= ch <= "9"
+
+
+def _is_upper(ch: str) -> bool:
+    return "A" <= ch <= "Z"
+
+
+def _digit_behind(units: list) -> bool:
+    """Chiffre en fin de `units`, quitte à traverser une unique lettre
+    majuscule (ex. "...9W" : le 9 est trouvé derrière le W)."""
+    if not units:
+        return False
+    last = units[-1]
+    if _is_digit(last):
+        return True
+    if not _is_upper(last) or len(units) < 2:
+        return False
+    return _is_digit(units[-2])
+
+
+def _digit_ahead(text: str, index: int) -> bool:
+    """Chiffre à partir de `index`, quitte à traverser une unique lettre
+    majuscule (ex. "W789..." : le 7 est trouvé derrière le W)."""
+    if index >= len(text):
+        return False
+    first = text[index]
+    if _is_digit(first):
+        return True
+    if not _is_upper(first) or index + 1 >= len(text):
+        return False
+    return _is_digit(text[index + 1])
+
+
+class DigitCompaction:
+    """Texte compacté pour la détection, avec correspondance vers les
+    positions du texte d'origine (voir `original_start`/`original_end`)."""
+
+    def __init__(self, original: str):
+        compact_chars: list[str] = []
+        original_index: list[int] = []
+        i = 0
+        n = len(original)
+        while i < n:
+            ch = original[i]
+            if ch not in _WHITESPACE:
+                compact_chars.append(ch)
+                original_index.append(i)
+                i += 1
+                continue
+
+            run_end = i + 1
+            while run_end < n and original[run_end] in _WHITESPACE:
+                run_end += 1
+
+            if _digit_behind(compact_chars) and _digit_ahead(original, run_end):
+                # Espace(s) interne(s) à une séquence de chiffres :
+                # neutralisés, rien n'est ajouté au texte compacté.
+                i = run_end
+                continue
+
+            # Séparateur de mots ordinaire : conservé tel quel.
+            for j in range(i, run_end):
+                compact_chars.append(original[j])
+                original_index.append(j)
+            i = run_end
+
+        self.compact = "".join(compact_chars)
+        self._original_index = original_index
+
+    def original_start(self, compact_start: int) -> int:
+        return self._original_index[compact_start]
+
+    def original_end(self, compact_end: int) -> int:
+        # N'inclut jamais les espaces neutralisés qui suivraient le dernier
+        # caractère du match.
+        return self._original_index[compact_end - 1] + 1
+
+
 def iban_valid(iban: str) -> bool:
     if len(iban) != 27:
         return False
@@ -94,15 +185,32 @@ def iban_valid(iban: str) -> bool:
 
 def detect(text: str):
     out = []
-    for m in NIR_RE.finditer(text):
-        if nir_valid(re.sub(r"[ .\-]", "", m.group(0)).upper()):
-            out.append({"type": "nir", "start": m.start(), "end": m.end()})
+
+    # NIR et IBAN sont recherchés sur le texte compacté (espaces internes
+    # aux séquences de chiffres neutralisés), RPPS reste sur le texte
+    # d'origine -- même périmètre que côté Dart (NirDetector/IbanFrDetector
+    # utilisent DigitCompaction, pas RppsDetector).
+    compaction = DigitCompaction(text)
+
+    for m in NIR_RE.finditer(compaction.compact):
+        normalized = re.sub(r"[ .\-]", "", m.group(0)).upper()
+        if nir_valid(normalized):
+            out.append({
+                "type": "nir",
+                "start": compaction.original_start(m.start()),
+                "end": compaction.original_end(m.end()),
+            })
     for m in RPPS_RE.finditer(text):
         if luhn_valid(m.group(0).replace(" ", "")):
             out.append({"type": "rpps", "start": m.start(), "end": m.end()})
-    for m in IBAN_RE.finditer(text):
-        if iban_valid(re.sub(r"[ \-]", "", m.group(0)).upper()):
-            out.append({"type": "iban", "start": m.start(), "end": m.end()})
+    for m in IBAN_RE.finditer(compaction.compact):
+        normalized = re.sub(r"[ \-]", "", m.group(0)).upper()
+        if iban_valid(normalized):
+            out.append({
+                "type": "iban",
+                "start": compaction.original_start(m.start()),
+                "end": compaction.original_end(m.end()),
+            })
     return out
 
 

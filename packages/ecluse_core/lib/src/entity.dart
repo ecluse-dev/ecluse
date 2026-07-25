@@ -11,6 +11,25 @@ enum EntityType {
 
   /// IBAN français (International Bank Account Number, préfixe FR).
   iban,
+
+  /// Nom de personne (détection heuristique, voir `ecluse_redact`).
+  nom,
+
+  /// Date de naissance (détection heuristique, voir `ecluse_redact`).
+  dateNaissance,
+
+  /// Adresse postale simple (détection heuristique, voir `ecluse_redact`).
+  adresse,
+
+  /// Numéro de téléphone français (détection heuristique, voir
+  /// `ecluse_redact`).
+  telephone,
+
+  /// Adresse email (détection heuristique, voir `ecluse_redact`).
+  email,
+
+  /// Nom d'établissement (détection heuristique, voir `ecluse_redact`).
+  etablissement,
 }
 
 /// Une entité personnelle détectée dans un texte.

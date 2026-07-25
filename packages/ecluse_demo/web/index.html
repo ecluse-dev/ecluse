@@ -1,0 +1,650 @@
+<title>Écluse — démo</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f2f5f8;
+    --panel-bg: #ffffff;
+    --text: #101c30;
+    --muted: #5b6b83;
+    --border: #d7e0ea;
+
+    --navy: #0b2545;
+    --navy-2: #123463;
+    --navy-contrast: #ffffff;
+
+    --teal: #0f9488;
+    --teal-dark: #0b6f66;
+    --teal-light: #e3f8f5;
+    --counter-fg: #0b2545;
+
+    --accent: var(--teal);
+    --accent-contrast: #ffffff;
+    --danger: #b3261e;
+    --danger-bg: #fdecea;
+
+    --tag-nir-bg: #dbeafe;      --tag-nir-fg: #1e3a8a;
+    --tag-rpps-bg: #ccfbf1;     --tag-rpps-fg: #115e59;
+    --tag-iban-bg: #ede9fe;     --tag-iban-fg: #5b21b6;
+    --tag-nom-bg: #fef3c7;      --tag-nom-fg: #92400e;
+    --tag-datenaissance-bg: #fce7f3; --tag-datenaissance-fg: #9d174d;
+    --tag-adresse-bg: #dcfce7;  --tag-adresse-fg: #166534;
+    --tag-telephone-bg: #ffedd5; --tag-telephone-fg: #9a3412;
+    --tag-email-bg: #cffafe;    --tag-email-fg: #155e75;
+    --tag-etablissement-bg: #e0e7ff; --tag-etablissement-fg: #3730a3;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1420;
+      --panel-bg: #132033;
+      --text: #e8eef7;
+      --muted: #93a3bc;
+      --border: #25344b;
+
+      --navy: #0a1a2e;
+      --navy-2: #0f2743;
+      --navy-contrast: #eaf2ff;
+
+      --teal: #2dd4bf;
+      --teal-dark: #14b8a6;
+      --teal-light: #0f2f2c;
+      --counter-fg: #eafff9;
+
+      --accent: var(--teal);
+      --accent-contrast: #04211d;
+      --danger: #f2a3a3;
+      --danger-bg: #3a1f1f;
+
+      --tag-nir-bg: #1e3a5f;      --tag-nir-fg: #bfdbfe;
+      --tag-rpps-bg: #134e4a;     --tag-rpps-fg: #99f6e4;
+      --tag-iban-bg: #3b2e63;     --tag-iban-fg: #ddd6fe;
+      --tag-nom-bg: #4a3a12;      --tag-nom-fg: #fde68a;
+      --tag-datenaissance-bg: #4a1d3a; --tag-datenaissance-fg: #fbcfe8;
+      --tag-adresse-bg: #14342152; --tag-adresse-fg: #bbf7d0;
+      --tag-telephone-bg: #4a2a10; --tag-telephone-fg: #fed7aa;
+      --tag-email-bg: #123a42;    --tag-email-fg: #a5f3fc;
+      --tag-etablissement-bg: #2c2a63; --tag-etablissement-fg: #c7d2fe;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.4;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+
+  .site-header {
+    background: linear-gradient(135deg, var(--navy), var(--navy-2));
+  }
+
+  .site-header .container {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding-top: 2rem;
+    padding-bottom: 1.75rem;
+  }
+
+  .brand-icon {
+    flex: 0 0 auto;
+    color: var(--teal);
+    margin-top: 0.2rem;
+  }
+
+  .site-header h1 {
+    margin: 0 0 0.35rem;
+    color: var(--navy-contrast);
+    font-size: 1.45rem;
+    letter-spacing: -0.01em;
+  }
+
+  .site-header p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.78);
+    max-width: 68ch;
+    font-size: 0.95rem;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+    margin-bottom: 0.9rem;
+  }
+
+  button, .btn {
+    font: inherit;
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel-bg);
+    color: var(--text);
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  button:hover:not(:disabled) { border-color: var(--teal); color: var(--teal-dark); }
+  button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  button:focus-visible, textarea:focus-visible, input[type=text]:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 1px;
+  }
+
+  #send-btn {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+
+  #send-btn:hover:not(:disabled) {
+    border-color: var(--teal-dark);
+    color: var(--accent-contrast);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .field label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  textarea, input[type=text] {
+    font: inherit;
+    padding: 0.6rem 0.7rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel-bg);
+    color: var(--text);
+    resize: vertical;
+  }
+
+  textarea:focus, input[type=text]:focus {
+    border-color: var(--teal);
+  }
+
+  #free-text { min-height: 8rem; }
+
+  #status {
+    min-height: 1.4rem;
+    margin: 0.4rem 0 1rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  #status.error {
+    color: var(--danger);
+    background: var(--danger-bg);
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0 0 1.4rem;
+  }
+
+  .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    padding: 0.28rem 0.65rem 0.28rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .legend mark {
+    width: 0.85em;
+    height: 0.85em;
+    padding: 0;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  /* --- Séquence des 4 panneaux (le trajet du texte à travers le sas) --- */
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 1rem;
+    margin-top: 0.25rem;
+  }
+
+  .flow-arrow {
+    flex: 0 0 auto;
+    align-self: center;
+    display: flex;
+    color: var(--teal);
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  @media (max-width: 1100px) {
+    .flow-arrow { display: none; }
+  }
+
+  @media (max-width: 700px) {
+    .flow { flex-direction: column; }
+
+    .panel:not(:first-child) {
+      position: relative;
+      margin-top: 1.4rem;
+    }
+
+    .panel:not(:first-child)::before {
+      content: "↓";
+      position: absolute;
+      top: -1.6rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--teal);
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+  }
+
+  .panel {
+    flex: 1 1 260px;
+    min-width: 220px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 240px;
+    box-shadow: 0 1px 2px rgba(11, 37, 69, 0.05);
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 0.65rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .step-badge {
+    flex: 0 0 auto;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--navy-contrast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .panel-head h2 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .counter-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    align-self: flex-start;
+    background: var(--teal-light);
+    border: 1px solid var(--teal);
+    color: var(--counter-fg);
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 0.7rem;
+  }
+
+  .counter-icon { flex: 0 0 auto; color: var(--teal-dark); }
+
+  .counter {
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .panel-content {
+    flex: 1;
+    overflow: auto;
+    white-space: pre-wrap;
+    font-family: "SF Mono", Consolas, "Cascadia Code", monospace;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    max-height: 42vh;
+  }
+
+  .panel-content.empty {
+    color: var(--muted);
+    font-family: inherit;
+    font-style: italic;
+    font-size: 0.85rem;
+  }
+
+  mark {
+    border-radius: 4px;
+    padding: 0.05em 0.3em;
+    font-weight: 600;
+    color: inherit;
+  }
+
+  .tag-nir { background: var(--tag-nir-bg); color: var(--tag-nir-fg); }
+  .tag-rpps { background: var(--tag-rpps-bg); color: var(--tag-rpps-fg); }
+  .tag-iban { background: var(--tag-iban-bg); color: var(--tag-iban-fg); }
+  .tag-nom { background: var(--tag-nom-bg); color: var(--tag-nom-fg); }
+  .tag-datenaissance { background: var(--tag-datenaissance-bg); color: var(--tag-datenaissance-fg); }
+  .tag-adresse { background: var(--tag-adresse-bg); color: var(--tag-adresse-fg); }
+  .tag-telephone { background: var(--tag-telephone-bg); color: var(--tag-telephone-fg); }
+  .tag-email { background: var(--tag-email-bg); color: var(--tag-email-fg); }
+  .tag-etablissement { background: var(--tag-etablissement-bg); color: var(--tag-etablissement-fg); }
+</style>
+
+<header class="site-header">
+  <div class="container">
+    <svg class="brand-icon" width="30" height="30" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <rect x="2" y="4" width="6" height="20" rx="1.5" fill="currentColor" opacity="0.9" />
+      <rect x="20" y="4" width="6" height="20" rx="1.5" fill="currentColor" opacity="0.9" />
+      <path d="M10 14h8M15 10l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <div>
+      <h1>Écluse — le sas RGPD entre vos prompts et les LLM</h1>
+      <p>
+        Un texte part masqué vers l'IA, et revient complet avec les vraies
+        informations remises en place localement. La table de correspondance
+        entre jetons et valeurs réelles ne quitte jamais ce serveur.
+      </p>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="controls">
+    <button id="sample-0-btn" type="button">Charger : contrat de travail</button>
+    <button id="sample-1-btn" type="button">Charger : compte rendu de réunion</button>
+  </div>
+
+  <div class="field">
+    <label for="free-text">Texte à traiter</label>
+    <textarea id="free-text" placeholder="Collez ici un texte, ou chargez un exemple ci-dessus."></textarea>
+  </div>
+
+  <div class="field">
+    <label for="instruction">Consigne pour l'IA</label>
+    <input type="text" id="instruction" value="Fais une synthèse claire de ce texte." />
+  </div>
+
+  <div class="controls">
+    <button id="send-btn" type="button">Envoyer à l'IA</button>
+  </div>
+
+  <div id="status"></div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="flow">
+    <section class="panel">
+      <div class="panel-head">
+        <span class="step-badge">1</span>
+        <h2>Document d'origine</h2>
+      </div>
+      <div class="panel-content empty" id="panel-original">
+        En attente d'un texte à traiter.
+      </div>
+    </section>
+
+    <div class="flow-arrow" aria-hidden="true">→</div>
+
+    <section class="panel">
+      <div class="panel-head">
+        <span class="step-badge">2</span>
+        <h2>Ce qui part vers l'IA</h2>
+      </div>
+      <div class="counter-wrap">
+        <svg class="counter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 10V7a6 6 0 1112 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" stroke-width="2" />
+        </svg>
+        <div class="counter" id="counter"></div>
+      </div>
+      <div class="panel-content empty" id="panel-masked">
+        Le texte masqué apparaîtra ici.
+      </div>
+    </section>
+
+    <div class="flow-arrow" aria-hidden="true">→</div>
+
+    <section class="panel">
+      <div class="panel-head">
+        <span class="step-badge">3</span>
+        <h2>Réponse de l'IA</h2>
+      </div>
+      <div class="panel-content empty" id="panel-llm">
+        La réponse brute du LLM (jetons visibles) apparaîtra ici.
+      </div>
+    </section>
+
+    <div class="flow-arrow" aria-hidden="true">→</div>
+
+    <section class="panel">
+      <div class="panel-head">
+        <span class="step-badge">4</span>
+        <h2>Résultat final restauré</h2>
+      </div>
+      <div class="panel-content empty" id="panel-restored">
+        Le texte restauré apparaîtra ici.
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+  const TYPE_LABELS = {
+    nir: 'NIR', rpps: 'RPPS', iban: 'IBAN', nom: 'noms',
+    dateNaissance: 'dates de naissance', adresse: 'adresses',
+    telephone: 'téléphones', email: 'emails',
+    etablissement: 'établissements',
+  };
+
+  let samples = [];
+
+  function escapeHtml(s) {
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function escapeRegExp(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function normalizeType(type) {
+    return type.toLowerCase().replace(/[^a-z]/g, '');
+  }
+
+  function setStatus(message, isError) {
+    const el = document.getElementById('status');
+    el.textContent = message;
+    el.classList.toggle('error', Boolean(isError));
+  }
+
+  function setBusy(busy) {
+    document.getElementById('send-btn').disabled = busy;
+    document.getElementById('sample-0-btn').disabled = busy;
+    document.getElementById('sample-1-btn').disabled = busy;
+  }
+
+  function setPanel(id, html, isEmpty) {
+    const el = document.getElementById(id);
+    el.innerHTML = html;
+    el.classList.toggle('empty', Boolean(isEmpty));
+  }
+
+  function highlightByOffsets(text, entities) {
+    const sorted = [...entities].sort((a, b) => a.start - b.start);
+    let html = '';
+    let cursor = 0;
+    for (const e of sorted) {
+      html += escapeHtml(text.slice(cursor, e.start));
+      const cls = 'tag-' + normalizeType(e.type);
+      const title = `${e.type} · confiance ${e.confidence}`;
+      html += `<mark class="${cls}" title="${escapeHtml(title)}">` +
+        `${escapeHtml(text.slice(e.start, e.end))}</mark>`;
+      cursor = e.end;
+    }
+    html += escapeHtml(text.slice(cursor));
+    return html;
+  }
+
+  function highlightTokens(text) {
+    const re = /\[([A-Z_]+)_(\d+)\]/g;
+    let html = '';
+    let lastIndex = 0;
+    let match;
+    while ((match = re.exec(text)) !== null) {
+      html += escapeHtml(text.slice(lastIndex, match.index));
+      const cls = 'tag-' + normalizeType(match[1]);
+      html += `<mark class="${cls}">${escapeHtml(match[0])}</mark>`;
+      lastIndex = re.lastIndex;
+    }
+    html += escapeHtml(text.slice(lastIndex));
+    return html;
+  }
+
+  function highlightByValues(text, entities) {
+    const byValue = new Map();
+    for (const e of entities) byValue.set(e.value, e.type);
+    const values = [...byValue.keys()].sort((a, b) => b.length - a.length);
+    if (values.length === 0) return escapeHtml(text);
+
+    const re = new RegExp(values.map(escapeRegExp).join('|'), 'g');
+    let html = '';
+    let lastIndex = 0;
+    let match;
+    while ((match = re.exec(text)) !== null) {
+      html += escapeHtml(text.slice(lastIndex, match.index));
+      const type = byValue.get(match[0]) || '';
+      html += `<mark class="tag-${normalizeType(type)}">${escapeHtml(match[0])}</mark>`;
+      lastIndex = re.lastIndex;
+      if (match.index === re.lastIndex) re.lastIndex++;
+    }
+    html += escapeHtml(text.slice(lastIndex));
+    return html;
+  }
+
+  function countsSentence(entities) {
+    const counts = {};
+    for (const e of entities) counts[e.type] = (counts[e.type] || 0) + 1;
+    const total = entities.length;
+    const parts = Object.entries(counts).map(
+      ([type, n]) => `${n} ${TYPE_LABELS[type] || type}`,
+    );
+    const plural = total > 1 ? 's' : '';
+    return `${total} élément${plural} protégé${plural} : ${parts.join(', ')}`;
+  }
+
+  function renderLegend() {
+    const legend = document.getElementById('legend');
+    legend.innerHTML = Object.entries(TYPE_LABELS)
+      .map(([type, label]) => {
+        const cls = 'tag-' + normalizeType(type);
+        return `<span><mark class="${cls}">&nbsp;&nbsp;</mark>${escapeHtml(label)}</span>`;
+      })
+      .join('');
+  }
+
+  function renderResult(data) {
+    setPanel('panel-original', highlightByOffsets(data.originalText, data.entities), false);
+    setPanel('panel-masked', highlightTokens(data.maskedText), false);
+    setPanel('panel-llm', highlightTokens(data.llmResponse), false);
+    setPanel('panel-restored', highlightByValues(data.restoredText, data.entities), false);
+    document.getElementById('counter').textContent =
+      data.entities.length > 0 ? countsSentence(data.entities) : 'Aucun élément détecté.';
+  }
+
+  async function loadSamples() {
+    try {
+      const res = await fetch('/api/samples');
+      samples = await res.json();
+    } catch (e) {
+      setStatus("Impossible de charger les documents d'exemple.", true);
+    }
+  }
+
+  function loadSample(index) {
+    const sample = samples[index];
+    if (!sample) return;
+    document.getElementById('free-text').value = sample.text;
+    document.getElementById('instruction').value = sample.instruction;
+    setStatus('');
+  }
+
+  async function sendToAi() {
+    const text = document.getElementById('free-text').value;
+    const instruction = document.getElementById('instruction').value;
+    if (!text.trim()) {
+      setStatus('Collez un texte ou chargez un exemple avant de continuer.', true);
+      return;
+    }
+
+    setBusy(true);
+    setStatus('Traitement en cours…');
+    try {
+      const res = await fetch('/api/process', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text, instruction }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        setStatus(data.error, true);
+        return;
+      }
+      renderResult(data);
+      setStatus('');
+    } catch (e) {
+      setStatus('Erreur réseau : impossible de contacter le serveur local.', true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  document.getElementById('sample-0-btn').addEventListener('click', () => loadSample(0));
+  document.getElementById('sample-1-btn').addEventListener('click', () => loadSample(1));
+  document.getElementById('send-btn').addEventListener('click', sendToAi);
+
+  renderLegend();
+  loadSamples();
+</script>
