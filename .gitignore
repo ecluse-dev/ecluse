@@ -31,3 +31,8 @@ doc/api/
 *.iml
 bench/corpus.jsonl
 bench/predictions_*.jsonl
+
+# Documents internes de prospection, jamais sur le repo public
+BRIEF_DEMO.md
+SUIVI_PROSPECTION.md
+ECLUSE-RECAP.md
