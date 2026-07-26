@@ -12,7 +12,7 @@ import 'tokenizer.dart';
 /// Façade de pseudonymisation réversible d'Écluse.
 ///
 /// ```dart
-/// final result = Ecluse.redact(texte);
+/// final result = await Ecluse.redact(texte);
 /// // result.maskedText -> texte à envoyer à l'IA
 /// // result.mapping    -> table jeton ↔ valeur réelle (reste en mémoire)
 /// // result.entities   -> entités détectées (type, confiance)
@@ -20,10 +20,13 @@ import 'tokenizer.dart';
 /// final finalText = Ecluse.restore(reponseDuLLM, result.mapping);
 /// ```
 ///
-/// `Ecluse.redact` combine les détecteurs à validation structurelle
-/// d'`ecluse_core` (NIR, RPPS, IBAN) et les détecteurs heuristiques v0 de
-/// ce package (voir `lib/src/heuristics/`, remplacés en phase 2 par un
-/// NER local — voir ROADMAP.md).
+/// `Ecluse.redact` compose, via `EcluseEngine`, les détecteurs à validation
+/// structurelle d'`ecluse_core` (NIR, RPPS, IBAN) et les détecteurs
+/// heuristiques v0 de ce package (voir `lib/src/heuristics/`, remplacés en
+/// phase 2 par un NER local — voir ROADMAP.md). `redact` est async parce
+/// que `Detector.detect` l'est (contrat uniforme avec le futur NER, qui
+/// pourra tourner dans un isolate) — les détecteurs eux-mêmes restent
+/// synchrones en interne.
 ///
 /// **Aucun seuil de confiance ne filtre les entités masquées dans cette
 /// version** : toute entité détectée, quelle que soit sa confiance, est
@@ -35,16 +38,22 @@ import 'tokenizer.dart';
 /// décision à prendre silencieusement dans le moteur de redaction.
 abstract final class Ecluse {
   /// Détecteurs utilisés par défaut par [redact].
-  static const List<EntityDetector> defaultDetectors = [
-    NirDetector(),
-    RppsDetector(),
-    IbanFrDetector(),
-    NameDetector(),
-    DateNaissanceDetector(),
-    AdresseDetector(),
-    TelephoneDetector(),
-    EmailDetector(),
-    EtablissementDetector(),
+  static const List<Detector> defaultDetectors = [
+    LegacyDetectorAdapter(NirDetector(), DetectorTier.structural, name: 'nir'),
+    LegacyDetectorAdapter(RppsDetector(), DetectorTier.structural,
+        name: 'rpps'),
+    LegacyDetectorAdapter(IbanFrDetector(), DetectorTier.structural,
+        name: 'iban'),
+    LegacyDetectorAdapter(NameDetector(), DetectorTier.reference, name: 'nom'),
+    LegacyDetectorAdapter(DateNaissanceDetector(), DetectorTier.pattern,
+        name: 'date_naissance'),
+    LegacyDetectorAdapter(AdresseDetector(), DetectorTier.pattern,
+        name: 'adresse'),
+    LegacyDetectorAdapter(TelephoneDetector(), DetectorTier.pattern,
+        name: 'telephone'),
+    LegacyDetectorAdapter(EmailDetector(), DetectorTier.pattern, name: 'email'),
+    LegacyDetectorAdapter(EtablissementDetector(), DetectorTier.pattern,
+        name: 'etablissement'),
   ];
 
   /// Détecte les entités personnelles de [text] et produit un texte masqué
@@ -53,14 +62,13 @@ abstract final class Ecluse {
   ///
   /// Une même valeur détectée reçoit toujours le même jeton dans tout le
   /// texte, pour que le LLM garde le fil des références.
-  static RedactResult redact(
+  static Future<RedactResult> redact(
     String text, {
-    List<EntityDetector> detectors = defaultDetectors,
-  }) {
-    final raw = <DetectedEntity>[
-      for (final detector in detectors) ...detector.detect(text),
-    ];
-    final resolved = resolveOverlaps(raw);
+    List<Detector>? detectors,
+  }) async {
+    final engine = EcluseEngine(detectors ?? defaultDetectors);
+    final detection = await engine.run(text);
+    final resolved = detection.entities;
 
     final mapping = <String, String>{};
     final tokenByValue = <String, String>{};

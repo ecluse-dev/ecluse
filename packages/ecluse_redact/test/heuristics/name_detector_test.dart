@@ -55,7 +55,8 @@ void main() {
     // Reproduction exacte du bug signalé : "DANNER Laurent" strictement en
     // début de texte, sans rien avant. Le mot en majuscules doit être
     // rattaché au prénom qui le suit, pas laissé en clair à côté du jeton.
-    test('"DANNER Laurent" seul, en tout début de texte -> bloc complet', () {
+    test('"DANNER Laurent" seul, en tout début de texte -> bloc complet',
+        () async {
       final entities = detector.detect('DANNER Laurent');
       expect(entities, hasLength(1));
       expect(entities.single.value, 'DANNER Laurent');
@@ -63,7 +64,7 @@ void main() {
       expect(entities.single.end, 'DANNER Laurent'.length);
       expect(entities.single.confidence, 0.6);
 
-      final masked = Ecluse.redact('DANNER Laurent').maskedText;
+      final masked = (await Ecluse.redact('DANNER Laurent')).maskedText;
       expect(masked, isNot(contains('DANNER')));
       expect(masked, contains('[NOM_1]'));
     });
@@ -76,13 +77,14 @@ void main() {
     });
 
     // Ordre inverse de la reproduction ci-dessus, même exigence.
-    test('"Laurent DANNER" seul, en tout début de texte -> bloc complet', () {
+    test('"Laurent DANNER" seul, en tout début de texte -> bloc complet',
+        () async {
       final entities = detector.detect('Laurent DANNER');
       expect(entities, hasLength(1));
       expect(entities.single.value, 'Laurent DANNER');
       expect(entities.single.confidence, 0.6);
 
-      final masked = Ecluse.redact('Laurent DANNER').maskedText;
+      final masked = (await Ecluse.redact('Laurent DANNER')).maskedText;
       expect(masked, isNot(contains('DANNER')));
       expect(masked, contains('[NOM_1]'));
     });

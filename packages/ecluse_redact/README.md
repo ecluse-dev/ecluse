@@ -10,8 +10,8 @@ table de correspondance ne quitte jamais le processus.
 ```dart
 import 'package:ecluse_redact/ecluse_redact.dart';
 
-void main() {
-  final result = Ecluse.redact('M. Jean Dupont, né le 1 janvier 1980.');
+void main() async {
+  final result = await Ecluse.redact('M. Jean Dupont, né le 1 janvier 1980.');
   print(result.maskedText); // '[NOM_1], né le [DATE_NAISSANCE_1].'
   print(result.entities);   // entités détectées, type + confiance
 

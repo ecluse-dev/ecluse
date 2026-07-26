@@ -33,7 +33,7 @@ final class RedactService {
     String text, {
     required String instruction,
   }) async {
-    final redacted = Ecluse.redact(text);
+    final redacted = await Ecluse.redact(text);
 
     final llmResponse = await _llmClient.complete(
       redacted.maskedText,
