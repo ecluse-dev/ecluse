@@ -14,6 +14,11 @@
 /// ```
 library;
 
+export 'src/detection/detection_result.dart';
+export 'src/detection/detector.dart';
+export 'src/detection/detector_tier.dart';
+export 'src/detection/legacy_detector_adapter.dart';
+export 'src/detection/normalized_text.dart';
 export 'src/detector.dart';
 export 'src/detectors/iban_detector.dart';
 export 'src/detectors/nir_detector.dart';
