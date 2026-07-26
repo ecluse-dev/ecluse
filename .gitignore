@@ -36,3 +36,5 @@ bench/predictions_*.jsonl
 BRIEF_DEMO.md
 SUIVI_PROSPECTION.md
 ECLUSE-RECAP.md
+# Docs et notes internes
+docs/
