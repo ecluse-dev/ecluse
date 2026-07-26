@@ -1,9 +1,16 @@
 import 'package:ecluse_core/ecluse_core.dart';
 import 'package:test/test.dart';
 
-DetectedEntity e(EntityType t, int s, int end, [double c = 1.0]) =>
+DetectedEntity e(EntityType t, int s, int end,
+        [double c = 1.0, DetectorTier? tier]) =>
     DetectedEntity(
-        type: t, start: s, end: end, value: 'x' * (end - s), confidence: c);
+      type: t,
+      start: s,
+      end: end,
+      value: 'x' * (end - s),
+      confidence: c,
+      tier: tier,
+    );
 
 void main() {
   group('resolveOverlaps', () {
@@ -44,6 +51,22 @@ void main() {
         e(EntityType.iban, 10, 37),
       ]);
       expect(result.single.type, EntityType.iban);
+    });
+
+    test('à longueur et confiance égales, le tier le plus fiable gagne', () {
+      final result = resolveOverlaps([
+        e(EntityType.rpps, 0, 11, 1.0, DetectorTier.pattern),
+        e(EntityType.nir, 0, 11, 1.0, DetectorTier.structural),
+      ]);
+      expect(result.single.type, EntityType.nir);
+
+      // Ordre d'entrée inversé : même verdict, le tier ne dépend pas de
+      // l'ordre des détecteurs qui ont produit les candidats.
+      final resultReversed = resolveOverlaps([
+        e(EntityType.nir, 0, 11, 1.0, DetectorTier.structural),
+        e(EntityType.rpps, 0, 11, 1.0, DetectorTier.pattern),
+      ]);
+      expect(resultReversed.single.type, EntityType.nir);
     });
   });
 }

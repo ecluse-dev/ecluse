@@ -1,3 +1,5 @@
+import 'detection/detector_tier.dart';
+
 /// Types d'entités personnelles détectables par Écluse.
 ///
 /// La liste s'étendra au fil des détecteurs (FINESS, téléphones, etc.).
@@ -43,6 +45,7 @@ final class DetectedEntity {
     required this.end,
     required this.value,
     required this.confidence,
+    this.tier,
   })  : assert(start >= 0, 'start doit être positif'),
         assert(end > start, 'end doit être strictement supérieur à start'),
         assert(
@@ -70,6 +73,14 @@ final class DetectedEntity {
   /// interne vérifiable) donne une confiance légèrement inférieure.
   final double confidence;
 
+  /// Origine de la détection (départage dans `resolveOverlaps`).
+  ///
+  /// N'entre pas dans `==`/`hashCode` : c'est une métadonnée de provenance
+  /// attachée par le moteur qui a produit l'entité, pas une composante de
+  /// son identité (même entité, même position, que `tier` soit renseigné
+  /// ou non).
+  final DetectorTier? tier;
+
   @override
   bool operator ==(Object other) =>
       other is DetectedEntity &&
@@ -83,6 +94,6 @@ final class DetectedEntity {
   int get hashCode => Object.hash(type, start, end, value, confidence);
 
   @override
-  String toString() =>
-      'DetectedEntity(${type.name}, [$start, $end), confidence: $confidence)';
+  String toString() => 'DetectedEntity(${type.name}, [$start, $end), '
+      'confidence: $confidence, tier: ${tier?.name})';
 }
