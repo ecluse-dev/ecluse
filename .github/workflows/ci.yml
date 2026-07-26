@@ -29,5 +29,16 @@ jobs:
       - name: Analyse statique
         run: melos run analyze
 
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Installer les dépendances Python du benchmark
+        run: pip install -r bench/requirements.txt
+
+      - name: Générer le corpus de benchmark (déterministe)
+        run: python bench/generate_corpus.py --n 1000 --seed 42 --out bench/corpus.jsonl
+
       - name: Tests
         run: melos run test
