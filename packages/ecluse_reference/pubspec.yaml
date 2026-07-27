@@ -1,0 +1,21 @@
+name: ecluse_reference
+description: >-
+  Données de référence publiques (géographie INSEE, rareté des professions de
+  santé, pyramide des âges, gazetteer de prénoms) pour Écluse — Dart pur,
+  chargement paresseux, zéro dépendance Flutter.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  diacritic: ^0.1.6
+
+dev_dependencies:
+  lints: ^4.0.0
+  test: ^1.25.0
+
+flutter:
+  assets:
+    - assets/

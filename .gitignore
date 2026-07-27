@@ -38,3 +38,6 @@ SUIVI_PROSPECTION.md
 ECLUSE-RECAP.md
 # Docs et notes internes
 docs/
+
+# Overrides locaux Melos (ne pas committer)
+pubspec_overrides.yaml
