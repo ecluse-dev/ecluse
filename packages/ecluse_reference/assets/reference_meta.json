@@ -1,0 +1,26 @@
+{
+  "millesimes": {
+    "cog": 2026,
+    "populations": "ref2023->2026",
+    "drees": 2026,
+    "pyramide": "2026 (France entiere)",
+    "prenoms": 2025
+  },
+  "approximations": [
+    "pyramide France entiere 2026",
+    "specialites medecins niveau medium",
+    "prenoms sans frequence (signal de confiance, pas masque autonome)"
+  ],
+  "report": {
+    "geo_communes": 34875,
+    "rarity_medecins_pairs": 1414,
+    "rarity_professions": {
+      "pharmacien": 102,
+      "chirurgien-dentiste": 101,
+      "sage-femme": 101,
+      "pedicure-podologue": 101
+    },
+    "age_pyramide_total": 69079962,
+    "first_names": 154977
+  }
+}
