@@ -53,8 +53,12 @@ void main() {
 
       expect(result.maskedText, contains('[NOM_1]'));
       expect(result.maskedText, contains('[NOM_2]'));
-      expect(result.mapping['[NOM_1]'], 'M. Jean Dupont');
-      expect(result.mapping['[NOM_2]'], 'Mme Alice Martin');
+      expect(result.mapping['[NOM_1]'], 'Jean Dupont');
+      expect(result.mapping['[NOM_2]'], 'Alice Martin');
+      // La civilité est un indice de genre, pas un identifiant : elle reste
+      // visible à côté du jeton plutôt que d'être masquée avec le nom.
+      expect(result.maskedText, contains('M. [NOM_1]'));
+      expect(result.maskedText, contains('Mme [NOM_2]'));
     });
 
     test('restore tolère une déformation raisonnable du jeton par le LLM',
