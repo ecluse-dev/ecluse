@@ -1,5 +1,6 @@
 import '../detector.dart';
 import '../entity.dart';
+import '../luhn.dart';
 
 /// Détecteur de numéros RPPS — Répertoire Partagé des Professionnels de
 /// Santé, l'identifiant national unique des professionnels de santé
@@ -31,7 +32,7 @@ final class RppsDetector implements EntityDetector {
     for (final match in _candidate.allMatches(text)) {
       final raw = match.group(0)!;
       final digits = raw.replaceAll(' ', '');
-      if (_isLuhnValid(digits)) {
+      if (isLuhnValid(digits)) {
         results.add(
           DetectedEntity(
             type: EntityType.rpps,
@@ -44,23 +45,5 @@ final class RppsDetector implements EntityDetector {
       }
     }
     return results;
-  }
-
-  /// Algorithme de Luhn standard : en partant de la droite, double un
-  /// chiffre sur deux (en retranchant 9 si le résultat dépasse 9) ; la
-  /// somme totale doit être un multiple de 10.
-  static bool _isLuhnValid(String digits) {
-    var sum = 0;
-    var double = false;
-    for (var i = digits.length - 1; i >= 0; i--) {
-      var d = digits.codeUnitAt(i) - 0x30;
-      if (double) {
-        d *= 2;
-        if (d > 9) d -= 9;
-      }
-      sum += d;
-      double = !double;
-    }
-    return sum % 10 == 0;
   }
 }

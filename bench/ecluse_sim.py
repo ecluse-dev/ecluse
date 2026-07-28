@@ -8,6 +8,11 @@ monorepo (packages/ecluse_core) — exécuté via :
     dart run ecluse_bench:run_ecluse corpus.jsonl predictions_ecluse.jsonl
 
 Toute divergence entre les deux implémentations est un bug à signaler.
+
+NOTE : le FINESS n'est PAS porté ici. `resolve_overlaps` ci-dessous utilise
+une confiance fixe par type (table `conf`), incompatible avec la confiance
+graduée par occurrence du FinessDetector (0.9 avec contexte / 0.5 sans).
+Pour un run incluant le FINESS, utiliser le runner Dart officiel.
 """
 
 import argparse

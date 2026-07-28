@@ -8,6 +8,7 @@ String entityTypeLabel(EntityType type) => switch (type) {
       EntityType.nir => 'NIR',
       EntityType.rpps => 'RPPS',
       EntityType.iban => 'IBAN',
+      EntityType.finess => 'FINESS',
       EntityType.nom => 'NOM',
       EntityType.dateNaissance => 'DATE_NAISSANCE',
       EntityType.adresse => 'ADRESSE',

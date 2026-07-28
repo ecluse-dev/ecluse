@@ -11,11 +11,14 @@ Future<void> main(List<String> args) async {
   final corpusPath = args.isNotEmpty ? args[0] : 'bench/corpus.jsonl';
   final outPath = args.length > 1 ? args[1] : 'bench/predictions_ecluse.jsonl';
 
-  const detectors = <EntityDetector>[
-    NirDetector(),
-    RppsDetector(),
-    IbanFrDetector(),
-  ];
+  final engine = EcluseEngine(const [
+    LegacyDetectorAdapter(NirDetector(), DetectorTier.structural, name: 'nir'),
+    LegacyDetectorAdapter(RppsDetector(), DetectorTier.structural,
+        name: 'rpps'),
+    LegacyDetectorAdapter(IbanFrDetector(), DetectorTier.structural,
+        name: 'iban'),
+    FinessDetector(),
+  ]);
 
   final sink = File(outPath).openWrite();
   var documents = 0;
@@ -26,10 +29,7 @@ Future<void> main(List<String> args) async {
     final doc = jsonDecode(line) as Map<String, dynamic>;
     final text = doc['text'] as String;
 
-    final raw = <DetectedEntity>[
-      for (final detector in detectors) ...detector.detect(text),
-    ];
-    final resolved = resolveOverlaps(raw);
+    final resolved = (await engine.run(text)).entities;
 
     sink.writeln(jsonEncode({
       'id': doc['id'],

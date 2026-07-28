@@ -15,7 +15,7 @@ import argparse
 import json
 from collections import defaultdict
 
-TYPES = ["nir", "rpps", "iban"]
+TYPES = ["nir", "rpps", "iban", "finess"]
 
 
 def load(path):
