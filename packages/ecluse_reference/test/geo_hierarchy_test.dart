@@ -38,6 +38,11 @@ void main() {
     test('population nulle pour Marseille (arrondissements)', () {
       expect(geo.population('13055'), isNull);
     });
+
+    test('populationOfDep("57") == 1051309 (population totale de la Moselle)',
+        () {
+      expect(geo.populationOfDep('57'), 1051309);
+    });
   });
 
   test('accès avant load() lève une StateError', () {
