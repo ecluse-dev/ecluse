@@ -4,10 +4,12 @@
 Produit un fichier JSONL où chaque ligne est un document :
     {"id": 0, "text": "...", "entities": [{"type": "nir", "start": 12, "end": 33}]}
 
-Entités cibles : nir, rpps, iban (français).
+Entités cibles : nir, rpps, iban, finess (français).
 Le corpus contient aussi des pièges non annotés : NIR à clé invalide,
-IBAN à clé invalide, RPPS à Luhn cassé, téléphones, SIRET, dates, codes
-postaux. Un bon détecteur doit les ignorer.
+IBAN à clé invalide, RPPS à Luhn cassé, téléphones, SIRET, SIREN (même
+Luhn que le FINESS -- collision assumée, voir trap_siren), dates, codes
+postaux. Un bon détecteur doit les ignorer (sauf FINESS/SIREN, capté à
+confiance basse par construction -- voir docs/Ecluse-FINESS-detecteur-spec.md).
 
 Déterministe : même seed => même corpus. Aucune donnée réelle.
 """
@@ -112,6 +114,26 @@ def fmt_iban(iban: str, rng: random.Random) -> str:
     return " ".join(groups)
 
 
+# FINESS : 9 chiffres, 2 premiers = département de rattachement (signal
+# doux côté détecteur, non vérifié structurellement), 9e = clé Luhn — même
+# algorithme que le RPPS, réutilisé ici via `luhn_digit`. Partage sa clé
+# avec le SIREN (voir `trap_siren` ci-dessous) : collision assumée et
+# documentée, pas résolue par la structure.
+FINESS_DEPTS = [f"{d:02d}" for d in range(1, 96)] + ["97", "98"]
+
+
+def make_finess(rng: random.Random) -> str:
+    dept = rng.choice(FINESS_DEPTS)
+    rest = "".join(rng.choice("0123456789") for _ in range(6))
+    return luhn_digit(dept + rest)
+
+
+def fmt_finess(finess: str, rng: random.Random) -> str:
+    if rng.random() < 0.6:
+        return finess
+    return f"{finess[:2]} {finess[2:5]} {finess[5:8]} {finess[8]}"
+
+
 # ---------------------------------------------------------------------------
 # Pièges (jamais annotés : un détecteur correct doit les ignorer)
 # ---------------------------------------------------------------------------
@@ -143,6 +165,15 @@ def trap_siret(rng: random.Random) -> str:
     return luhn_digit("".join(rng.choice("0123456789") for _ in range(13)))
 
 
+def trap_siren(rng: random.Random) -> str:
+    # SIREN : 9 chiffres, même Luhn mod 10 que le FINESS -- collision
+    # structurelle assumée (voir docs/Ecluse-FINESS-detecteur-spec.md, §2).
+    # Jamais annoté : un FinessDetector honnête le capte à confiance basse,
+    # ce qui apparaît comme un faux positif "finess" dans score.py -- la
+    # mesure de la collision, pas un bug à corriger.
+    return luhn_digit("".join(rng.choice("0123456789") for _ in range(8)))
+
+
 def trap_misc(rng: random.Random) -> str:
     return rng.choice([
         f"dossier n° {rng.randrange(10**8):08d}",
@@ -162,7 +193,7 @@ NOMS = ["Durand", "Nguyen", "Martin", "Benali", "Lefèvre", "Garcia", "Moreau",
         "Diallo", "Roux", "Schmitt", "Fontaine", "Petit", "Weber", "Marchal"]
 
 # Chaque gabarit : liste de segments. str = texte fixe ; tuple = (slot,)
-# slots : nir, rpps, iban, name, trap
+# slots : nir, rpps, iban, finess, name, trap
 TEMPLATES = [
     ["Le patient ", ("name",), " (NIR ", ("nir",), ") a été admis en cardiologie."],
     ["Admission de ", ("name",), ", numéro de sécurité sociale ", ("nir",), ", ce jour à 14h30."],
@@ -176,9 +207,20 @@ TEMPLATES = [
     ["Le remboursement de ", ("name",), " (NIR ", ("nir",), ") sera versé sur ", ("iban",), "."],
     ["Transfert du dossier ", ("nir",), " au Dr ", ("name",), ", RPPS ", ("rpps",), "."],
     ["Paie de ", ("name",), " : NIR ", ("nir",), ", IBAN ", ("iban",), ", service RH informé."],
+    # FINESS annoté avec indice de contexte (mot "FINESS" à proximité) :
+    # le détecteur doit le capter à confiance haute.
+    ["Établissement CH de Metz, FINESS ", ("finess_ctx",), "."],
+    ["FINESS ET : ", ("finess_ctx",), "."],
+    # FINESS annoté sans indice de contexte : capté à confiance basse
+    # (indistinguable d'un SIREN par la structure seule) -- toujours annoté
+    # en or, puisque c'est bien un FINESS, mais démontre le cas sans indice.
+    ["La structure porte le code ", ("finess_nctx",), " dans le tableur RH."],
     # Phrases pièges (aucune entité annotée)
     ["Contactez le secrétariat au ", ("trap_phone",), " pour toute question."],
     ["Le SIRET de l'établissement est ", ("trap_siret",), "."],
+    # Piège SIREN : même Luhn que le FINESS, jamais annoté -- un
+    # FinessDetector honnête le capte à confiance basse (voir trap_siren).
+    ["Le SIREN de la société est ", ("trap_siren",), "."],
     ["Attention, saisie erronée hier : ", ("trap_nir",), " a été rejeté par le contrôle."],
     ["L'IBAN ", ("trap_iban",), " a été refusé par la banque (clé invalide)."],
     ["Le numéro ", ("trap_rpps",), " ne correspond à aucun praticien connu."],
@@ -187,7 +229,7 @@ TEMPLATES = [
     ["Rappel : ", ("name",), " est attendu en consultation jeudi matin sans son dossier."],
 ]
 
-TARGETS = {"nir", "rpps", "iban"}
+TARGETS = {"nir", "rpps", "iban", "finess"}
 
 
 def build_doc(doc_id: int, rng: random.Random) -> dict:
@@ -213,10 +255,16 @@ def build_doc(doc_id: int, rng: random.Random) -> dict:
             v = fmt_iban(make_iban(rng), rng)
             entities.append({"type": "iban", "start": len(text), "end": len(text) + len(v)})
             text += v
+        elif slot == "finess_ctx" or slot == "finess_nctx":
+            v = fmt_finess(make_finess(rng), rng)
+            entities.append({"type": "finess", "start": len(text), "end": len(text) + len(v)})
+            text += v
         elif slot == "trap_phone":
             text += trap_phone(rng)
         elif slot == "trap_siret":
             text += trap_siret(rng)
+        elif slot == "trap_siren":
+            text += trap_siren(rng)
         elif slot == "trap_nir":
             text += trap_nir_bad_key(rng)
         elif slot == "trap_iban":
@@ -236,7 +284,7 @@ def main() -> None:
     args = parser.parse_args()
 
     rng = random.Random(args.seed)
-    counts = {"nir": 0, "rpps": 0, "iban": 0}
+    counts = {"nir": 0, "rpps": 0, "iban": 0, "finess": 0}
     with open(args.out, "w", encoding="utf-8") as f:
         for i in range(args.n):
             doc = build_doc(i, rng)

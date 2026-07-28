@@ -14,6 +14,11 @@ enum EntityType {
   /// IBAN français (International Bank Account Number, préfixe FR).
   iban,
 
+  /// Numéro FINESS — identifiant national d'établissement de santé
+  /// français. Partage son algorithme de clé (Luhn) avec le SIREN : voir
+  /// `FinessDetector` pour la collision structurelle assumée.
+  finess,
+
   /// Nom de personne (détection heuristique, voir `ecluse_redact`).
   nom,
 
