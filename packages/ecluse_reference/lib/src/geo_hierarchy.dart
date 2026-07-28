@@ -61,6 +61,7 @@ class GeoHierarchy {
   Map<String, List<String>>? _byNorm;
   Map<String, String>? _depReg;
   Map<String, String>? _regLabel;
+  Map<String, int>? _depPopulation;
 
   /// Charge les assets si nécessaire. Idempotent.
   Future<void> load() async {
@@ -70,6 +71,7 @@ class GeoHierarchy {
     final lines = gunzipLines(csvBytes);
     final byCode = <String, Commune>{};
     final byNorm = <String, List<String>>{};
+    final depPopulation = <String, int>{};
     for (final line in lines.skip(1)) {
       if (line.isEmpty) continue;
       final fields = line.split(';');
@@ -89,9 +91,15 @@ class GeoHierarchy {
       );
       byCode[code] = commune;
       byNorm.putIfAbsent(norm, () => []).add(code);
+      depPopulation.update(
+        dep,
+        (total) => total + (commune.pmun ?? 0),
+        ifAbsent: () => commune.pmun ?? 0,
+      );
     }
     _byCode = byCode;
     _byNorm = byNorm;
+    _depPopulation = depPopulation;
 
     final hierBytes = await _assets('geo_hierarchie.json');
     final hier = jsonDecode(utf8.decode(hierBytes)) as Map<String, dynamic>;
@@ -128,6 +136,16 @@ class GeoHierarchy {
   int? population(String communeCode) {
     _checkLoaded();
     return _byCode![communeCode]?.pmun;
+  }
+
+  /// Population totale d'un département (somme des `pmun` de ses communes,
+  /// `null` traité comme 0 — cf. [Commune.pmun]).
+  ///
+  /// Ajouté au Jalon 3 : nécessaire à l'estimateur de ré-identification
+  /// (`ecluse_reid`) après généralisation lieu commune → département.
+  int populationOfDep(String dep) {
+    _checkLoaded();
+    return _depPopulation![dep] ?? 0;
   }
 
   String? regionOfDep(String dep) {
