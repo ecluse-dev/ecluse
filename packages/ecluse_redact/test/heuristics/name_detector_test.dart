@@ -6,17 +6,19 @@ void main() {
   const detector = NameDetector();
 
   group('NameDetector', () {
-    test('civilité + prénom + nom -> confiance haute', () {
+    test('civilité + prénom + nom -> confiance haute, civilité préservée', () {
       final entities = detector.detect('M. Jean Dupont est arrivé.');
       expect(entities, hasLength(1));
-      expect(entities.single.value, 'M. Jean Dupont');
+      expect(entities.single.value, 'Jean Dupont');
+      expect(entities.single.start, 'M. '.length);
       expect(entities.single.confidence, 0.9);
     });
 
-    test('civilité + un seul mot capitalisé -> détecté', () {
+    test('civilité + un seul mot capitalisé -> détecté, civilité préservée',
+        () {
       final entities = detector.detect('Dr Martin recevra le patient.');
       expect(entities, hasLength(1));
-      expect(entities.single.value, 'Dr Martin');
+      expect(entities.single.value, 'Martin');
     });
 
     test('prénom connu + mot capitalisé -> confiance moyenne', () {
@@ -89,10 +91,12 @@ void main() {
       expect(masked, contains('[NOM_1]'));
     });
 
-    test('civilité + NOM en majuscules + prénom -> bloc complet', () {
+    test(
+        'civilité + NOM en majuscules + prénom -> bloc complet, civilité '
+        'préservée', () {
       final entities = detector.detect('Mme HOUSER Lorette est présente.');
       expect(entities, hasLength(1));
-      expect(entities.single.value, 'Mme HOUSER Lorette');
+      expect(entities.single.value, 'HOUSER Lorette');
       expect(entities.single.confidence, 0.9);
     });
 

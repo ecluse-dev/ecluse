@@ -66,18 +66,19 @@ final class NameDetector implements EntityDetector {
     final claimed = <_Range>[];
 
     for (final match in _civility.allMatches(text)) {
-      final start = match.start;
-      final end = match.end;
+      final name = match.group(1)!;
+      final nameStart =
+          match.end - name.length; // groupe 1 ancré en fin de match
       results.add(
         DetectedEntity(
           type: EntityType.nom,
-          start: start,
-          end: end,
-          value: text.substring(start, end),
+          start: nameStart,
+          end: match.end,
+          value: name,
           confidence: 0.9,
         ),
       );
-      claimed.add(_Range(start, end));
+      claimed.add(_Range(match.start, match.end)); // réserve civilité + nom
     }
 
     for (final match in _capitalizedWord.allMatches(text)) {
