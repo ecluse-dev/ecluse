@@ -1,0 +1,22 @@
+name: ecluse_ingest
+description: >-
+  Extraction de texte fiable (offsets stables) depuis des fichiers texte
+  natifs (.txt, .md, .docx) pour Écluse. Aucune détection ni pseudonymisation
+  ici : uniquement fichier -> texte brut, avec refus explicite hors
+  périmètre (jamais un texte vide silencieux sur un fichier non lu).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  archive: ^4.0.2
+
+dev_dependencies:
+  ecluse_core:
+    path: ../ecluse_core
+  ecluse_redact:
+    path: ../ecluse_redact
+  lints: ^4.0.0
+  test: ^1.25.0
