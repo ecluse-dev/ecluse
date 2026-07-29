@@ -49,5 +49,44 @@ void main() {
       expect(entities[1].value, '70160 Saint Rémy en Comté');
       expect(entities[1].confidence, 0.55);
     });
+
+    group('dosage (nombre + unité de mesure) — bug corrigé', () {
+      // "10000 UI" a la même forme syntaxique qu'un "code postal seul" :
+      // 5 chiffres + mot capitalisé. Une unité de mesure ne doit jamais
+      // être avalée comme s'il s'agissait d'une commune : effacer une
+      // donnée clinique (posologie) est plus grave qu'un faux négatif.
+      test('"innohep 10000 UI" -> aucune adresse détectée', () {
+        final entities =
+            detector.detect('Prescription : innohep 10000 UI en injection.');
+        expect(entities, isEmpty);
+      });
+
+      test(
+          'autres unités courantes après un nombre à 5 chiffres -> aucune '
+          'adresse détectée', () {
+        const dosages = [
+          'Perfusion de 10000 ML sur 24 heures.',
+          'Dose de 20000 UI administrée ce matin.',
+          'Poids du colis : 12000 KG.',
+        ];
+        for (final sentence in dosages) {
+          expect(
+            detector.detect(sentence),
+            isEmpty,
+            reason: 'faux positif sur : $sentence',
+          );
+        }
+      });
+
+      test(
+          'une vraie commune tout en majuscules reste détectée (non-'
+          'régression)', () {
+        // Convention administrative française réelle (bloc adresse en
+        // majuscules) : ne doit pas être écartée par le filtre anti-unité.
+        final entities = detector.detect('Adresse : 44000 NANTES.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, '44000 NANTES');
+      });
+    });
   });
 }

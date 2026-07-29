@@ -44,8 +44,11 @@ final class AdresseDetector implements EntityDetector {
 
   /// `code postal (5 chiffres) + commune`, réutilisé tel quel comme fin du
   /// motif complet et comme motif autonome pour une adresse sans numéro ni
-  /// type de voie.
-  static const _codePostalCommune = "\\d{5}\\s+[A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*"
+  /// type de voie. Le premier mot de la « commune » est capturé à part
+  /// (groupe nommé `commune`) pour pouvoir l'écarter s'il ressemble à une
+  /// unité de mesure plutôt qu'à un nom de lieu — voir [_looksLikeUnit].
+  static const _codePostalCommune =
+      "\\d{5}\\s+(?<commune>[A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*)"
       "(?:[ -][A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*){0,3}";
 
   static final RegExp _pattern = RegExp(
@@ -60,12 +63,30 @@ final class AdresseDetector implements EntityDetector {
     caseSensitive: false,
   );
 
+  /// Unités de mesure courantes (SI et posologie clinique) — un nombre à 5
+  /// chiffres suivi d'une unité (« 10000 UI », « 20000 ML ») a exactement
+  /// la même forme syntaxique qu'un code postal suivi d'une commune, mais
+  /// n'a rien d'une adresse : effacer une posologie serait une fuite de
+  /// donnée clinique plus grave que le faux négatif évité. Liste générale,
+  /// indépendante de tout document précis.
+  static const _measurementUnits = {
+    'ui', 'iu', 'mg', 'mcg', 'ng', 'pg', //
+    'ml', 'cl', 'dl', 'kg', 'mol', 'mmol', 'meq', //
+    'cm', 'mm', 'km', 'kcal', //
+  };
+
+  static bool _looksLikeUnit(RegExpMatch match) {
+    final commune = match.namedGroup('commune');
+    return commune != null && _measurementUnits.contains(commune.toLowerCase());
+  }
+
   @override
   List<DetectedEntity> detect(String text) {
     final results = <DetectedEntity>[];
     final claimed = <_Range>[];
 
     for (final match in _pattern.allMatches(text)) {
+      if (_looksLikeUnit(match)) continue;
       final start = match.start;
       final end = match.end;
       results.add(
@@ -81,6 +102,7 @@ final class AdresseDetector implements EntityDetector {
     }
 
     for (final match in _codePostalCommuneOnly.allMatches(text)) {
+      if (_looksLikeUnit(match)) continue;
       final start = match.start;
       final end = match.end;
       // Déjà couvert par une adresse complète (numéro + voie) ci-dessus :
