@@ -1,71 +1,97 @@
 <title>Écluse — démo</title>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link
+  rel="icon"
+  href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 36'%3E%3Cpath d='M16 2 L28 7.2 L28 17 C28 25.2 22.2 31.6 16 34 C9.8 31.6 4 25.2 4 17 L4 7.2 Z' fill='%231B2A36'/%3E%3Cpath d='M9.5 15 L16 9.5 L22.5 15' fill='none' stroke='%23F2F4F3' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+/>
 <style>
   :root {
     color-scheme: light dark;
-    --bg: #f2f5f8;
-    --panel-bg: #ffffff;
-    --text: #101c30;
-    --muted: #5b6b83;
-    --border: #d7e0ea;
 
-    --navy: #0b2545;
-    --navy-2: #123463;
-    --navy-contrast: #ffffff;
+    /* Palette de marque Écluse — cinq couleurs, jamais dérogées. */
+    --c-marine: #1B2A36;
+    --c-teal: #1E7A8C;
+    --c-vert: #5C9A2E;
+    --c-blanc: #F2F4F3;
+    --c-gris: #DCE3E2;
 
-    --teal: #0f9488;
-    --teal-dark: #0b6f66;
-    --teal-light: #e3f8f5;
-    --counter-fg: #0b2545;
+    --bg: var(--c-gris);
+    --panel-bg: var(--c-blanc);
+    --text: var(--c-marine);
+    --muted: color-mix(in srgb, var(--c-marine) 62%, var(--c-blanc) 38%);
+    --border: var(--c-gris);
 
-    --accent: var(--teal);
-    --accent-contrast: #ffffff;
-    --danger: #b3261e;
-    --danger-bg: #fdecea;
+    --navy: var(--c-marine);
+    --navy-contrast: var(--c-blanc);
 
-    --tag-nir-bg: #dbeafe;      --tag-nir-fg: #1e3a8a;
-    --tag-rpps-bg: #ccfbf1;     --tag-rpps-fg: #115e59;
-    --tag-iban-bg: #ede9fe;     --tag-iban-fg: #5b21b6;
-    --tag-nom-bg: #fef3c7;      --tag-nom-fg: #92400e;
-    --tag-datenaissance-bg: #fce7f3; --tag-datenaissance-fg: #9d174d;
-    --tag-adresse-bg: #dcfce7;  --tag-adresse-fg: #166534;
-    --tag-telephone-bg: #ffedd5; --tag-telephone-fg: #9a3412;
-    --tag-email-bg: #cffafe;    --tag-email-fg: #155e75;
-    --tag-etablissement-bg: #e0e7ff; --tag-etablissement-fg: #3730a3;
+    --teal: var(--c-teal);
+    --teal-dark: color-mix(in srgb, var(--c-teal) 80%, var(--c-marine) 20%);
+    --teal-light: color-mix(in srgb, var(--c-teal) 14%, var(--c-blanc) 86%);
+
+    --vert: var(--c-vert);
+    --vert-dark: color-mix(in srgb, var(--c-vert) 78%, var(--c-marine) 22%);
+    --vert-light: color-mix(in srgb, var(--c-vert) 14%, var(--c-blanc) 86%);
+
+    --counter-fg: var(--c-marine);
+    --accent: var(--c-teal);
+    --accent-contrast: var(--c-blanc);
+
+    --status-border: var(--c-marine);
+    --status-bg: color-mix(in srgb, var(--c-marine) 8%, var(--c-blanc) 92%);
+
+    --tag-nir-bg: color-mix(in srgb, var(--c-teal) 14%, var(--c-blanc) 86%);
+    --tag-nir-fg: var(--c-marine);
+    --tag-rpps-bg: color-mix(in srgb, var(--c-vert) 16%, var(--c-blanc) 84%);
+    --tag-rpps-fg: var(--c-marine);
+    --tag-iban-bg: color-mix(in srgb, var(--c-teal) 30%, var(--c-blanc) 70%);
+    --tag-iban-fg: var(--c-marine);
+    --tag-nom-bg: color-mix(in srgb, var(--c-vert) 30%, var(--c-blanc) 70%);
+    --tag-nom-fg: var(--c-marine);
+    --tag-datenaissance-bg: color-mix(in srgb, var(--c-teal) 70%, var(--c-marine) 30%);
+    --tag-datenaissance-fg: var(--c-blanc);
+    --tag-adresse-bg: color-mix(in srgb, var(--c-vert) 65%, var(--c-marine) 35%);
+    --tag-adresse-fg: var(--c-blanc);
+    --tag-telephone-bg: color-mix(in srgb, var(--c-marine) 12%, var(--c-blanc) 88%);
+    --tag-telephone-fg: var(--c-marine);
+    --tag-email-bg: color-mix(in srgb, var(--c-marine) 26%, var(--c-blanc) 74%);
+    --tag-email-fg: var(--c-marine);
+    --tag-etablissement-bg: var(--c-gris);
+    --tag-etablissement-fg: var(--c-marine);
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #0d1420;
-      --panel-bg: #132033;
-      --text: #e8eef7;
-      --muted: #93a3bc;
-      --border: #25344b;
+      --bg: var(--c-marine);
+      --panel-bg: color-mix(in srgb, var(--c-marine) 88%, var(--c-blanc) 12%);
+      --text: var(--c-blanc);
+      --muted: color-mix(in srgb, var(--c-blanc) 62%, var(--c-marine) 38%);
+      --border: color-mix(in srgb, var(--c-blanc) 20%, var(--c-marine) 80%);
 
-      --navy: #0a1a2e;
-      --navy-2: #0f2743;
-      --navy-contrast: #eaf2ff;
+      --teal-light: color-mix(in srgb, var(--c-teal) 22%, var(--c-marine) 78%);
+      --vert-light: color-mix(in srgb, var(--c-vert) 22%, var(--c-marine) 78%);
 
-      --teal: #2dd4bf;
-      --teal-dark: #14b8a6;
-      --teal-light: #0f2f2c;
-      --counter-fg: #eafff9;
+      --status-border: var(--c-blanc);
+      --status-bg: color-mix(in srgb, var(--c-blanc) 10%, var(--c-marine) 90%);
 
-      --accent: var(--teal);
-      --accent-contrast: #04211d;
-      --danger: #f2a3a3;
-      --danger-bg: #3a1f1f;
-
-      --tag-nir-bg: #1e3a5f;      --tag-nir-fg: #bfdbfe;
-      --tag-rpps-bg: #134e4a;     --tag-rpps-fg: #99f6e4;
-      --tag-iban-bg: #3b2e63;     --tag-iban-fg: #ddd6fe;
-      --tag-nom-bg: #4a3a12;      --tag-nom-fg: #fde68a;
-      --tag-datenaissance-bg: #4a1d3a; --tag-datenaissance-fg: #fbcfe8;
-      --tag-adresse-bg: #14342152; --tag-adresse-fg: #bbf7d0;
-      --tag-telephone-bg: #4a2a10; --tag-telephone-fg: #fed7aa;
-      --tag-email-bg: #123a42;    --tag-email-fg: #a5f3fc;
-      --tag-etablissement-bg: #2c2a63; --tag-etablissement-fg: #c7d2fe;
+      --tag-nir-bg: color-mix(in srgb, var(--c-teal) 26%, var(--c-marine) 74%);
+      --tag-nir-fg: var(--c-blanc);
+      --tag-rpps-bg: color-mix(in srgb, var(--c-vert) 28%, var(--c-marine) 72%);
+      --tag-rpps-fg: var(--c-blanc);
+      --tag-iban-bg: color-mix(in srgb, var(--c-teal) 46%, var(--c-marine) 54%);
+      --tag-iban-fg: var(--c-blanc);
+      --tag-nom-bg: color-mix(in srgb, var(--c-vert) 46%, var(--c-marine) 54%);
+      --tag-nom-fg: var(--c-blanc);
+      --tag-datenaissance-bg: color-mix(in srgb, var(--c-teal) 68%, var(--c-marine) 32%);
+      --tag-datenaissance-fg: var(--c-blanc);
+      --tag-adresse-bg: color-mix(in srgb, var(--c-vert) 68%, var(--c-marine) 32%);
+      --tag-adresse-fg: var(--c-blanc);
+      --tag-telephone-bg: color-mix(in srgb, var(--c-blanc) 14%, var(--c-marine) 86%);
+      --tag-telephone-fg: var(--c-blanc);
+      --tag-email-bg: color-mix(in srgb, var(--c-blanc) 26%, var(--c-marine) 74%);
+      --tag-email-fg: var(--c-marine);
+      --tag-etablissement-bg: color-mix(in srgb, var(--c-gris) 55%, var(--c-marine) 45%);
+      --tag-etablissement-fg: var(--c-blanc);
     }
   }
 
@@ -87,33 +113,40 @@
   }
 
   .site-header {
-    background: linear-gradient(135deg, var(--navy), var(--navy-2));
+    background: var(--navy);
   }
 
   .site-header .container {
     display: flex;
     align-items: flex-start;
     gap: 0.9rem;
-    padding-top: 2rem;
+    padding-top: 1.75rem;
     padding-bottom: 1.75rem;
   }
 
-  .brand-icon {
+  .brand-badge {
     flex: 0 0 auto;
-    color: var(--teal);
-    margin-top: 0.2rem;
+    margin-top: 0.1rem;
   }
 
   .site-header h1 {
-    margin: 0 0 0.35rem;
+    margin: 0 0 0.3rem;
     color: var(--navy-contrast);
     font-size: 1.45rem;
     letter-spacing: -0.01em;
   }
 
-  .site-header p {
+  .tagline {
+    margin: 0 0 0.6rem;
+    color: var(--c-teal);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+  }
+
+  .site-header p.lede {
     margin: 0;
-    color: rgba(255, 255, 255, 0.78);
+    color: color-mix(in srgb, var(--navy-contrast) 82%, transparent);
     max-width: 68ch;
     font-size: 0.95rem;
   }
@@ -179,6 +212,7 @@
     background: var(--panel-bg);
     color: var(--text);
     resize: vertical;
+    width: 100%;
   }
 
   textarea:focus, input[type=text]:focus {
@@ -195,10 +229,11 @@
   }
 
   #status.error {
-    color: var(--danger);
-    background: var(--danger-bg);
+    color: var(--text);
+    background: var(--status-bg);
+    border-left: 3px solid var(--status-border);
     padding: 0.5rem 0.7rem;
-    border-radius: 8px;
+    border-radius: 4px;
   }
 
   .legend {
@@ -226,47 +261,58 @@
     padding: 0;
     border-radius: 3px;
     display: inline-block;
+    border: 1px solid color-mix(in srgb, var(--c-marine) 22%, transparent);
   }
 
   /* --- Séquence des 4 panneaux (le trajet du texte à travers le sas) --- */
+  /* Mobile-first : empilé par défaut, mis en ligne à partir de 701px. */
 
   .flow {
     display: flex;
-    flex-wrap: wrap;
-    align-items: stretch;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 1.4rem;
     margin-top: 0.25rem;
   }
 
   .flow-arrow {
-    flex: 0 0 auto;
-    align-self: center;
-    display: flex;
+    display: none;
+  }
+
+  .panel:not(:first-child) {
+    position: relative;
+    margin-top: 1.4rem;
+  }
+
+  .panel:not(:first-child)::before {
+    content: "↓";
+    position: absolute;
+    top: -1.6rem;
+    left: 50%;
+    transform: translateX(-50%);
     color: var(--teal);
-    font-size: 1.6rem;
+    font-size: 1.3rem;
     font-weight: 700;
   }
 
-  @media (max-width: 1100px) {
-    .flow-arrow { display: none; }
-  }
-
-  @media (max-width: 700px) {
-    .flow { flex-direction: column; }
-
-    .panel:not(:first-child) {
-      position: relative;
-      margin-top: 1.4rem;
+  @media (min-width: 701px) {
+    .flow {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 1rem;
     }
 
-    .panel:not(:first-child)::before {
-      content: "↓";
-      position: absolute;
-      top: -1.6rem;
-      left: 50%;
-      transform: translateX(-50%);
+    .panel:not(:first-child) { margin-top: 0; }
+    .panel:not(:first-child)::before { content: none; }
+  }
+
+  @media (min-width: 1101px) {
+    .flow-arrow {
+      flex: 0 0 auto;
+      align-self: center;
+      display: flex;
       color: var(--teal);
-      font-size: 1.3rem;
+      font-size: 1.6rem;
       font-weight: 700;
     }
   }
@@ -281,7 +327,14 @@
     display: flex;
     flex-direction: column;
     min-height: 240px;
-    box-shadow: 0 1px 2px rgba(11, 37, 69, 0.05);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--c-marine) 6%, transparent);
+  }
+
+  /* Panneau 4 : l'aboutissement du trajet — la preuve de réversibilité. */
+  .panel-restored {
+    border-color: var(--vert);
+    border-width: 1.5px;
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--c-vert) 18%, transparent);
   }
 
   .panel-head {
@@ -307,11 +360,28 @@
     font-weight: 700;
   }
 
+  .step-badge--done {
+    background: var(--vert-dark);
+  }
+
   .panel-head h2 {
     margin: 0;
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--text);
+  }
+
+  .restored-tag {
+    margin-left: auto;
+    flex: 0 0 auto;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--vert-dark);
+    background: var(--vert-light);
+    border: 1px solid var(--vert);
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    white-space: nowrap;
   }
 
   .counter-wrap {
@@ -367,18 +437,45 @@
   .tag-telephone { background: var(--tag-telephone-bg); color: var(--tag-telephone-fg); }
   .tag-email { background: var(--tag-email-bg); color: var(--tag-email-fg); }
   .tag-etablissement { background: var(--tag-etablissement-bg); color: var(--tag-etablissement-fg); }
+
+  .site-footer {
+    border-top: 1px solid var(--border);
+    margin-top: 1rem;
+  }
+
+  .site-footer .container {
+    padding-top: 1.1rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .site-footer p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+    max-width: 68ch;
+  }
 </style>
 
 <header class="site-header">
   <div class="container">
-    <svg class="brand-icon" width="30" height="30" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-      <rect x="2" y="4" width="6" height="20" rx="1.5" fill="currentColor" opacity="0.9" />
-      <rect x="20" y="4" width="6" height="20" rx="1.5" fill="currentColor" opacity="0.9" />
-      <path d="M10 14h8M15 10l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    <svg class="brand-badge" width="34" height="38" viewBox="0 0 32 36" fill="none" aria-hidden="true">
+      <defs>
+        <clipPath id="ecluseShield">
+          <path d="M16 2 L28 7.2 L28 17 C28 25.2 22.2 31.6 16 34 C9.8 31.6 4 25.2 4 17 L4 7.2 Z" />
+        </clipPath>
+      </defs>
+      <path d="M16 2 L28 7.2 L28 17 C28 25.2 22.2 31.6 16 34 C9.8 31.6 4 25.2 4 17 L4 7.2 Z" fill="#F2F4F3" />
+      <g clip-path="url(#ecluseShield)">
+        <rect x="2" y="21" width="28" height="15" fill="#1E7A8C" />
+        <rect x="2" y="27" width="28" height="9" fill="#5C9A2E" />
+      </g>
+      <path d="M16 2 L28 7.2 L28 17 C28 25.2 22.2 31.6 16 34 C9.8 31.6 4 25.2 4 17 L4 7.2 Z" stroke="#1B2A36" stroke-width="1.1" />
+      <path d="M9.5 14.5 L16 9 L22.5 14.5" stroke="#5C9A2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
     </svg>
     <div>
       <h1>Écluse — le sas RGPD entre vos prompts et les LLM</h1>
-      <p>
+      <p class="tagline">Dites oui à l'IA.</p>
+      <p class="lede">
         Un texte part masqué vers l'IA, et revient complet avec les vraies
         informations remises en place localement. La table de correspondance
         entre jetons et valeurs réelles ne quitte jamais ce serveur.
@@ -455,10 +552,11 @@
 
     <div class="flow-arrow" aria-hidden="true">→</div>
 
-    <section class="panel">
+    <section class="panel panel-restored">
       <div class="panel-head">
-        <span class="step-badge">4</span>
+        <span class="step-badge step-badge--done">4</span>
         <h2>Résultat final restauré</h2>
+        <span class="restored-tag">Réversible</span>
       </div>
       <div class="panel-content empty" id="panel-restored">
         Le texte restauré apparaîtra ici.
@@ -466,6 +564,16 @@
     </section>
   </div>
 </main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>
+      Écluse réduit le risque, il ne l'annule pas. Pseudonymisation
+      réversible — pas d'anonymisation destructive : la table de
+      correspondance reste locale, jamais journalisée.
+    </p>
+  </div>
+</footer>
 
 <script>
   const TYPE_LABELS = {
