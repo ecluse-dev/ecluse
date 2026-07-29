@@ -106,6 +106,96 @@ void main() {
       expect(entities, isEmpty);
     });
 
+    group('ordre NOM Prénom (sans majuscules) — bug corrigé', () {
+      // Avant correction : seul le prénom connu était capté, le nom de
+      // famille qui le précède (non tout-majuscules) fuitait en clair.
+      test('"Dubreuil Thomas" -> bloc complet, pas seulement le prénom', () {
+        final entities = detector.detect('Dubreuil Thomas a signé le '
+            'contrat.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Dubreuil Thomas');
+        expect(entities.single.confidence, 0.6);
+      });
+
+      test('"Valette Sophie" -> bloc complet (le nom ne doit pas fuiter)', () {
+        final entities = detector.detect('Valette Sophie a signé le '
+            'contrat.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Valette Sophie');
+      });
+
+      test('"Roche Chantal" -> bloc complet (le nom ne doit pas fuiter)', () {
+        final entities = detector.detect('Roche Chantal a signé le '
+            'contrat.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Roche Chantal');
+      });
+
+      test('"Vasseur Marc" -> bloc complet (le nom ne doit pas fuiter)', () {
+        final entities = detector.detect('Vasseur Marc a signé le contrat.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Vasseur Marc');
+      });
+    });
+
+    group('prénom composé (tiret) — bug corrigé', () {
+      // Avant correction : le motif capitalisé gourmand avalait le tiret
+      // ("Jean-Marc" comme un seul jeton), qui ne correspondait à aucune
+      // entrée du gazetteer -> aucune détection, fuite totale.
+      test('"VALETTE Jean-Marc" -> bloc complet, prénom composé reconnu', () {
+        final entities = detector.detect('VALETTE Jean-Marc a signé le '
+            'contrat.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'VALETTE Jean-Marc');
+        expect(entities.single.confidence, 0.6);
+      });
+
+      test('prénom composé après civilité reste géré normalement', () {
+        final entities = detector.detect('Mme Anne-Sophie Perrin est '
+            'arrivée.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Anne-Sophie Perrin');
+      });
+
+      test('un mot composé qui n\'est pas un prénom connu reste ignoré', () {
+        final entities = detector.detect('Peut-être qu\'il viendra '
+            'demain.');
+        expect(entities, isEmpty);
+      });
+    });
+
+    test('acronymes métier en majuscules -> jamais masqués (non-régression)',
+        () {
+      const acronymSentences = [
+        'Hier, le SSIAD a coordonné la visite.',
+        'La CARSAT a validé le dossier.',
+        'Le HAD intervient à domicile.',
+        'La RCP se tient jeudi.',
+        'Le MSP accueille de nouveaux patients.',
+        'La PCH a été accordée.',
+        'L\'APA couvre une partie des frais.',
+        'L\'IDE est passée ce matin.',
+        'L\'IDEC a validé le protocole.',
+        'L\'ESAT emploie 40 personnes.',
+        'Le CSE a voté à l\'unanimité.',
+      ];
+      for (final sentence in acronymSentences) {
+        expect(
+          detector.detect(sentence),
+          isEmpty,
+          reason: 'faux positif sur : $sentence',
+        );
+      }
+    });
+
+    test('civilité + nom seul reste inchangée par la règle bidirectionnelle',
+        () {
+      final entities = detector.detect('Dr Vasseur recevra le patient.');
+      expect(entities, hasLength(1));
+      expect(entities.single.value, 'Vasseur');
+      expect(entities.single.confidence, 0.9);
+    });
+
     test('type exposé est EntityType.nom', () {
       expect(detector.type, EntityType.nom);
     });

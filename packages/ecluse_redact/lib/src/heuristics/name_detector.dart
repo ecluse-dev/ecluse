@@ -12,14 +12,21 @@ import 'french_first_names.dart';
 ///    `Me`) suivie d'un ou deux mots capitalisés → confiance haute (0.9) :
 ///    l'indice est fort et rarement un faux positif.
 /// 2. Un **prénom français connu** (voir [frenchFirstNames]) adjacent à un
-///    mot capitalisé (nom de famille supposé), avant ou après lui →
-///    confiance moyenne (0.6). Si le mot adjacent est **entièrement en
-///    majuscules** (convention courante des formulaires administratifs
-///    français, ex. « DANNER Laurent »), il est capté même s'il précède le
-///    prénom ; un mot capitalisé « normal » n'est lui capté que s'il suit
-///    le prénom (ex. « Sophie Lambert »). Un prénom peut aussi être un nom
+///    mot capitalisé (nom de famille supposé) → confiance moyenne (0.6).
+///    Règle **bidirectionnelle** : le mot capitalisé peut précéder le
+///    prénom (ordre « Nom Prénom », ex. « Dubreuil Thomas », ou convention
+///    administrative tout-majuscules « DANNER Laurent ») ou le suivre
+///    (ordre « Prénom Nom », ex. « Sophie Lambert »), sans condition de
+///    casse dans un sens comme dans l'autre. Un prénom **composé** avec
+///    tiret (« Jean-Marc », « Anne-Sophie ») est reconnu dès qu'un de ses
+///    segments est un prénom connu — le motif capitalisé gourmand avale
+///    déjà le tiret comme un seul jeton, donc le comparer tel quel au
+///    gazetteer échouerait toujours. Un prénom peut aussi être un nom
 ///    commun capitalisé par erreur, ou le mot adjacent n'être pas un nom de
-///    famille : d'où la confiance moyenne plutôt que haute.
+///    famille : d'où la confiance moyenne plutôt que haute. Limite connue
+///    de cette symétrie : un mot capitalisé par simple position de début
+///    de phrase (salutation, connecteur) et adjacent à un prénom connu peut
+///    être capturé à tort — voir `LIMITES.md`.
 /// 3. Un **prénom français connu** utilisé seul, sans nom de famille qui
 ///    suit (ex. « Sophie rappelle que… » dans un compte rendu où l'on
 ///    ne mentionne plus qu'un prénom une fois la personne présentée) →
@@ -46,10 +53,6 @@ final class NameDetector implements EntityDetector {
 
   static final RegExp _capitalizedWord = RegExp(
     r"[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*",
-  );
-
-  static final RegExp _allCapsWord = RegExp(
-    r'^[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ]{2,}$',
   );
 
   /// Mot capitalisé suivi uniquement d'espaces jusqu'à la fin de la chaîne
@@ -83,34 +86,30 @@ final class NameDetector implements EntityDetector {
 
     for (final match in _capitalizedWord.allMatches(text)) {
       final word = match.group(0)!;
-      final normalized = word.toLowerCase();
-      if (!frenchFirstNames.contains(normalized)) continue;
+      if (!_looksLikeKnownFirstName(word)) continue;
       if (claimed.any((r) => r.overlaps(match.start, match.end))) continue;
 
-      final beforeAllCaps = _matchPrevAllCapsWord(text, match.start);
-      final hasFreeLastNameBefore = beforeAllCaps != null &&
-          !claimed.any(
-            (r) => r.overlaps(beforeAllCaps.start, beforeAllCaps.end),
-          );
+      // Règle bidirectionnelle : un nom de famille supposé peut précéder
+      // ou suivre le prénom reconnu, sans condition de casse dans un sens
+      // comme dans l'autre (voir le commentaire de classe).
+      final before = _matchPrevCapitalizedWord(text, match.start);
+      final hasFreeLastNameBefore = before != null &&
+          !claimed.any((r) => r.overlaps(before.start, before.end));
 
-      final afterFirstName = _matchNextCapitalizedWord(text, match.end);
-      final hasFreeLastNameAfter = afterFirstName != null &&
-          !claimed.any(
-            (r) => r.overlaps(afterFirstName.start, afterFirstName.end),
-          );
+      final after = _matchNextCapitalizedWord(text, match.end);
+      final hasFreeLastNameAfter = after != null &&
+          !claimed.any((r) => r.overlaps(after.start, after.end));
 
       final int start;
       final int end;
       final double confidence;
       if (hasFreeLastNameBefore) {
-        // Convention "NOM Prénom" (formulaires administratifs) : le nom de
-        // famille en majuscules précède le prénom reconnu.
-        start = beforeAllCaps.start;
+        start = before.start;
         end = match.end;
         confidence = 0.6;
       } else if (hasFreeLastNameAfter) {
         start = match.start;
-        end = afterFirstName.end;
+        end = after.end;
         confidence = 0.6;
       } else {
         start = match.start;
@@ -133,6 +132,20 @@ final class NameDetector implements EntityDetector {
     return results;
   }
 
+  /// [word] est-il un prénom français connu, tel quel ou via l'un de ses
+  /// segments s'il s'agit d'un prénom composé (« Jean-Marc », « Anne-
+  /// Sophie ») ? Le motif capitalisé englobe déjà le tiret dans un seul
+  /// jeton (voir [_capitalizedWord]), donc un prénom composé n'apparaît
+  /// jamais tel quel dans [frenchFirstNames] : il faut regarder ses
+  /// segments plutôt que le jeton entier.
+  static bool _looksLikeKnownFirstName(String word) {
+    if (frenchFirstNames.contains(word.toLowerCase())) return true;
+    if (!word.contains('-')) return false;
+    return word
+        .split('-')
+        .any((part) => frenchFirstNames.contains(part.toLowerCase()));
+  }
+
   /// Cherche le mot capitalisé suivant immédiatement (séparé uniquement par
   /// des espaces) la position [from]. Retourne `null` s'il n'y en a pas.
   ///
@@ -145,17 +158,14 @@ final class NameDetector implements EntityDetector {
     return _capitalizedWord.matchAsPrefix(text, gapMatch.end);
   }
 
-  /// Cherche un mot **entièrement en majuscules** (≥2 lettres) séparé
+  /// Cherche un mot capitalisé (majuscules ou casse normale) séparé
   /// uniquement par des espaces de la position [before]. Retourne `null`
-  /// s'il n'y en a pas, ou si le mot trouvé n'est pas tout en majuscules
-  /// (un mot capitalisé « normal » avant le prénom n'est volontairement pas
-  /// capté ici, pour éviter de fusionner avec un mot de début de phrase).
-  static _WordSpan? _matchPrevAllCapsWord(String text, int before) {
+  /// s'il n'y en a pas.
+  static _WordSpan? _matchPrevCapitalizedWord(String text, int before) {
     final head = text.substring(0, before);
     final match = _wordBeforeEnd.firstMatch(head);
     if (match == null) return null;
     final word = match.group(1)!;
-    if (!_allCapsWord.hasMatch(word)) return null;
     // Le groupe capturé est en tête du motif : son début coïncide avec
     // celui du match entier.
     return _WordSpan(match.start, match.start + word.length);

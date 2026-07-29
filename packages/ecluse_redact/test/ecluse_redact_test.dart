@@ -8,12 +8,14 @@ void main() {
       final result = await Ecluse.redact(sample.text);
 
       expect(result.entities, isNotEmpty);
-      expect(result.maskedText, isNot(contains('Vasseur')));
+      expect(result.maskedText, isNot(contains('Chevalier')));
       expect(result.maskedText, isNot(contains('Bonnard')));
-      expect(result.maskedText, isNot(contains('1 88 05 44 056 003 25')));
-      expect(result.maskedText, isNot(contains('FR40')));
+      expect(result.maskedText, isNot(contains('2 90 06 12 205 078 92')));
+      expect(result.maskedText, isNot(contains('10200876547')));
+      expect(result.maskedText, isNot(contains('FR51')));
       expect(result.maskedText, contains('[NOM_1]'));
       expect(result.maskedText, contains('[NIR_1]'));
+      expect(result.maskedText, contains('[RPPS_1]'));
       expect(result.maskedText, contains('[IBAN_1]'));
       expect(result.maskedText, contains('[ETABLISSEMENT_1]'));
 
@@ -26,10 +28,22 @@ void main() {
       final result = await Ecluse.redact(sample.text);
 
       expect(result.entities, isNotEmpty);
-      expect(result.maskedText, isNot(contains('Lambert')));
-      expect(result.maskedText, isNot(contains('Herbin')));
-      expect(result.maskedText, isNot(contains('Ferrand')));
-      expect(result.maskedText, contains('[ETABLISSEMENT_1]'));
+      expect(result.maskedText, isNot(contains('Belhadj')));
+      expect(result.maskedText, isNot(contains('Rambert')));
+      expect(result.maskedText, isNot(contains('Costa')));
+      expect(result.maskedText, isNot(contains('1 85 03 44 123 045 28')));
+      expect(result.maskedText, isNot(contains('10100987659')));
+      expect(result.maskedText, isNot(contains('FR56')));
+      // Posologie clinique, pas une adresse : ne doit jamais être avalée
+      // par le détecteur d'adresse (bug corrigé — voir AdresseDetector).
+      expect(result.maskedText, contains('innohep 10000 UI'));
+      // Sigles métier : jamais masqués.
+      expect(result.maskedText, contains('SSIAD'));
+      expect(result.maskedText, contains('CARSAT'));
+      expect(result.maskedText, contains('RCP'));
+      expect(result.maskedText, contains('[NIR_1]'));
+      expect(result.maskedText, contains('[RPPS_1]'));
+      expect(result.maskedText, contains('[IBAN_1]'));
 
       final restored = Ecluse.restore(result.maskedText, result.mapping);
       expect(restored, equals(sample.text));
