@@ -1,0 +1,38 @@
+# Revue de sécurité Écluse — s'exécute sur chaque pull request.
+# Emplacement dans le repo : .github/workflows/security-review.yml
+#
+# La clé N'EST PAS dans ce fichier (conforme à ta règle : jamais de secret
+# committé). Elle vit dans un secret de dépôt GitHub nommé CLAUDE_API_KEY.
+# Voir les instructions d'installation pour le créer.
+#
+# ⚠️ L'action n'est pas durcie contre l'injection de prompt : à réserver aux
+# PR de confiance. Ton repo étant public et forkable (Apache 2.0), active
+# "Require approval for all external contributors" dans Settings > Actions
+# avant d'accepter une PR externe.
+#
+# 💶 Chaque exécution envoie le diff de la PR à l'API Anthropic (facturé au
+# token). Ce ne sont que des diffs de code — tes fichiers internes sont
+# gitignorés, donc absents des diffs.
+
+name: Security Review
+
+permissions:
+  pull-requests: write   # nécessaire pour commenter la PR
+  contents: read
+
+on:
+  pull_request:
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+
+      - uses: anthropics/claude-code-security-review@main
+        with:
+          comment-pr: true
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
