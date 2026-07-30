@@ -38,6 +38,20 @@ import 'french_first_names.dart';
 /// phrase), n'est **jamais** masqué : ce serait trop de faux positifs pour
 /// une démonstration crédible.
 ///
+/// **Deuxième passe — mentions partielles rattrapées via un patronyme déjà
+/// établi.** Une fois les mentions ci-dessus détectées avec certitude, leur
+/// patronyme est extrait (voir [_extractSurname]) et recherché ailleurs
+/// dans le **même document** — jamais dans une liste externe. Couvre :
+/// nom de famille seul après une mention complète (« Dr Costa » après
+/// « Dr Nadia Costa »), initiale + nom (« S. Reynaud » — seul le patronyme
+/// est masqué, l'initiale reste visible comme une civilité), et patronyme
+/// suivi d'un prénom non reconnu par le gazetteer (« Morel Hélène » après
+/// « MOREL Antoine » — jeton **différent**, décidé par [Ecluse.redact] sur
+/// la base du prénom distinct, pas par ce détecteur). Confiance 0.6, comme
+/// l'appariement bidirectionnel dont cette passe réutilise la logique de
+/// mot adjacent. Un patronyme qui coïncide avec un sigle exclu (voir
+/// [_excludedAcronyms]) n'est jamais retenu pour cette recherche.
+///
 /// Sera remplacé en phase 2 par un modèle NER local (voir ROADMAP.md).
 final class NameDetector implements EntityDetector {
   const NameDetector();
@@ -158,8 +172,88 @@ final class NameDetector implements EntityDetector {
       claimed.add(_Range(start, end));
     }
 
+    // --- Deuxième passe : rattrapage des mentions partielles via un
+    // patronyme déjà établi par la première passe (voir le commentaire de
+    // classe). Ne s'exécute que si au moins un patronyme fiable a été
+    // extrait — sur un document sans mention complète, rien ne change.
+    final knownSurnames = <String>{};
+    for (final entity in results) {
+      final surname = _extractSurname(entity);
+      if (surname == null || _isExcludedAcronym(surname)) continue;
+      knownSurnames.add(surname.toLowerCase());
+    }
+
+    if (knownSurnames.isNotEmpty) {
+      for (final match in _capitalizedWord.allMatches(text)) {
+        final word = match.group(0)!;
+        if (_isExcludedAcronym(word)) continue;
+        if (!knownSurnames.contains(word.toLowerCase())) continue;
+        if (claimed.any((r) => r.overlaps(match.start, match.end))) continue;
+
+        // Uniquement la direction « après » (pas « avant ») : sans
+        // vérification gazetteer sur le mot adjacent — le principe même de
+        // cette passe est de couvrir des prénoms absents du gazetteer —
+        // apparier vers l'avant est nettement moins exposé aux faux
+        // positifs qu'apparier vers l'arrière, où un mot capitalisé de
+        // début de phrase précède très souvent un patronyme sans aucun
+        // rapport (voir la limite déjà documentée sur la règle
+        // bidirectionnelle).
+        final after = _matchNextCapitalizedWord(text, match.end);
+        final hasFreeWordAfter = after != null &&
+            !claimed.any((r) => r.overlaps(after.start, after.end));
+
+        final int start;
+        final int end;
+        if (hasFreeWordAfter) {
+          start = match.start;
+          end = after.end;
+        } else {
+          start = match.start;
+          end = match.end;
+        }
+        results.add(
+          DetectedEntity(
+            type: EntityType.nom,
+            start: start,
+            end: end,
+            value: text.substring(start, end),
+            confidence: 0.6,
+          ),
+        );
+        claimed.add(_Range(start, end));
+      }
+    }
+
     results.sort((a, b) => a.start - b.start);
     return results;
+  }
+
+  /// Patronyme extrait d'une entité **certaine** (civilité, ou couple
+  /// prénom+nom bidirectionnel), utilisé pour amorcer la deuxième passe.
+  /// Retourne `null` quand aucun patronyme fiable ne peut être isolé — un
+  /// prénom isolé (confiance 0.5, sans nom de famille adjacent) n'établit
+  /// aucun patronyme.
+  static String? _extractSurname(DetectedEntity entity) {
+    final words = entity.value.trim().split(RegExp(r'\s+'));
+    if (words.length == 1) {
+      // Un seul mot : fiable uniquement depuis la civilité (confiance
+      // 0.9), où le mot qui suit « Dr »/« Mme »/etc. est conventionnellement
+      // un nom de famille en usage professionnel français.
+      return entity.confidence == 0.9 ? words.first : null;
+    }
+    if (words.length == 2) {
+      final first = words[0];
+      final second = words[1];
+      final firstIsFirstName = _looksLikeKnownFirstName(first);
+      final secondIsFirstName = _looksLikeKnownFirstName(second);
+      if (firstIsFirstName && !secondIsFirstName) return second;
+      if (secondIsFirstName && !firstIsFirstName) return first;
+      // Ambigu (aucun des deux mots reconnu comme prénom, ou les deux) :
+      // convention la plus fréquente en français courant, « Prénom Nom »
+      // -> le second mot est retenu comme patronyme.
+      return second;
+    }
+    return null;
   }
 
   /// [word] est-il un prénom français connu, tel quel ou via l'un de ses
