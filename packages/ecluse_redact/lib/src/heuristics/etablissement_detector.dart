@@ -30,10 +30,14 @@ final class EtablissementDetector implements EntityDetector {
     'Centre',
   ];
 
+  // `[ \t]` plutôt que `\s` : un nom d'établissement ne traverse jamais un
+  // saut de ligne dans un document réel (titre suivi d'une ligne blanche
+  // puis d'un mot capitalisé sans rapport, par exemple) — `\s` matcherait
+  // aussi le saut de ligne et fusionnerait les deux à tort.
   static final RegExp _pattern = RegExp(
     '(?:${_keywords.join('|')})'
-    r"\s+(?:d['’]accueil\s+|de\s+|des\s+|du\s+|d['’])?"
-    r"[A-ZÀ-Ÿ][\wÀ-ÿ'’\-]*(?:\s+[A-ZÀ-Ÿ][\wÀ-ÿ'’\-]*){0,3}",
+    r"[ \t]+(?:d['’]accueil[ \t]+|de[ \t]+|des[ \t]+|du[ \t]+|d['’])?"
+    r"[A-ZÀ-Ÿ][\wÀ-ÿ'’\-]*(?:[ \t]+[A-ZÀ-Ÿ][\wÀ-ÿ'’\-]*){0,3}",
   );
 
   @override

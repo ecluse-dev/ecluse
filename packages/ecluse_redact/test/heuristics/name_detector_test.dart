@@ -188,6 +188,54 @@ void main() {
       }
     });
 
+    group('sigles cliniques et d\'échelles — bug corrigé', () {
+      // "EVA" (Échelle Visuelle Analogique) est AUSSI un prénom français
+      // connu du gazetteer : contrairement aux sigles administratifs
+      // (jamais un prénom), il fallait une exclusion explicite, pas
+      // seulement l'absence du gazetteer.
+      test('"EVA" dans son contexte clinique réel -> jamais un nom', () {
+        final entities = detector.detect('Douleur évaluée : bolus 1mg si '
+            'EVA > 4.');
+        expect(entities, isEmpty);
+      });
+
+      test('sigles cliniques/échelles courants -> jamais masqués', () {
+        const clinicalSentences = [
+          'Le score MMS est stable.',
+          'Le GIR a été réévalué ce mois-ci.',
+          'L\'ECG ne montre pas d\'anomalie.',
+          'La TSH est dans les normes.',
+          'L\'IMC du patient est de 24.',
+        ];
+        for (final sentence in clinicalSentences) {
+          expect(
+            detector.detect(sentence),
+            isEmpty,
+            reason: 'faux positif sur : $sentence',
+          );
+        }
+      });
+
+      test(
+          '"EVA" ne fusionne pas non plus comme faux nom de famille '
+          'adjacent à un prénom connu', () {
+        final entities = detector.detect('Julien EVA a complété la '
+            'grille.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Julien');
+        expect(entities.single.confidence, 0.5);
+      });
+
+      test(
+          '"Eva" en casse normale reste un vrai prénom détecté (non-'
+          'régression : seule la forme MAJUSCULE du sigle est exclue)', () {
+        final entities = detector.detect('Eva rappelle que le dossier '
+            'avance.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Eva');
+      });
+    });
+
     test('civilité + nom seul reste inchangée par la règle bidirectionnelle',
         () {
       final entities = detector.detect('Dr Vasseur recevra le patient.');

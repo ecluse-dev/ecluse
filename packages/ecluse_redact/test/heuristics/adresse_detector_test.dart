@@ -88,5 +88,45 @@ void main() {
         expect(entities.single.value, '44000 NANTES');
       });
     });
+
+    group('span ne traverse jamais un saut de ligne — bug corrigé', () {
+      // Reproduction exacte du bug : une fenêtre de 5 chiffres à
+      // l'intérieur d'un plus long numéro (RPPS invalide, donc non masqué
+      // par ailleurs) était captée comme "code postal", avalant ensuite le
+      // saut de ligne suivant et le début de la ligne suivante.
+      test(
+          'fenêtre de 5 chiffres enchâssée dans un numéro plus long -> '
+          'aucune adresse, aucun caractère avalé', () {
+        const text = 'RPPS 10100458923\n\nM. ALBERT Francois '
+            '(Pédicure-Podologue)';
+        final entities = detector.detect(text);
+        expect(entities, isEmpty, reason: 'faux positif sur : $text');
+      });
+
+      test(
+          'code postal et commune sur deux lignes séparées -> non '
+          'détecté (contrairement à la même ligne)', () {
+        final entities = detector.detect('70160\nSaint Rémy en Comté');
+        expect(entities, isEmpty);
+      });
+
+      test(
+          'code postal + commune sur la même ligne reste détecté '
+          '(non-régression)', () {
+        final entities = detector.detect('70160 Saint Rémy en Comté');
+        expect(entities, hasLength(1));
+      });
+
+      test(
+          'adresse complète encadrée par du texte multi-ligne -> span '
+          'exact, rien avalé', () {
+        const text = 'Ligne précédente.\n'
+            '12 rue des Lilas, 75015 Paris\n'
+            'Ligne suivante.';
+        final entities = detector.detect(text);
+        expect(entities, hasLength(1));
+        expect(entities.single.value, '12 rue des Lilas, 75015 Paris');
+      });
+    });
   });
 }

@@ -22,10 +22,15 @@ final class DateNaissanceDetector implements EntityDetector {
     'décembre', 'decembre', //
   ];
 
+  // `[ \t]` plutôt que `\s` partout : une date de naissance (ou son
+  // contexte déclencheur « né(e) le ») ne traverse jamais un saut de
+  // ligne dans un document réel — `\s` matcherait aussi le saut de ligne,
+  // au risque de fusionner deux lignes sans rapport en une fausse date.
   static final RegExp _pattern = RegExp(
-    r'(?:né(?:e)?(?:\(e\))?\s+le|date\s+de\s+naissance\s*:?|DDN\s*:?)\s+'
+    r'(?:né(?:e)?(?:\(e\))?[ \t]+le|date[ \t]+de[ \t]+naissance[ \t]*:?'
+    r'|DDN[ \t]*:?)[ \t]+'
     r'(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4}'
-    '|\\d{1,2}\\s+(?:${_months.join('|')})\\s+\\d{4})',
+    '|\\d{1,2}[ \\t]+(?:${_months.join('|')})[ \\t]+\\d{4})',
     caseSensitive: false,
   );
 
