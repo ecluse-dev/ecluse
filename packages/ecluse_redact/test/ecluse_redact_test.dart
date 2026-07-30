@@ -46,8 +46,14 @@ void main() {
       expect(result.maskedText, contains('[RPPS_1]'));
       expect(result.maskedText, contains('[IBAN_1]'));
 
+      // "Dr Costa" (re-mention par patronyme seul, plus loin dans le
+      // document) réutilise désormais le jeton de "Dr Nadia Costa" — la
+      // restauration harmonise donc cette re-mention sur la forme
+      // complète (conséquence assumée et documentée, voir le groupe de
+      // tests dédié plus bas et `LIMITES.md`).
       final restored = Ecluse.restore(result.maskedText, result.mapping);
-      expect(restored, equals(sample.text));
+      expect(restored, isNot(equals(sample.text)));
+      expect(restored, contains('Dr Nadia Costa ajuste'));
     });
 
     test('une même valeur détectée reçoit toujours le même jeton', () async {
@@ -155,6 +161,85 @@ void main() {
         expect(restored, contains('Plus tard, Dubreuil Thomas confirme'));
       });
     });
+
+    group(
+        'mentions partielles — même identité que la mention complète, '
+        'bug corrigé', () {
+      test('Cas 1 : "Dr Costa" réutilise le jeton de "Dr Nadia Costa"',
+          () async {
+        const text = 'Dr Nadia Costa examine le patient. Costa confirme '
+            'le diagnostic la semaine suivante.';
+        final result = await Ecluse.redact(text);
+
+        expect(result.mapping.length, 1);
+        expect(result.maskedText, isNot(contains('Costa')));
+        // Même conséquence assumée que pour l'ordre nom/prénom inversé :
+        // la re-mention partielle est harmonisée sur la forme complète
+        // lors de la restauration.
+        final restored = Ecluse.restore(result.maskedText, result.mapping);
+        expect(restored, isNot(equals(text)));
+        expect(
+          restored,
+          'Dr Nadia Costa examine le patient. Nadia Costa confirme le '
+          'diagnostic la semaine suivante.',
+        );
+      });
+
+      test(
+          'Cas 2 : "S. Reynaud" réutilise le jeton de "Mme Sandra '
+          'Reynaud" ; l\'initiale reste visible', () async {
+        const text = 'Mme Sandra Reynaud dirige le service. S. Reynaud a '
+            'signé le rapport.';
+        final result = await Ecluse.redact(text);
+
+        expect(result.mapping.length, 1);
+        expect(result.maskedText, contains('S. ['));
+        expect(result.maskedText, isNot(contains('Reynaud')));
+        // Même conséquence assumée : la re-mention partielle ("Reynaud",
+        // le seul segment masqué) est harmonisée sur la forme complète.
+        // L'initiale "S." reste visible (jamais masquée, comme une
+        // civilité) : elle se retrouve donc, une fois restaurée, à côté
+        // du prénom complet — effet cosmétique, pas une fuite ni une
+        // perte de caractère.
+        final restored = Ecluse.restore(result.maskedText, result.mapping);
+        expect(restored, isNot(equals(text)));
+        expect(
+          restored,
+          'Mme Sandra Reynaud dirige le service. S. Sandra Reynaud a '
+          'signé le rapport.',
+        );
+      });
+
+      test(
+          'Cas 3 : "Morel Hélène" reçoit un jeton DIFFÉRENT de "MOREL '
+          'Antoine" (même patronyme, personne distincte)', () async {
+        const text = 'Patient : M. MOREL Antoine. Épouse : Morel Hélène, '
+            'personne de confiance.';
+        final result = await Ecluse.redact(text);
+
+        expect(result.mapping.length, 2);
+        expect(result.maskedText, isNot(contains('Morel')));
+        expect(result.maskedText, isNot(contains('Antoine')));
+        expect(result.maskedText, isNot(contains('Hélène')));
+        final restored = Ecluse.restore(result.maskedText, result.mapping);
+        expect(restored, equals(text));
+      });
+
+      test(
+          'non-régression : deux patronymes homonymes mais ambigus (deux '
+          'identités déjà établies) ne fusionnent avec aucune des deux',
+          () async {
+        const text = 'M. Costa Julien dirige une équipe. Mme Costa Sophie '
+            'dirige l\'autre. Costa a signé le compte rendu.';
+        final result = await Ecluse.redact(text);
+
+        // 3 mentions : deux identités distinctes déjà établies (Costa
+        // Julien, Costa Sophie), plus une troisième pour la mention
+        // ambiguë "Costa" seule, qui ne doit être rattachée à aucune des
+        // deux au hasard.
+        expect(result.mapping.length, 3);
+      });
+    });
   });
 
   group('invariant global — restauration exacte (sans ambiguïté d\'identité)',
@@ -191,12 +276,13 @@ void main() {
     // un RPPS générés puis revérifiés par nos propres détecteurs
     // structurels (voir samples.dart) : les trois DOIVENT être détectés
     // et masqués ici, sans quoi le "100 %" affiché en démo serait un
-    // mensonge.
+    // mensonge. Les offsets doivent toujours retomber juste — c'est
+    // l'invariant qui aurait attrapé le bug des spans corrompus.
     for (var i = 0; i < validKeysDemoCorpus.length; i++) {
       final sample = validKeysDemoCorpus[i];
       test(
-          '${sample.title} : NIR + IBAN + RPPS tous masqués, round-trip '
-          'exact', () async {
+          '${sample.title} : NIR + IBAN + RPPS tous masqués, offsets '
+          'corrects', () async {
         final result = await Ecluse.redact(sample.text);
         final types = result.entities.map((e) => e.type).toSet();
 
@@ -211,9 +297,6 @@ void main() {
             reason: '${sample.title} : offset invalide pour ${entity.type}',
           );
         }
-
-        final restored = Ecluse.restore(result.maskedText, result.mapping);
-        expect(restored, equals(sample.text), reason: sample.title);
       });
     }
 
@@ -221,6 +304,59 @@ void main() {
       final meetingMinutes = validKeysDemoCorpus
           .where((s) => s.title.toLowerCase().contains('compte rendu'));
       expect(meetingMinutes.length, greaterThanOrEqualTo(3));
+    });
+
+    test(
+        'contrat de travail : round-trip exact (aucune mention partielle '
+        'ambiguë dans ce document)', () async {
+      final result = await Ecluse.redact(contratTravailSample.text);
+      final restored = Ecluse.restore(result.maskedText, result.mapping);
+      expect(restored, equals(contratTravailSample.text));
+    });
+
+    test(
+        'comptes rendus RCP/HAD, ESAT, EHPAD : harmonisation attendue et '
+        'documentée (Cas 1 — chaque document re-mentionne son médecin par '
+        'civilité + patronyme seul)', () async {
+      // Ces trois documents contiennent, de façon parfaitement réaliste,
+      // une re-mention "Dr <Nom>" après une présentation complète
+      // "Dr <Prénom> <Nom>" — exactement le cas d'usage que ce chantier
+      // corrige. La restauration harmonise la re-mention sur la forme
+      // complète (même conséquence assumée que pour l'ordre nom/prénom
+      // inversé, voir LIMITES.md) : le patronyme n'est jamais dupliqué en
+      // clair, mais le texte restauré n'est plus, à cet endroit précis, un
+      // octet-pour-octet du texte d'origine.
+      final cases = [
+        (
+          sample: compteRenduSample,
+          expectedRestored: 'Dr Nadia Costa ajuste',
+          surname: 'Costa',
+        ),
+        (
+          sample: compteRenduEsatSample,
+          expectedRestored: 'Le Dr Paul Ricard signale',
+          surname: 'Ricard',
+        ),
+        (
+          sample: compteRenduEhpadSample,
+          expectedRestored: 'Le Dr Camille Vidal présente',
+          surname: 'Vidal',
+        ),
+      ];
+
+      for (final testCase in cases) {
+        final sample = testCase.sample;
+        final result = await Ecluse.redact(sample.text);
+        final restored = Ecluse.restore(result.maskedText, result.mapping);
+
+        expect(restored, isNot(equals(sample.text)), reason: sample.title);
+        expect(restored, contains(testCase.expectedRestored),
+            reason: sample.title);
+        // Aucune fuite : le patronyme complet n'apparaît nulle part dans
+        // le texte masqué envoyé au LLM.
+        expect(result.maskedText, isNot(contains(testCase.surname)),
+            reason: sample.title);
+      }
     });
   });
 }

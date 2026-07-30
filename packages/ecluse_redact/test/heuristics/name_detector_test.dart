@@ -244,6 +244,90 @@ void main() {
       expect(entities.single.confidence, 0.9);
     });
 
+    group(
+        'mentions partielles rattrapées via un patronyme déjà connu — '
+        'bug corrigé', () {
+      // Cas 1 : nom de famille seul, après une mention complète.
+      test('"Costa" seul, après "Dr Nadia Costa", est rattrapé', () {
+        final entities = detector.detect(
+          'Dr Nadia Costa examine le patient. Costa confirme le '
+          'diagnostic la semaine suivante.',
+        );
+        expect(entities, hasLength(2));
+        expect(entities[0].value, 'Nadia Costa');
+        expect(entities[1].value, 'Costa');
+      });
+
+      // Cas 2 : initiale + nom. L'initiale seule n'est pas un identifiant
+      // fort (comme une civilité) : seul le patronyme est masqué, à
+      // l'image de "M."/"Mme" qui restent visibles à côté du jeton.
+      test(
+          '"S. Reynaud" est rattrapé via le patronyme "Reynaud" connu de '
+          '"Mme Sandra Reynaud" ; l\'initiale reste visible', () {
+        final entities = detector.detect(
+          'Mme Sandra Reynaud dirige le service. S. Reynaud a signé le '
+          'rapport.',
+        );
+        expect(entities, hasLength(2));
+        expect(entities[0].value, 'Sandra Reynaud');
+        expect(entities[1].value, 'Reynaud');
+      });
+
+      // Cas 3 : membre de famille partageant le patronyme, mais avec un
+      // prénom DIFFÉRENT -> doit être détecté comme un patronyme connu,
+      // mais rester une personne distincte (vérifié côté identité dans
+      // ecluse_redact_test.dart).
+      test(
+          '"Morel Hélène" est rattrapé via le patronyme "Morel" connu de '
+          '"MOREL Antoine"', () {
+        final entities = detector.detect(
+          'Patient : M. MOREL Antoine. Épouse : Morel Hélène, personne de '
+          'confiance.',
+        );
+        expect(entities, hasLength(2));
+        expect(entities[0].value, 'MOREL Antoine');
+        expect(entities[1].value, 'Morel Hélène');
+      });
+
+      test(
+          'sans mention complète préalable, un patronyme isolé ne '
+          'déclenche toujours rien (non-régression)', () {
+        final entities = detector.detect('Costa confirme le diagnostic.');
+        expect(entities, isEmpty);
+      });
+
+      test(
+          'un sigle qui apparaîtrait comme composant d\'une mention '
+          'civile n\'est jamais retenu comme patronyme de rattrapage', () {
+        // Risque explicite du chantier : si un patronyme collecté (même
+        // via la civilité, qui ne filtre pas les sigles) coïncide avec un
+        // sigle métier, il ne doit jamais servir de patronyme pour la
+        // passe de rattrapage.
+        final entities = detector.detect(
+          'Dr HAD Martin examine le dossier. Plus loin, le SSIAD et le '
+          'HAD interviennent à domicile.',
+        );
+        expect(entities.map((e) => e.value), isNot(contains('HAD')));
+      });
+
+      test(
+          'non-régression : médicaments, dispositifs et sigles métier '
+          'ne sont jamais pris pour un patronyme de rattrapage', () {
+        final entities = detector.detect(
+          'Dr Nadia Costa prescrit le traitement. Costa ajuste la '
+          'posologie : innohep 10000 UI, Lovenox 4000 UI, Lasilix 40 mg, '
+          'Bétadine en application locale, Spiriva 1 inhalation par jour, '
+          'Symbicort 2 bouffées, dispositif Snoezelen, pansement URGO '
+          'Start. Le programme Asalée et le protocole PRADO sont '
+          'poursuivis, ainsi que la PCA et le dossier Anah. Sigles '
+          'présents : SSIAD, CARSAT, EHPAD, SAMSAH, MSP, RCP, HAD, IDEC, '
+          'CPTS, MDPH, CCAS, ALD, BPCO, EVA, IPS, MMSE, PTH, IDE, IDEL, '
+          'UDAF, CVS, ESAT.',
+        );
+        expect(entities.map((e) => e.value), ['Nadia Costa', 'Costa']);
+      });
+    });
+
     test('type exposé est EntityType.nom', () {
       expect(detector.type, EntityType.nom);
     });
