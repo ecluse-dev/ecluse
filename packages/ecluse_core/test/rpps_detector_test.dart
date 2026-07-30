@@ -53,4 +53,34 @@ void main() {
       expect(detector.detect(''), isEmpty);
     });
   });
+
+  group('RppsDetector — enchâssé dans un IBAN — bug corrigé', () {
+    // Les groupes d'un IBAN affiché par blocs de chiffres séparés d'un
+    // espace unique ("8471 5621 003") ont exactement la forme que le
+    // motif RPPS tolère (chiffre + jusqu'à 10 fois « espace optionnel +
+    // chiffre ») : une somme de blocs consécutifs totalisant 11 chiffres
+    // peut passer Luhn par hasard. Quand l'IBAN englobant est lui-même
+    // invalide (donc jamais détecté par IbanFrDetector), rien ne
+    // départage ce faux positif via resolveOverlaps — il faut l'écarter
+    // à la source.
+    test(
+        'fenêtre Luhn-valide à cheval sur plusieurs blocs d\'un IBAN '
+        'invalide -> aucun RPPS', () {
+      // IBAN invalide (clé FR76 non vérifiée), mais dont les 3 derniers
+      // blocs ("8471 5621 003", 4+4+3=11 chiffres) passent Luhn par
+      // coïncidence.
+      const text = 'FR76 3000 3004 1012 8471 5621 003';
+      expect(detector.detect(text), isEmpty);
+    });
+
+    test(
+        'un RPPS légitime juste après un IBAN reste détecté (non-'
+        'régression)', () {
+      const text = 'FR76 3000 3004 1012 8471 5621 003. '
+          'RPPS du médecin traitant : 10001234565.';
+      final entities = detector.detect(text);
+      expect(entities, hasLength(1));
+      expect(entities.single.value, '10001234565');
+    });
+  });
 }

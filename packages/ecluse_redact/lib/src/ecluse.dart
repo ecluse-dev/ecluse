@@ -72,14 +72,14 @@ abstract final class Ecluse {
     final resolved = detection.entities;
 
     final mapping = <String, String>{};
-    final tokenByValue = <String, String>{};
+    final tokenByIdentity = <String, String>{};
     final counterByType = <EntityType, int>{};
     final buffer = StringBuffer();
     var cursor = 0;
 
     for (final entity in resolved) {
       buffer.write(text.substring(cursor, entity.start));
-      final token = tokenByValue.putIfAbsent(entity.value, () {
+      final token = tokenByIdentity.putIfAbsent(_identityKey(entity), () {
         final next = (counterByType[entity.type] ?? 0) + 1;
         counterByType[entity.type] = next;
         final generated = '[${entityTypeLabel(entity.type)}_$next]';
@@ -109,4 +109,39 @@ abstract final class Ecluse {
     }
     return result;
   }
+}
+
+/// Clé d'identité utilisée pour regrouper sous un même jeton plusieurs
+/// mentions d'une même personne — sans quoi le LLM peut croire qu'il s'agit
+/// de deux personnes distinctes et produire une analyse fausse (pas une
+/// fuite, mais une dégradation de la réponse).
+///
+/// Pour les noms : l'ordre nom/prénom et la casse ne changent pas
+/// l'identité (« Dubreuil Thomas » = « Thomas Dubreuil » = « DUBREUIL
+/// Thomas »), donc l'identité est l'ensemble trié des segments en
+/// minuscules. Volontairement étroit : seuls des segments identiques
+/// suffisent à fusionner deux mentions — pas de rapprochement partiel
+/// (« Martin » seul ne fusionne pas avec « Jean Martin »), qui risquerait
+/// de confondre deux personnes différentes.
+///
+/// Conséquence assumée : [Ecluse.restore] ne peut restituer qu'une seule
+/// graphie par jeton (remplacement global dans la réponse du LLM, sans
+/// notion de position). Une re-mention à ordre nom/prénom inversé de la
+/// même personne voit donc son ordre harmonisé sur la première mention
+/// lors de la restauration — voir `LIMITES.md`.
+///
+/// Pour tous les autres types, l'identité reste la valeur exacte : deux
+/// adresses ou deux téléphones qui se ressemblent ne doivent jamais être
+/// fusionnés sur une simple heuristique.
+String _identityKey(DetectedEntity entity) {
+  if (entity.type != EntityType.nom) {
+    return '${entity.type.name}:${entity.value}';
+  }
+  final segments = entity.value
+      .toLowerCase()
+      .split(RegExp(r'\s+'))
+      .where((segment) => segment.isNotEmpty)
+      .toList()
+    ..sort();
+  return 'nom:${segments.join(' ')}';
 }

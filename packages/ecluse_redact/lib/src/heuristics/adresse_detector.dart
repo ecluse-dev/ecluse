@@ -47,13 +47,22 @@ final class AdresseDetector implements EntityDetector {
   /// type de voie. Le premier mot de la « commune » est capturé à part
   /// (groupe nommé `commune`) pour pouvoir l'écarter s'il ressemble à une
   /// unité de mesure plutôt qu'à un nom de lieu — voir [_looksLikeUnit].
+  ///
+  /// Deux garde-fous généraux, indépendants de tout document précis :
+  /// - `(?<!\d)` avant les 5 chiffres : un code postal est le **début**
+  ///   d'une séquence de chiffres, jamais une fenêtre choisie au milieu
+  ///   d'un numéro plus long (RPPS, NIR non reconnu comme tel, etc.).
+  /// - `[ \t]` au lieu de `\s` entre le code postal et la commune : un
+  ///   code postal et sa commune sont toujours sur la **même ligne** dans
+  ///   un document réel ; `\s` matche aussi le saut de ligne, ce qui
+  ///   laissait un span avaler la ligne suivante en entier.
   static const _codePostalCommune =
-      "\\d{5}\\s+(?<commune>[A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*)"
+      "(?<!\\d)\\d{5}[ \\t]+(?<commune>[A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*)"
       "(?:[ -][A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*){0,3}";
 
   static final RegExp _pattern = RegExp(
-    "\\d{1,4}\\s*,?\\s*(?:${_voies.join('|')})"
-    "\\s+[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]+?,?\\s*"
+    "\\d{1,4}[ \\t]*,?[ \\t]*(?:${_voies.join('|')})"
+    "[ \\t]+[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]+?,?[ \\t]*"
     '$_codePostalCommune',
     caseSensitive: false,
   );

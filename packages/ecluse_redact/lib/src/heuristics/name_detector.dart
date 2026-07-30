@@ -63,6 +63,35 @@ final class NameDetector implements EntityDetector {
     r"([A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*) +$",
   );
 
+  /// Sigles métier — administratifs et cliniques — qui ne doivent jamais
+  /// être traités comme un nom, **même écrits tout en majuscules et même
+  /// s'ils coïncident avec un prénom du gazetteer** (ex. « EVA », Échelle
+  /// Visuelle Analogique, qui est aussi un prénom français courant).
+  ///
+  /// La plupart des sigles métier sont déjà à l'abri par simple absence du
+  /// gazetteer (voir le test de non-régression sur SSIAD, CARSAT, etc.) :
+  /// cette liste protège spécifiquement les cas **ambigus**, où le sigle
+  /// coïncide avec une entrée du gazetteer, plus une couverture générale
+  /// des sigles cliniques/échelles courants du secteur médico-social —
+  /// domaine cœur d'Écluse — pour éviter d'effacer une donnée clinique.
+  /// Comparaison volontairement **sensible à la casse** : un prénom réel
+  /// écrit normalement (« Eva ») reste détecté, seule la forme MAJUSCULE
+  /// conventionnelle du sigle est exclue.
+  static const _excludedAcronyms = {
+    // Sigles administratifs et structures (secteur médico-social).
+    'SSIAD', 'CARSAT', 'SAMSAH', 'EHPAD', 'MSP', 'PCH', 'PRADO', 'ALD',
+    'CPTS', 'IDEL', 'UDAF', 'MDPH', 'CCAS', 'HAD', 'RCP', 'IPS', 'APA',
+    'IDE', 'IDEC', 'ESAT', 'CSE', //
+    // Échelles et sigles cliniques courants.
+    'EVA', 'EVS', 'EN', 'ADL', 'IADL', 'MMS', 'MMSE', 'GIR', 'AGGIR',
+    'ECPA', 'GCS', 'ECG', 'EEG', 'IRM', 'TDM', 'VNI', 'AVC', 'IDM', 'HTA',
+    'BPCO', 'IRC', 'IRA', 'AVK', 'INR', 'TSH', 'NFS', 'CRP', 'IMC', 'ETP',
+    'ASH', 'AMP', 'PTH', //
+  };
+
+  static bool _isExcludedAcronym(String word) =>
+      _excludedAcronyms.contains(word);
+
   @override
   List<DetectedEntity> detect(String text) {
     final results = <DetectedEntity>[];
@@ -86,6 +115,7 @@ final class NameDetector implements EntityDetector {
 
     for (final match in _capitalizedWord.allMatches(text)) {
       final word = match.group(0)!;
+      if (_isExcludedAcronym(word)) continue;
       if (!_looksLikeKnownFirstName(word)) continue;
       if (claimed.any((r) => r.overlaps(match.start, match.end))) continue;
 
@@ -155,17 +185,24 @@ final class NameDetector implements EntityDetector {
   static Match? _matchNextCapitalizedWord(String text, int from) {
     final gapMatch = RegExp(r' +').matchAsPrefix(text, from);
     if (gapMatch == null) return null;
-    return _capitalizedWord.matchAsPrefix(text, gapMatch.end);
+    final wordMatch = _capitalizedWord.matchAsPrefix(text, gapMatch.end);
+    if (wordMatch == null || _isExcludedAcronym(wordMatch.group(0)!)) {
+      return null;
+    }
+    return wordMatch;
   }
 
   /// Cherche un mot capitalisé (majuscules ou casse normale) séparé
   /// uniquement par des espaces de la position [before]. Retourne `null`
-  /// s'il n'y en a pas.
+  /// s'il n'y en a pas, ou si ce mot est un sigle exclu (voir
+  /// [_excludedAcronyms]) — un sigle ne doit jamais être avalé comme s'il
+  /// s'agissait d'un nom de famille adjacent à un prénom reconnu.
   static _WordSpan? _matchPrevCapitalizedWord(String text, int before) {
     final head = text.substring(0, before);
     final match = _wordBeforeEnd.firstMatch(head);
     if (match == null) return null;
     final word = match.group(1)!;
+    if (_isExcludedAcronym(word)) return null;
     // Le groupe capturé est en tête du motif : son début coïncide avec
     // celui du match entier.
     return _WordSpan(match.start, match.start + word.length);

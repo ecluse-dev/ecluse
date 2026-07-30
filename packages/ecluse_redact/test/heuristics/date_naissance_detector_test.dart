@@ -28,5 +28,36 @@ void main() {
       final entities = detector.detect('Réunion prévue le 12/05/2026.');
       expect(entities, isEmpty);
     });
+
+    group('span ne traverse jamais un saut de ligne — bug corrigé', () {
+      test(
+          'jour et mois séparés par un saut de ligne -> pas de fausse '
+          'fusion', () {
+        final entities = detector.detect('né le 12\n\nmars 1985.');
+        expect(
+          entities.map((e) => e.value),
+          isNot(contains(contains('\n'))),
+        );
+      });
+
+      test(
+          'mois et année séparés par un saut de ligne -> pas de fausse '
+          'fusion', () {
+        final entities = detector.detect('né le 12 mars\n\n1985.');
+        expect(
+          entities.map((e) => e.value),
+          isNot(contains(contains('\n'))),
+        );
+      });
+
+      test(
+          'date textuelle sur une seule ligne reste détectée (non-'
+          'régression)', () {
+        final entities = detector.detect('Née le 3 juillet 1992, '
+            'domiciliée à Rennes.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, '3 juillet 1992');
+      });
+    });
   });
 }

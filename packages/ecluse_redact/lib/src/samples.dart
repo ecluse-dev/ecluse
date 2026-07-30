@@ -42,9 +42,9 @@ Directrice,
 
 Et
 
-Mme Inès Chevalier, née le 12 juin 1990, demeurant 3 impasse des Tilleuls,
-12000 Rodez, numéro de sécurité sociale 2 90 06 12 205 078 92, infirmière
-diplômée d'État inscrite sous le numéro RPPS 10200876547,
+Mme Inès Chevalier, née le 12 juin 1990, demeurant 3 impasse des Tilleuls, 12000 Rodez,
+numéro de sécurité sociale 2 90 06 12 205 078 92, infirmière diplômée
+d'État inscrite sous le numéro RPPS 10200876547,
 
 Il a été convenu ce qui suit :
 
@@ -94,8 +94,8 @@ Date : 14 janvier 2027
 Lieu : Antenne HAD Nantes Nord
 
 Patient suivi :
-M. Karim Belhadj, né le 3 mars 1985, domicilié 9 rue du Moulin, 44300
-Nantes, numéro de sécurité sociale 1 85 03 44 123 045 28.
+M. Karim Belhadj, né le 3 mars 1985, domicilié 9 rue du Moulin, 44300 Nantes,
+numéro de sécurité sociale 1 85 03 44 123 045 28.
 
 Professionnels présents :
 - Dr Nadia Costa, médecin coordonnateur, RPPS 10100987659
@@ -125,5 +125,103 @@ La séance est levée à 16h30.
 ''',
 );
 
-/// Les deux documents d'exemple, dans l'ordre d'affichage de la démo.
+/// Compte rendu de réunion de synthèse ESAT fictif — bénéficiaire suivi en
+/// atelier protégé, médecin du travail (RPPS), sigles métier du secteur
+/// (ESAT, MDPH, IDE) qui ne doivent jamais être masqués.
+const compteRenduEsatSample = DemoSample(
+  title: 'Compte rendu de réunion de synthèse (ESAT)',
+  instruction: 'Fais une synthèse et liste les décisions prises.',
+  text: '''
+COMPTE RENDU DE RÉUNION DE SYNTHÈSE — ESAT
+
+Établissement : ESAT Les Ateliers du Sillon
+Date : 5 février 2027
+Objet : point d'étape du projet personnalisé d'accompagnement
+
+Bénéficiaire suivi :
+Mme Nadia Ferreira, née le 9 avril 1987, domiciliée 5 rue des Tilleuls, 44300 Nantes,
+numéro de sécurité sociale 1 87 09 44 201 033 26.
+
+Professionnels présents :
+- Dr Paul Ricard, médecin du travail, RPPS 10300765418
+- Mme Elise Rambert, éducatrice spécialisée
+- M. Antoine Roussel, moniteur d'atelier
+
+1. Bilan de la période d'essai
+L'ESAT confirme la poursuite de l'accompagnement en atelier
+conditionnement. La MDPH a validé le renouvellement de l'orientation.
+
+2. Aspects médicaux
+Le Dr Ricard signale une tolérance correcte au poste, sans restriction
+particulière. L'IDE assure le suivi hebdomadaire.
+
+3. Aspects administratifs
+La rémunération garantie est versée sur le compte
+FR98 2004 1010 0558 0001 2345 615. Pour toute question, contacter le
+secrétariat au 02 40 33 44 55 ou à secretariat.esat-sillon@example.fr.
+
+4. Prochaine réunion
+Prochain point dans six mois.
+
+La séance est levée à 11h00.
+''',
+);
+
+/// Compte rendu de conseil de la vie sociale (CVS) EHPAD fictif — résident
+/// représenté, médecin coordonnateur (RPPS), sigles métier du secteur
+/// (CCAS, CPTS, IDEC) qui ne doivent jamais être masqués.
+const compteRenduEhpadSample = DemoSample(
+  title: 'Compte rendu de conseil de la vie sociale (EHPAD)',
+  instruction: 'Fais une synthèse et liste les décisions prises.',
+  text: '''
+COMPTE RENDU DE CONSEIL DE LA VIE SOCIALE — EHPAD
+
+Établissement : EHPAD Les Jardins de Brède
+Date : 18 mars 2027
+
+Résident représenté :
+M. Henri Castagne, né le 7 juillet 1933, domicilié 12 avenue de la Libération, 33300 Bordeaux,
+numéro de sécurité sociale 2 65 07 33 305 067 08.
+
+Professionnels et représentants présents :
+- Dr Camille Vidal, médecin coordonnateur, RPPS 10400654322
+- Mme Odile Ferrand, présidente du CVS
+- M. Julien Sartre, représentant des familles
+
+1. Vie quotidienne
+Le CCAS a été sollicité pour l'organisation de la sortie de printemps. La
+CPTS locale participera à une session d'information sur la vaccination.
+
+2. Suivi médical
+Le Dr Vidal présente le bilan du dernier trimestre. Aucun événement
+indésirable signalé. L'IDEC assure la coordination des soins.
+
+3. Aspects financiers
+La participation aux frais de sortie est prélevée sur le compte
+FR40 3005 6008 1189 0123 4567 842. Contact : 05 56 44 22 11 ou
+cvs.jardins-brede@example.fr.
+
+4. Prochaine réunion
+Le prochain CVS se tiendra dans trois mois.
+
+La séance est levée à 15h30.
+''',
+);
+
+/// Les deux documents d'exemple chargeables depuis la démo (boutons de
+/// `ecluse_demo`), dans leur ordre d'affichage.
 const demoSamples = [contratTravailSample, compteRenduSample];
+
+/// Corpus de démonstration où NIR, IBAN et RPPS sont **tous** à clé
+/// structurellement valide, générés puis revérifiés par les détecteurs
+/// d'`ecluse_core` — le seul corpus sur lequel un taux de masquage à 100 %
+/// des identifiants structurels a un sens (voir les tests d'invariant dans
+/// `ecluse_redact_test.dart`). Au moins trois comptes rendus de réunion
+/// distincts, plus le contrat de travail (qui contient lui aussi les trois
+/// types à clé valide).
+const validKeysDemoCorpus = [
+  contratTravailSample,
+  compteRenduSample,
+  compteRenduEsatSample,
+  compteRenduEhpadSample,
+];

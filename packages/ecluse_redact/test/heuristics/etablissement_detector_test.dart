@@ -29,5 +29,31 @@ void main() {
       final entities = detector.detect('Le centre de la ville est proche.');
       expect(entities, isEmpty);
     });
+
+    group('span ne traverse jamais un saut de ligne — bug corrigé', () {
+      // Reproduction : "ESAT" en fin de titre, suivi d'une ligne blanche
+      // puis d'un mot capitalisé sans rapport ("Établissement :" en tête
+      // de ligne suivante) -- ne doit jamais fusionner en une seule
+      // entité.
+      test(
+          'mot-clé en fin de ligne + mot capitalisé sur une autre ligne '
+          '-> pas de fusion', () {
+        final entities = detector.detect(
+          'COMPTE RENDU — ESAT\n\nÉtablissement : ESAT Les Ateliers.',
+        );
+        expect(
+          entities.map((e) => e.value),
+          isNot(contains(contains('\n'))),
+        );
+      });
+
+      test(
+          'mot-clé + nom propre sur la même ligne reste détecté (non-'
+          'régression)', () {
+        final entities = detector.detect('Le Foyer Les Tilleuls accueille.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Foyer Les Tilleuls');
+      });
+    });
   });
 }
