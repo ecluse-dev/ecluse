@@ -62,14 +62,41 @@ limite technique temporaire.
   tort. C'est un compromis délibéré (mieux vaut un faux positif qu'une
   fuite), pas un bug.
 - L'exclusion des unités de mesure dans le détecteur d'adresse (pour ne
-  pas confondre une posologie du type « 10000 UI » avec un code postal) se
-  fonde sur une liste finie d'unités courantes (SI, pharmacologie) : une
-  unité absente de cette liste pourrait encore être mal classée comme
-  adresse.
+  pas confondre une posologie du type « 10000 UI » avec un code postal),
+  et l'exclusion des sigles cliniques/administratifs dans le détecteur de
+  noms (pour ne pas masquer une échelle comme « EVA » qui coïncide avec un
+  prénom), reposent chacune sur une liste finie et documentée, pas une
+  détection générale : un sigle ou une unité absents de ces listes
+  pourraient encore être mal classés.
 - Une même personne mentionnée d'abord par son nom complet puis par son
   seul prénom (usage courant dans un compte rendu) reçoit deux jetons
   distincts : les deux mentions sont masquées, mais rien ne signale au
   LLM qu'il s'agit de la même personne.
+- **Aucun span détecté (nom, adresse, date de naissance, établissement) ne
+  traverse un saut de ligne**, même quand l'entité réelle est
+  légitimement coupée par un retour à la ligne du document (une adresse
+  ou un nom d'établissement qui continue sur la ligne suivante, par
+  exemple). Ce choix évite qu'un span engloutisse par erreur le début
+  d'une ligne sans rapport (c'était un bug réel, corrigé), mais il a un
+  coût symétrique : dans un document où la mise en forme coupe une entité
+  en plein milieu, seule une partie peut être détectée (ou aucune). En
+  cas de doute entre « fusionner deux lignes à tort » et « rater une
+  entité coupée par la mise en forme », le second risque est jugé
+  préférable — mais les deux méritent une vigilance humaine sur des
+  documents à la mise en page inhabituelle.
+- **La cohérence des pseudonymes a un coût sur la fidélité de la
+  restauration.** Quand une même personne est nommée avec un ordre
+  nom/prénom différent d'une mention à l'autre (« Dubreuil Thomas » puis
+  « Thomas Dubreuil »), les deux mentions reçoivent le même jeton — sans
+  quoi le LLM croirait à deux personnes distinctes. Mais la restauration
+  ne peut restituer qu'**une seule graphie** par jeton (remplacement
+  global dans la réponse du LLM, sans notion de position) : l'ordre de la
+  deuxième mention est donc harmonisé sur la première lors de la
+  restauration. Aucun caractère n'est perdu ni déplacé ailleurs dans le
+  document — seul l'ordre stylistique de cette re-mention change. C'est
+  le seul cas connu où le texte restauré n'est pas un octet-pour-octet
+  exact du texte d'origine, et c'est un choix assumé (cohérence
+  d'identité pour le LLM > fidélité mot-à-mot d'une re-mention).
 
 ## Hors périmètre v0
 
