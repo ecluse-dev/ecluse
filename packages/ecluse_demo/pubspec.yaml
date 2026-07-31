@@ -11,6 +11,8 @@ environment:
 dependencies:
   ecluse_core:
     path: ../ecluse_core
+  ecluse_ingest:
+    path: ../ecluse_ingest
   ecluse_redact:
     path: ../ecluse_redact
   http: ^1.2.0
