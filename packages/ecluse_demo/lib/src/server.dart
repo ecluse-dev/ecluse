@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:ecluse_core/ecluse_core.dart';
+import 'package:ecluse_ingest/ecluse_ingest.dart';
 import 'package:ecluse_redact/ecluse_redact.dart';
 import 'package:shelf/shelf.dart';
 
@@ -27,6 +28,9 @@ Handler buildHandler({
     }
     if (request.method == 'POST' && path == 'api/process') {
       return _handleProcess(request, redactService);
+    }
+    if (request.method == 'POST' && path == 'api/ingest') {
+      return _handleIngest(request);
     }
     return Response.notFound('Route inconnue.');
   };
@@ -104,6 +108,54 @@ Future<Response> _handleProcess(
   } on LlmError catch (error) {
     stdout.writeln("Écluse démo : erreur LLM ('${error.message}').");
     return _jsonResponse({'error': error.message});
+  }
+}
+
+/// Reçoit un fichier déposé (`{filename, bytes}`, `bytes` en base64) et
+/// délègue l'extraction à `ecluse_ingest`. Un format hors périmètre (PDF,
+/// image, extension inconnue) ou un contenu incohérent avec l'extension
+/// revient comme `{error}` explicite — jamais un texte vide silencieux.
+///
+/// Le fichier n'est jamais écrit sur disque. Aucun nom de fichier ni
+/// contenu n'est journalisé : seuls la taille et le résultat
+/// (accepté/refusé) apparaissent en sortie standard.
+Future<Response> _handleIngest(Request request) async {
+  final Map<String, dynamic> body;
+  try {
+    final raw = await request.readAsString();
+    body = jsonDecode(raw) as Map<String, dynamic>;
+  } on FormatException {
+    return _jsonResponse({'error': 'Requête illisible (JSON invalide).'});
+  }
+
+  final filename = body['filename'];
+  final bytesB64 = body['bytes'];
+  if (filename is! String || filename.trim().isEmpty) {
+    return _jsonResponse({'error': 'Aucun nom de fichier fourni.'});
+  }
+  if (bytesB64 is! String) {
+    return _jsonResponse({'error': 'Fichier illisible (contenu manquant).'});
+  }
+
+  final List<int> bytes;
+  try {
+    bytes = base64Decode(bytesB64);
+  } on FormatException {
+    return _jsonResponse({'error': 'Fichier illisible (encodage invalide).'});
+  }
+
+  stdout.writeln(
+    'Écluse démo : dépôt de fichier reçu (${bytes.length} octets).',
+  );
+
+  final result = ingestFile(bytes, filename: filename);
+  switch (result) {
+    case IngestedText(:final text, :final format):
+      stdout.writeln('Écluse démo : dépôt accepté (format ${format.name}).');
+      return _jsonResponse({'text': text, 'format': format.name});
+    case IngestRefused(:final reason):
+      stdout.writeln('Écluse démo : dépôt refusé.');
+      return _jsonResponse({'error': reason});
   }
 }
 

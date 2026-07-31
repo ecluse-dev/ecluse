@@ -221,6 +221,42 @@
 
   #free-text { min-height: 8rem; }
 
+  .dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    text-align: center;
+    padding: 1.4rem 1rem;
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    background: var(--panel-bg);
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin-bottom: 0.9rem;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .dropzone.dragover {
+    border-color: var(--teal);
+    background: var(--teal-light);
+    color: var(--text);
+  }
+
+  .dropzone p {
+    margin: 0;
+  }
+
+  .dropzone-filename {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  #file-input {
+    display: none;
+  }
+
   #status {
     min-height: 1.4rem;
     margin: 0.4rem 0 1rem;
@@ -490,9 +526,16 @@
     <button id="sample-1-btn" type="button">Charger : compte rendu de réunion</button>
   </div>
 
+  <div class="dropzone" id="dropzone">
+    <p>Glissez-déposez un compte rendu (.txt, .md, .docx), ou</p>
+    <button type="button" id="browse-btn">Parcourir…</button>
+    <p id="dropzone-filename"></p>
+    <input type="file" id="file-input" accept=".txt,.md,.docx" />
+  </div>
+
   <div class="field">
     <label for="free-text">Texte à traiter</label>
-    <textarea id="free-text" placeholder="Collez ici un texte, ou chargez un exemple ci-dessus."></textarea>
+    <textarea id="free-text" placeholder="Collez ici un texte, ou chargez un exemple ci-dessus, ou déposez un fichier."></textarea>
   </div>
 
   <div class="field">
@@ -612,6 +655,7 @@
     document.getElementById('send-btn').disabled = busy;
     document.getElementById('sample-0-btn').disabled = busy;
     document.getElementById('sample-1-btn').disabled = busy;
+    document.getElementById('browse-btn').disabled = busy;
   }
 
   function setPanel(id, html, isEmpty) {
@@ -749,9 +793,80 @@
     }
   }
 
+  function bytesToBase64(bytes) {
+    let binary = '';
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+    return btoa(binary);
+  }
+
+  async function ingestFile(file) {
+    setBusy(true);
+    setStatus('Lecture du fichier…');
+    document.getElementById('dropzone-filename').textContent = '';
+    try {
+      const buffer = await file.arrayBuffer();
+      const bytes = bytesToBase64(new Uint8Array(buffer));
+      const res = await fetch('/api/ingest', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ filename: file.name, bytes }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        setStatus(data.error, true);
+        return;
+      }
+      document.getElementById('free-text').value = data.text;
+      document.getElementById('dropzone-filename').textContent =
+        `Fichier chargé : ${file.name}`;
+      setStatus('');
+    } catch (e) {
+      setStatus('Erreur réseau : impossible de contacter le serveur local.', true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function setupDropzone() {
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+
+    document.getElementById('browse-btn').addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) ingestFile(fileInput.files[0]);
+      fileInput.value = '';
+    });
+
+    ['dragenter', 'dragover'].forEach((eventName) => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach((eventName) => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer && e.dataTransfer.files;
+      if (files && files.length > 0) ingestFile(files[0]);
+    });
+  }
+
   document.getElementById('sample-0-btn').addEventListener('click', () => loadSample(0));
   document.getElementById('sample-1-btn').addEventListener('click', () => loadSample(1));
   document.getElementById('send-btn').addEventListener('click', sendToAi);
+  setupDropzone();
 
   renderLegend();
   loadSamples();
