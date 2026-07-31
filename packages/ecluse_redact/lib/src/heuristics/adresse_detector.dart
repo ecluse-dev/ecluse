@@ -60,9 +60,19 @@ final class AdresseDetector implements EntityDetector {
       "(?<!\\d)\\d{5}[ \\t]+(?<commune>[A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*)"
       "(?:[ -][A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*){0,3}";
 
+  /// Sépare le nom de voie du `CP_COMMUNE` qui suit : soit sur la **même
+  /// ligne** (virgule optionnelle, comportement historique), soit via **un
+  /// unique** saut de ligne (`SEP_LIGNE_UNIQUE` de la spec adresse
+  /// multiligne). Un second saut de ligne consécutif (ligne vide) fait
+  /// naturellement échouer les deux alternatives : `\d{5}` ne suit alors
+  /// plus immédiatement (aux espaces horizontaux près), donc le span
+  /// s'interrompt — pas de logique de garde séparée à écrire.
+  static const _voieVersCpCommune = '(?:,?[ \\t]*|[ \\t]*\\r?\\n[ \\t]*)';
+
   static final RegExp _pattern = RegExp(
     "\\d{1,4}[ \\t]*,?[ \\t]*(?:${_voies.join('|')})"
-    "[ \\t]+[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]+?,?[ \\t]*"
+    "[ \\t]+[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]+?"
+    '$_voieVersCpCommune'
     '$_codePostalCommune',
     caseSensitive: false,
   );
@@ -89,6 +99,21 @@ final class AdresseDetector implements EntityDetector {
     return commune != null && _measurementUnits.contains(commune.toLowerCase());
   }
 
+  /// Règle CP_COMMUNE de la spec : « un token de commune commence par une
+  /// majuscule ». Ne peut pas être imposé par la classe de caractères de
+  /// `commune` elle-même : `_pattern` et `_codePostalCommuneOnly` sont
+  /// `caseSensitive: false` (nécessaire pour matcher les types de voie en
+  /// minuscules), ce qui rend `[A-ZÀ-ÖØ-Þ]` insensible à la casse par la
+  /// même occasion et laissait passer des faux positifs comme
+  /// « 70000 euros ». Vérification a posteriori, sur la sous-chaîne
+  /// réellement matchée, indépendante du flag de casse du motif.
+  static final RegExp _uppercaseFirstLetter = RegExp(r'^[A-ZÀ-ÖØ-Þ]');
+
+  static bool _communeStartsWithUppercase(RegExpMatch match) {
+    final commune = match.namedGroup('commune');
+    return commune != null && _uppercaseFirstLetter.hasMatch(commune);
+  }
+
   @override
   List<DetectedEntity> detect(String text) {
     final results = <DetectedEntity>[];
@@ -96,6 +121,7 @@ final class AdresseDetector implements EntityDetector {
 
     for (final match in _pattern.allMatches(text)) {
       if (_looksLikeUnit(match)) continue;
+      if (!_communeStartsWithUppercase(match)) continue;
       final start = match.start;
       final end = match.end;
       results.add(
@@ -112,6 +138,7 @@ final class AdresseDetector implements EntityDetector {
 
     for (final match in _codePostalCommuneOnly.allMatches(text)) {
       if (_looksLikeUnit(match)) continue;
+      if (!_communeStartsWithUppercase(match)) continue;
       final start = match.start;
       final end = match.end;
       // Déjà couvert par une adresse complète (numéro + voie) ci-dessus :

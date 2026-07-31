@@ -8,9 +8,11 @@ import 'french_first_names.dart';
 /// de contrôle possible : un nom propre n'a pas de structure vérifiable.
 /// Ce détecteur combine deux indices :
 ///
-/// 1. Une **civilité** (`M.`, `Mme`, `Monsieur`, `Madame`, `Dr`, `Docteur`,
-///    `Me`) suivie d'un ou deux mots capitalisés → confiance haute (0.9) :
-///    l'indice est fort et rarement un faux positif.
+/// 1. Une **civilité** (`M.`, `Mme`, `Mademoiselle`, `Monsieur`, `Madame`,
+///    `Dr`, `Docteur`, `Me`) suivie d'un prénom puis d'un patronyme de 1 à 2
+///    mots (particules `de`, `du`, `des`, `le`, `la`, `van`, `von` admises
+///    devant un mot en casse de titre) → confiance haute (0.9) : l'indice
+///    est fort et rarement un faux positif.
 /// 2. Un **prénom français connu** (voir [frenchFirstNames]) adjacent à un
 ///    mot capitalisé (nom de famille supposé) → confiance moyenne (0.6).
 ///    Règle **bidirectionnelle** : le mot capitalisé peut précéder le
@@ -59,10 +61,18 @@ final class NameDetector implements EntityDetector {
   @override
   EntityType get type => EntityType.nom;
 
+  /// Capture prénom + jusqu'à 2 unités de patronyme supplémentaires
+  /// (`PATRONYME{1,2}` de la spec adresse multiligne, borne basse ramenée à
+  /// 0 pour préserver le comportement existant « civilité + un seul mot »,
+  /// ex. `Dr Martin` -> `Martin`, un patronyme seul sans prénom qui suit).
+  /// Chaque unité peut être précédée d'une particule en minuscules (`de`,
+  /// `du`, `des`, `le`, `la`, `van`, `von`) à condition d'être suivie d'un
+  /// mot en casse de titre — sinon la particule n'est jamais absorbée seule.
   static final RegExp _civility = RegExp(
-    r'\b(?:M\.|Mme|Monsieur|Madame|Dr\.?|Docteur|Me)\s+'
+    r'\b(?:M\.|Mme|Mademoiselle|Monsieur|Madame|Dr\.?|Docteur|Me)\s+'
     r"([A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*"
-    r"(?:\s+[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*)?)",
+    r'(?:\s+(?:(?:de|du|des|le|la|van|von)\s+)?'
+    r"[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*){0,2})",
   );
 
   static final RegExp _capitalizedWord = RegExp(
