@@ -106,17 +106,55 @@ pourraient encore être mal classés.
 
 ### 5.2 Entités coupées par la mise en forme
 
-**Aucun span détecté ne traverse un saut de ligne**, même quand l'entité
-réelle est légitimement coupée par un retour à la ligne (une adresse ou un
-nom d'établissement qui continue sur la ligne suivante).
+**Règle générale : un span ne traverse jamais un saut de ligne.** Ce choix
+évite qu'un span engloutisse par erreur le début d'une ligne sans rapport —
+c'était un bug réel, corrigé une première fois de façon absolue, puis affiné
+par l'exception ci-dessous.
 
-Ce choix évite qu'un span engloutisse par erreur le début d'une ligne sans
-rapport — c'était un bug réel, corrigé. Il a un coût symétrique : dans un
-document où la mise en forme coupe une entité en plein milieu, seule une
-partie peut être détectée, ou aucune. Entre « fusionner deux lignes à tort »
-et « rater une entité coupée par la mise en forme », le second risque est
-jugé préférable — mais les deux méritent une vigilance humaine sur des
-documents à la mise en page inhabituelle.
+**Exception unique : voie → code postal + commune.** Un span d'adresse peut
+traverser exactement un séparateur de ligne, à condition stricte que la
+ligne suivante soit une ligne « code postal (5 chiffres) + commune » au sens
+strict — la commune devant commencer par une majuscule. Deux séparateurs
+consécutifs (ligne vide) interrompent le span, tout comme une ligne suivante
+qui ne correspond pas à ce motif. Cette exception ferme une fuite réelle :
+le format très courant « voie sur une ligne, code postal + commune sur la
+suivante » laissait jusqu'ici le numéro et l'odonyme en clair.
+
+**Ce que l'exception ne couvre pas (hors périmètre v0, assumé) :**
+
+- **Le complément d'adresse intercalé** entre la voie et le code postal
+  (`Bâtiment C`, `Résidence les Tilleuls`, `BP 42`, `Chez M. Dupont`…) coupe
+  le span comme n'importe quelle ligne étrangère : ce n'est pas un motif
+  `CP_COMMUNE`, donc la détection s'interrompt au même titre que du texte
+  sans rapport. Élargir la règle pour l'absorber romprait la garantie qui
+  protège justement contre le bug d'origine (span qui avale une ligne
+  quelconque). Résolution correcte prévue en phase 2 (NER local).
+- **Le destinataire** placé au-dessus de la voie (nom de personne ou de
+  société sur la ligne précédente) n'est jamais absorbé dans le span
+  d'adresse : il relève exclusivement du détecteur de noms.
+- Toute autre entité coupée par une mise en forme multiligne (un nom
+  d'établissement qui continue sur la ligne suivante, par exemple) reste
+  soumise à la règle générale absolue : aucun span ne traverse la ligne.
+  Seule l'adresse bénéficie de cette exception, et seulement dans la forme
+  voie → CP + commune.
+
+Dans tous les autres cas, le coût reste symétrique : entre « fusionner deux
+lignes à tort » et « rater une entité coupée par la mise en forme », le
+second risque est jugé préférable — mais les deux méritent une vigilance
+humaine sur des documents à la mise en page inhabituelle.
+
+**Patronyme sans civilité : hors périmètre v0.** Le correctif qui absorbe le
+patronyme en casse de titre (« Nathalie Loyer », « Sophie Dupont-Martin »,
+« Jean de La Fontaine ») ne s'arme qu'après une civilité reconnue (`Madame`,
+`Mademoiselle`, `Monsieur`, `Dr`, `Docteur`, `Me`…) suivie d'un prénom. Un
+patronyme mentionné sans civilité (« Camille Verdier a signé le devis. »,
+sans « Mademoiselle » devant) suit le comportement v0 inchangé : seul le
+prénom du gazetteer est détecté par la règle bidirectionnelle générique : le
+nom de famille adjacent n'est absorbé que s'il est en MAJUSCULES, ou s'il a
+déjà été établi ailleurs dans le document (voir § 5.4). Élargir l'ancrage à
+« tout mot capitalisé après un prénom, civilité ou non » ferait exploser les
+faux positifs sur les débuts de phrase — cet arbitrage n'est pas tranché ici,
+il attend le NER local de la phase 2.
 
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
