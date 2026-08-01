@@ -21,8 +21,8 @@ absence de protection connue.
 4. **Sur-masquage possible** : en cas de doute, Écluse masque. Un mot
    capitalisé adjacent à un prénom connu, ou un SIREN pris pour un FINESS,
    peuvent être masqués à tort. C'est un choix, pas un défaut. À l'inverse,
-   aucune civilité — titre professionnel ou genre — n'est masquée : ni la
-   profession ni le genre ne sont retenus par l'écluse.
+   le titre professionnel (Dr, Pr, Me) est masqué avec le nom ; la civilité
+   de genre (Monsieur, Mme) reste en clair, donc le genre reste visible.
 5. **Une seule entorse à la fidélité** : quand une même personne est nommée
    de deux façons, la re-mention est harmonisée sur la forme la plus
    complète à la restauration. Aucun caractère n'est perdu.
@@ -166,20 +166,18 @@ civilité ou non » ferait exploser les faux positifs sur les débuts de
 phrase — cet arbitrage n'est pas tranché ici, il attend le NER local de la
 phase 2.
 
-**Civilités et titres : jamais masqués, seul le nom qui suit l'est.** Qu'elle
-soit de genre (`M.`, `Mme`, `Mademoiselle`, `Monsieur`, `Madame`) ou
-professionnelle (`Dr`, `Docteur`, `Pr`, `Professeur`, `Me`), la civilité
-reste visible dans le texte envoyé au LLM — le détecteur ne masque que le
-nom qui la suit (`Dr [NOM_1]`, `Madame [NOM_1]`). Deux conséquences
-distinctes : le genre reste identifiable, **et la profession aussi** — un
-quasi-identifiant de premier ordre en contexte hospitalier, non atténué par
-le masquage du nom. Pour le genre, c'est un choix : en français, le genre
-porte l'accord grammatical, et le masquer dégraderait la réponse du modèle
-(« [NOM_1] est venue » deviendrait irrécupérable). Pour la profession, ce
-n'est pas un arbitrage délibéré — la civilité n'a jamais été conçue comme
-une entité à masquer, seulement comme un indice d'ancrage pour le nom. Un
-DPO doit savoir que ni l'un ni l'autre n'est retenu par l'écluse
-aujourd'hui. Le masquage optionnel de la civilité (genre et/ou profession)
+**Titres professionnels masqués, civilités de genre en clair.** Le
+détecteur distingue désormais deux familles. Les **titres professionnels**
+(`Dr`, `Docteur`, `Pr`, `Professeur`, `Me`) sont masqués AVEC le nom qu'ils
+introduisent : « Dr Martin » devient « [NOM_1] », le titre ne fuit plus.
+La profession, quasi-identifiant de premier ordre en contexte hospitalier,
+est donc protégée. Les **civilités de genre** (`M.`, `Mme`, `Mademoiselle`,
+`Monsieur`, `Madame`) restent, elles, en clair : « Monsieur Martin »
+devient « Monsieur [NOM_1] ». Le genre reste donc visible dans le texte
+envoyé au LLM. Ce choix est délibéré : en français, le genre porte
+l'accord grammatical, et le masquer dégraderait la réponse du modèle
+(« [NOM_1] est venue » deviendrait irrécupérable). Un DPO doit savoir que
+le genre, lui, n'est pas retenu par l'écluse en v0. Son masquage optionnel
 est un arbitrage prévu en phase 2.
 
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
