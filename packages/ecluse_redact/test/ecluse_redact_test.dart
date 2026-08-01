@@ -178,9 +178,13 @@ void main() {
         // lors de la restauration.
         final restored = Ecluse.restore(result.maskedText, result.mapping);
         expect(restored, isNot(equals(text)));
+        // Le titre "Dr" fait désormais partie de la forme canonique
+        // harmonisée (span étendu au titre professionnel) : la re-mention
+        // partielle restaure donc avec le titre inclus, pas seulement le
+        // prénom + patronyme.
         expect(
           restored,
-          'Dr Nadia Costa examine le patient. Nadia Costa confirme le '
+          'Dr Nadia Costa examine le patient. Dr Nadia Costa confirme le '
           'diagnostic la semaine suivante.',
         );
       });

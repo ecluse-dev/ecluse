@@ -16,7 +16,9 @@ void main() {
 
     test('civilité + un seul mot capitalisé -> détecté, civilité préservée',
         () {
-      final entities = detector.detect('Dr Martin recevra le patient.');
+      // Civilité de genre : reste en clair, contrairement au titre
+      // professionnel (voir le groupe dédié plus bas).
+      final entities = detector.detect('M. Martin recevra le patient.');
       expect(entities, hasLength(1));
       expect(entities.single.value, 'Martin');
     });
@@ -238,7 +240,9 @@ void main() {
 
     test('civilité + nom seul reste inchangée par la règle bidirectionnelle',
         () {
-      final entities = detector.detect('Dr Vasseur recevra le patient.');
+      // Civilité de genre : reste en clair, contrairement au titre
+      // professionnel (voir le groupe dédié plus bas).
+      final entities = detector.detect('Monsieur Vasseur recevra le patient.');
       expect(entities, hasLength(1));
       expect(entities.single.value, 'Vasseur');
       expect(entities.single.confidence, 0.9);
@@ -249,25 +253,30 @@ void main() {
       // "Pr" est absent de la liste de civilités, contrairement à
       // Dr/Docteur. Trou réel en contexte hospitalier (professeur de
       // médecine en compte rendu).
-      test('"Pr" + nom seul -> détecté, civilité préservée', () {
+      //
+      // Valeurs mises à jour : "Pr"/"Professeur" sont des titres
+      // professionnels, absorbés dans le span (voir le groupe dédié plus
+      // bas) — la civilité n'est donc plus préservée ici, contrairement à
+      // "M."/"Monsieur" ci-dessus.
+      test('"Pr" + nom seul -> détecté, titre absorbé', () {
         final entities = detector.detect('Pr Dupont recevra le patient.');
         expect(entities, hasLength(1));
-        expect(entities.single.value, 'Dupont');
+        expect(entities.single.value, 'Pr Dupont');
         expect(entities.single.confidence, 0.9);
       });
 
-      test('"Professeur" + nom seul -> détecté, civilité préservée', () {
+      test('"Professeur" + nom seul -> détecté, titre absorbé', () {
         final entities =
             detector.detect('Professeur Dupont recevra le patient.');
         expect(entities, hasLength(1));
-        expect(entities.single.value, 'Dupont');
+        expect(entities.single.value, 'Professeur Dupont');
         expect(entities.single.confidence, 0.9);
       });
 
-      test('"Pr" + prénom + patronyme -> bloc complet', () {
+      test('"Pr" + prénom + patronyme -> bloc complet, titre inclus', () {
         final entities = detector.detect('Pr Nadia Costa examine le patient.');
         expect(entities, hasLength(1));
-        expect(entities.single.value, 'Nadia Costa');
+        expect(entities.single.value, 'Pr Nadia Costa');
         expect(entities.single.confidence, 0.9);
       });
     });
@@ -275,14 +284,17 @@ void main() {
     group(
         'mentions partielles rattrapées via un patronyme déjà connu — '
         'bug corrigé', () {
-      // Cas 1 : nom de famille seul, après une mention complète.
+      // Cas 1 : nom de famille seul, après une mention complète. Le titre
+      // "Dr" est désormais inclus dans l'entité complète, mais
+      // _extractSurname doit continuer à isoler "Costa" pour que le
+      // rattrapage fonctionne (voir le groupe dédié plus bas).
       test('"Costa" seul, après "Dr Nadia Costa", est rattrapé', () {
         final entities = detector.detect(
           'Dr Nadia Costa examine le patient. Costa confirme le '
           'diagnostic la semaine suivante.',
         );
         expect(entities, hasLength(2));
-        expect(entities[0].value, 'Nadia Costa');
+        expect(entities[0].value, 'Dr Nadia Costa');
         expect(entities[1].value, 'Costa');
       });
 
@@ -352,12 +364,121 @@ void main() {
           'CPTS, MDPH, CCAS, ALD, BPCO, EVA, IPS, MMSE, PTH, IDE, IDEL, '
           'UDAF, CVS, ESAT.',
         );
-        expect(entities.map((e) => e.value), ['Nadia Costa', 'Costa']);
+        expect(entities.map((e) => e.value), ['Dr Nadia Costa', 'Costa']);
       });
     });
 
     test('type exposé est EntityType.nom', () {
       expect(detector.type, EntityType.nom);
+    });
+
+    // -------------------------------------------------------------------------
+    // Titre professionnel absorbé dans le span (bug à corriger).
+    //
+    // Périmètre strict : Dr, Docteur, Pr, Professeur, Me. Les civilités de
+    // genre (M., Mme, Mademoiselle, Monsieur, Madame) restent en clair —
+    // arbitrage volontairement non tranché, voir LIMITES.md. Un seul jeton,
+    // type NOM existant — pas de nouveau type TITRE.
+    // -------------------------------------------------------------------------
+    group('titre professionnel absorbé dans le span (bug à corriger)', () {
+      test('"Dr Martin" -> un seul jeton couvrant le titre et le nom',
+          () async {
+        final entities = detector.detect('Dr Martin recevra le patient.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Dr Martin');
+        expect(entities.single.start, 0);
+        expect(entities.single.type, EntityType.nom);
+
+        final r = await Ecluse.redact('Dr Martin recevra le patient.');
+        expect(r.maskedText, '[NOM_1] recevra le patient.');
+        expect(
+          Ecluse.restore(r.maskedText, r.mapping),
+          'Dr Martin recevra le patient.',
+        );
+      });
+
+      test('"Pr Nadia Costa" -> nom composé absorbé avec le titre', () async {
+        final entities = detector.detect('Pr Nadia Costa examine le dossier.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Pr Nadia Costa');
+
+        final r = await Ecluse.redact('Pr Nadia Costa examine le dossier.');
+        expect(r.maskedText, '[NOM_1] examine le dossier.');
+        expect(
+          Ecluse.restore(r.maskedText, r.mapping),
+          'Pr Nadia Costa examine le dossier.',
+        );
+      });
+
+      test('"Me Dubois" -> titre absorbé', () async {
+        final entities = detector.detect('Me Dubois a signé l\'acte.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Me Dubois');
+
+        final r = await Ecluse.redact('Me Dubois a signé l\'acte.');
+        expect(r.maskedText, '[NOM_1] a signé l\'acte.');
+        expect(
+          Ecluse.restore(r.maskedText, r.mapping),
+          'Me Dubois a signé l\'acte.',
+        );
+      });
+
+      test(
+          '"Monsieur Martin" -> INCHANGÉ, la civilité de genre reste en '
+          'clair', () async {
+        final entities = detector.detect('Monsieur Martin recevra le '
+            'patient.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Martin');
+
+        final r = await Ecluse.redact('Monsieur Martin recevra le patient.');
+        expect(r.maskedText, 'Monsieur [NOM_1] recevra le patient.');
+        expect(
+          Ecluse.restore(r.maskedText, r.mapping),
+          'Monsieur Martin recevra le patient.',
+        );
+      });
+
+      test(
+          '"Dr Martin\\nSecretaire de séance." -> le span ne traverse pas '
+          'le saut de ligne', () async {
+        const texte = 'Dr Martin\nSecretaire de séance.';
+        final entities = detector.detect(texte);
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Dr Martin');
+
+        final r = await Ecluse.redact(texte);
+        expect(r.maskedText, '[NOM_1]\nSecretaire de séance.');
+        expect(Ecluse.restore(r.maskedText, r.mapping), texte);
+      });
+
+      // _extractSurname doit ignorer le titre en tête avant de splitter :
+      // sinon "Pr Nadia Costa" (3 mots) ne produit plus aucun patronyme
+      // extrait, et le rattrapage d'une mention partielle plus loin dans
+      // le document ("Costa" seul, sans titre ni prénom) ne fonctionne
+      // plus. L'entité complète, elle, doit rester "Pr Nadia Costa" pour
+      // le masquage.
+      test(
+          'rattrapage : "Costa" seul est toujours rattrapé quand la '
+          'mention complète porte un titre professionnel', () async {
+        const texte = 'Pr Nadia Costa examine le patient. Costa confirme le '
+            'diagnostic la semaine suivante.';
+        final entities = detector.detect(texte);
+        expect(entities, hasLength(2));
+        expect(entities[0].value, 'Pr Nadia Costa');
+        expect(entities[1].value, 'Costa');
+
+        final r = await Ecluse.redact(texte);
+        expect(r.mapping.length, 1, reason: 'même identité, même jeton');
+
+        final restored = Ecluse.restore(r.maskedText, r.mapping);
+        expect(restored, isNot(equals(texte)));
+        expect(
+          restored,
+          'Pr Nadia Costa examine le patient. Pr Nadia Costa confirme le '
+          'diagnostic la semaine suivante.',
+        );
+      });
     });
   });
 }
