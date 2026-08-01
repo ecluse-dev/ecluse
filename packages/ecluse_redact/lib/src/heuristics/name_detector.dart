@@ -123,24 +123,49 @@ final class NameDetector implements EntityDetector {
   static bool _isExcludedAcronym(String word) =>
       _excludedAcronyms.contains(word);
 
+  /// Titres professionnels : révèlent une profession, un quasi-identifiant
+  /// de premier ordre en contexte hospitalier — le span masqué les inclut
+  /// désormais (voir `LIMITES.md`). Périmètre strict et volontairement
+  /// distinct des civilités de genre (`M.`, `Mme`, `Mademoiselle`,
+  /// `Monsieur`, `Madame`), qui restent en clair : ce choix-là n'est pas
+  /// tranché, celui-ci l'est. Comparaison sur le texte de civilité déjà
+  /// matché (trim, sans l'espace de séparation), pas sur une nouvelle
+  /// regex — la liste doit rester synchronisée avec l'alternation de
+  /// [_civility].
+  static const _professionalTitles = {
+    'Dr', 'Dr.', 'Docteur', 'Pr', 'Pr.', 'Professeur', 'Me', //
+  };
+
+  static bool _isProfessionalTitle(String civility) =>
+      _professionalTitles.contains(civility.trim());
+
   @override
   List<DetectedEntity> detect(String text) {
     final results = <DetectedEntity>[];
+    // Parallèle à `results` (même index) : le nom seul, sans le titre
+    // professionnel éventuel, pour la deuxième passe (voir
+    // [_extractSurname]). Nécessaire parce que `results[i].value` inclut
+    // désormais le titre pour une entité issue d'un titre professionnel,
+    // ce qui casserait l'extraction du patronyme si on la lisait dessus.
+    final surnameSources = <String>[];
     final claimed = <_Range>[];
 
     for (final match in _civility.allMatches(text)) {
       final name = match.group(1)!;
       final nameStart =
           match.end - name.length; // groupe 1 ancré en fin de match
+      final civility = text.substring(match.start, nameStart);
+      final includeTitle = _isProfessionalTitle(civility);
       results.add(
         DetectedEntity(
           type: EntityType.nom,
-          start: nameStart,
+          start: includeTitle ? match.start : nameStart,
           end: match.end,
-          value: name,
+          value: includeTitle ? text.substring(match.start, match.end) : name,
           confidence: 0.9,
         ),
       );
+      surnameSources.add(name);
       claimed.add(_Range(match.start, match.end)); // réserve civilité + nom
     }
 
@@ -186,6 +211,7 @@ final class NameDetector implements EntityDetector {
           confidence: confidence,
         ),
       );
+      surnameSources.add(text.substring(start, end));
       claimed.add(_Range(start, end));
     }
 
@@ -193,9 +219,14 @@ final class NameDetector implements EntityDetector {
     // patronyme déjà établi par la première passe (voir le commentaire de
     // classe). Ne s'exécute que si au moins un patronyme fiable a été
     // extrait — sur un document sans mention complète, rien ne change.
+    //
+    // Lit `surnameSources`, pas `results[i].value` : pour une entité issue
+    // d'un titre professionnel, `value` inclut le titre (« Pr Nadia
+    // Costa »), ce qui ferait échouer `_extractSurname` (borné à 1 ou 2
+    // mots). `surnameSources[i]` reste le nom seul dans tous les cas.
     final knownSurnames = <String>{};
-    for (final entity in results) {
-      final surname = _extractSurname(entity);
+    for (var i = 0; i < results.length; i++) {
+      final surname = _extractSurname(results[i].confidence, surnameSources[i]);
       if (surname == null || _isExcludedAcronym(surname)) continue;
       knownSurnames.add(surname.toLowerCase());
     }
@@ -245,18 +276,22 @@ final class NameDetector implements EntityDetector {
     return results;
   }
 
-  /// Patronyme extrait d'une entité **certaine** (civilité, ou couple
+  /// Patronyme extrait d'une mention **certaine** (civilité, ou couple
   /// prénom+nom bidirectionnel), utilisé pour amorcer la deuxième passe.
   /// Retourne `null` quand aucun patronyme fiable ne peut être isolé — un
   /// prénom isolé (confiance 0.5, sans nom de famille adjacent) n'établit
   /// aucun patronyme.
-  static String? _extractSurname(DetectedEntity entity) {
-    final words = entity.value.trim().split(RegExp(r'\s+'));
+  ///
+  /// [value] est le **nom seul**, jamais le titre professionnel éventuel
+  /// (voir `surnameSources` dans [detect]) : un titre inclus ferait
+  /// gonfler le nombre de mots et empêcherait toute extraction.
+  static String? _extractSurname(double confidence, String value) {
+    final words = value.trim().split(RegExp(r'\s+'));
     if (words.length == 1) {
       // Un seul mot : fiable uniquement depuis la civilité (confiance
       // 0.9), où le mot qui suit « Dr »/« Mme »/etc. est conventionnellement
       // un nom de famille en usage professionnel français.
-      return entity.confidence == 0.9 ? words.first : null;
+      return confidence == 0.9 ? words.first : null;
     }
     if (words.length == 2) {
       final first = words[0];
