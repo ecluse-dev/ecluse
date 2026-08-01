@@ -20,7 +20,9 @@ absence de protection connue.
    scans et le manuscrit sont **refusés explicitement** — jamais lus à moitié.
 4. **Sur-masquage possible** : en cas de doute, Écluse masque. Un mot
    capitalisé adjacent à un prénom connu, ou un SIREN pris pour un FINESS,
-   peuvent être masqués à tort. C'est un choix, pas un défaut.
+   peuvent être masqués à tort. C'est un choix, pas un défaut. À l'inverse,
+   aucune civilité — titre professionnel ou genre — n'est masquée : ni la
+   profession ni le genre ne sont retenus par l'écluse.
 5. **Une seule entorse à la fidélité** : quand une même personne est nommée
    de deux façons, la re-mention est harmonisée sur la forme la plus
    complète à la restauration. Aucun caractère n'est perdu.
@@ -104,6 +106,13 @@ comme « EVA ») reposent sur des **listes finies et documentées**, pas sur
 une détection générale. Un sigle ou une unité absents de ces listes
 pourraient encore être mal classés.
 
+Le détecteur d'établissement peut, lui, absorber un mot capitalisé isolé
+qui suit immédiatement un nom d'établissement, sans ponctuation ni mot
+minuscule pour l'arrêter (« Hôpital Saint-Louis Réunion » où « Réunion »
+introduit une phrase). C'est du sur-masquage, jamais une fuite : le nom de
+l'établissement, lui, est bien protégé. Distinguer un mot appartenant au
+nom d'un mot qui le suit relève du NER de la phase 2.
+
 ### 5.2 Entités coupées par la mise en forme
 
 **Règle générale : un span ne traverse jamais un saut de ligne.** Ce choix
@@ -146,15 +155,32 @@ humaine sur des documents à la mise en page inhabituelle.
 **Patronyme sans civilité : hors périmètre v0.** Le correctif qui absorbe le
 patronyme en casse de titre (« Nathalie Loyer », « Sophie Dupont-Martin »,
 « Jean de La Fontaine ») ne s'arme qu'après une civilité reconnue (`Madame`,
-`Mademoiselle`, `Monsieur`, `Dr`, `Docteur`, `Me`…) suivie d'un prénom. Un
-patronyme mentionné sans civilité (« Camille Verdier a signé le devis. »,
-sans « Mademoiselle » devant) suit le comportement v0 inchangé : seul le
-prénom du gazetteer est détecté par la règle bidirectionnelle générique : le
-nom de famille adjacent n'est absorbé que s'il est en MAJUSCULES, ou s'il a
-déjà été établi ailleurs dans le document (voir § 5.4). Élargir l'ancrage à
-« tout mot capitalisé après un prénom, civilité ou non » ferait exploser les
-faux positifs sur les débuts de phrase — cet arbitrage n'est pas tranché ici,
-il attend le NER local de la phase 2.
+`Mademoiselle`, `Monsieur`, `Dr`, `Docteur`, `Pr`, `Professeur`, `Me`…)
+suivie d'un prénom. Un patronyme mentionné sans civilité (« Camille Verdier
+a signé le devis. », sans « Mademoiselle » devant) suit le comportement v0
+inchangé : seul le prénom du gazetteer est détecté par la règle
+bidirectionnelle générique : le nom de famille adjacent n'est absorbé que
+s'il est en MAJUSCULES, ou s'il a déjà été établi ailleurs dans le document
+(voir § 5.4). Élargir l'ancrage à « tout mot capitalisé après un prénom,
+civilité ou non » ferait exploser les faux positifs sur les débuts de
+phrase — cet arbitrage n'est pas tranché ici, il attend le NER local de la
+phase 2.
+
+**Civilités et titres : jamais masqués, seul le nom qui suit l'est.** Qu'elle
+soit de genre (`M.`, `Mme`, `Mademoiselle`, `Monsieur`, `Madame`) ou
+professionnelle (`Dr`, `Docteur`, `Pr`, `Professeur`, `Me`), la civilité
+reste visible dans le texte envoyé au LLM — le détecteur ne masque que le
+nom qui la suit (`Dr [NOM_1]`, `Madame [NOM_1]`). Deux conséquences
+distinctes : le genre reste identifiable, **et la profession aussi** — un
+quasi-identifiant de premier ordre en contexte hospitalier, non atténué par
+le masquage du nom. Pour le genre, c'est un choix : en français, le genre
+porte l'accord grammatical, et le masquer dégraderait la réponse du modèle
+(« [NOM_1] est venue » deviendrait irrécupérable). Pour la profession, ce
+n'est pas un arbitrage délibéré — la civilité n'a jamais été conçue comme
+une entité à masquer, seulement comme un indice d'ancrage pour le nom. Un
+DPO doit savoir que ni l'un ni l'autre n'est retenu par l'écluse
+aujourd'hui. Le masquage optionnel de la civilité (genre et/ou profession)
+est un arbitrage prévu en phase 2.
 
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
