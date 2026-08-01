@@ -68,10 +68,15 @@ final class NameDetector implements EntityDetector {
   /// Chaque unité peut être précédée d'une particule en minuscules (`de`,
   /// `du`, `des`, `le`, `la`, `van`, `von`) à condition d'être suivie d'un
   /// mot en casse de titre — sinon la particule n'est jamais absorbée seule.
+  ///
+  /// Tous les séparateurs sont `[ \t]+` (espace horizontal), jamais `\s+` :
+  /// la spec (§ 3) exige que civilité, prénom et patronyme restent sur la
+  /// **même ligne**. `\s` matche aussi `\n`/`\r`, ce qui laissait le
+  /// patronyme absorber le premier mot capitalisé de la ligne suivante.
   static final RegExp _civility = RegExp(
-    r'\b(?:M\.|Mme|Mademoiselle|Monsieur|Madame|Dr\.?|Docteur|Me)\s+'
+    r'\b(?:M\.|Mme|Mademoiselle|Monsieur|Madame|Dr\.?|Docteur|Me)[ \t]+'
     r"([A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*"
-    r'(?:\s+(?:(?:de|du|des|le|la|van|von)\s+)?'
+    r'(?:[ \t]+(?:(?:de|du|des|le|la|van|von)[ \t]+)?'
     r"[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*){0,2})",
   );
 
