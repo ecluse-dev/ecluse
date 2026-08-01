@@ -41,3 +41,8 @@ docs/
 
 # Overrides locaux Melos (ne pas committer)
 pubspec_overrides.yaml
+
+# Corpus et predictions de benchmark (regenerables via seed)
+bench/corpus_flou_*.jsonl
+bench/pred_*.jsonl
+bench/pred_redact_*.jsonl
