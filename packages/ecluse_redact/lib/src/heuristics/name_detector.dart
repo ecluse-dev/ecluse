@@ -9,9 +9,10 @@ import 'french_first_names.dart';
 /// Ce détecteur combine deux indices :
 ///
 /// 1. Une **civilité** (`M.`, `Mme`, `Mademoiselle`, `Monsieur`, `Madame`,
-///    `Dr`, `Docteur`, `Me`) suivie d'un prénom puis d'un patronyme de 1 à 2
-///    mots (particules `de`, `du`, `des`, `le`, `la`, `van`, `von` admises
-///    devant un mot en casse de titre) → confiance haute (0.9) : l'indice
+///    `Dr`, `Docteur`, `Pr`, `Professeur`, `Me`) suivie d'un prénom puis
+///    d'un patronyme de 1 à 2 mots (particules `de`, `du`, `des`, `le`,
+///    `la`, `van`, `von` admises devant un mot en casse de titre) →
+///    confiance haute (0.9) : l'indice
 ///    est fort et rarement un faux positif.
 /// 2. Un **prénom français connu** (voir [frenchFirstNames]) adjacent à un
 ///    mot capitalisé (nom de famille supposé) → confiance moyenne (0.6).
@@ -74,7 +75,8 @@ final class NameDetector implements EntityDetector {
   /// **même ligne**. `\s` matche aussi `\n`/`\r`, ce qui laissait le
   /// patronyme absorber le premier mot capitalisé de la ligne suivante.
   static final RegExp _civility = RegExp(
-    r'\b(?:M\.|Mme|Mademoiselle|Monsieur|Madame|Dr\.?|Docteur|Me)[ \t]+'
+    r'\b(?:M\.|Mme|Mademoiselle|Monsieur|Madame|Dr\.?|Docteur|Pr\.?|'
+    r'Professeur|Me)[ \t]+'
     r"([A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*"
     r'(?:[ \t]+(?:(?:de|du|des|le|la|van|von)[ \t]+)?'
     r"[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*){0,2})",
