@@ -244,6 +244,34 @@ void main() {
       expect(entities.single.confidence, 0.9);
     });
 
+    group('civilité "Pr"/"Professeur" (bug à corriger)', () {
+      // "Pr Dupont" (patronyme seul, sans prénom reconnu) fuit aujourd'hui :
+      // "Pr" est absent de la liste de civilités, contrairement à
+      // Dr/Docteur. Trou réel en contexte hospitalier (professeur de
+      // médecine en compte rendu).
+      test('"Pr" + nom seul -> détecté, civilité préservée', () {
+        final entities = detector.detect('Pr Dupont recevra le patient.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Dupont');
+        expect(entities.single.confidence, 0.9);
+      });
+
+      test('"Professeur" + nom seul -> détecté, civilité préservée', () {
+        final entities =
+            detector.detect('Professeur Dupont recevra le patient.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Dupont');
+        expect(entities.single.confidence, 0.9);
+      });
+
+      test('"Pr" + prénom + patronyme -> bloc complet', () {
+        final entities = detector.detect('Pr Nadia Costa examine le patient.');
+        expect(entities, hasLength(1));
+        expect(entities.single.value, 'Nadia Costa');
+        expect(entities.single.confidence, 0.9);
+      });
+    });
+
     group(
         'mentions partielles rattrapées via un patronyme déjà connu — '
         'bug corrigé', () {
