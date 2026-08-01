@@ -200,6 +200,37 @@ Batiment C
       expect(r.maskedText, contains('Batiment C'));
       await expectRoundTrip(texte);
     });
+
+    // -----------------------------------------------------------------------
+    // Cas 14 et 15 : le span de NOM ne traverse jamais un saut de ligne.
+    //
+    // Revele par le corpus realiste le 31/07 : le detecteur produisait
+    // 'Nathalie Reynaud\n\nEtablissement' — le patronyme absorbait le premier
+    // mot de la ligne suivante. La spec (§ 3) exigeait deja « sur la meme
+    // ligne » ; la contrainte n'avait pas ete implementee, et aucun garde-fou
+    // ne couvrait le detecteur de noms sur ce point.
+    //
+    // Ce n'est pas une fuite (le contenu est masque) mais une corruption de
+    // la structure du document envoye au LLM.
+    // -----------------------------------------------------------------------
+    test('cas 14 — le span de nom ne traverse pas un double saut de ligne',
+        () async {
+      const texte =
+          'Contact : Madame Nathalie Reynaud\n\nEtablissement : CH de Vesoul\n';
+      final r = await Ecluse.redact(texte);
+      expect(r.maskedText, contains('Etablissement'),
+          reason: 'Le patronyme ne doit pas absorber la ligne suivante');
+      await expectRoundTrip(texte);
+    });
+
+    test('cas 15 — le span de nom ne traverse pas un saut de ligne simple',
+        () async {
+      const texte = 'Present : Monsieur Marc Chevrier\nSecretaire de seance\n';
+      final r = await Ecluse.redact(texte);
+      expect(r.maskedText, contains('Secretaire'),
+          reason: 'Le separateur autorise est l espace horizontal, jamais \\n');
+      await expectRoundTrip(texte);
+    });
   });
 
   // -------------------------------------------------------------------------
