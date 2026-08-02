@@ -32,7 +32,7 @@ IngestResult ingestPlainText(List<int> bytes, IngestFormat format) {
 
   final String text;
   try {
-    text = utf8.decode(bytes);
+    text = utf8.decode(stripUtf8Bom(bytes));
   } on FormatException {
     return const IngestRefused(
       'Encodage non reconnu (ni UTF-8 ni UTF-16) : ré-enregistrez le '
@@ -40,5 +40,9 @@ IngestResult ingestPlainText(List<int> bytes, IngestFormat format) {
     );
   }
 
-  return IngestedText(text: text, format: format);
+  return IngestedText(
+    text: text,
+    format: format,
+    warnings: text.isEmpty ? const ['empty'] : const [],
+  );
 }

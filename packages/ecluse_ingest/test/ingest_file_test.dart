@@ -19,6 +19,25 @@ void main() {
       final text = result as IngestedText;
       expect(text.text, 'Un texte simple, sans mise en forme.');
       expect(text.format, IngestFormat.txt);
+      expect(text.warnings, isEmpty);
+    });
+
+    test('.txt avec BOM UTF-8 -> BOM retiré, warnings vide', () {
+      final bytesWithBom = [0xEF, 0xBB, 0xBF, ...utf8.encode('Bonjour.')];
+      final result = ingestFile(bytesWithBom, filename: 'note.txt');
+      expect(result, isA<IngestedText>());
+      final text = result as IngestedText;
+      expect(text.text, 'Bonjour.');
+      expect(text.text, isNot(startsWith('﻿')));
+      expect(text.warnings, isEmpty);
+    });
+
+    test("fichier vide -> succès, texte vide, warnings: ['empty']", () {
+      final result = ingestFile(<int>[], filename: 'vide.txt');
+      expect(result, isA<IngestedText>());
+      final text = result as IngestedText;
+      expect(text.text, '');
+      expect(text.warnings, ['empty']);
     });
 
     test('.md : la syntaxe Markdown brute est préservée, jamais rendue', () {

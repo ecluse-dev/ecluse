@@ -15,10 +15,19 @@ sealed class IngestResult {
 /// intervenir entre l'extraction et la détection, sous peine de décaler
 /// les offsets des entités détectées.
 final class IngestedText extends IngestResult {
-  const IngestedText({required this.text, required this.format});
+  const IngestedText({
+    required this.text,
+    required this.format,
+    this.warnings = const [],
+  });
 
   final String text;
   final IngestFormat format;
+
+  /// Signaux non bloquants sur l'extraction (ex. `'empty'` pour un fichier
+  /// vide) — un succès reste un succès, mais l'appelant peut vouloir
+  /// distinguer un texte vide attendu d'un texte vide suspect.
+  final List<String> warnings;
 }
 
 /// Fichier explicitement refusé : format hors périmètre, contenu
