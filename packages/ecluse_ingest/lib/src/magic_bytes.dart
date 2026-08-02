@@ -33,6 +33,7 @@ const List<KnownBinaryFormat> knownBinarySignatures = [
 
 const List<int> utf16LeBom = [0xFF, 0xFE];
 const List<int> utf16BeBom = [0xFE, 0xFF];
+const List<int> utf8Bom = [0xEF, 0xBB, 0xBF];
 
 bool bytesStartWith(List<int> bytes, List<int> prefix) {
   if (bytes.length < prefix.length) return false;
@@ -52,3 +53,9 @@ KnownBinaryFormat? matchKnownBinarySignature(List<int> bytes) {
 
 bool hasUtf16Bom(List<int> bytes) =>
     bytesStartWith(bytes, utf16LeBom) || bytesStartWith(bytes, utf16BeBom);
+
+/// Retire le BOM UTF-8 (`EF BB BF`) en tête de [bytes], s'il est présent.
+/// Le BOM est un artefact d'encodage, pas du contenu : il ne doit jamais
+/// apparaître dans le texte extrait ni décaler les offsets.
+List<int> stripUtf8Bom(List<int> bytes) =>
+    bytesStartWith(bytes, utf8Bom) ? bytes.sublist(utf8Bom.length) : bytes;
