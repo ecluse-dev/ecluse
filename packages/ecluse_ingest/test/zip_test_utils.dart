@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 /// Construit un fichier ZIP minimal, **non compressé** (méthode « stored »),
@@ -80,6 +81,86 @@ List<int> buildStoredZip(Map<String, String> entries) {
     ...centralDirectory,
     ...endRecord.toBytes(),
   ];
+}
+
+/// Construit un ZIP minimal à **une seule entrée compressée en deflate**
+/// (méthode 8), pour tester le plafond de décompression du garde-fou zip
+/// bomb — `buildStoredZip` ne peut pas servir à ça : en mode « stored »,
+/// taille compressée == taille réelle, impossible de simuler un flux qui
+/// décompresse vers plus que ce que l'en-tête annonce.
+///
+/// [declaredUncompressedSize] permet de **falsifier** la taille annoncée
+/// dans l'en-tête (par défaut, la vraie taille) : sert spécifiquement à
+/// tester qu'un en-tête ZIP mensonger ne suffit pas à contourner le
+/// plafond réel appliqué pendant la décompression elle-même.
+///
+/// `dart:io`'s `ZLibCodec`, pas `package:archive` : ce fichier reste à
+/// l'écart de tout encodeur ZIP de bibliothèque tierce (voir le
+/// commentaire de [buildStoredZip]) ; `ZLibCodec` ne fait que la
+/// compression deflate du contenu, pas la construction du conteneur ZIP.
+List<int> buildDeflatedZip(
+  String entryName,
+  String content, {
+  int? declaredUncompressedSize,
+}) {
+  final nameBytes = utf8.encode(entryName);
+  final rawContent = utf8.encode(content);
+  final compressed = ZLibCodec(raw: true).encode(rawContent);
+  final crc = _crc32(rawContent);
+  final declaredSize = declaredUncompressedSize ?? rawContent.length;
+  const method = 8; // deflate
+
+  final local = BytesBuilder()
+    ..add(_uint32LE(0x04034b50))
+    ..add(_uint16LE(20))
+    ..add(_uint16LE(0))
+    ..add(_uint16LE(method))
+    ..add(_uint16LE(0))
+    ..add(_uint16LE(0))
+    ..add(_uint32LE(crc))
+    ..add(_uint32LE(compressed.length))
+    ..add(_uint32LE(declaredSize)) // potentiellement falsifiée
+    ..add(_uint16LE(nameBytes.length))
+    ..add(_uint16LE(0))
+    ..add(nameBytes)
+    ..add(compressed);
+  final localBytes = local.toBytes();
+
+  final central = BytesBuilder()
+    ..add(_uint32LE(0x02014b50))
+    ..add(_uint16LE(20))
+    ..add(_uint16LE(20))
+    ..add(_uint16LE(0))
+    ..add(_uint16LE(method))
+    ..add(_uint16LE(0))
+    ..add(_uint16LE(0))
+    ..add(_uint32LE(crc))
+    ..add(_uint32LE(compressed.length))
+    ..add(_uint32LE(declaredSize)) // potentiellement falsifiée — c'est
+    // cette valeur, pas celle de l'en-tête local, que `package:archive`
+    // retient au final pour `ArchiveFile.size` (voir zip_file.dart:
+    // `uncompressedSize = header?.uncompressedSize ?? uncompressedSize`).
+    ..add(_uint16LE(nameBytes.length))
+    ..add(_uint16LE(0))
+    ..add(_uint16LE(0))
+    ..add(_uint16LE(0))
+    ..add(_uint16LE(0))
+    ..add(_uint32LE(0))
+    ..add(_uint32LE(0))
+    ..add(nameBytes);
+  final centralBytes = central.toBytes();
+
+  final endRecord = BytesBuilder()
+    ..add(_uint32LE(0x06054b50))
+    ..add(_uint16LE(0))
+    ..add(_uint16LE(0))
+    ..add(_uint16LE(1))
+    ..add(_uint16LE(1))
+    ..add(_uint32LE(centralBytes.length))
+    ..add(_uint32LE(localBytes.length))
+    ..add(_uint16LE(0));
+
+  return [...localBytes, ...centralBytes, ...endRecord.toBytes()];
 }
 
 List<int> _uint16LE(int value) => [value & 0xFF, (value >> 8) & 0xFF];
