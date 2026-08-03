@@ -8,6 +8,11 @@ import 'zip_test_utils.dart';
 List<int> _buildDocxBytes(String documentXml) =>
     buildStoredZip({'word/document.xml': documentXml});
 
+List<int> _buildOdtBytes(String contentXml) => buildStoredZip({
+      'mimetype': 'application/vnd.oasis.opendocument.text',
+      'content.xml': contentXml,
+    });
+
 void main() {
   group('ingestFile — formats pris en charge', () {
     test('.txt : texte brut décodé tel quel', () {
@@ -69,6 +74,22 @@ void main() {
         'Compte rendu de réunion\nDeuxième paragraphe.\n',
       );
       expect(text.format, IngestFormat.docx);
+    });
+
+    test('.odt : dézippage + extraction du texte de content.xml', () {
+      final xml = '<text:p>Compte rendu de r&#233;union</text:p>'
+          '<text:p>Deuxi&#232;me paragraphe.</text:p>';
+      final result = ingestFile(
+        _buildOdtBytes(xml),
+        filename: 'compte_rendu.odt',
+      );
+      expect(result, isA<IngestedText>());
+      final text = result as IngestedText;
+      expect(
+        text.text,
+        'Compte rendu de réunion\nDeuxième paragraphe.\n',
+      );
+      expect(text.format, IngestFormat.odt);
     });
   });
 

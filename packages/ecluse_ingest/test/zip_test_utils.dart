@@ -163,6 +163,108 @@ List<int> buildDeflatedZip(
   return [...localBytes, ...centralBytes, ...endRecord.toBytes()];
 }
 
+/// Méthode de compression d'une entrée pour [buildZip].
+enum ZipCompression { stored, deflated }
+
+/// Une entrée à écrire dans un ZIP construit par [buildZip].
+///
+/// [declaredUncompressedSize] permet de falsifier la taille annoncée dans
+/// l'en-tête (par défaut, la vraie taille) — même usage que dans
+/// [buildDeflatedZip], voir son commentaire.
+class ZipTestEntry {
+  const ZipTestEntry(
+    this.name,
+    this.content, {
+    this.compression = ZipCompression.stored,
+    this.declaredUncompressedSize,
+  });
+
+  final String name;
+  final String content;
+  final ZipCompression compression;
+  final int? declaredUncompressedSize;
+}
+
+/// Construit un ZIP à **plusieurs entrées, à compression mixte**
+/// (`stored`/`deflated` par entrée) — utile pour des fixtures qui
+/// combinent une petite entrée non compressée (ex. `mimetype` d'un
+/// `.odt`) avec une entrée deflate potentiellement gonflable (ex.
+/// `content.xml`), sans quoi [buildStoredZip] (tout stored) et
+/// [buildDeflatedZip] (une seule entrée deflate) ne suffisent pas.
+List<int> buildZip(List<ZipTestEntry> entries) {
+  final localSections = <List<int>>[];
+  final centralSections = <List<int>>[];
+  var offset = 0;
+
+  for (final entry in entries) {
+    final nameBytes = utf8.encode(entry.name);
+    final rawContent = utf8.encode(entry.content);
+    final deflated = entry.compression == ZipCompression.deflated;
+    final compressed =
+        deflated ? ZLibCodec(raw: true).encode(rawContent) : rawContent;
+    final crc = _crc32(rawContent);
+    final declaredSize = entry.declaredUncompressedSize ?? rawContent.length;
+    final method = deflated ? 8 : 0;
+
+    final local = BytesBuilder()
+      ..add(_uint32LE(0x04034b50))
+      ..add(_uint16LE(20))
+      ..add(_uint16LE(0))
+      ..add(_uint16LE(method))
+      ..add(_uint16LE(0))
+      ..add(_uint16LE(0))
+      ..add(_uint32LE(crc))
+      ..add(_uint32LE(compressed.length))
+      ..add(_uint32LE(declaredSize))
+      ..add(_uint16LE(nameBytes.length))
+      ..add(_uint16LE(0))
+      ..add(nameBytes)
+      ..add(compressed);
+    final localBytes = local.toBytes();
+    localSections.add(localBytes);
+
+    final central = BytesBuilder()
+      ..add(_uint32LE(0x02014b50))
+      ..add(_uint16LE(20))
+      ..add(_uint16LE(20))
+      ..add(_uint16LE(0))
+      ..add(_uint16LE(method))
+      ..add(_uint16LE(0))
+      ..add(_uint16LE(0))
+      ..add(_uint32LE(crc))
+      ..add(_uint32LE(compressed.length))
+      ..add(_uint32LE(declaredSize))
+      ..add(_uint16LE(nameBytes.length))
+      ..add(_uint16LE(0))
+      ..add(_uint16LE(0))
+      ..add(_uint16LE(0))
+      ..add(_uint16LE(0))
+      ..add(_uint32LE(0))
+      ..add(_uint32LE(offset))
+      ..add(nameBytes);
+    centralSections.add(central.toBytes());
+
+    offset += localBytes.length;
+  }
+
+  final centralDirectory = centralSections.expand((b) => b).toList();
+  final endRecord = BytesBuilder()
+    ..add(_uint32LE(0x06054b50))
+    ..add(_uint16LE(0))
+    ..add(_uint16LE(0))
+    ..add(_uint16LE(entries.length))
+    ..add(_uint16LE(entries.length))
+    ..add(_uint32LE(centralDirectory.length))
+    ..add(_uint32LE(offset))
+    ..add(_uint16LE(0));
+
+  return [
+    ...localSections.expand((b) => b),
+    ...centralDirectory,
+    ...endRecord.toBytes(),
+  ];
+}
+
 List<int> _uint16LE(int value) => [value & 0xFF, (value >> 8) & 0xFF];
 
 List<int> _uint32LE(int value) => [
