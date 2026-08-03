@@ -9,8 +9,7 @@ void main() {
     });
 
     test('deux paragraphes -> une nouvelle ligne entre eux', () {
-      const xml =
-          '<text:p>Ligne un</text:p><text:p>Ligne deux</text:p>';
+      const xml = '<text:p>Ligne un</text:p><text:p>Ligne deux</text:p>';
       expect(extractOdtPlainText(xml), 'Ligne un\nLigne deux\n');
     });
 
@@ -35,7 +34,8 @@ void main() {
       expect(extractOdtPlainText(xml), 'Item un\nItem deux\n');
     });
 
-    test('<text:tab/> devient une tabulation, <text:line-break/> un saut '
+    test(
+        '<text:tab/> devient une tabulation, <text:line-break/> un saut '
         'de ligne', () {
       const xml = '<text:p>a<text:tab/>b<text:line-break/>c</text:p>';
       expect(extractOdtPlainText(xml), 'a\tb\nc\n');
@@ -54,7 +54,8 @@ void main() {
       expect(extractOdtPlainText(xml), 'Texte visible\n');
     });
 
-    test('<text:p/> auto-fermant (paragraphe vide) produit une ligne '
+    test(
+        '<text:p/> auto-fermant (paragraphe vide) produit une ligne '
         'vide', () {
       const xml = '<text:p>Avant</text:p><text:p/><text:p>Après</text:p>';
       expect(extractOdtPlainText(xml), 'Avant\n\nAprès\n');
