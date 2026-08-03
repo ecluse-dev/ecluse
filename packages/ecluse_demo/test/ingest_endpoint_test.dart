@@ -17,6 +17,11 @@ final class _EchoClient implements LlmClient {
 List<int> _buildDocxBytes(String documentXml) =>
     buildStoredZip({'word/document.xml': documentXml});
 
+List<int> _buildOdtBytes(String contentXml) => buildStoredZip({
+      'mimetype': 'application/vnd.oasis.opendocument.text',
+      'content.xml': contentXml,
+    });
+
 Future<Map<String, dynamic>> _postIngest(
   Handler handler, {
   required String filename,
@@ -87,6 +92,22 @@ void main() {
       expect(body['error'], isNull);
       expect(body['text'], 'Compte rendu de réunion\n');
       expect(body['format'], 'docx');
+    });
+
+    test('.odt déposé -> dézippage et extraction du texte', () async {
+      final bytes = _buildOdtBytes(
+        '<text:p>Compte rendu de réunion</text:p>'
+        '<text:p>Deuxième paragraphe.</text:p>',
+      );
+      final body = await _postIngest(
+        handler,
+        filename: 'compte_rendu.odt',
+        bytes: bytes,
+      );
+
+      expect(body['error'], isNull);
+      expect(body['text'], 'Compte rendu de réunion\nDeuxième paragraphe.\n');
+      expect(body['format'], 'odt');
     });
 
     test('fichier .txt vide -> traité proprement, texte vide', () async {
