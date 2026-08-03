@@ -1,8 +1,9 @@
 import 'docx_extractor.dart';
 import 'ingest_result.dart';
+import 'odt_extractor.dart';
 import 'plain_text_extractor.dart';
 
-const List<String> supportedExtensions = ['txt', 'md', 'docx'];
+const List<String> supportedExtensions = ['txt', 'md', 'docx', 'odt'];
 
 /// Ingère un fichier déposé par nom [filename] et contenu [bytes].
 ///
@@ -20,16 +21,18 @@ IngestResult ingestFile(List<int> bytes, {required String filename}) {
       return ingestPlainText(bytes, IngestFormat.md);
     case 'docx':
       return ingestDocx(bytes);
+    case 'odt':
+      return ingestOdt(bytes);
     case null:
       return const IngestRefused(
         'Fichier sans extension reconnaissable : formats gérés en v1 -> '
-        '.txt, .md, .docx.',
+        '.txt, .md, .docx, .odt.',
       );
     default:
       return IngestRefused(
         'Format « .$extension » non traité en v1 (formats gérés : .txt, '
-        '.md, .docx). Écluse ne traite ni le PDF, ni l\'image, ni le '
-        'manuscrit pour le moment.',
+        '.md, .docx, .odt). Écluse ne traite ni le PDF, ni l\'image, ni '
+        'le manuscrit pour le moment.',
       );
   }
 }
