@@ -1,0 +1,26 @@
+# Configuration Dependabot pour Écluse (monorepo Dart / Melos)
+# Documentation : https://docs.github.com/code-security/dependabot
+
+version: 2
+updates:
+  # Actions GitHub utilisées dans les workflows CI/CD
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # Dépendances Dart / Pub à la racine du monorepo
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "dart"
