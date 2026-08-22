@@ -1,0 +1,21 @@
+name: ecluse_llm
+description: >
+  Interfaces Dart pures pour l'usage d'un LLM local dans la couche
+  d'anonymisation d'Ecluse. Aucun modèle embarqué, aucune dépendance native.
+  Une implémentation concrète (ex: ecluse_llm_onnx) fournit LlmClient.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.3.0
+
+dependencies:
+  # ecluse_core expose Span/Detector/EcluseEngine — cohérent avec le pattern
+  # utilisé par ecluse_ner. À décommenter au moment du bootstrap Melos.
+  # ecluse_core:
+  #   path: ../ecluse_core
+  meta: ^1.15.0
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^4.0.0
