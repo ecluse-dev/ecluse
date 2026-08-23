@@ -1,0 +1,22 @@
+name: ecluse_ocr
+description: >
+  Interfaces Dart pures pour l'ingestion de documents non-textuels
+  (PDF-image, scan, photo) dans Ecluse. Aucune dépendance native, aucune
+  fuite réseau. Fournit la revalidation structurelle post-OCR qui rend
+  l'ouverture à ces formats compatible avec la ligne éditoriale du projet.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.3.0
+
+dependencies:
+  # À décommenter au bootstrap Melos pour partager `Span` et les
+  # détecteurs structurels validés (NIR, RPPS, FINESS, IBAN).
+  # ecluse_core:
+  #   path: ../ecluse_core
+  meta: ^1.15.0
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^4.0.0
