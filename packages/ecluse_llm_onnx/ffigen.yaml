@@ -1,0 +1,26 @@
+# À exécuter avec `dart run ffigen --config ffigen.yaml` une fois
+# `onnxruntime_c_api.h` disponible en local et la version d'ORT arrêtée.
+#
+# Ce fichier est un point de départ ; il n'a PAS encore été validé.
+name: OnnxRuntimeBindings
+description: |
+  Bindings FFI vers ONNX Runtime C API. Générés automatiquement,
+  ne pas éditer à la main.
+output: 'lib/src/generated/ort_bindings.dart'
+headers:
+  entry-points:
+    # À adapter selon l'endroit où ORT est installé.
+    - '/opt/onnxruntime/include/onnxruntime_c_api.h'
+compiler-opts:
+  - '-I/opt/onnxruntime/include'
+functions:
+  include:
+    - 'OrtGetApiBase'
+    - 'OrtSessionOptions.*'
+    - 'OrtCreateSession'
+    - 'OrtRun'
+    - 'OrtRelease.*'
+    - 'OrtCreate.*'
+structs:
+  include:
+    - 'Ort.*'

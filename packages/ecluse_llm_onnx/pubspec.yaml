@@ -1,0 +1,21 @@
+name: ecluse_llm_onnx
+description: >
+  Implémentation LlmClient via ONNX Runtime (FFI). Cible : petits LLM
+  (Qwen 2.5 3B, Gemma 3 4B, Phi-3.5-mini) en INT4/INT8, exécutés localement
+  sans réseau sortant.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.3.0
+
+dependencies:
+  ecluse_llm:
+    path: ../ecluse_llm
+  ffi: ^2.1.0
+  path: ^1.9.0
+  meta: ^1.15.0
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^4.0.0
