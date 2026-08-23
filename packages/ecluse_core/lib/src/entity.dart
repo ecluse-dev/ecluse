@@ -37,6 +37,11 @@ enum EntityType {
 
   /// Nom d'établissement (détection heuristique, voir `ecluse_redact`).
   etablissement,
+
+  /// Identite Nationale de Sante (INS) - OIDs de referentiel ANS
+  /// (1.2.250.1.213.1.4.*) et marqueurs textuels (INS-NIR, matricule INS...).
+  /// Voir InsDetector.
+  ins,
 }
 
 /// Une entité personnelle détectée dans un texte.
