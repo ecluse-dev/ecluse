@@ -524,6 +524,7 @@
   <div class="controls">
     <button id="sample-0-btn" type="button">Charger : contrat de travail</button>
     <button id="sample-1-btn" type="button">Charger : compte rendu de réunion</button>
+    <button id="sample-2-btn" type="button">Charger : compte rendu ESAT</button>
   </div>
 
   <div class="dropzone" id="dropzone">
@@ -655,6 +656,7 @@
     document.getElementById('send-btn').disabled = busy;
     document.getElementById('sample-0-btn').disabled = busy;
     document.getElementById('sample-1-btn').disabled = busy;
+    document.getElementById('sample-2-btn').disabled = busy;
     document.getElementById('browse-btn').disabled = busy;
   }
 
@@ -865,6 +867,7 @@
 
   document.getElementById('sample-0-btn').addEventListener('click', () => loadSample(0));
   document.getElementById('sample-1-btn').addEventListener('click', () => loadSample(1));
+  document.getElementById('sample-2-btn').addEventListener('click', () => loadSample(2));
   document.getElementById('send-btn').addEventListener('click', sendToAi);
   setupDropzone();
 
