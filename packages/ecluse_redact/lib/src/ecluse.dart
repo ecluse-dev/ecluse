@@ -21,8 +21,8 @@ import 'tokenizer.dart';
 /// ```
 ///
 /// `Ecluse.redact` compose, via `EcluseEngine`, les détecteurs à validation
-/// structurelle d'`ecluse_core` (NIR, RPPS, IBAN, FINESS) et les détecteurs
-/// heuristiques v0 de ce package (voir `lib/src/heuristics/`, remplacés en
+/// structurelle d'`ecluse_core` (NIR, RPPS, IBAN, FINESS, INS) et les
+/// détecteurs heuristiques v0 de ce package (voir `lib/src/heuristics/`, remplacés en
 /// phase 2 par un NER local — voir ROADMAP.md). `redact` est async parce
 /// que `Detector.detect` l'est (contrat uniforme avec le futur NER, qui
 /// pourra tourner dans un isolate) — les détecteurs eux-mêmes restent
@@ -44,6 +44,7 @@ abstract final class Ecluse {
         name: 'rpps'),
     LegacyDetectorAdapter(IbanFrDetector(), DetectorTier.structural,
         name: 'iban'),
+    LegacyDetectorAdapter(InsDetector(), DetectorTier.structural, name: 'ins'),
     FinessDetector(),
     LegacyDetectorAdapter(NameDetector(), DetectorTier.reference, name: 'nom'),
     LegacyDetectorAdapter(DateNaissanceDetector(), DetectorTier.pattern,
