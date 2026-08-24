@@ -1,41 +1,128 @@
 import '../detector.dart';
 import '../entity.dart';
 
+/// Nature de l'identifiant INS reconnu.
+///
+/// Correspond à la classification du référentiel INS publié par l'ANS
+/// (Agence du Numérique en Santé). Deux familles sont en production
+/// courante depuis 2021 ; la troisième reste indispensable pour
+/// interpréter les dossiers médicaux antérieurs.
+enum InsIdentityKind {
+  /// Matricule NIR — personne inscrite au Répertoire National
+  /// d'Identification des Personnes Physiques (INSEE).
+  nir,
+
+  /// NIA — Numéro Identifiant d'Attente, identifiant provisoire ANS
+  /// pour une personne en cours d'attribution de NIR.
+  nia,
+
+  /// INS-C — Identifiant Calculé, historique, dérivé de la carte
+  /// Vitale. Remplacé depuis 2021 par NIR/NIA en production mais
+  /// toujours présent dans les archives médicales antérieures.
+  insC,
+}
+
+/// Environnement d'attribution d'un OID INS.
+///
+/// La distinction est capitale : un OID de test ou de démonstration
+/// dans un texte de production est **anormal** — soit fuite de jeu de
+/// test dans un dossier réel, soit étiquetage erroné d'un vrai
+/// identifiant. Un consommateur en aval peut le traiter comme signal
+/// d'alerte plutôt que comme un INS ordinaire.
+enum InsEnvironment {
+  /// Identifiant réel de production.
+  production,
+
+  /// Environnement de test — ne devrait jamais apparaître dans un
+  /// document patient réel.
+  test,
+
+  /// Environnement de démonstration — ne devrait jamais apparaître
+  /// dans un document patient réel.
+  demonstration,
+}
+
+/// Autorité d'affectation d'un OID INS : type d'identifiant +
+/// environnement d'attribution.
+final class InsOidAuthority {
+  const InsOidAuthority(this.kind, this.environment);
+
+  final InsIdentityKind kind;
+  final InsEnvironment environment;
+
+  /// `true` si l'OID appartient à l'environnement de production.
+  bool get isProduction => environment == InsEnvironment.production;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is InsOidAuthority &&
+          other.kind == kind &&
+          other.environment == environment;
+
+  @override
+  int get hashCode => Object.hash(kind, environment);
+
+  @override
+  String toString() => 'InsOidAuthority(${kind.name}, ${environment.name})';
+}
+
 /// Détecteur d'Identité Nationale de Santé (INS).
 ///
 /// L'INS est référencée par un triplet (matricule, OID de référentiel,
 /// traits d'identité stricts). Ce détecteur se limite à ce qui est
-/// **localement observable dans un texte libre** : les OIDs INS français
-/// (préfixe ANS `1.2.250.1.213.1.4.*`) et les marqueurs textuels
-/// (`INS-NIR`, `matricule INS`, `identité nationale de santé`, etc.).
+/// **localement observable dans un texte libre** : les OIDs INS
+/// français (préfixe ANS `1.2.250.1.213.1.4.*`) et les marqueurs
+/// textuels (`INS-NIR`, `matricule INS`, `identité nationale de
+/// santé`, etc.).
 ///
-/// L'association marqueur ↔ NIR proche (reclassification NIR → INS) est
-/// du ressort de `EcluseEngine` via `resolveOverlaps` — le détecteur reste
-/// local et testable, la fusion multi-couches reste centralisée.
+/// L'association marqueur ↔ NIR proche (reclassification NIR → INS)
+/// est du ressort de `EcluseEngine` via `resolveOverlaps` — le
+/// détecteur reste local et testable, la fusion multi-couches reste
+/// centralisée.
 ///
-/// **À faire vérifier avec l'ANS** : la table [defaultOidToKind] repose
-/// sur les OIDs observés dans les DUI Ségur vague 2. Le préfixe
-/// `1.2.250.1.213.1.4.` (ANS-santé) est stable ; seuls les suffixes
-/// précis peuvent bouger entre versions du CI-SIS.
+/// **Source des OIDs** : « Référentiel Identifiant National de Santé
+/// — Liste des OID des autorités d'affectation des INS » publié par
+/// l'ANS (esante.gouv.fr). Le préfixe `1.2.250.1.213.1.4.`
+/// (ANS-santé) est stable ; les suffixes sont figés au niveau du
+/// référentiel.
 final class InsDetector implements EntityDetector {
   const InsDetector({
-    Map<String, InsIdentityKind>? oidCatalog,
+    Map<String, InsOidAuthority>? oidCatalog,
     Set<String>? textualMarkers,
-  })  : _oidCatalog = oidCatalog ?? defaultOidToKind,
+  })  : _oidCatalog = oidCatalog ?? defaultOidCatalog,
         _textualMarkers = textualMarkers ?? defaultTextualMarkers;
 
-  final Map<String, InsIdentityKind> _oidCatalog;
+  final Map<String, InsOidAuthority> _oidCatalog;
   final Set<String> _textualMarkers;
 
-  /// OIDs INS courants observés dans le CI-SIS Ségur vague 2.
+  /// Catalogue par défaut des OIDs INS reconnus, tel que publié par
+  /// l'ANS. Contient les trois familles :
+  /// - **INS-NIR** (production, test, démonstration) — matricule INSEE.
+  /// - **INS-NIA** (production) — identifiant d'attente.
+  /// - **INS-C** historique (production, test, démonstration) —
+  ///   identifiant calculé sur la carte Vitale, avant 2021.
   ///
-  /// Le préfixe `1.2.250.1.213.1.4.` est le segment ANS-santé stable ;
-  /// seuls les suffixes précis peuvent évoluer entre versions.
-  static const Map<String, InsIdentityKind> defaultOidToKind = {
-    '1.2.250.1.213.1.4.8': InsIdentityKind.nir,
-    '1.2.250.1.213.1.4.9': InsIdentityKind.nir,
-    '1.2.250.1.213.1.4.10': InsIdentityKind.nia,
-    '1.2.250.1.213.1.4.11': InsIdentityKind.nis,
+  /// Tout OID commençant par le préfixe ANS mais absent du catalogue
+  /// est détecté à confiance modérée (signalé plutôt que raté).
+  static const Map<String, InsOidAuthority> defaultOidCatalog = {
+    // INS-NIR (matricule INSEE)
+    '1.2.250.1.213.1.4.8':
+        InsOidAuthority(InsIdentityKind.nir, InsEnvironment.production),
+    '1.2.250.1.213.1.4.10':
+        InsOidAuthority(InsIdentityKind.nir, InsEnvironment.test),
+    '1.2.250.1.213.1.4.11':
+        InsOidAuthority(InsIdentityKind.nir, InsEnvironment.demonstration),
+    // INS-NIA (identifiant d'attente)
+    '1.2.250.1.213.1.4.9':
+        InsOidAuthority(InsIdentityKind.nia, InsEnvironment.production),
+    // INS-C historique (cartes Vitale, remplacé par NIR/NIA depuis 2021)
+    '1.2.250.1.213.1.4.2':
+        InsOidAuthority(InsIdentityKind.insC, InsEnvironment.production),
+    '1.2.250.1.213.1.4.6':
+        InsOidAuthority(InsIdentityKind.insC, InsEnvironment.test),
+    '1.2.250.1.213.1.4.7':
+        InsOidAuthority(InsIdentityKind.insC, InsEnvironment.demonstration),
   };
 
   /// Étiquettes textuelles qui identifient un INS dans un document.
@@ -45,9 +132,7 @@ final class InsDetector implements EntityDetector {
   static const Set<String> defaultTextualMarkers = {
     'INS-NIR',
     'INS-NIA',
-    'INS-NIS',
     'INS-C',
-    'INS-A',
     'INSi',
     'matricule INS',
     'identifiant national de santé',
@@ -75,7 +160,7 @@ final class InsDetector implements EntityDetector {
   Iterable<DetectedEntity> _detectOids(String text) sync* {
     for (final match in _oidPattern.allMatches(text)) {
       final oid = match.group(0)!;
-      final kind = _oidCatalog[oid];
+      final authority = _oidCatalog[oid];
       yield DetectedEntity(
         type: EntityType.ins,
         start: match.start,
@@ -83,7 +168,7 @@ final class InsDetector implements EntityDetector {
         value: oid,
         // OID catalogué : confiance haute. OID à préfixe INS mais
         // suffixe inconnu : confiance modérée, signalé plutôt que raté.
-        confidence: kind == null ? 0.6 : 0.95,
+        confidence: authority == null ? 0.6 : 0.95,
       );
     }
   }
@@ -108,20 +193,18 @@ final class InsDetector implements EntityDetector {
     }
   }
 
-  /// Reconnaît un OID au préfixe ANS-santé même s'il n'est pas dans le
-  /// catalogue par défaut. Utile pour signaler « ressemble à un INS ».
+  /// Reconnaît un OID au préfixe ANS-santé même s'il n'est pas dans
+  /// le catalogue par défaut. Utile pour signaler « ressemble à un
+  /// INS ».
   static bool hasInsOidPrefix(String oid) =>
       oid.startsWith('1.2.250.1.213.1.4.');
-}
 
-/// Nature de l'identifiant INS reconnu.
-enum InsIdentityKind {
-  /// Matricule NIR (personne née en France, INSEE).
-  nir,
-
-  /// Identifiant d'attente (personne en cours d'attribution).
-  nia,
-
-  /// Identifiant provisoire (situation particulière).
-  nis,
+  /// Résout l'autorité d'affectation d'un OID (kind + environnement)
+  /// s'il appartient au catalogue par défaut. Retourne `null` sinon.
+  ///
+  /// Un consommateur en aval peut s'appuyer sur `authority.environment`
+  /// pour distinguer un identifiant de production d'un identifiant de
+  /// test ou de démonstration (potentielle fuite de données de test).
+  static InsOidAuthority? resolveAuthority(String oid) =>
+      defaultOidCatalog[oid];
 }

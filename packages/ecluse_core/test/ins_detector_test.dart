@@ -44,6 +44,70 @@ void main() {
     });
   });
 
+  group('InsDetector — catalogue ANS complet', () {
+    test('INS-NIR production (.8) résolu en NIR/production', () {
+      final auth = InsDetector.resolveAuthority('1.2.250.1.213.1.4.8');
+      expect(auth, isNotNull);
+      expect(auth!.kind, InsIdentityKind.nir);
+      expect(auth.environment, InsEnvironment.production);
+      expect(auth.isProduction, isTrue);
+    });
+
+    test('INS-NIA production (.9) résolu en NIA/production', () {
+      final auth = InsDetector.resolveAuthority('1.2.250.1.213.1.4.9');
+      expect(auth, isNotNull);
+      expect(auth!.kind, InsIdentityKind.nia);
+      expect(auth.environment, InsEnvironment.production);
+    });
+
+    test('INS-NIR test (.10) résolu en NIR/test', () {
+      final auth = InsDetector.resolveAuthority('1.2.250.1.213.1.4.10');
+      expect(auth, isNotNull);
+      expect(auth!.kind, InsIdentityKind.nir);
+      expect(auth.environment, InsEnvironment.test);
+      expect(auth.isProduction, isFalse);
+    });
+
+    test('INS-NIR démonstration (.11) résolu en NIR/démonstration', () {
+      final auth = InsDetector.resolveAuthority('1.2.250.1.213.1.4.11');
+      expect(auth, isNotNull);
+      expect(auth!.kind, InsIdentityKind.nir);
+      expect(auth.environment, InsEnvironment.demonstration);
+      expect(auth.isProduction, isFalse);
+    });
+
+    test('INS-C production (.2) résolu en insC/production', () {
+      final auth = InsDetector.resolveAuthority('1.2.250.1.213.1.4.2');
+      expect(auth, isNotNull);
+      expect(auth!.kind, InsIdentityKind.insC);
+      expect(auth.environment, InsEnvironment.production);
+    });
+
+    test('INS-C test (.6) et démonstration (.7) résolus', () {
+      final test = InsDetector.resolveAuthority('1.2.250.1.213.1.4.6');
+      expect(test?.kind, InsIdentityKind.insC);
+      expect(test?.environment, InsEnvironment.test);
+      final demo = InsDetector.resolveAuthority('1.2.250.1.213.1.4.7');
+      expect(demo?.kind, InsIdentityKind.insC);
+      expect(demo?.environment, InsEnvironment.demonstration);
+    });
+
+    test('OID non catalogué : resolveAuthority retourne null', () {
+      expect(InsDetector.resolveAuthority('1.2.250.1.213.1.4.999'), isNull);
+    });
+
+    test('INS-C historique est détecté (couvre les archives)', () {
+      // Régression : avant l'ajout de l'INS-C, un dossier antérieur à
+      // 2021 utilisant l'OID `.2` passait avec confiance modérée (0.6)
+      // au lieu de haute (0.95). Fuite silencieuse sur les archives.
+      final entities = detector.detect(
+        'Ancien dossier, INS-C: 1.2.250.1.213.1.4.2',
+      );
+      final oid = entities.firstWhere((e) => e.value == '1.2.250.1.213.1.4.2');
+      expect(oid.confidence, greaterThan(0.9));
+    });
+  });
+
   group('InsDetector — marqueurs textuels', () {
     test('détecte "INS-NIR" avec frontière de mot', () {
       final entities = detector.detect('Champ INS-NIR : 155047800000162');
@@ -74,6 +138,11 @@ void main() {
       expect(withAccents, isNotEmpty);
       expect(withoutAccents, isNotEmpty);
     });
+
+    test('détecte le marqueur "INS-C" (historique)', () {
+      final entities = detector.detect('champ INS-C : xxx');
+      expect(entities, isNotEmpty);
+    });
   });
 
   group('InsDetector — pas de faux positif', () {
@@ -94,7 +163,8 @@ void main() {
     test('catalogue custom peut ajouter de nouveaux OIDs', () {
       const custom = InsDetector(
         oidCatalog: {
-          '1.2.250.1.213.1.4.42': InsIdentityKind.nis,
+          '1.2.250.1.213.1.4.42':
+              InsOidAuthority(InsIdentityKind.insC, InsEnvironment.production),
         },
       );
       final entities = custom.detect('id: 1.2.250.1.213.1.4.42 vérifier');
@@ -105,6 +175,15 @@ void main() {
     test('hasInsOidPrefix reconnaît le segment ANS', () {
       expect(InsDetector.hasInsOidPrefix('1.2.250.1.213.1.4.999'), isTrue);
       expect(InsDetector.hasInsOidPrefix('1.3.6.1.4.1.9999'), isFalse);
+    });
+
+    test('InsOidAuthority : égalité de valeur et hashCode cohérent', () {
+      const a = InsOidAuthority(InsIdentityKind.nir, InsEnvironment.production);
+      const b = InsOidAuthority(InsIdentityKind.nir, InsEnvironment.production);
+      const c = InsOidAuthority(InsIdentityKind.nir, InsEnvironment.test);
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a, isNot(equals(c)));
     });
   });
 
