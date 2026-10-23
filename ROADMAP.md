@@ -92,11 +92,10 @@ Objectif : qu'un premier design partner l'utilise en production.
   (heuristiques v0 en place, à durcir)
 - ⚪ Secret scanning (clés API, tokens) — parité avec les gateways génériques
 - ⚪ Publication de l'article de benchmark
-- ⚪ **Import de fichiers texte natifs** (PDF texte, docx) + garde-fou
-  PDF-image. Seule exception discutable à la règle « rien avant un signal
-  de paiement » : quelques jours de travail, aucune recherche, et rend la
-  démo de rentrée nettement plus concrète — « déposez votre compte rendu,
-  regardez ce qui ressort ».
+- 🟡 **Import de fichiers texte natifs** — `ecluse_ingest` livré pour
+  txt, md, docx et odt ; reste le PDF texte + garde-fou PDF-image. Rend la
+  démo nettement plus concrète — « déposez votre compte rendu, regardez ce
+  qui ressort ».
 
 ## Phase 2 — La profondeur qui rend seul
 
@@ -174,8 +173,11 @@ Objectif : transformer les concurrents en canaux, étendre la douve.
   permanent ; à chaque entité ajoutée, réétendre la comparaison. Chaque
   format dégradé rencontré rejoint le corpus.
 - **Les design partners guident les priorités.** Un client qui paie
-  réordonne cette liste mieux que la liste elle-même. Rien d'avancé ne se
-  code avant un signal de paiement.
+  réordonne cette liste mieux que la liste elle-même. La règle « rien
+  d'avancé avant un signal de paiement » a été levée en septembre 2026,
+  de façon proportionnée : les garde-fous de sécurité restent (critère
+  GO/STOP avant toute ouverture à l'image, mesure avant correction,
+  manuscrit exclu).
 - **Deux modes, pas un.** *Pseudonymiser* (réversible, pour les
   identifiants : on restaure la valeur dans la réponse) et
   *généraliser* (irréversible, pour les indices contextuels comme un
