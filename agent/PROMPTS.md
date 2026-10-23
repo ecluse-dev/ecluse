@@ -57,6 +57,11 @@ Ton seul objectif : trouver des cas où le code de la PR laisse fuir une
 donnée identifiante ou produit un faux positif. Utilise uniquement des
 données synthétiques (clés de contrôle calculées, jamais copiées).
 
+Gemini Code Assist a peut-être déjà relu la PR : lis ses commentaires
+(gh api repos/ecluse-dev/ecluse/pulls/<numéro>/comments) et ne les répète
+pas. Ta valeur ajoutée est d'EXÉCUTER des attaques, ce que sa revue
+statique ne fait pas.
+
 1. Écris des cas d'attaque (séparateurs exotiques, Unicode, chevauchements,
    contextes ambigus, valeurs valides par coïncidence) et exécute-les
    localement contre la branche de la PR.

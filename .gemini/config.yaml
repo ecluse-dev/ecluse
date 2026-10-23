@@ -1,0 +1,17 @@
+# Configuration de Gemini Code Assist pour les revues de PR d'Écluse.
+# Rôle : relecteur indépendant (autre famille de modèle que l'agent qui
+# écrit le code). Il commente, il ne pousse rien.
+have_fun: false
+ignore_patterns:
+  - "bench/corpus*.jsonl"
+  - "bench/pred*.jsonl"
+  - "**/pubspec.lock"
+code_review:
+  disable: false
+  comment_severity_threshold: MEDIUM
+  max_review_comments: 15
+  pull_request_opened:
+    help: false
+    summary: true
+    code_review: true
+    include_drafts: false

@@ -64,6 +64,7 @@ Un agent ne modifie **pas** :
 - `CLAUDE.md` ;
 - `agent/QUEUE.md`, sauf la ligne de statut de **sa** tâche (voir plus bas) ;
 - `agent/PROMPTS.md` et `agent/setup-cloud-env.sh` ;
+- `.gemini/` (configuration du relecteur Gemini) ;
 - `.github/` (workflows, dependabot, modèles) ;
 - `LICENSE`, `SECURITY.md`, `CODE_OF_CONDUCT.md` ;
 - la branche `main`, directement ou par force-push.
@@ -97,6 +98,14 @@ prévoie explicitement. S'il en faut une, il s'arrête et le signale.
    avant/après le cas échéant, ce qui reste incertain, et ce que le
    mainteneur doit vérifier. Ne jamais la fusionner.
 8. **S'arrêter.** Une tâche par exécution, même s'il reste du temps.
+
+## Relecture par Gemini
+
+Chaque PR reçoit une revue automatique de Gemini Code Assist (configuration
+dans `.gemini/`). C'est un relecteur d'une autre famille de modèle : ses
+commentaires servent au mainteneur. Un agent autonome n'y répond pas et ne
+relance pas d'exécution pour les traiter ; le mainteneur décide s'il crée
+une tâche de correction.
 
 ## Quand s'arrêter et rendre la main
 
