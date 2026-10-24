@@ -31,6 +31,17 @@ IngestResult ingestDocx(List<int> bytes,
     return IngestRefused('Archive .docx corrompue ou illisible : $error.');
   }
 
+  // Selon la version du package `archive`, un répertoire central illisible
+  // lève une exception (cas ci-dessus) ou produit une archive vide sans
+  // erreur. Un .docx sans aucune entrée n'est jamais valide : on le refuse
+  // comme corrompu, pour que le motif ne dépende pas de la version de la
+  // dépendance.
+  if (archive.isEmpty) {
+    return const IngestRefused(
+      'Archive .docx corrompue ou illisible : aucune entrée lisible.',
+    );
+  }
+
   final documentFile = archive.findFile('word/document.xml');
   if (documentFile == null) {
     return const IngestRefused(

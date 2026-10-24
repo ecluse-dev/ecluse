@@ -41,6 +41,17 @@ IngestResult ingestOdt(List<int> bytes,
     return IngestRefused('Archive .odt corrompue ou illisible : $error.');
   }
 
+  // Selon la version du package `archive`, un répertoire central illisible
+  // lève une exception (cas ci-dessus) ou produit une archive vide sans
+  // erreur. Un .odt sans aucune entrée n'est jamais valide : on le refuse
+  // comme corrompu, pour que le motif ne dépende pas de la version de la
+  // dépendance.
+  if (archive.isEmpty) {
+    return const IngestRefused(
+      'Archive .odt corrompue ou illisible : aucune entrée lisible.',
+    );
+  }
+
   final mimetypeFile = archive.findFile('mimetype');
   if (mimetypeFile == null) {
     return const IngestRefused(
