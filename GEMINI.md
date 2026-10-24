@@ -1,11 +1,21 @@
-# Guide de revue pour Écluse
+# GEMINI.md — consignes pour Gemini CLI sur Écluse
 
-Rédige tes résumés et commentaires de revue **en français**.
+Ce fichier est chargé automatiquement par Gemini CLI lancé depuis la racine
+du dépôt. Dans ce projet, Gemini sert de **second relecteur**, d'une autre
+famille de modèle que l'agent qui écrit le code (Claude). Il commente, il
+ne modifie aucun fichier.
+
+Réponds **en français**.
+
+## Rôle : relire une PR
 
 Écluse est un sas de pseudonymisation entre un utilisateur et un LLM tiers.
 Une erreur de détection n'est pas un bug cosmétique : c'est une donnée
 personnelle qui part en clair. Relis en priorité ce qui peut **faire fuir**
 une donnée, puis ce qui produit des **faux positifs**, puis le reste.
+
+Termine toujours par un verdict d'une ligne : « rien de bloquant » ou
+« bloquant : … ».
 
 ## Points à vérifier en priorité
 
@@ -23,6 +33,8 @@ une donnée, puis ce qui produit des **faux positifs**, puis le reste.
    Signale son absence.
 6. **Détecteurs purs** dans `ecluse_core` : pas de réseau, pas d'effet de
    bord, pas de dépendance native.
+7. **Respect de `CLAUDE.md`** : l'agent n'a pas touché ses zones interdites
+   et n'a traité qu'une seule tâche de `agent/QUEUE.md`.
 
 ## Règles de confidentialité du dépôt (public)
 
