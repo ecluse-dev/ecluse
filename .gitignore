@@ -47,3 +47,4 @@ pubspec_overrides.yaml
 bench/corpus_flou_*.jsonl
 bench/pred_*.jsonl
 bench/pred_redact_*.jsonl
+bench/flou/
