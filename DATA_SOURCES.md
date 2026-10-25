@@ -46,9 +46,24 @@ URL, ni date, ni licence**. Les millésimes déclarés sont dans
 | `geo_hierarchie.json` | dérivé du COG ci-dessus et de la colonne `Région` de `donnees_communes.csv` | INSEE | idem | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
 | `age_pyramide.json` | `Population-2025.zip` → `3_Pop1janv_age.xlsx`, feuille `2026` | INSEE, estimations de population par âge (« France entière ») | `https://www.insee.fr/fr/statistiques/8331297` (série jusqu'à 2025 : **ne correspond pas à une feuille « 2026 »**, identification incertaine) | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
 | `rarity_medecins.json` | `Médecins_RPPS_2012-2026.xlsx` (feuille `Effectifs`) | DREES, démographie des professionnels de santé (RPPS) | **Page du jeu fournie par le mainteneur** (inaccessible à l'agent, donc non lue) : `https://data.drees.solidarites-sante.gouv.fr/explore/dataset/la-demographie-des-professionnels-de-sante-depuis-2012/information/` (jeu « la démographie des professionnels de santé depuis 2012 », dont l'intitulé correspond aux fichiers `…_RPPS_2012-2026`) | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
-| `rarity_professions.json` | `Pharmaciens_RPPS_2012-2026.xlsx`, `Chirurgiens-dentistes_RPPS_2012-2026.xlsx`, `Sages-femmes_RPPS_2012-2026.xlsx`, `Pédicures-podologues_RPPS_2018-2026.xlsx` | DREES, idem | idem (même jeu, **à confirmer** : le jeu couvre-t-il ces quatre professions ?) | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
+| `rarity_professions.json` | `Pharmaciens_RPPS_2012-2026.xlsx`, `Chirurgiens-dentistes_RPPS_2012-2026.xlsx`, `Sages-femmes_RPPS_2012-2026.xlsx`, `Pédicures-podologues_RPPS_2018-2026.xlsx` | DREES, idem | idem : **même jeu, confirmé par le texte de la page** collé par le mainteneur (chirurgiens-dentistes, pharmaciens, pédicures-podologues, sages-femmes, kinésithérapeutes, effectifs au 1er janvier par département) | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
 | `first_names.txt.gz` | `prenoms-2025-liste_csv.zip` → `prenoms-2025-liste.csv` | INSEE, fichier des prénoms (liste) | `https://www.insee.fr/fr/statistiques/8894961` (édition de juillet 2025, naissances 1900-2024) ou `https://www.insee.fr/fr/statistiques/8595130` (édition 2026) : **édition non déterminée** | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
 | `reference_meta.json` | produit par le script | Écluse | sans objet | sans objet | sans objet |
+
+## Ce que le texte de la page DREES établit (collé par le mainteneur)
+
+Le texte de la page « La démographie des professionnels de santé depuis 2012 »
+(producteur : Drees, Direction de la recherche, des études, de l'évaluation et
+des statistiques) établit : que les données sont des **tableaux agrégés** à
+télécharger au format Excel sur le portail `data.drees` ; qu'elles décrivent
+les effectifs d'actifs occupés au 1er janvier, par département, pour les
+médecins (dont spécialités) et pour les chirurgiens-dentistes, pharmaciens,
+pédicures-podologues, sages-femmes et kinésithérapeutes ; qu'une mention
+« au 1er janvier 2026 » y figure (millésime 2026 cohérent avec
+`reference_meta.json`) ; que la source est le RPPS (extraction de l'ANS en
+accès restreint, traitée par la Drees). Il ne contient **ni licence, ni date
+de mise à jour** : ces deux éléments se trouvent ailleurs sur la page (volet de
+métadonnées) et manquent encore.
 
 ## Mentions de source (si la Licence Ouverte est confirmée)
 
