@@ -28,7 +28,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-08 | spec | `ecluse_audit` v0 : journal chaîné horodaté sans donnée personnelle | — | à faire |
 | P1-09 | spec | Ingestion PDF texte + garde-fou PDF-image : choix de la bibliothèque, critères de refus | — | à faire |
 | P1-10 | humain | Valider les specs P1-06 à P1-09 et créer les tâches `code` correspondantes | P1-06, P1-07, P1-08, P1-09 | humain |
-| P1-11 | code | Brouillon d'article de benchmark (`bench/ARTICLE.md`) à partir des résultats à jour | P1-01, P1-03 | à faire |
+| P1-11 | code | Brouillon d'article de benchmark (`bench/ARTICLE.md`) à partir des résultats à jour | P1-01, P1-03 | PR ouverte |
 | P1-12 | humain | Relire et publier l'article de benchmark | P1-11 | humain |
 
 Les phases 2 et 3 seront découpées ici quand la phase 1 sera fusionnée.
