@@ -55,11 +55,11 @@ final class RppsDetector implements EntityDetector {
 
     final results = <DetectedEntity>[];
     final compaction = DigitCompaction(text);
-    for (final match in _candidate.allMatches(compaction.compact)) {
-      // Positions projetées vers le texte d'origine (invariant d'offsets).
-      final start = compaction.originalStart(match.start);
-      final end = compaction.originalEnd(match.end);
-      final digits = match.group(0)!.replaceAll(RegExp(r'[ .\-]'), '');
+    for (final match in compaction.candidates(_candidate)) {
+      // Positions déjà dans le texte d'origine (invariant d'offsets).
+      final start = match.start;
+      final end = match.end;
+      final digits = match.text.replaceAll(RegExp(r'[ .\-]'), '');
       if (!isLuhnValid(digits)) continue;
       final embeddedInIban = ibanShapedRanges.any(
         (r) => start < r.$2 && r.$1 < end,
