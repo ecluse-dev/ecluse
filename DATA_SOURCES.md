@@ -18,8 +18,8 @@ millésime). C'est une **source secondaire** : elle n'est pas la lecture de la
 page du jeu, que la fiche P1-33 exige. Elle sert d'hypothèse de travail et
 d'attribution minimale (voir plus bas) ; elle ne remplace pas la vérification.
 Dans cette réponse, le domaine cité pour la DREES (`data.drees.sante.gouv.fr`)
-n'est pas celui de la page trouvée par recherche
-(`drees.solidarites-sante.gouv.fr`) : à contrôler. De plus, la Licence Ouverte
+est **inexact** : le mainteneur a fourni la vraie page du jeu (ci-dessous), sur
+`data.drees.solidarites-sante.gouv.fr`. De plus, la Licence Ouverte
 s'applique **par jeu de données** : un portail ne suffit pas à l'établir pour
 chaque fichier.
 
@@ -45,8 +45,8 @@ URL, ni date, ni licence**. Les millésimes déclarés sont dans
 | `geo_communes.csv.gz` (colonne `PMUN`) | `ensemble__1_.zip` → `donnees_communes.csv` | INSEE, populations légales des communes (millésime déclaré « ref2023→2026 ») | aucune page identifiée (la recherche n'a renvoyé que des PDF de la publication « populations légales 2023 ») | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
 | `geo_hierarchie.json` | dérivé du COG ci-dessus et de la colonne `Région` de `donnees_communes.csv` | INSEE | idem | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
 | `age_pyramide.json` | `Population-2025.zip` → `3_Pop1janv_age.xlsx`, feuille `2026` | INSEE, estimations de population par âge (« France entière ») | `https://www.insee.fr/fr/statistiques/8331297` (série jusqu'à 2025 : **ne correspond pas à une feuille « 2026 »**, identification incertaine) | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
-| `rarity_medecins.json` | `Médecins_RPPS_2012-2026.xlsx` (feuille `Effectifs`) | DREES, démographie des professionnels de santé (RPPS) | `https://drees.solidarites-sante.gouv.fr/communique-de-presse-jeux-de-donnees/250513_DATA_professionnels-de-sante-1er-janvier-2024` (édition 2024 : **millésime différent** du fichier 2012-2026) | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
-| `rarity_professions.json` | `Pharmaciens_RPPS_2012-2026.xlsx`, `Chirurgiens-dentistes_RPPS_2012-2026.xlsx`, `Sages-femmes_RPPS_2012-2026.xlsx`, `Pédicures-podologues_RPPS_2018-2026.xlsx` | DREES, idem | idem | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
+| `rarity_medecins.json` | `Médecins_RPPS_2012-2026.xlsx` (feuille `Effectifs`) | DREES, démographie des professionnels de santé (RPPS) | **Page du jeu fournie par le mainteneur** (inaccessible à l'agent, donc non lue) : `https://data.drees.solidarites-sante.gouv.fr/explore/dataset/la-demographie-des-professionnels-de-sante-depuis-2012/information/` (jeu « la démographie des professionnels de santé depuis 2012 », dont l'intitulé correspond aux fichiers `…_RPPS_2012-2026`) | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
+| `rarity_professions.json` | `Pharmaciens_RPPS_2012-2026.xlsx`, `Chirurgiens-dentistes_RPPS_2012-2026.xlsx`, `Sages-femmes_RPPS_2012-2026.xlsx`, `Pédicures-podologues_RPPS_2018-2026.xlsx` | DREES, idem | idem (même jeu, **à confirmer** : le jeu couvre-t-il ces quatre professions ?) | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
 | `first_names.txt.gz` | `prenoms-2025-liste_csv.zip` → `prenoms-2025-liste.csv` | INSEE, fichier des prénoms (liste) | `https://www.insee.fr/fr/statistiques/8894961` (édition de juillet 2025, naissances 1900-2024) ou `https://www.insee.fr/fr/statistiques/8595130` (édition 2026) : **édition non déterminée** | non enregistrée | **indiquée « Licence Ouverte v2.0 » (secondaire, non lue sur la page)** |
 | `reference_meta.json` | produit par le script | Écluse | sans objet | sans objet | sans objet |
 
