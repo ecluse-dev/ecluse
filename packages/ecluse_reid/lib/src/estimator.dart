@@ -97,7 +97,7 @@ ReidEstimate _estimateCasA(EcluseReference ref, Qi profession, Qi? lieu) {
   }
   final dep = depForLieu(ref, lieu);
 
-  final int f;
+  int f;
   if (profession.value == professionnelDeSante) {
     f = professionnelDeSanteCount(ref.rarity, dep);
   } else if (profession.value == professionToutesSpecialites) {
@@ -113,12 +113,30 @@ ReidEstimate _estimateCasA(EcluseReference ref, Qi profession, Qi? lieu) {
     );
   }
 
+  // La borne haute (effectif du département) ne peut pas dépasser la
+  // population du lieu : un pharmacien d'une commune de 320 habitants n'est
+  // pas « un parmi 976 ». Plafond ignoré si la population du lieu est
+  // indisponible (département incomplet dans les données).
+  final extra = <String>[];
+  try {
+    final cap = populationForLieu(ref, lieu);
+    if (f > cap) {
+      f = cap;
+      extra.add(
+        'Borne haute plafonnée à la population du lieu ($cap) : '
+        "l'effectif du département la dépassait.",
+      );
+    }
+  } on ArgumentError {
+    // population du lieu indisponible : pas de plafond
+  }
+
   return ReidEstimate(
     f.toDouble(),
     bandForF(f.toDouble()),
     QiType.profession,
     true,
-    honestyNotes(upperBound: true),
+    honestyNotes(upperBound: true, extra: extra),
   );
 }
 
@@ -184,13 +202,39 @@ ReidEstimate _estimateCasB(EcluseReference ref, Qi? lieu, Qi? age) {
 /// niveau (0=âge exact, 1-3=tranche généralisée, 4=retrait -> 1.0, pas de
 /// filtre).
 double _shareForAgeQi(AgeRarity age, Qi ageQi) {
+  try {
+    return _shareForAgeQiUnchecked(age, ageQi);
+  } on FormatException {
+    throw ArgumentError('age: valeur "${ageQi.value}" illisible.');
+  } on RangeError {
+    throw ArgumentError(
+      'age: valeur "${ageQi.value}" incompatible avec le niveau '
+      '${ageQi.level}.',
+    );
+  }
+}
+
+/// Âge maximal accepté : au-delà, la valeur est certainement une erreur.
+const int _maxAge = 120;
+
+double _shareForAgeQiUnchecked(AgeRarity age, Qi ageQi) {
+  if (ageQi.level < 0) {
+    throw ArgumentError('age: niveau ${ageQi.level} invalide.');
+  }
   switch (ageQi.level) {
     case 0:
-      return age.shareAtAge(int.parse(ageQi.value));
+      final exact = int.parse(ageQi.value);
+      if (exact < 0 || exact > _maxAge) {
+        throw ArgumentError('age: $exact hors de [0, $_maxAge].');
+      }
+      return age.shareAtAge(exact);
     case 1:
     case 2:
     case 3:
       final range = parseAgeRange(ageQi.value);
+      if (range.$1 < 0 || range.$2 < range.$1) {
+        throw ArgumentError('age: tranche "${ageQi.value}" invalide.');
+      }
       return shareForRange(age, range.$1, range.$2);
     default:
       return 1.0; // niveau 4 : retrait, pas de filtre âge

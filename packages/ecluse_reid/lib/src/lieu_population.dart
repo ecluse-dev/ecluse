@@ -14,6 +14,9 @@ import 'qi.dart';
 /// Ces niveaux lèvent [ArgumentError] plutôt que de deviner silencieusement
 /// une population.
 int populationForLieu(EcluseReference ref, Qi lieu) {
+  if (lieu.level < 0) {
+    throw ArgumentError('lieu: niveau ${lieu.level} invalide.');
+  }
   switch (lieu.level) {
     case 0:
       final pop = ref.geo.population(lieu.value);
