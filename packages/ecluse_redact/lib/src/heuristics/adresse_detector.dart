@@ -96,9 +96,13 @@ final class AdresseDetector implements EntityDetector {
         return up == low ? c : '[$up$low]';
       }).join();
 
+  /// Nom de voie borné à 80 caractères : le quantificateur paresseux non
+  /// borné rendait le motif quadratique quand « N rue » se répète sans code
+  /// postal (16 Ko = plus de 5 s). Un nom de voie plus long n'est plus
+  /// reconnu en entier : seul « code postal + commune » est alors masqué.
   static final RegExp _pattern = RegExp(
     "\\d{1,4}[ \\t]*,?[ \\t]*(?:${_voies.map(_ci).join('|')})"
-    "[ \\t]+[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]+?"
+    "[ \\t]+[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]{1,80}?"
     '$_voieVersCpCommune'
     '$_codePostalCommune',
   );

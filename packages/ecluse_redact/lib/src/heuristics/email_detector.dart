@@ -35,8 +35,11 @@ final class EmailDetector implements EntityDetector {
   static const String _at = r'(?:@|[ \t]*[\[(][ \t]*(?:[Aa][Tt]|'
       r'[Aa][Rr][Oo][Bb][Aa][Ss][Ee])[ \t]*[\])][ \t]*)';
 
+  /// Partie locale bornée à 64 caractères (limite RFC 5321) : sans borne, le
+  /// motif est quadratique sur une longue suite alphanumérique sans `@`
+  /// (16 000 caractères = plus de 5 s, serveur de démo gelé).
   static final RegExp _pattern = RegExp(
-    '[A-Za-z0-9_%+-][A-Za-z0-9._%+-]*$_at(?:$_label\\.)+[A-Za-z]{2,}',
+    '[A-Za-z0-9_%+-][A-Za-z0-9._%+-]{0,63}$_at(?:$_label\\.)+[A-Za-z]{2,}',
   );
 
   @override
