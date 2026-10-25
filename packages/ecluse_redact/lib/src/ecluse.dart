@@ -1,4 +1,5 @@
 import 'package:ecluse_core/ecluse_core.dart';
+import 'package:ecluse_reference/ecluse_reference.dart' show EcluseReference;
 
 import 'heuristics/adresse_detector.dart';
 import 'heuristics/date_naissance_detector.dart';
@@ -7,6 +8,7 @@ import 'heuristics/etablissement_detector.dart';
 import 'heuristics/name_detector.dart';
 import 'heuristics/telephone_detector.dart';
 import 'redact_result.dart';
+import 'risque.dart';
 import 'tokenizer.dart';
 
 /// Façade de pseudonymisation réversible d'Écluse.
@@ -73,11 +75,18 @@ abstract final class Ecluse {
   /// un secret restauré dans la réponse affichée pourrait finir copié dans
   /// un autre outil. Avec [refuseSecrets], la présence d'un secret lève
   /// [SecretsRefusedException] au lieu de masquer (mode strict).
+  ///
+  /// **Rapport de risque** (P2-04) : avec [riskReference] (référence chargée
+  /// par l'appelant), [RedactResult.risque] évalue la ré-identification par
+  /// profession de santé, lieu et âge restés dans le texte masqué. Sans elle,
+  /// la sortie est exactement celle d'avant : fonction inactive, `risque` nul.
+  /// Le rapport ne change jamais le texte envoyé.
   static Future<RedactResult> redact(
     String text, {
     List<Detector>? detectors,
     bool restoreSecrets = false,
     bool refuseSecrets = false,
+    EcluseReference? riskReference,
   }) async {
     final engine = EcluseEngine(detectors ?? defaultDetectors);
     final detection = await engine.run(text);
@@ -118,8 +127,9 @@ abstract final class Ecluse {
     }
     buffer.write(text.substring(cursor));
 
+    final maskedText = buffer.toString();
     return RedactResult(
-      maskedText: buffer.toString(),
+      maskedText: maskedText,
       mapping: Map.unmodifiable(mapping),
       entities: resolved,
       warnings: [
@@ -128,6 +138,9 @@ abstract final class Ecluse {
               '${secretCount > 1 ? 's' : ''}) : pensez à le révoquer s\'il a '
               'déjà été partagé ailleurs.',
       ],
+      risque: riskReference == null
+          ? null
+          : evaluerRisque(riskReference, maskedText),
     );
   }
 
