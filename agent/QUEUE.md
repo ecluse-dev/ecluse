@@ -64,6 +64,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-01 | spec | Critère GO/STOP du NER local (métriques, corpus de décision, plafonds, conditions d'arrêt) | — | fusionnée |
 | P2-02 | mesure | Référence chiffrée des heuristiques de noms et d'adresses sur les corpus flous (valeur à battre pour le GO/STOP du NER) | P2-01 | fusionnée |
 | P2-03 | spec | Branchement de `ecluse_reid` dans `Ecluse.redact` : contrat public, généralisation irréversible distincte de la pseudonymisation, refus explicites | — | fusionnée |
+| P2-04 | code | Branchement de `ecluse_reid` dans `Ecluse.redact` selon l'option retenue dans la spec P2-03 (test d'équivalence d'abord, mesure avant/après) | P2-03 | bloquée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -384,3 +385,43 @@ décide rien seul » (`packages/ecluse_reid/lib/ecluse_reid.dart`). Aujourd'hui
 - **Fini quand** : `agent/specs/P2-03.md` en PR, avec les décisions du
   mainteneur listées en fin de document (au minimum le choix entre les
   options a et b).
+
+### P2-04 — Implémentation du branchement de `ecluse_reid` (`code`)
+
+**Bloquée** : ne pas prendre tant que les préalables ci-dessous ne sont pas
+réunis. Passer à `à faire` est une décision du mainteneur.
+
+Préalables :
+
+- Les décisions du § 8 de `agent/specs/P2-03.md` sont écrites dans
+  `DECISIONS.md`, au minimum : le choix de l'option (A rapport seul, B
+  généralisation appliquée, ou A puis B), l'activation (désactivée par défaut ou
+  non), la politique pour les documents de plusieurs personnes, l'acceptation des
+  dépendances internes `ecluse_reid` et `ecluse_reference` dans `ecluse_redact`.
+- Les tâches `code` 1 et 2 du § 9 de la spec sont fusionnées (elles ne sont pas
+  encore dans la file) : un profil de corpus de quasi-identifiants annotés avec son
+  scoreur, puis `ecluse_reid` avec extraction **positionnée** et estimation
+  **totale** (résultat typé à la place des `ArgumentError`, statut « aucun QI
+  détecté » distinct de « risque faible »).
+
+Travail :
+
+- Écrire **d'abord** le test d'équivalence : sans activation, la sortie d'
+  `Ecluse.redact` est octet pour octet celle d'avant. Puis les tests du nouveau
+  comportement, qui échouent avant le code (règle 5).
+- Implémenter l'option retenue, avec le contrat de résultat du § 6 de la spec
+  (statuts explicites, motifs lisibles pour *non évaluable*, avertissements de
+  commune ambiguë, notes d'honnêteté). Jamais d'exception qui fasse échouer la
+  pseudonymisation pour un problème d'estimation ; jamais « rien à signaler » sur
+  un contenu non évalué (règle 4).
+- Si l'option B est retenue : table de décalage des offsets, généralisation
+  irréversible hors de `mapping`, comportement de `Ecluse.restore` décrit et testé.
+- `ecluse_core` reste inchangé (règle 6). Aucune dépendance pub ou pip : seuls les
+  paquets du monorepo sont ajoutés comme dépendances.
+- Mesurer avant/après avec les commandes de la spec (§ 7) et rapporter les
+  chiffres dans la PR ; vérifier que les mesures de P2-02 sont inchangées (fuite
+  globale 7,5 % réaliste, 16,8 % adversarial, 59 restaurations non identiques).
+- Mettre à jour `LIMITES.md` §§ 3, 6 et 7 : un lieu isolé n'est plus « en clair sans
+  traitement » si l'option le couvre, avec les limites restantes.
+- **Fini quand** : `format`, `analyze` et `test` passent, les mesures sont dans la
+  PR, et la PR liste ce que le mainteneur doit vérifier.
