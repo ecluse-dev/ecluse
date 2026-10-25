@@ -64,7 +64,7 @@ contenu informatif est du texte lu**. Sinon refus du document entier.
 | Texte présent mais **illisible** (police sans `ToUnicode`, glyphes en zone privée, caractères de remplacement) | **Refus** : texte non-vide ≠ texte lu |
 | PDF chiffré / protégé par mot de passe | **Refus** : « PDF chiffré » |
 | PDF malformé, xref cassé, trop gros, trop de pages | **Refus** avec motif ; plafonds de taille/pages/temps |
-| Texte natif + image de signature/tampon/en-tête | Accepté **avec avertissement** (`warnings`) : les éléments non textuels ne sont pas traités (faille n°1 de `NOTES_SECURITE.md`) |
+| Texte natif + image de signature/tampon/en-tête | Accepté **avec avertissement** (`warnings`) : les éléments non textuels ne sont pas traités (le faux sentiment de sécurité décrit dans `ROADMAP.md`, « périmètre d'entrée ») |
 
 ### Seuils proposés (à calibrer sur PDF synthétiques)
 
