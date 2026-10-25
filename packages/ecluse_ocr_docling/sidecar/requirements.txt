@@ -1,0 +1,4 @@
+fastapi>=0.115
+uvicorn[standard]>=0.32
+python-multipart>=0.0.20
+docling>=2.15  # à re-vérifier au bootstrap — ORT + PyTorch tirés en dépendance
