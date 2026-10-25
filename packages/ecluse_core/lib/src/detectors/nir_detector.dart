@@ -61,16 +61,15 @@ final class NirDetector implements EntityDetector {
     final compaction = DigitCompaction(text);
 
     final results = <DetectedEntity>[];
-    for (final match in _candidate.allMatches(compaction.compact)) {
-      final start = compaction.originalStart(match.start);
-      final end = compaction.originalEnd(match.end);
+    for (final match in compaction.candidates(_candidate)) {
+      final start = match.start;
+      final end = match.end;
       final raw = text.substring(start, end);
       // Normalise depuis le match *compact* (déjà nettoyé des espaces
       // internes, quels qu'ils soient) plutôt que depuis `raw` : `raw`
       // vient du texte d'origine et peut encore contenir des séparateurs
       // que `_separators` ne connaît pas (tabulation, espace insécable).
-      final normalized =
-          match.group(0)!.replaceAll(_separators, '').toUpperCase();
+      final normalized = match.text.replaceAll(_separators, '').toUpperCase();
       if (_isValidNir(normalized)) {
         results.add(
           DetectedEntity(
