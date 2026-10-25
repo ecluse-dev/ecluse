@@ -66,10 +66,10 @@ tâches copiées ici sont prises par l'agent.
 | P2-03 | spec | Branchement de `ecluse_reid` dans `Ecluse.redact` : contrat public, généralisation irréversible distincte de la pseudonymisation, refus explicites | — | fusionnée |
 | P2-03a | code | Profil de corpus de quasi-identifiants annotés (profession, lieu, âge) et son scoreur, dans `bench/` | P2-03 | fusionnée |
 | P2-03b | code | `ecluse_reid` : extraction des QI avec positions et estimation totale (résultat typé, sans exception), en ajout et sans changer `estimate` | P2-03a | fusionnée |
-| P2-04 | code | Branchement de `ecluse_reid` dans `Ecluse.redact` selon l'option retenue dans la spec P2-03 (test d'équivalence d'abord, mesure avant/après) | P2-03, P2-03a, P2-03b | bloquée |
+| P2-04 | code | Branchement de `ecluse_reid` dans `Ecluse.redact` selon l'option retenue dans la spec P2-03 (test d'équivalence d'abord, mesure avant/après) | P2-03, P2-03a, P2-03b | à faire |
 | P2-05 | spec | Pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers : définition du dossier, état en mémoire, menace du recoupement | — | fusionnée |
 | P2-05a | code | Profil de corpus multi-documents (dossiers, personnes, identités) et son scoreur, avec la mesure de l'état actuel sans dossier | P2-05 | fusionnée |
-| P2-06 | code | État de dossier en mémoire dans `ecluse_redact` : pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers, selon les décisions de la spec P2-05 (test d'équivalence d'abord, mesure avant/après) | P2-05, P2-05a | bloquée |
+| P2-06 | code | État de dossier en mémoire dans `ecluse_redact` : pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers, selon les décisions de la spec P2-05 (test d'équivalence d'abord, mesure avant/après) | P2-05, P2-05a | à faire |
 | P2-07 | spec | Généralisation multi-dimensions (date de naissance vers tranche d'âge, âge vers palier, pathologie rare vers catégorie) : dimensions, table de catégories, honnêteté sur ce qui reste ré-identifiable | P2-03 | bloquée |
 | P2-08 | spec | Aperçu avec validation en un clic, option et non défaut (entretien #2) : contrat du composant, sans interface autonome | — | bloquée |
 | P2-09 | spec | Export AIPD : champs du registre pré-rempli, données d'`ecluse_audit` qui y entrent et qui n'y entrent pas | — | bloquée |
@@ -399,8 +399,9 @@ décide rien seul » (`packages/ecluse_reid/lib/ecluse_reid.dart`). Aujourd'hui
 
 ### P2-04 — Implémentation du branchement de `ecluse_reid` (`code`)
 
-**Bloquée** : ne pas prendre tant que les préalables ci-dessous ne sont pas
-réunis. Passer à `à faire` est une décision du mainteneur.
+**Débloquée** (25 octobre 2026) : les décisions de la spec sont écrites dans
+`DECISIONS.md` (rubrique « Préconisations … validées par délégation »), choix
+de l'agent et révocables ; les préalables ci-dessous restent à vérifier.
 
 Préalables :
 
@@ -550,8 +551,9 @@ de restauration non octet pour octet (`LIMITES.md` § 5.3).
 
 ### P2-06 — État de dossier en mémoire dans `ecluse_redact` (`code`)
 
-**Bloquée** : ne pas prendre tant que les préalables ci-dessous ne sont pas
-réunis. Passer à `à faire` est une décision du mainteneur.
+**Débloquée** (25 octobre 2026) : les décisions de la spec sont écrites dans
+`DECISIONS.md` (rubrique « Préconisations … validées par délégation »), choix
+de l'agent et révocables ; les préalables ci-dessous restent à vérifier.
 
 Contexte : `agent/specs/P2-05.md`. Aujourd'hui `Ecluse.redact` numérote les jetons
 et résout les identités de noms à l'intérieur d'un seul appel ; deux appels
