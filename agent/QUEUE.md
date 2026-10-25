@@ -52,7 +52,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-32 | code | Core : NIR à mois `00` et `21-29` (test d'abord, clé mod 97 exigée) | — | fusionnée |
 | P1-33 | code | `DATA_SOURCES.md` : URL, date et licence (lue sur la page) de chaque jeu de données embarqué | — | à faire |
 | P1-34 | code | README du benchmark : résultats des entités floues dans un tableau séparé | — | fusionnée |
-| P1-35 | mesure | Presidio avec reconnaisseurs NIR/RPPS écrits à la main (objection prévisible à l'article) | P1-01 | à faire |
+| P1-35 | mesure | Presidio avec reconnaisseurs NIR/RPPS écrits à la main (objection prévisible à l'article) | P1-01 | PR ouverte |
 
 Les phases 2 et 3 seront découpées ici quand la phase 1 sera fusionnée.
 
