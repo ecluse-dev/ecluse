@@ -324,6 +324,7 @@ Reproduire (depuis la racine du dépôt) :
 
 ```bash
 mkdir -p bench/flou
+mkdir -p bench/flou
 python3 bench/generate_corpus_flou.py --n 400 --seed 42 --out-dir bench/flou
 for c in realiste adversarial temoin; do
   (cd packages/ecluse_redact && dart run bin/run_redact_bench.dart \
@@ -485,6 +486,33 @@ référence et ne s'interprète pas tant que la menace n'est pas confirmée.
 
 Les fichiers générés (`bench/dossiers/`, `bench/corpus_dossiers_*.jsonl`) ne
 sont pas versionnés.
+
+## Fuite des noms hors civilité (P2-12)
+
+`bench/leak_hors_civilite.py` compte, mot par mot, les caractères non blancs des
+noms annotés restés en clair (non couverts par un span prédit, de n'importe quel
+type, comme `score_flou.py`) et sépare la civilité du reste. Il vérifie
+l'affirmation du README selon laquelle la fuite des noms du corpus réaliste est
+« entièrement » la civilité conservée volontairement. Les comptes excluent les
+espaces : leurs pourcentages ne sont pas comparables à ceux de `score_flou.py`,
+seule la **part** hors civilité l'est.
+
+```bash
+mkdir -p bench/flou
+python3 bench/generate_corpus_flou.py --n 400 --seed 42 --out-dir bench/flou
+(cd packages/ecluse_redact && dart run bin/run_redact_bench.dart \
+  ../../bench/flou/corpus_flou_adversarial.jsonl \
+  ../../bench/flou/pred_redact_adversarial.jsonl)
+python3 bench/leak_hors_civilite.py \
+  --corpus bench/flou/corpus_flou_adversarial.jsonl \
+  --pred bench/flou/pred_redact_adversarial.jsonl
+```
+
+Résultat (400 documents, `Ecluse.redact` du 25 octobre 2026) : réaliste, **0**
+caractère hors civilité sur 2167 (graine 42) et 2366 (graine 7) ; adversarial,
+**1865 sur 2657** (70,2 %, graine 42) et **1901 sur 2799** (67,9 %, graine 7),
+surtout des prénoms hors gazetteer et des patronymes. Ces valeurs retrouvent
+celles de `agent/specs/P2-02-reference.md`.
 
 ## Honnêteté méthodologique
 
