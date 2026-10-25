@@ -76,28 +76,48 @@ final class NameDetector implements EntityDetector {
   /// la spec (§ 3) exige que civilité, prénom et patronyme restent sur la
   /// **même ligne**. `\s` matche aussi `\n`/`\r`, ce qui laissait le
   /// patronyme absorber le premier mot capitalisé de la ligne suivante.
+  /// Blanc horizontal : espace, tabulation, espace insécable (U+00A0), espace
+  /// fine insécable (U+202F). Jamais un saut de ligne.
+  static const String _h = r'[ \t\u00A0\u202F]';
+
+  /// Mot de nom propre : majuscule initiale, apostrophes droite et
+  /// typographique (« O’Connor »), tirets.
+  static const String _cap = r"[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'’-]*";
+
+  /// Particules d'un nom (« de la Fontaine », « Van Der Berg », « Le Gall »,
+  /// « d'Angelo »), en minuscules **ou** capitalisées, chaînables. Une
+  /// particule n'est jamais absorbée seule : elle doit précéder un mot en
+  /// casse de titre (voir [_unite]).
+  static const String _particules =
+      '(?:(?:[Dd]e|[Dd]u|[Dd]es|[Ll]e|[Ll]a|[Ll]es|[Vv]an|[Vv]on|[Dd]er|[Dd]en|'
+      "[Ee]l|[Aa]l)$_h+|[DdLl]['’])";
+
+  /// Une unité de nom : particules éventuelles puis mot capitalisé.
+  static const String _unite = '(?:$_particules)*$_cap';
+
   static final RegExp _civility = RegExp(
-    r'\b(?:M\.|Mme|Mademoiselle|Monsieur|Madame|Dr\.?|Docteur|Pr\.?|'
-    r'Professeur|Me)[ \t]+'
-    r"([A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*"
-    r'(?:[ \t]+(?:(?:de|du|des|le|la|van|von)[ \t]+)?'
+    r'\b(?:M\.|Mrs\.?|Mr\.?|Mme|Mlle|Mademoiselle|Monsieur|Madame|Dr\.?|'
+    r'Docteur|Pr\.?|Professeur|Maître|Maitre|Me)'
+    '$_h+'
+    '($_unite'
+    '(?:$_h+'
     // Un mot-clé d'établissement n'est jamais un patronyme (voir
     // `etablissementKeywords`).
     '(?!(?:${etablissementKeywords.join('|')})\\b)'
-    r"[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*){0,2})",
+    '$_unite){0,2})',
   );
 
-  static final RegExp _capitalizedWord = RegExp(
-    r"[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*",
-  );
+  static final RegExp _capitalizedWord = RegExp(_cap);
 
-  /// Mot capitalisé suivi uniquement d'espaces jusqu'à la fin de la chaîne
+  /// Unité de nom suivie uniquement d'espaces jusqu'à la fin de la chaîne
   /// passée : sert à trouver le mot juste avant une position [before] dans
   /// le texte complet, en appelant ce motif sur `text.substring(0, before)`
   /// — les indices du groupe capturé restent alors valides dans `text`.
-  static final RegExp _wordBeforeEnd = RegExp(
-    r"([A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*) +$",
-  );
+  static final RegExp _wordBeforeEnd = RegExp('($_cap)$_h+\$');
+
+  /// Unité de nom (avec particules) à une position donnée : sert à étendre
+  /// le patronyme qui suit un prénom reconnu (« Pierre de la Fontaine »).
+  static final RegExp _uniteAt = RegExp(_unite);
 
   /// Sigles métier — administratifs et cliniques — qui ne doivent jamais
   /// être traités comme un nom, **même écrits tout en majuscules et même
@@ -138,7 +158,8 @@ final class NameDetector implements EntityDetector {
   /// regex — la liste doit rester synchronisée avec l'alternation de
   /// [_civility].
   static const _professionalTitles = {
-    'Dr', 'Dr.', 'Docteur', 'Pr', 'Pr.', 'Professeur', 'Me', //
+    'Dr', 'Dr.', 'Docteur', 'Pr', 'Pr.', 'Professeur', 'Me', 'Maître', //
+    'Maitre', //
   };
 
   static bool _isProfessionalTitle(String civility) =>
@@ -320,12 +341,28 @@ final class NameDetector implements EntityDetector {
   /// jamais tel quel dans [frenchFirstNames] : il faut regarder ses
   /// segments plutôt que le jeton entier.
   static bool _looksLikeKnownFirstName(String word) {
-    if (frenchFirstNames.contains(word.toLowerCase())) return true;
+    if (_isKnownFirstName(word)) return true;
     if (!word.contains('-')) return false;
-    return word
-        .split('-')
-        .any((part) => frenchFirstNames.contains(part.toLowerCase()));
+    return word.split('-').any(_isKnownFirstName);
   }
+
+  /// Le gazetteer est en minuscules **sans accents** (sauf rares entrées) :
+  /// on compare la forme brute et la forme dépouillée de ses accents, sinon
+  /// « Stéphane » ou « Hélène » ne seraient jamais reconnus.
+  static bool _isKnownFirstName(String word) {
+    final lower = word.toLowerCase();
+    return frenchFirstNames.contains(lower) ||
+        frenchFirstNames.contains(_foldAccents(lower));
+  }
+
+  static const Map<String, String> _accentMap = {
+    'à': 'a', 'â': 'a', 'ä': 'a', 'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e', //
+    'î': 'i', 'ï': 'i', 'ô': 'o', 'ö': 'o', 'ù': 'u', 'û': 'u', 'ü': 'u', //
+    'ÿ': 'y', 'ç': 'c', 'œ': 'oe', 'æ': 'ae', 'ñ': 'n', //
+  };
+
+  static String _foldAccents(String lower) =>
+      lower.split('').map((c) => _accentMap[c] ?? c).join();
 
   /// Cherche le mot capitalisé suivant immédiatement (séparé uniquement par
   /// des espaces) la position [from]. Retourne `null` s'il n'y en a pas.
@@ -334,9 +371,9 @@ final class NameDetector implements EntityDetector {
   /// `^` dans le motif, qui référence le tout début de la chaîne et non la
   /// position de départ passée en argument.
   static Match? _matchNextCapitalizedWord(String text, int from) {
-    final gapMatch = RegExp(r' +').matchAsPrefix(text, from);
+    final gapMatch = RegExp('$_h+').matchAsPrefix(text, from);
     if (gapMatch == null) return null;
-    final wordMatch = _capitalizedWord.matchAsPrefix(text, gapMatch.end);
+    final wordMatch = _uniteAt.matchAsPrefix(text, gapMatch.end);
     if (wordMatch == null || _isExcludedAcronym(wordMatch.group(0)!)) {
       return null;
     }
