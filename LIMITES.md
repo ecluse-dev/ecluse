@@ -14,9 +14,13 @@ absence de protection connue.
 1. **Deux niveaux de confiance.** Un `[NIR_1]` masqué est une quasi-certitude
    (clé de contrôle vérifiée) ; un `[NOM_1]` masqué est une estimation
    (heuristique v0).
-2. **Non détectés** : le BIC, les clés d'API et autres secrets, les IBAN
+2. **Non détectés** : le BIC, les secrets sans forme reconnaissable (voir §7), les IBAN
    non français, les identifiants ADELI (un ADELI à clé valide est masqué
    mais **sous l'étiquette FINESS** ; à clé invalide il n'est pas détecté),
+2. **Non détectés** : le BIC, les clés d'API et autres secrets, les IBAN
+   non français, les identifiants ADELI **sans le mot « ADELI » accolé** (à clé
+   valide ils sont masqués mais sous l'étiquette FINESS ; à clé invalide ou
+   corses, ils ne sont pas détectés),
    les lieux isolés sans structure d'adresse (« reçu à Nantes »).
 3. **Fichiers** : `.txt`, `.md`, `.docx` et `.odt`. Le PDF, les images, les
    scans et le manuscrit sont **refusés explicitement** — jamais lus à
@@ -30,8 +34,9 @@ absence de protection connue.
 5. **Une seule entorse à la fidélité** : quand une même personne est nommée
    de deux façons, la re-mention est harmonisée sur la forme la plus
    complète à la restauration. Aucun caractère n'est perdu.
-6. **Hors périmètre v0** : dictée vocale, journal d'audit chaîné (voir
-   `ROADMAP.md`). L'estimation de ré-identification et la généralisation
+6. **Hors périmètre v0** : dictée vocale. Le journal d'audit existe comme
+   bibliothèque (`ecluse_audit`, voir § 8) mais **n'est pas branché** dans
+   `Ecluse.redact`. L'estimation de ré-identification et la généralisation
    existent comme bibliothèque (`ecluse_reid`) mais **ne sont pas branchées**
    dans `Ecluse.redact` ; leurs limites sont au § 7.
 
@@ -104,12 +109,40 @@ accepte espace, tiret, point et barre oblique.
 - **IBAN non français** (DE, BE, ES…) : seul l'IBAN `FR` est détecté.
 - **FINESS de Corse** (préfixes 2A/2B) : le détecteur n'accepte que des
   chiffres.
-- **Secrets** (clés d'API, jetons, clés privées, chaînes de connexion) : non
-  détectés. Spécifié (`agent/specs/P1-07-secrets.md`), pas implémenté.
+- **Secrets.** `SecretDetector` reconnaît des formats à préfixe (jetons
+  GitHub, identifiants d'accès AWS, clés Google `AIza`, Stripe *live*, Slack,
+  Anthropic, OpenAI), les blocs PEM de clé privée et le
+  `utilisateur:motdepasse` des chaînes de connexion. **Non détectés** : un
+  mot de passe choisi par un humain, la clé secrète AWS seule (40 caractères
+  sans préfixe), les clés Stripe de test, tout jeton propriétaire sans
+  préfixe connu, et tout ce que seule l'entropie révélerait (pas de détection
+  par entropie : hachages, UUID et identifiants de commit auraient le même
+  aspect). Les préfixes viennent de sources secondaires et évoluent
+  (OpenAI, GitHub) : la liste exige un entretien. Un PEM dont les sauts de
+  ligne sont remplacés par `\n` littéraux est reconnu ; un PEM sans ligne
+  `END` est masqué jusqu'à la fin de son corps (confiance 0,8). Masquer ne
+  rend pas inoffensif un secret déjà envoyé ailleurs : l'avertissement
+  (`RedactResult.warnings`) demande de le révoquer. Les secrets ne sont
+  **pas restaurés** par défaut (`restoreSecrets: false`) ; le mode strict
+  (`refuseSecrets: true`) refuse le texte au lieu de le masquer.
+  Mesure : 0 détection sur 5 000 documents synthétiques sans secret
+  (corpus v3, étendu et trois corpus flous, seed 42).
 - **ADELI.** Pas de détecteur dédié (spécifié, non implémenté). Sur le
   corpus étendu du benchmark (`bench/README.md`), un ADELI à clé Luhn valide
   est masqué par `FinessDetector` — donc étiqueté « FINESS » — et un ADELI à
   clé invalide, même précédé du mot « ADELI », **n'est pas détecté**.
+- **Secrets** (clés d'API, jetons, clés privées, chaînes de connexion) : non
+  détectés. Spécifié (`agent/specs/P1-07-secrets.md`), pas implémenté.
+- **ADELI.** `AdeliDetector` n'émet qu'avec le mot « ADELI » à moins de
+  30 caractères avant le nombre, sans point ni chiffre entre les deux. Avec
+  ce mot : clé Luhn valide → confiance 0,95 ; clé invalide ou numéro corse
+  (`2A`/`2B`, aucune clé vérifiée) → 0,6, masqué quand même. L'algorithme de
+  clé (Luhn) est une hypothèse : la fiche officielle n'a pas été lue. Sans le
+  mot « ADELI », le nombre reste traité comme un FINESS/SIREN (étiquette
+  `finess`, ou rien si la clé est invalide) ; un autre nombre de 9 chiffres
+  placé dans les 30 caractères après « ADELI » (un SIREN voisin) est
+  étiqueté ADELI : sur-masquage assumé. Un mot ADELI placé *après* le nombre
+  n'est pas reconnu.
 - **INS** (Identité Nationale de Santé) : `InsDetector` masque les marqueurs
   textuels et OID (« Matricule INS »), pas le numéro qui suit ; celui-ci n'est
   masqué que si c'est un NIR à clé valide.
@@ -287,7 +320,7 @@ d'apprentissage. Limites de cette approche :
 - Branchement de l'estimation de ré-identification et de la généralisation
   dans `Ecluse.redact` (la bibliothèque `ecluse_reid` existe, voir § 7).
 - Dictée vocale.
-- Journal d'audit chaîné et horodaté.
+- Branchement du journal d'audit (`ecluse_audit`) dans les applications.
 - Le mode par défaut est automatique et invisible ; l'aperçu avec validation
   manuelle avant envoi est une option de confort, pas une garantie de
   contrôle a priori sur chaque détection.
@@ -324,6 +357,36 @@ pas une garantie d'anonymat. Limites connues :
   2023→2026, pyramide 2026 France entière) ; **provenance et licence des jeux
   de données non déclarées dans le dépôt** — à documenter avant toute
   diffusion.
+
+## 8. Journal d'audit (`ecluse_audit` v0)
+
+Le paquet fabrique et vérifie des entrées chaînées par SHA-256 ; il **n'écrit
+nulle part** (l'application fournit un `AuditSink`). Une entrée contient :
+version de schéma, numéro d'ordre, horodatage UTC **à la minute**, version du
+moteur et détecteurs actifs, opération, comptes par type d'entité, code de
+motif d'un refus, hash précédent, hash. Elle ne contient **jamais** le
+texte, une valeur détectée, un jeton, une position ou une longueur, une
+empreinte du texte, l'identité de l'utilisateur ni un nom de fichier.
+
+Ce que la vérification **détecte** : modification d'une entrée,
+suppression ou insertion au milieu, réordonnancement. Ce qu'elle **ne
+détecte pas** (un test l'affirme) :
+
+- la **troncature en fin de journal** : la chaîne restante reste valide. Il
+  faut ancrer régulièrement le dernier `hash` hors du journal ;
+- la **réécriture complète** par qui contrôle tout le fichier et recalcule la
+  chaîne : un hash chaîné n'est **pas une signature** (signature et ancrage
+  externe sont hors v0) ;
+- la **justesse de l'horloge** : l'horodatage vient de l'appareil. Ce n'est
+  pas un horodatage qualifié (RFC 3161 / eIDAS).
+
+Le journal prouve la cohérence interne de la chaîne, pas la vérité des
+événements. Les comptes révèlent la nature d'un document (deux NIR et un IBAN
+évoquent un dossier de paie) et un horodatage rapproché des journaux d'une
+application peut relier une entrée à une personne : **l'affirmation « ce
+journal n'est pas une donnée personnelle » n'est pas validée** (avis d'un DPO
+attendu ; ceci n'est pas un avis juridique). Le README parle d'un journal
+« signé » : ce n'est pas le cas en v0.
 
 ---
 

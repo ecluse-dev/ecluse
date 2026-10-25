@@ -25,6 +25,7 @@ const Map<String, String> typeMap = {
   'rpps': 'rpps',
   'iban': 'iban',
   'finess': 'finess',
+  'adeli': 'adeli',
 };
 
 /// Execute `ecluse_redact` sur un corpus JSONL et ecrit les predictions
