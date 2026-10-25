@@ -6,6 +6,7 @@ final class RedactResult {
     required this.maskedText,
     required this.mapping,
     required this.entities,
+    this.warnings = const [],
   });
 
   /// Texte à envoyer à l'IA — les entités personnelles sont remplacées par
@@ -21,4 +22,9 @@ final class RedactResult {
   /// Entités détectées dans le texte d'origine, triées par position,
   /// sans chevauchement (voir `resolveOverlaps`).
   final List<DetectedEntity> entities;
+
+  /// Avertissements à montrer à l'utilisateur (hors texte envoyé). Pour
+  /// l'instant : un secret technique a été masqué et doit être considéré
+  /// comme compromis s'il a déjà quitté la machine.
+  final List<String> warnings;
 }

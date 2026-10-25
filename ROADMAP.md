@@ -87,18 +87,18 @@ Objectif : qu'un premier design partner l'utilise en production.
 - 🟢 Harnais de benchmark reproductible vs Presidio
 - 🟢 `ecluse_redact` — pseudonymisation réversible, map jamais sérialisée
 - 🟢 `ecluse_demo` — trajet complet en 4 panneaux, réversibilité prouvée
-- ⚪ `ecluse_audit` — journal chaîné horodaté (version minimale)
-  (spécifié, `agent/specs/P1-08-audit.md`)
+- 🟢 `ecluse_audit` — journal chaîné horodaté (version minimale, non branché)
+  (`agent/specs/P1-08-audit.md`)
 - 🟡 Détecteurs prioritaires : 🟢 FINESS (collision SIREN assumée), 🟢 INS,
   🟢 téléphone FR et email durcis (octobre 2026) ; ⚪ ADELI (spécifié,
   `agent/specs/P1-06-adeli.md`, avec ses points ouverts)
-- ⚪ Secret scanning (clés API, tokens) — parité avec les gateways génériques
-  (spécifié, `agent/specs/P1-07-secrets.md`)
+- 🟢 Secret scanning (clés API, tokens) — parité avec les gateways génériques
+  (`SecretDetector`, spec `agent/specs/P1-07-secrets.md`)
 - 🟡 Publication de l'article de benchmark — brouillon `bench/ARTICLE.md`,
   relecture du mainteneur attendue
-- 🟡 **Import de fichiers texte natifs** — `ecluse_ingest` livré pour
-  txt, md, docx et odt ; reste le PDF texte + garde-fou PDF-image
-  (spécifié, `agent/specs/P1-09-pdf.md`). Rend la
+- 🟢 **Import de fichiers texte natifs** — `ecluse_ingest` livré pour
+  txt, md, docx, odt et PDF à texte natif avec garde-fou PDF-image
+  (`agent/specs/P1-09-pdf.md`, limites dans `LIMITES.md` § 4). Rend la
   démo nettement plus concrète — « déposez votre compte rendu, regardez ce
   qui ressort ».
 

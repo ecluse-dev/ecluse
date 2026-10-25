@@ -132,6 +132,20 @@ Ces chiffres **ne sont pas comparables** à ceux du corpus v3 ci-dessus
   passent la clé de Luhn du RPPS par coïncidence. Défaut nouveau, révélé
   par ce profil.
 
+**Après P1-14** (`AdeliDetector`, même corpus, seed 42, appariement strict) :
+
+| Entité | Précision | Rappel | TP | FP | FN |
+|---|---:|---:|---:|---:|---:|
+| FINESS | 44,3 % | 100 % | 172 | 216 | 0 |
+| ADELI | 100 % | 74,4 % | 93 | 0 | 32 |
+
+Fuite au caractère des ADELI : 20,0 % → **0,0 %**. Les 32 faux négatifs
+stricts sont les ADELI sans le mot « ADELI » : ils sont masqués, sous
+l'étiquette `finess` (voir la fuite à 0 %). Les 68 ADELI avec mot-clé
+cessent de compter comme faux positifs FINESS (284 → 216) ; NIR, RPPS et
+IBAN sont inchangés. Le rappel `adeli` reste bas par construction (décision
+§3.3 de la spec) : il n'est pas un défaut à corriger.
+
 Limites de cette mesure : mêmes que le corpus v3 (synthétique, généré par
 nous, une graine) ; les codes profession des ADELI sont tirés au hasard (la
 liste officielle n'est pas connue) ; pas d'ADELI corse (règle de la lettre
@@ -146,6 +160,109 @@ python3 bench/generate_corpus.py --n 1000 --seed 42 --profile extended --out ben
 python3 bench/score.py --corpus bench/corpus_ext.jsonl \
   --pred "Ecluse=bench/predictions_ext.jsonl"
 ```
+
+### Presidio avec reconnaisseurs NIR et RPPS écrits à la main (P1-35)
+
+L'objection prévisible : « Presidio est extensible ». `run_presidio.py
+--recognizers` ajoute à Presidio deux `PatternRecognizer` écrits à la main
+(aucune dépendance de plus, code dans `french_recognizers`) :
+
+- `simple` : une expression régulière par identifiant, séparateurs (espaces,
+  tabulations, insécables, points) tolérés ;
+- `validated` : la même expression + vérification de la clé via
+  `validate_result` (mod 97 pour le NIR, Luhn pour le RPPS) — la pratique
+  recommandée par Presidio. C'est le **meilleur reconnaisseur raisonnable** :
+  je l'ai écrit tolérant, pour ne pas affaiblir artificiellement Presidio.
+
+Corpus v3 (seed 42, 1000 documents, 778 entités), appariement strict, même
+configuration Presidio que la note ¹ (modèle `en_core_web_lg`, seuil 0,35) :
+
+| Configuration | NIR (préc. / rappel) | RPPS (préc. / rappel) | IBAN FR | FINESS | TOTAL (préc. / rappel) |
+|---|---:|---:|---:|---:|---:|
+| Presidio par défaut | — / 0 % | — / 0 % | 100 % / 68,7 % | — / 0 % | 100 % / 18,9 % |
+| + reconnaisseurs `simple` | 85,7 % / 100 % | 81,0 % / 100 % | 100 % / 68,7 % | — / 0 % | 87,4 % / 74,8 % |
+| + reconnaisseurs `validated` | **100 % / 100 %** | **100 % / 100 %** | 100 % / 68,7 % | — / 0 % | 100 % / 74,8 % |
+| Écluse | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 75,4 % / 100 % | 94,9 % / 100 % |
+
+Lecture, sans l'arrondir en faveur d'Écluse :
+
+- **Sur le NIR et le RPPS, un Presidio étendu et validé égale Écluse** sur ce
+  corpus : la valeur d'Écluse n'est pas dans ces deux détecteurs-là, mais dans
+  le fait de les livrer déjà écrits et testés. Sans la clé, la précision
+  tombe à 85,7 % (NIR, 45 faux positifs) et 81,0 % (RPPS, 39 faux positifs) :
+  la validation de clé est ce qui compte, pas le moteur.
+- **L'écart restant vient de l'IBAN et du FINESS.** Le recognizer IBAN livré
+  par Presidio ne reconnaît pas les 67 IBAN à espacement irrégulier (rappel
+  68,7 %, fuite au caractère de 36,6 %), et rien ne couvre le FINESS. Un
+  utilisateur pourrait écrire ces deux reconnaisseurs aussi : ce n'est pas
+  mesuré ici (hors de la tâche).
+- **Le même défaut apparaît des deux côtés** : sur le corpus étendu, le RPPS
+  validé de Presidio a les mêmes 6 faux positifs que celui d'Écluse (les
+  numéros de TVA passent la clé de Luhn par coïncidence), RPPS 95,1 % de
+  précision pour les deux.
+- Hors périmètre de cette comparaison : tout ce qu'Écluse fait en plus
+  (noms, adresses, restauration réversible, garde-fous d'ingestion) et que
+  Presidio fait autrement (reconnaissance d'entités nommées anglophone).
+
+Limites : un seul corpus synthétique généré par nous, une graine, un seul
+auteur des reconnaisseurs (moi), seuil 0,35 non optimisé. Les scores de
+reconnaisseurs (0,6 et 0,4) sont mes choix ; avec la validation, Presidio
+remonte le score d'un motif valide à 1,0, donc le seuil n'intervient pas.
+
+Reproduire :
+
+```bash
+for r in none simple validated; do
+  (cd bench && python3 run_presidio.py --corpus corpus.jsonl \
+     --out predictions_presidio_$r.jsonl --recognizers $r)
+done
+(cd bench && python3 score.py --corpus corpus.jsonl \
+   --pred "Presidio_valide=predictions_presidio_validated.jsonl")
+```
+
+### PDF synthétiques pour calibrer l'ingestion (P1-18)
+
+`generate_pdfs.py` (bibliothèque standard seule) écrit à la main 18 PDF
+**reproductibles octet pour octet** (graine 42, pas d'horodatage, images en
+ASCIIHex) dans `bench/pdf/`, avec `expected.json` : nature, résultat attendu
+(`accepte`, `accepte_avertissement`, `refuse`), code de motif et identifiants
+fabriqués (clés valides calculées) que le texte extrait doit contenir. Les
+attendus décrivent la **cible** de `agent/specs/P1-09-pdf.md` §3, pas le
+comportement d'une bibliothèque. Les seuils (20 caractères alphanumériques par
+page, 200 pages, 50 Mo) restent des valeurs de départ à calibrer en P1-17.
+
+| Fichier | Contenu | Attendu |
+|---|---|---|
+| `texte_simple`, `texte_multipage`, `texte_colonnes`, `texte_iban_coupe` | texte, 1 à 3 pages, deux colonnes, IBAN coupé par une fin de ligne | accepté |
+| `texte_et_image`, `metadonnees_annotation` | tampon image ; `/Info` et annotation portant un identifiant | accepté **avec avertissement** |
+| `page_blanche`, `javascript` | page sans contenu ; `/OpenAction` JavaScript (jamais exécuté) | accepté |
+| `scan_pur`, `texte_quasi_vide`, `sans_page` | aucune couche texte | refus `sans_texte` |
+| `mixte` | page 1 texte, pages 2 et 3 images | refus `partiellement_numerise` (document entier) |
+| `texte_illisible`, `texte_illisible_latin` | police Type0 sans `ToUnicode` : caractères en zone privée / en lettres latines étendues | refus `texte_illisible` |
+| `chiffre` | RC4 40 bits, mot de passe utilisateur vide | refus `chiffre` |
+| `tronque`, `xref_casse` | sans xref ni trailer ; `startxref` erroné | refus `malforme` |
+| `tres_long_250_pages` | 250 pages | refus `plafond_pages` |
+
+`--with-oversize` ajoute `tres_gros.pdf` (51 Mo, non versionné) pour le plafond de taille.
+
+**Ce que le jeu montre déjà** (lecture avec `pdftotext` de poppler, outil de
+vérification local, pas une dépendance du projet) :
+
+- `texte_illisible_latin` met en défaut les critères de qualité du spec §3 :
+  aucun `U+FFFD`, aucun caractère de zone privée, 100 % de lettres. Le texte
+  rendu est du bruit (« ŎŵŭťŲů… ») qui passerait le garde-fou tel que spécifié.
+  Il faudra un critère sur la part de caractères hors du jeu attendu.
+- Un lecteur courant **reconstruit** le `xref_casse` et lit le texte, et lit
+  le `chiffre` sans mot de passe : le refus de ces deux cas est une
+  **politique** d'Écluse (règle n°4), pas une conséquence de l'échec de la
+  lecture.
+- `scan_pur` donne un texte vide ; `tronque` et `sans_page` produisent une
+  erreur, pas un texte vide.
+
+Tests : `python3 -m unittest discover -s bench` (reproductibilité, jeu
+versionné identique à la génération, clés des identifiants, cohérence de la
+table xref des PDF intacts, présence des identifiants dans le texte extrait
+si `pdftotext` est installé).
 
 ### Entités floues : noms, adresses, dates, téléphones, emails, établissements
 
@@ -221,8 +338,9 @@ Les fichiers générés (`bench/flou/`) ne sont pas versionnés.
 ## Honnêteté méthodologique
 
 - **Presidio est extensible.** Un développeur peut écrire des
-  recognizers NIR/RPPS personnalisés. Ce benchmark mesure ce qui est
-  livré clé en main, parce que c'est ce que 95 % des équipes déploient.
+  recognizers NIR/RPPS personnalisés. Le tableau principal mesure ce qui est
+  livré clé en main ; l'extension est mesurée à part (P1-35, plus haut) et
+  **égale Écluse sur le NIR et le RPPS** dès qu'elle vérifie la clé.
 - **Le corpus est synthétique et généré par nous.** Générateur et seed
   publics : quiconque peut le reproduire, le critiquer ou l'étendre
   (`generate_corpus.py --seed 42 --n 1000`). Changer le générateur
@@ -280,3 +398,9 @@ python3 bench/generate_corpus.py --n 1000 --seed 42 --out bench/corpus.jsonl
 
 Les fichiers générés (`corpus.jsonl`, `predictions_*.jsonl`) ne sont
 pas versionnés : ils se régénèrent à l'identique.
+
+PDF synthétiques :
+
+```bash
+python3 bench/generate_pdfs.py --out bench/pdf
+```

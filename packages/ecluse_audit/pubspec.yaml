@@ -1,0 +1,21 @@
+name: ecluse_audit
+description: >-
+  Journal d'audit chaîné et horodaté pour Écluse (v0) : fabrique et vérifie
+  des entrées sans aucune donnée personnelle ; ne stocke rien lui-même.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  # Seule dépendance de hachage du dépôt (SHA-256) : paquet officiel de
+  # l'équipe Dart, licence BSD-3-Clause, approuvé pour ce paquet seul
+  # (DECISIONS.md, « Audit »).
+  crypto: ^3.0.3
+  ecluse_core:
+    path: ../ecluse_core
+
+dev_dependencies:
+  lints: ^4.0.0
+  test: ^1.25.0

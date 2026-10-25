@@ -14,13 +14,17 @@ absence de protection connue.
 1. **Deux niveaux de confiance.** Un `[NIR_1]` masqué est une quasi-certitude
    (clé de contrôle vérifiée) ; un `[NOM_1]` masqué est une estimation
    (heuristique v0).
-2. **Non détectés** : le BIC, les clés d'API et autres secrets, les IBAN
+2. **Non détectés** : le BIC, les secrets sans forme reconnaissable (voir §7), les IBAN
    non français, les identifiants ADELI (un ADELI à clé valide est masqué
    mais **sous l'étiquette FINESS** ; à clé invalide il n'est pas détecté),
+2. **Non détectés** : le BIC, les clés d'API et autres secrets, les IBAN
+   non français, les identifiants ADELI **sans le mot « ADELI » accolé** (à clé
+   valide ils sont masqués mais sous l'étiquette FINESS ; à clé invalide ou
+   corses, ils ne sont pas détectés),
    les lieux isolés sans structure d'adresse (« reçu à Nantes »).
-3. **Fichiers** : `.txt`, `.md`, `.docx` et `.odt`. Le PDF, les images, les
-   scans et le manuscrit sont **refusés explicitement** — jamais lus à
-   moitié. Les en-têtes, pieds de page, notes et commentaires de
+3. **Fichiers** : `.txt`, `.md`, `.docx`, `.odt` et `.pdf` **à texte
+   natif** (voir § 4). Les images, les scans, les PDF-image et le manuscrit
+   sont **refusés explicitement** — jamais lus à moitié. Les en-têtes, pieds de page, notes et commentaires de
    `.docx`/`.odt` ne sont pas lus (avertissement `ignored_parts`).
 4. **Sur-masquage possible** : en cas de doute, Écluse masque. Un mot
    capitalisé adjacent à un prénom connu, ou un SIREN pris pour un FINESS,
@@ -30,8 +34,9 @@ absence de protection connue.
 5. **Une seule entorse à la fidélité** : quand une même personne est nommée
    de deux façons, la re-mention est harmonisée sur la forme la plus
    complète à la restauration. Aucun caractère n'est perdu.
-6. **Hors périmètre v0** : dictée vocale, journal d'audit chaîné (voir
-   `ROADMAP.md`). L'estimation de ré-identification et la généralisation
+6. **Hors périmètre v0** : dictée vocale. Le journal d'audit existe comme
+   bibliothèque (`ecluse_audit`, voir § 8) mais **n'est pas branché** dans
+   `Ecluse.redact`. L'estimation de ré-identification et la généralisation
    existent comme bibliothèque (`ecluse_reid`) mais **ne sont pas branchées**
    dans `Ecluse.redact` ; leurs limites sont au § 7.
 
@@ -104,12 +109,40 @@ accepte espace, tiret, point et barre oblique.
 - **IBAN non français** (DE, BE, ES…) : seul l'IBAN `FR` est détecté.
 - **FINESS de Corse** (préfixes 2A/2B) : le détecteur n'accepte que des
   chiffres.
-- **Secrets** (clés d'API, jetons, clés privées, chaînes de connexion) : non
-  détectés. Spécifié (`agent/specs/P1-07-secrets.md`), pas implémenté.
+- **Secrets.** `SecretDetector` reconnaît des formats à préfixe (jetons
+  GitHub, identifiants d'accès AWS, clés Google `AIza`, Stripe *live*, Slack,
+  Anthropic, OpenAI), les blocs PEM de clé privée et le
+  `utilisateur:motdepasse` des chaînes de connexion. **Non détectés** : un
+  mot de passe choisi par un humain, la clé secrète AWS seule (40 caractères
+  sans préfixe), les clés Stripe de test, tout jeton propriétaire sans
+  préfixe connu, et tout ce que seule l'entropie révélerait (pas de détection
+  par entropie : hachages, UUID et identifiants de commit auraient le même
+  aspect). Les préfixes viennent de sources secondaires et évoluent
+  (OpenAI, GitHub) : la liste exige un entretien. Un PEM dont les sauts de
+  ligne sont remplacés par `\n` littéraux est reconnu ; un PEM sans ligne
+  `END` est masqué jusqu'à la fin de son corps (confiance 0,8). Masquer ne
+  rend pas inoffensif un secret déjà envoyé ailleurs : l'avertissement
+  (`RedactResult.warnings`) demande de le révoquer. Les secrets ne sont
+  **pas restaurés** par défaut (`restoreSecrets: false`) ; le mode strict
+  (`refuseSecrets: true`) refuse le texte au lieu de le masquer.
+  Mesure : 0 détection sur 5 000 documents synthétiques sans secret
+  (corpus v3, étendu et trois corpus flous, seed 42).
 - **ADELI.** Pas de détecteur dédié (spécifié, non implémenté). Sur le
   corpus étendu du benchmark (`bench/README.md`), un ADELI à clé Luhn valide
   est masqué par `FinessDetector` — donc étiqueté « FINESS » — et un ADELI à
   clé invalide, même précédé du mot « ADELI », **n'est pas détecté**.
+- **Secrets** (clés d'API, jetons, clés privées, chaînes de connexion) : non
+  détectés. Spécifié (`agent/specs/P1-07-secrets.md`), pas implémenté.
+- **ADELI.** `AdeliDetector` n'émet qu'avec le mot « ADELI » à moins de
+  30 caractères avant le nombre, sans point ni chiffre entre les deux. Avec
+  ce mot : clé Luhn valide → confiance 0,95 ; clé invalide ou numéro corse
+  (`2A`/`2B`, aucune clé vérifiée) → 0,6, masqué quand même. L'algorithme de
+  clé (Luhn) est une hypothèse : la fiche officielle n'a pas été lue. Sans le
+  mot « ADELI », le nombre reste traité comme un FINESS/SIREN (étiquette
+  `finess`, ou rien si la clé est invalide) ; un autre nombre de 9 chiffres
+  placé dans les 30 caractères après « ADELI » (un SIREN voisin) est
+  étiqueté ADELI : sur-masquage assumé. Un mot ADELI placé *après* le nombre
+  n'est pas reconnu.
 - **INS** (Identité Nationale de Santé) : `InsDetector` masque les marqueurs
   textuels et OID (« Matricule INS »), pas le numéro qui suit ; celui-ci n'est
   masqué que si c'est un NIR à clé valide.
@@ -129,11 +162,54 @@ quasi-identifiant en clair dans le texte envoyé au LLM.
 
 ## 4. Fichiers pris en charge (`ecluse_ingest`)
 
-Seuls `.txt`, `.md`, `.docx` et `.odt` sont ingérés en v1.
+Sont ingérés : `.txt`, `.md`, `.docx`, `.odt` et `.pdf` à texte natif.
 
-**Le PDF est refusé explicitement, systématiquement** — y compris un PDF
-avec une couche de texte lisible : ce n'est pas encore implémenté, et un
-fichier refusé vaut mieux qu'un fichier mal lu.
+**PDF.** Un PDF n'est accepté que si Écluse peut affirmer que **tout son
+contenu informatif est du texte lu** ; sinon le document entier est refusé,
+avec un motif stable (`IngestRefused.code`) :
+
+| Motif | Cas |
+|---|---|
+| `sans_texte` | scan pur, image avec quelques caractères, document sans page lue |
+| `partiellement_numerise` | pages de texte et pages image mêlées (pages listées) |
+| `numerise_couche_ocr` | texte invisible (`3 Tr`) laissé par un OCR sur un scan |
+| `texte_illisible` | police sans table `ToUnicode`, caractères de zone privée / U+FFFD, bruit hors du jeu de caractères d'un texte français |
+| `chiffre` | PDF chiffré, **même ouvrable sans mot de passe** |
+| `malforme` | pas d'en-tête, pas de `%%EOF`, `startxref` qui ne pointe pas sur une table de références, bibliothèque en échec |
+| `plafond_taille`, `plafond_pages`, `plafond_duree` | plus de 50 Mo, plus de 200 pages, plus de 30 s |
+
+Le refus d'un PDF tronqué, à table `xref` cassée ou chiffré sans mot de passe
+est une **politique** d'Écluse, pas la conséquence d'un échec de lecture : la
+bibliothèque (`pdf_graphics`, version fixée) reconstruit sans erreur ces
+fichiers ; un contrôle de structure préalable les refuse.
+
+Avertissements (`IngestedText.warnings`) pour ce qui n'est **pas lu** :
+`images_non_traitees:<pages>` (image sur une page de texte : tampon,
+signature), `metadonnees_non_extraites`, `annotations_non_extraites`,
+`formulaires_non_extraits`, `javascript_ignore` (jamais exécuté),
+`pages_blanches:<n>`. **Le contenu des métadonnées, annotations et champs de
+formulaire n'est pas détecté** : il peut contenir un identifiant.
+
+Limites propres au PDF :
+
+- **Ordre de lecture** (colonnes, tableaux) et **coupures de ligne** : un
+  identifiant coupé par une fin de ligne ou une césure peut échapper à la
+  détection (cas `texte_iban_coupe` du jeu synthétique).
+- Une image atteinte seulement par un XObject de formulaire n'est pas vue
+  (pas d'avertissement `images_non_traitees`). Une page de texte avec une
+  image qui porte du texte (texte incrusté dans une image) est acceptée avec
+  avertissement ; le texte de l'image n'est pas lu.
+- Le plafond de durée est vérifié **entre** les pages ; une seule page
+  pathologique ne peut pas être interrompue.
+- Seuils de départ non calibrés sur des documents réels (aucun n'est
+  utilisé) : 20 caractères alphanumériques pour qu'une page « ait du texte »,
+  5 % de caractères parasites, 50 % de lettres/chiffres. Mesure sur le jeu
+  synthétique : 18 fichiers, tous conformes à `bench/pdf/expected.json` ;
+  200 pages de 30 lignes en ~0,3 s.
+- `pdf_graphics` est récent (dix versions majeures en trois semaines au moment
+  du choix), à mainteneur unique, et exige Dart ≥ 3.5. Ses dépendances
+  transitives (dont `bidi`) n'ont pas été auditées par nous. La version est
+  fixée exactement.
 
 **Aucune image, aucun scan, aucun manuscrit n'est traité.** Un OCR ou une
 reconnaissance manuscrite introduirait des erreurs de lecture qui feraient
@@ -287,7 +363,7 @@ d'apprentissage. Limites de cette approche :
 - Branchement de l'estimation de ré-identification et de la généralisation
   dans `Ecluse.redact` (la bibliothèque `ecluse_reid` existe, voir § 7).
 - Dictée vocale.
-- Journal d'audit chaîné et horodaté.
+- Branchement du journal d'audit (`ecluse_audit`) dans les applications.
 - Le mode par défaut est automatique et invisible ; l'aperçu avec validation
   manuelle avant envoi est une option de confort, pas une garantie de
   contrôle a priori sur chaque détection.
@@ -324,6 +400,36 @@ pas une garantie d'anonymat. Limites connues :
   2023→2026, pyramide 2026 France entière) ; **provenance et licence des jeux
   de données non déclarées dans le dépôt** — à documenter avant toute
   diffusion.
+
+## 8. Journal d'audit (`ecluse_audit` v0)
+
+Le paquet fabrique et vérifie des entrées chaînées par SHA-256 ; il **n'écrit
+nulle part** (l'application fournit un `AuditSink`). Une entrée contient :
+version de schéma, numéro d'ordre, horodatage UTC **à la minute**, version du
+moteur et détecteurs actifs, opération, comptes par type d'entité, code de
+motif d'un refus, hash précédent, hash. Elle ne contient **jamais** le
+texte, une valeur détectée, un jeton, une position ou une longueur, une
+empreinte du texte, l'identité de l'utilisateur ni un nom de fichier.
+
+Ce que la vérification **détecte** : modification d'une entrée,
+suppression ou insertion au milieu, réordonnancement. Ce qu'elle **ne
+détecte pas** (un test l'affirme) :
+
+- la **troncature en fin de journal** : la chaîne restante reste valide. Il
+  faut ancrer régulièrement le dernier `hash` hors du journal ;
+- la **réécriture complète** par qui contrôle tout le fichier et recalcule la
+  chaîne : un hash chaîné n'est **pas une signature** (signature et ancrage
+  externe sont hors v0) ;
+- la **justesse de l'horloge** : l'horodatage vient de l'appareil. Ce n'est
+  pas un horodatage qualifié (RFC 3161 / eIDAS).
+
+Le journal prouve la cohérence interne de la chaîne, pas la vérité des
+événements. Les comptes révèlent la nature d'un document (deux NIR et un IBAN
+évoquent un dossier de paie) et un horodatage rapproché des journaux d'une
+application peut relier une entrée à une personne : **l'affirmation « ce
+journal n'est pas une donnée personnelle » n'est pas validée** (avis d'un DPO
+attendu ; ceci n'est pas un avis juridique). Le README parle d'un journal
+« signé » : ce n'est pas le cas en v0.
 
 ---
 
