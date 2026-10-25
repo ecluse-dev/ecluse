@@ -18,6 +18,9 @@ Handler buildHandler({
   required Directory webDirectory,
 }) {
   return (Request request) async {
+    final blocked = _guard(request);
+    if (blocked != null) return blocked;
+
     final path = request.url.path;
 
     if (request.method == 'GET' && (path.isEmpty || path == 'index.html')) {
@@ -35,6 +38,72 @@ Handler buildHandler({
     return Response.notFound('Route inconnue.');
   };
 }
+
+/// Taille maximale d'un corps JSON de traitement (2 Mio) et de dépôt de
+/// fichier (base64 compris, 20 Mio). Au-delà : refus avant tout traitement,
+/// pour qu'une seule requête ne puisse pas geler ce serveur monothread.
+const int _maxProcessBodyBytes = 2 * 1024 * 1024;
+const int _maxIngestBodyBytes = 20 * 1024 * 1024;
+
+/// Hôtes de boucle locale acceptés dans l'en-tête `Host`. Tout autre hôte
+/// (`evil.example` résolu vers 127.0.0.1) est refusé : c'est la parade au
+/// DNS rebinding, par lequel une page web lirait les réponses de la démo.
+const Set<String> _loopbackHosts = {'localhost', '127.0.0.1', '[::1]'};
+
+/// Garde commun à toutes les routes : `Host` de boucle locale, et pour un
+/// POST un `Content-Type` JSON. Ce dernier force tout appel venu d'une page
+/// web d'un autre site à passer par une pré-requête CORS, que ce serveur ne
+/// satisfait jamais : sans cela, `text/plain` permettrait à n'importe quelle
+/// page ouverte dans le navigateur de déclencher un appel LLM facturé.
+Response? _guard(Request request) {
+  final host = request.headers['host'];
+  if (host != null) {
+    final name = host.startsWith('[')
+        ? host.substring(0, host.indexOf(']') + 1)
+        : host.split(':').first;
+    if (!_loopbackHosts.contains(name.toLowerCase())) {
+      return _errorResponse(403, 'Hôte non autorisé.');
+    }
+  }
+  if (request.method == 'POST') {
+    final type = request.headers['content-type']?.toLowerCase() ?? '';
+    if (!type.startsWith('application/json')) {
+      return _errorResponse(415, 'Content-Type « application/json » requis.');
+    }
+  }
+  return null;
+}
+
+/// Lit le corps de [request] (borné à [maxBytes]) et le décode en objet
+/// JSON. Renvoie soit la `Map`, soit la réponse d'erreur à retourner.
+Future<Object> _readJsonObject(Request request, int maxBytes) async {
+  final declared = request.contentLength;
+  if (declared != null && declared > maxBytes) {
+    return _errorResponse(413, 'Requête trop volumineuse.');
+  }
+  final bytes = <int>[];
+  await for (final chunk in request.read()) {
+    bytes.addAll(chunk);
+    if (bytes.length > maxBytes) {
+      return _errorResponse(413, 'Requête trop volumineuse.');
+    }
+  }
+  try {
+    final decoded = jsonDecode(utf8.decode(bytes));
+    if (decoded is! Map<String, dynamic>) {
+      return _errorResponse(400, 'Requête illisible (objet JSON attendu).');
+    }
+    return decoded;
+  } on FormatException {
+    return _jsonResponse({'error': 'Requête illisible (JSON invalide).'});
+  }
+}
+
+Response _errorResponse(int status, String message) => Response(
+      status,
+      body: jsonEncode({'error': message}),
+      headers: {'content-type': 'application/json; charset=utf-8'},
+    );
 
 Future<Response> _serveIndex(Directory webDirectory) async {
   final file = File('${webDirectory.path}/index.html');
@@ -71,13 +140,9 @@ Future<Response> _handleProcess(
   Request request,
   RedactService redactService,
 ) async {
-  final Map<String, dynamic> body;
-  try {
-    final raw = await request.readAsString();
-    body = jsonDecode(raw) as Map<String, dynamic>;
-  } on FormatException {
-    return _jsonResponse({'error': 'Requête illisible (JSON invalide).'});
-  }
+  final parsed = await _readJsonObject(request, _maxProcessBodyBytes);
+  if (parsed is Response) return parsed;
+  final body = parsed as Map<String, dynamic>;
 
   final text = body['text'];
   final instruction = body['instruction'];
@@ -102,6 +167,7 @@ Future<Response> _handleProcess(
         for (final entity in result.entities) _encodeEntity(entity),
       ],
       'maskedText': result.maskedText,
+      'maskedInstruction': result.maskedInstruction,
       'llmResponse': result.llmResponse,
       'restoredText': result.restoredText,
     });
@@ -120,13 +186,9 @@ Future<Response> _handleProcess(
 /// contenu n'est journalisé : seuls la taille et le résultat
 /// (accepté/refusé) apparaissent en sortie standard.
 Future<Response> _handleIngest(Request request) async {
-  final Map<String, dynamic> body;
-  try {
-    final raw = await request.readAsString();
-    body = jsonDecode(raw) as Map<String, dynamic>;
-  } on FormatException {
-    return _jsonResponse({'error': 'Requête illisible (JSON invalide).'});
-  }
+  final parsed = await _readJsonObject(request, _maxIngestBodyBytes);
+  if (parsed is Response) return parsed;
+  final body = parsed as Map<String, dynamic>;
 
   final filename = body['filename'];
   final bytesB64 = body['bytes'];
