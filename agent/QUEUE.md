@@ -37,7 +37,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-17 | code | Ingestion PDF : `PdfTextSource`, garde-fou et refus | P1-18 | bloquée |
 | P1-18 | code | Générateur de PDF synthétiques pour calibrer les seuils | P1-09 | à faire |
 | P1-19 | code | Core : un identifiant suivi d'un nombre (`NIR … 91 12 ans`, `RPPS … 12`) n'est plus détecté (fuite) | — | fusionnée |
-| P1-20 | code | Redact : une adresse, un nom ou un établissement en chevauchement partiel écrase l'entité voisine (email cassé, nom en clair) | — | PR ouverte |
+| P1-20 | code | Redact : une adresse, un nom ou un établissement en chevauchement partiel écrase l'entité voisine (email cassé, nom en clair) | — | fusionnée |
 | P1-21 | code | Redact : collision avec des jetons littéraux du texte (`[NOM_1]`) | — | fusionnée |
 | P1-22 | code | Ingest : contenus non lus en silence (préfixe XML autre que `w:`, en-têtes/pieds, UTF-16 sans BOM, exceptions non rattrapées) | — | à faire |
 | P1-23 | code | Robustesse : ReDoS email et adresse ; démo (taille de corps, JSON non-objet, `Host`/`Origin`, masquage de la consigne) | — | à faire |
@@ -47,7 +47,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-27 | code | Reid/reference : paliers d'âge, population des départements, normalisation œ, homonymes, validations | — | à faire |
 | P1-28 | code | Bench : `score.py` (types inconnus, mode souple), `ecluse_sim.py`, README, test d'équivalence | — | à faire |
 | P1-29 | code | Docs : `LIMITES.md`, `ROADMAP.md`, README du benchmark, `NOTES_SECURITE.md` manquant | — | à faire |
-| P1-30 | code | Core : NIR à mois fictifs, séparateurs U+2009 et `/`, saut de ligne dans un identifiant groupé | — | à faire |
+| P1-30 | code | Core : NIR à mois fictifs, séparateurs U+2009 et `/`, saut de ligne dans un identifiant groupé | — | PR ouverte |
 
 Les phases 2 et 3 seront découpées ici quand la phase 1 sera fusionnée.
 
