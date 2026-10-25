@@ -335,6 +335,52 @@ done
 
 Les fichiers générés (`bench/flou/`) ne sont pas versionnés.
 
+### Quasi-identifiants : profession, lieu, âge (profil `qi`, P2-03a)
+
+Les corpus précédents mesurent des **entités masquées**. `ecluse_reid`
+(`LIMITES.md` § 7) travaille sur autre chose : trois quasi-identifiants (QI) qui
+restent en clair dans le texte masqué, et dont la combinaison peut ré-identifier
+une personne. Rien ne mesurait leur extraction ; ce profil est l'outil de mesure
+qui manquait (règle 5 de `CLAUDE.md`). **Aucun moteur n'est mesuré ici** : les
+premiers résultats viendront de P2-03b.
+
+Trois corpus séparés, jamais fusionnés (graine 42, 400 documents chacun) :
+
+| Corpus | QI annotés | Contenu |
+|---|---|---|
+| Réaliste | 731 (241 âges, 320 lieux, 170 professions) | comptes rendus à **une** personne : profession + lieu + âge, lieu + âge, lieu seul, profession + lieu, âge seul |
+| Adversarial | 909 (330 âges, 396 lieux, 183 professions) ; 108 documents de plusieurs personnes | communes homonymes, lieux **sans population** dans les données de référence (Paris, Lyon, Marseille, Mayotte), population nulle, plusieurs lieux, plusieurs âges, profession sans lieu, âges aux bornes (0 à 110 ans), espace insécable, âge en toutes lettres, synonymes et abréviations de spécialités, communes à article, tirets et apostrophes |
+| Témoin | 0 | durées (« depuis 3 ans »), mots courants qui sont aussi des communes (« Orange », « Tours de garde »), professions hors périmètre, lieu de réunion sans lien avec une personne : toute extraction est un faux positif |
+
+**Conventions de span.** Âge : les chiffres, l'espace (ou l'espace insécable) et
+« ans » (« 94 ans »). Lieu : le nom de la commune tel qu'écrit. Profession : le
+terme tel qu'écrit. Les professions **hors périmètre** d'`ecluse_reid`
+(infirmière, kinésithérapeute…) figurent dans le texte mais ne sont pas annotées.
+Chaque document porte un champ `personnes` (nombre de personnes évoquées).
+
+`score_qi.py` donne, par type : précision, rappel et F1 stricts, F1 souple, et la
+part de caractères de QI **non couverts** par une extraction du même type (la
+mesure de référence, comme la fuite au caractère de `score_flou.py`) ; le rappel
+selon le nombre de personnes ; la répartition des documents par statut si les
+prédictions en portent un ; et, sur le témoin, le nombre d'extractions.
+
+```bash
+mkdir -p bench/qi
+python3 bench/generate_corpus_qi.py --n 400 --seed 42 --out-dir bench/qi
+# Prédictions : un fichier JSONL par corpus, {"id", "entities", "statut"?}
+python3 bench/score_qi.py --corpus bench/qi/corpus_qi_realiste.jsonl \
+    --pred "Moteur=bench/qi/pred_qi_realiste.jsonl"
+```
+
+Les fichiers générés (`bench/qi/`) ne sont pas versionnés.
+
+Limites : corpus synthétique et généré par nous, une graine par exécution (aucune variance mesurée),
+vocabulaire court (23 communes courantes, 16 professions, quelques gabarits de
+phrase). Les noms de communes sont réels (géographie publique) ; tout le reste est
+inventé. L'annotation d'une profession ou d'un âge « en toutes lettres » est un
+choix de convention. Aucune vérité terrain n'existe pour la **taille d'une classe
+d'équivalence** (F) : ce profil mesure l'extraction, pas la justesse de F.
+
 ## Honnêteté méthodologique
 
 - **Presidio est extensible.** Un développeur peut écrire des
