@@ -18,7 +18,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | Id | Type | Tâche | Dépend de | Statut |
 |---|---|---|---|---|
 | P1-00 | humain | Pousser les tests produits par l'essai d'agent du 10 août (branche locale `test-prime-agent`) | — | humain |
-| P1-01 | mesure | Rejouer Presidio sur le corpus v3 et mettre à jour le tableau du benchmark | — | à faire |
+| P1-01 | mesure | Rejouer Presidio sur le corpus v3 et mettre à jour le tableau du benchmark | — | PR ouverte |
 | P1-02 | code | RPPS : couvrir les variantes de séparateurs (NBSP, espace fine, tabulation, espaces multiples, points, tirets) | — | à faire |
 | P1-03 | mesure | FINESS : analyser les faux positifs (collision SIREN) et proposer des pistes chiffrées | P1-01 | à faire |
 | P1-04 | code | Téléphone FR : durcir l'heuristique (formats +33, 0033, séparateurs) | — | à faire |
