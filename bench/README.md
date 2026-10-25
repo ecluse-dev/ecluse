@@ -324,7 +324,6 @@ Reproduire (depuis la racine du dépôt) :
 
 ```bash
 mkdir -p bench/flou
-mkdir -p bench/flou
 python3 bench/generate_corpus_flou.py --n 400 --seed 42 --out-dir bench/flou
 for c in realiste adversarial temoin; do
   (cd packages/ecluse_redact && dart run bin/run_redact_bench.dart \
