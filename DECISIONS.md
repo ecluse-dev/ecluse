@@ -246,3 +246,10 @@ d'une mesure reste **ouvert** (dernière rubrique).
 - **Licence des poids** du NER : à lire sur la page du modèle.
 - Confirmation de la menace T1 et du choix C0, C1 ou C2.
 - Valeurs de P2-04 à confirmer avec les design partners (seuil).
+
+## 2026-10 — Règle de noms entre documents : N3 (P2-13)
+Après la mesure de P2-06 (cohérence des noms en baisse avec N1), le mainteneur
+a demandé N3 : N1 reste le **défaut**, N2 (fusion par inclusion) est activable
+par l'application à la création du `Dossier`
+(`RegleNoms.inclusion`). Le choix du défaut n'est pas modifié ; les mesures de
+N1 et N2 sont dans `LIMITES.md` § 5.3 et dans la PR P2-13.
