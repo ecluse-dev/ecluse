@@ -67,6 +67,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-03a | code | Profil de corpus de quasi-identifiants annotés (profession, lieu, âge) et son scoreur, dans `bench/` | P2-03 | fusionnée |
 | P2-03b | code | `ecluse_reid` : extraction des QI avec positions et estimation totale (résultat typé, sans exception), en ajout et sans changer `estimate` | P2-03a | fusionnée |
 | P2-04 | code | Branchement de `ecluse_reid` dans `Ecluse.redact` selon l'option retenue dans la spec P2-03 (test d'équivalence d'abord, mesure avant/après) | P2-03, P2-03a, P2-03b | bloquée |
+| P2-05 | spec | Pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers : définition du dossier, état en mémoire, menace du recoupement | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -492,3 +493,49 @@ aujourd'hui.
 - **Fini quand** : `format`, `analyze` et `test` passent, les tests écrits avant le
   code sont dans la PR, le « avant » et l'« après » sont chiffrés, et la PR liste ce
   que le mainteneur doit vérifier.
+
+### P2-05 — Pseudonymes cohérents par dossier et cloisonnés entre dossiers (`spec`)
+
+Contexte : `ROADMAP.md` (phase 2) : « même entité → même jeton au sein d'un
+dossier (le LLM garde le fil), jeton différent d'un dossier à l'autre (aucun
+recoupement possible entre dossiers) ». Aujourd'hui, `Ecluse.redact`
+(`packages/ecluse_redact/lib/src/ecluse.dart`) numérote les jetons et résout les
+identités de nom **à l'intérieur d'un seul appel** : deux appels repartent de
+`[NOM_1]`. La carte `mapping` « ne quitte jamais le processus local »
+(`redact_result.dart`). La fusion de mentions partielles est le « seul cas connu »
+de restauration non octet pour octet (`LIMITES.md` § 5.3).
+
+- Écrire la spec. **Le périmètre d'un « dossier » n'est pas défini** : comparer au
+  moins deux définitions (par exemple une conversation à plusieurs tours, un lot de
+  fichiers importés avec `ecluse_ingest`, une notion fournie par l'application
+  cliente), avec qui crée le dossier, sa durée de vie et ce qui l'arrête. Ne pas
+  trancher : laisser le choix au mainteneur en fin de document.
+- Décrire la mécanique d'un état conservé **en mémoire** entre appels (jetons
+  déjà attribués, identités de noms, compteurs) : où il vit, comment l'application
+  le crée et le détruit, ce qui se passe à la restauration d'une réponse, et
+  pourquoi il n'est jamais sérialisé, journalisé ni écrit sur disque.
+- Analyser le **risque de fausses fusions** quand la règle de rapprochement des
+  noms (inclusion des segments, civilité) s'applique entre documents : des
+  homonymes de documents différents, un patronyme répandu. Dire ce qui est
+  acceptable et ce qui ne l'est pas, et l'effet sur la fidélité de la restauration
+  (`LIMITES.md` § 5.3).
+- Écrire la **menace** que le cloisonnement doit contrer : qui pourrait recouper
+  quoi, avec quelles informations (le fournisseur du LLM voyant plusieurs dossiers ?
+  d'autres ?). Des jetons séquentiels (`[NOM_1]`) peuvent-ils se corréler d'un
+  dossier à l'autre (même ordre d'apparition) ? Comparer des options de
+  cloisonnement et leur coût (lisibilité pour le LLM, tolérance de `restore`,
+  collision avec le texte), et dire ce que le cloisonnement ne protège **pas**.
+- Traiter la collision avec les jetons littéraux du texte (`_freshToken`) quand
+  l'état est partagé entre plusieurs textes.
+- Invariants à tenir : sans dossier, sortie **identique** à celle d'aujourd'hui
+  (test d'équivalence à prévoir) ; règle 3 ; règle 4 (un dossier mal fermé ou une
+  carte perdue se signale, jamais en silence).
+- Prévoir la mesure avant/après (règle 5) : quels corpus (mêmes personnes dans
+  plusieurs documents, homonymes, plusieurs dossiers), quelles mesures (même
+  personne → même jeton, fausses fusions, restaurations non identiques) et quelles
+  commandes du benchmark ; toute valeur sans source est « proposée, non mesurée ».
+- Aucune ligne de code de production, aucune dépendance. Proposer les tâches
+  `code` qui en découleraient, sans les copier dans `agent/QUEUE.md`.
+- **Fini quand** : `agent/specs/P2-05.md` en PR, avec les décisions du mainteneur
+  listées en fin de document (au minimum : la définition du dossier et l'option de
+  cloisonnement).
