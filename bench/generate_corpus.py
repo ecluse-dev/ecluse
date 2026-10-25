@@ -11,6 +11,14 @@ Luhn que le FINESS -- collision assumée, voir trap_siren), dates, codes
 postaux. Un bon détecteur doit les ignorer (sauf FINESS/SIREN, capté à
 confiance basse par construction -- voir docs/Ecluse-FINESS-detecteur-spec.md).
 
+Profils :
+  - v3 (défaut) : corpus de référence du benchmark, inchangé.
+  - extended : v3 + gabarits supplémentaires (SIREN sans le mot « SIREN »,
+    phrases mêlant FINESS et SIREN, ADELI avec/sans mot-clé, ADELI à clé
+    invalide). Sert à mesurer la collision FINESS/SIREN sans la circularité
+    du gabarit unique de v3 (voir agent/specs/P1-03-finess.md). Les ADELI
+    sont annotés avec le type `adeli`, que le moteur actuel ne produit pas.
+
 Déterministe : même seed => même corpus. Aucune donnée réelle.
 """
 
@@ -174,6 +182,39 @@ def trap_siren(rng: random.Random) -> str:
     return luhn_digit("".join(rng.choice("0123456789") for _ in range(8)))
 
 
+def make_siren(rng: random.Random) -> str:
+    return trap_siren(rng)
+
+
+def fmt_siren(siren: str, rng: random.Random) -> str:
+    if rng.random() < 0.5:
+        return siren
+    return f"{siren[:3]} {siren[3:6]} {siren[6:]}"
+
+
+def tva_from_siren(siren: str) -> str:
+    # Clé TVA intracommunautaire FR : (12 + 3 * (SIREN mod 97)) mod 97.
+    key = (12 + 3 * (int(siren) % 97)) % 97
+    return f"FR{key:02d}{siren}"
+
+
+def make_adeli(rng: random.Random) -> str:
+    # 9 chiffres : département (2) + code profession (2, tiré au hasard : la
+    # liste officielle n'est pas connue, voir agent/specs/P1-06-adeli.md) +
+    # numéro (4) + clé Luhn (1). Pas de forme corse : règle de la lettre
+    # non établie.
+    dept = rng.choice(FINESS_DEPTS)
+    prof = f"{rng.randrange(10, 100):02d}"
+    num = "".join(rng.choice("0123456789") for _ in range(4))
+    return luhn_digit(dept + prof + num)
+
+
+def make_adeli_bad_key(rng: random.Random) -> str:
+    valid = make_adeli(rng)
+    wrong = (int(valid[-1]) + rng.randrange(1, 10)) % 10
+    return valid[:-1] + str(wrong)
+
+
 def trap_misc(rng: random.Random) -> str:
     return rng.choice([
         f"dossier n° {rng.randrange(10**8):08d}",
@@ -229,11 +270,28 @@ TEMPLATES = [
     ["Rappel : ", ("name",), " est attendu en consultation jeudi matin sans son dossier."],
 ]
 
+# Gabarits du profil « extended » (jamais utilisés dans le profil v3).
+EXTENDED_TEMPLATES = [
+    # SIREN sans le mot « SIREN » : pièges non annotés.
+    ["Société immatriculée au RCS de Metz sous le numéro ", ("siren_plain",), "."],
+    ["N° de TVA intracommunautaire : ", ("tva",), "."],
+    ["Extrait Kbis : immatriculation ", ("siren_plain",), ", gérant ", ("name",), "."],
+    # FINESS et SIREN dans la même phrase.
+    ["Établissement FINESS ", ("finess_ctx",), ", rattaché à la société SIREN ", ("siren_plain",), "."],
+    ["La société ", ("siren_plain",), " exploite la structure FINESS ", ("finess_ctx",), "."],
+    ["Structure ", ("finess_nctx",), ", gérée par la société SIREN ", ("siren_plain",), "."],
+    # ADELI avec mot-clé (valide, puis à clé invalide) et sans mot-clé.
+    ["L'infirmière ", ("name",), " exerce sous le numéro ADELI ", ("adeli",), "."],
+    ["N° ADELI : ", ("adeli",), " (", ("name",), ")."],
+    ["Numéro ADELI saisi par erreur : ", ("adeli_bad",), "."],
+    ["Le kinésithérapeute est enregistré sous le numéro ", ("adeli_nctx",), " depuis 2015."],
+]
+
 TARGETS = {"nir", "rpps", "iban", "finess"}
 
 
-def build_doc(doc_id: int, rng: random.Random) -> dict:
-    template = rng.choice(TEMPLATES)
+def build_doc(doc_id: int, rng: random.Random, templates=None) -> dict:
+    template = rng.choice(templates or TEMPLATES)
     text = ""
     entities = []
     for seg in template:
@@ -259,6 +317,14 @@ def build_doc(doc_id: int, rng: random.Random) -> dict:
             v = fmt_finess(make_finess(rng), rng)
             entities.append({"type": "finess", "start": len(text), "end": len(text) + len(v)})
             text += v
+        elif slot == "siren_plain":
+            text += fmt_siren(make_siren(rng), rng)
+        elif slot == "tva":
+            text += tva_from_siren(make_siren(rng))
+        elif slot in ("adeli", "adeli_nctx", "adeli_bad"):
+            v = make_adeli_bad_key(rng) if slot == "adeli_bad" else make_adeli(rng)
+            entities.append({"type": "adeli", "start": len(text), "end": len(text) + len(v)})
+            text += v
         elif slot == "trap_phone":
             text += trap_phone(rng)
         elif slot == "trap_siret":
@@ -281,13 +347,16 @@ def main() -> None:
     parser.add_argument("--n", type=int, default=1000, help="nombre de documents")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--out", default="corpus.jsonl")
+    parser.add_argument("--profile", choices=["v3", "extended"], default="v3",
+                        help="v3 : corpus de référence ; extended : v3 + gabarits FINESS/SIREN/ADELI")
     args = parser.parse_args()
+    templates = TEMPLATES + EXTENDED_TEMPLATES if args.profile == "extended" else TEMPLATES
 
     rng = random.Random(args.seed)
-    counts = {"nir": 0, "rpps": 0, "iban": 0, "finess": 0}
+    counts = {"nir": 0, "rpps": 0, "iban": 0, "finess": 0, "adeli": 0}
     with open(args.out, "w", encoding="utf-8") as f:
         for i in range(args.n):
-            doc = build_doc(i, rng)
+            doc = build_doc(i, rng, templates)
             for e in doc["entities"]:
                 counts[e["type"]] += 1
             f.write(json.dumps(doc, ensure_ascii=False) + "\n")

@@ -93,6 +93,60 @@ aucun recognizer FINESS par défaut, ne tombe simplement jamais sur ce piège
 — structurellement 0 % de rappel FINESS, pas un avantage de conception,
 un angle mort.
 
+### Corpus étendu : FINESS / SIREN / ADELI (profil `extended`, P1-13)
+
+Le gabarit SIREN du corpus v3 est unique et contient toujours le mot
+« SIREN » : la mesure de la collision y est circulaire (voir
+`agent/specs/P1-03-finess.md` §4). Le profil `extended` du générateur ajoute,
+**sans modifier le profil `v3`** (sortie identique octet pour octet), des
+SIREN sans le mot « SIREN » (RCS, Kbis, TVA intracommunautaire), des
+phrases mêlant FINESS et SIREN, et des ADELI (type annoté `adeli`) avec
+mot-clé, sans mot-clé et à clé invalide.
+
+Mesure de l'état actuel d'Écluse (**avant toute correction**, seed 42,
+1000 documents, 739 entités annotées), appariement strict :
+
+| Entité | Précision | Rappel | TP | FP | FN |
+|---|---:|---:|---:|---:|---:|
+| NIR | 100 % | 100 % | 174 | 0 | 0 |
+| RPPS | 95,1 % | 100 % | 117 | 6 | 0 |
+| IBAN FR | 100 % | 100 % | 151 | 0 | 0 |
+| FINESS | 37,7 % | 100 % | 172 | 284 | 0 |
+| ADELI | 0 % | 0 % | 0 | 0 | 125 |
+
+Ces chiffres **ne sont pas comparables** à ceux du corpus v3 ci-dessus
+(autre mélange de gabarits). Lecture :
+
+- **FINESS : 284 faux positifs** = 184 SIREN (tous les gabarits, avec ou
+  sans le mot « SIREN », y compris à côté du mot « FINESS ») + 100 ADELI
+  Luhn-valides lus comme FINESS (68 avec le mot « ADELI », 32 sans). La
+  piste « rejeter si “siren”/“siret” dans le contexte » de la spec P1-03
+  n'aurait traité qu'une partie des 184 : les SIREN du RCS, du Kbis et de
+  la TVA n'ont pas ce mot.
+- **ADELI : 0 détecté sous son type.** Les 100 ADELI à clé valide sont
+  masqués, mais sous l'étiquette `finess`. Les **25 ADELI à clé invalide**
+  (même avec le mot « ADELI ») ne sont **pas détectés du tout** : c'est le
+  cas de fuite que la spec ADELI veut couvrir.
+- **RPPS : 6 faux positifs**, tous sur le gabarit « N° de TVA
+  intracommunautaire » (35 documents) : les 11 chiffres « clé TVA + SIREN »
+  passent la clé de Luhn du RPPS par coïncidence. Défaut nouveau, révélé
+  par ce profil.
+
+Limites de cette mesure : mêmes que le corpus v3 (synthétique, généré par
+nous, une graine) ; les codes profession des ADELI sont tirés au hasard (la
+liste officielle n'est pas connue) ; pas d'ADELI corse (règle de la lettre
+non établie).
+
+Reproduire :
+
+```bash
+python3 bench/generate_corpus.py --n 1000 --seed 42 --profile extended --out bench/corpus_ext.jsonl
+(cd packages/ecluse_bench && dart run bin/run_ecluse.dart \
+  ../../bench/corpus_ext.jsonl ../../bench/predictions_ext.jsonl)
+python3 bench/score.py --corpus bench/corpus_ext.jsonl \
+  --pred "Ecluse=bench/predictions_ext.jsonl"
+```
+
 ## Honnêteté méthodologique
 
 - **Presidio est extensible.** Un développeur peut écrire des
