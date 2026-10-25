@@ -35,7 +35,7 @@ retrouve pas les IBAN à espacement irrégulier (rappel 68,7 %). Le
 corpus contient des pièges (NIR/IBAN à clé invalide, RPPS à Luhn cassé,
 téléphones, SIRET, SIREN) : aucun moteur n'y est tombé à tort, à
 l'exception du cas de collision FINESS/SIREN — assumé et mesuré, pas un
-bug — et du cas limite RPPS/IBAN ci-dessous.
+bug.
 
 ### Espacement irrégulier (nouveau en v2)
 
@@ -158,42 +158,53 @@ python3 bench/score.py --corpus bench/corpus_ext.jsonl \
   (comme l'ajout du style `irregular` en v2) change le corpus produit à
   seed égal : les résultats ci-dessus ne sont comparables qu'entre
   exécutions du même générateur.
-- **Limite connue d'Écluse** : 1 faux positif RPPS subsiste — une
-  fenêtre de 11 chiffres passant Luhn par hasard, enchâssée dans un
-  IBAN *à clé invalide* (que l'IbanFrDetector rejette donc à raison).
-  Les 7 cas équivalents enchâssés dans des IBAN valides sont éliminés
-  par `resolveOverlaps` — règle ajoutée précisément grâce à ce harnais.
-  Le même mécanisme s'applique en théorie au FINESS (fenêtre de 9
-  chiffres enchâssée dans un IBAN/RPPS à clé invalide) ; aucune
-  occurrence de ce cas précis n'est apparue sur ce tirage, mais ce n'est
-  pas garanti par construction — seule la collision FINESS/SIREN,
-  mesurée ci-dessus, est un faux positif systématique et attendu.
-- Cette exécution utilise un pipeline spaCy vierge (recognizers à
-  motifs uniquement, seuls pertinents ici). Pour reproduire avec la
-  configuration standard complète : installer `en_core_web_lg` et
-  omettre `--blank`.
+- **Cas RPPS enchâssé dans un IBAN.** Une fenêtre de 11 chiffres passant
+  Luhn par hasard à l'intérieur d'un IBAN, valide ou non, est écartée par
+  `RppsDetector` (forme d'IBAN) et par `resolveOverlaps` ; sur ce tirage
+  le RPPS ne produit aucun faux positif (166 TP, 0 FP, 0 FN). Une version
+  antérieure de ce document mentionnait 1 faux positif RPPS : il n'est
+  plus reproduit par le code actuel. Le même mécanisme pourrait en théorie
+  toucher le FINESS (fenêtre de 9 chiffres) ; aucune occurrence n'apparaît
+  sur ce tirage, mais ce n'est pas garanti par construction. Seule la
+  collision FINESS/SIREN, mesurée ci-dessus, est un faux positif
+  systématique et attendu.
+- Presidio est rejoué avec le modèle `en_core_web_lg` (voir la note ¹ du
+  tableau). L'option `--blank` de `run_presidio.py` (pipeline spaCy vierge,
+  recognizers à motifs uniquement) n'est qu'un repli quand le modèle ne
+  peut pas être installé ; les chiffres publiés n'en viennent pas.
+- Les modes de score : le **strict** est celui publié. Le **souple** compte
+  un recouvrement d'un seul caractère comme un succès et ne doit pas être
+  cité comme rappel ; la section **FUITE** de `score.py` donne la part des
+  caractères annotés restés en clair.
 
 ## Reproduire
 
+Toutes les commandes se lancent **depuis la racine du dépôt**.
+
 ```bash
 # 1. Dépendances Python
-pip install -r requirements.txt   # épingle cymem/preshed/murmurhash (voir ce fichier)
-python -m spacy download en_core_web_lg   # config Presidio standard
+pip install -r bench/requirements.txt   # épingle cymem/preshed/murmurhash
+python3 -m spacy download en_core_web_lg   # config Presidio standard
 
 # 2. Générer le corpus (déterministe)
-python3 generate_corpus.py --n 1000 --seed 42 --out corpus.jsonl
+python3 bench/generate_corpus.py --n 1000 --seed 42 --out bench/corpus.jsonl
 
-# 3. Prédictions Écluse (runner Dart officiel, depuis la racine du repo)
-dart run ecluse_bench:run_ecluse bench/corpus.jsonl bench/predictions_ecluse.jsonl
-#    (ou, sans SDK Dart : python3 ecluse_sim.py — port de contrôle)
+# 3. Prédictions Écluse (runner Dart officiel : NIR, RPPS, IBAN, FINESS)
+(cd packages/ecluse_bench && dart run bin/run_ecluse.dart \
+  ../../bench/corpus.jsonl ../../bench/predictions_ecluse.jsonl)
+#    Sans SDK Dart : python3 bench/ecluse_sim.py — port de contrôle
+#    approximatif (voir son en-tête : il diverge du moteur Dart).
 
-# 4. Prédictions Presidio
-python3 run_presidio.py --corpus corpus.jsonl   # ajouter --blank si modèle indisponible
+# 4. Prédictions Presidio (ajouter --blank si le modèle est indisponible)
+(cd bench && python3 run_presidio.py --corpus corpus.jsonl)
 
 # 5. Scores
-python3 score.py --corpus corpus.jsonl \
+(cd bench && python3 score.py --corpus corpus.jsonl \
     --pred "Ecluse=predictions_ecluse.jsonl" \
-    --pred "Presidio=predictions_presidio.jsonl"
+    --pred "Presidio=predictions_presidio.jsonl")
+
+# 6. Tests du scoreur
+(cd bench && python3 test_score.py)
 ```
 
 Les fichiers générés (`corpus.jsonl`, `predictions_*.jsonl`) ne sont
