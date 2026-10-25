@@ -251,8 +251,25 @@ class ScoreurTest(unittest.TestCase):
                       "ambigue": True}]}]
         preds = preds_parfaits(docs, lambda d, e: "[NOM_1]")
         m = self.mesure(docs, preds)
-        self.assertEqual(m["ambigues"], {"total": 1, "detectees": 1, "fusionnees": 1})
+        self.assertEqual(m["ambigues"], {"total": 1, "detectees": 1,
+                                         "fusionnees": 1,
+                                         "fusionnees_dossier": 1})
         self.assertEqual(m["collisions"], (0, 1))  # l'ambigue n'entre pas
+
+    def test_mention_ambigue_fusionnee_avec_un_autre_document_du_dossier(self):
+        docs = [
+            {"id": 0, "dossier": 0, "rang": 0, "text": "A",
+             "entities": [{"type": "nom", "start": 0, "end": 1,
+                           "identite": "p1"}]},
+            {"id": 1, "dossier": 0, "rang": 1, "text": "B",
+             "entities": [{"type": "nom", "start": 0, "end": 1,
+                           "identite": None, "ambigue": True}]}]
+        preds = preds_parfaits(docs, lambda d, e: "[NOM_1]")
+        am = self.mesure(docs, preds)["ambigues"]
+        self.assertEqual((am["fusionnees"], am["fusionnees_dossier"]), (0, 1))
+        distinct = preds_parfaits(docs, lambda d, e: f"[NOM_{d['id'] + 1}]")
+        self.assertEqual(self.mesure(docs, distinct)["ambigues"]
+                         ["fusionnees_dossier"], 0)
 
     def test_restauration_non_identique(self):
         docs = [{"id": 0, "dossier": 0, "rang": 0, "text": "", "entities": []}]

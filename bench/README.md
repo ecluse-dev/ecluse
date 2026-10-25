@@ -475,7 +475,8 @@ python3 -m unittest discover -s bench
 Le programme Dart masque chaque document **séparément** avec l'`Ecluse.redact`
 actuel et restaure avec la table de cet appel : il mesure l'état sans dossier.
 Avec `--dossier` (P2-06), les documents d'un même dossier partagent un
-`Dossier` et sont restaurés par lui.
+`Dossier` et sont restaurés par lui ; avec `--regle=n2` (P2-13), le dossier
+utilise la fusion par inclusion entre documents au lieu de N1.
 Le scoreur rapporte la cohérence, les collisions, les fausses fusions, les
 restaurations non identiques et le recoupement (définitions en tête de
 `score_dossiers.py`). Les mentions annotées non détectées sont comptées à part
