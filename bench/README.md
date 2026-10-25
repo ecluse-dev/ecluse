@@ -161,6 +161,50 @@ python3 bench/score.py --corpus bench/corpus_ext.jsonl \
   --pred "Ecluse=bench/predictions_ext.jsonl"
 ```
 
+### PDF synthétiques pour calibrer l'ingestion (P1-18)
+
+`generate_pdfs.py` (bibliothèque standard seule) écrit à la main 18 PDF
+**reproductibles octet pour octet** (graine 42, pas d'horodatage, images en
+ASCIIHex) dans `bench/pdf/`, avec `expected.json` : nature, résultat attendu
+(`accepte`, `accepte_avertissement`, `refuse`), code de motif et identifiants
+fabriqués (clés valides calculées) que le texte extrait doit contenir. Les
+attendus décrivent la **cible** de `agent/specs/P1-09-pdf.md` §3, pas le
+comportement d'une bibliothèque. Les seuils (20 caractères alphanumériques par
+page, 200 pages, 50 Mo) restent des valeurs de départ à calibrer en P1-17.
+
+| Fichier | Contenu | Attendu |
+|---|---|---|
+| `texte_simple`, `texte_multipage`, `texte_colonnes`, `texte_iban_coupe` | texte, 1 à 3 pages, deux colonnes, IBAN coupé par une fin de ligne | accepté |
+| `texte_et_image`, `metadonnees_annotation` | tampon image ; `/Info` et annotation portant un identifiant | accepté **avec avertissement** |
+| `page_blanche`, `javascript` | page sans contenu ; `/OpenAction` JavaScript (jamais exécuté) | accepté |
+| `scan_pur`, `texte_quasi_vide`, `sans_page` | aucune couche texte | refus `sans_texte` |
+| `mixte` | page 1 texte, pages 2 et 3 images | refus `partiellement_numerise` (document entier) |
+| `texte_illisible`, `texte_illisible_latin` | police Type0 sans `ToUnicode` : caractères en zone privée / en lettres latines étendues | refus `texte_illisible` |
+| `chiffre` | RC4 40 bits, mot de passe utilisateur vide | refus `chiffre` |
+| `tronque`, `xref_casse` | sans xref ni trailer ; `startxref` erroné | refus `malforme` |
+| `tres_long_250_pages` | 250 pages | refus `plafond_pages` |
+
+`--with-oversize` ajoute `tres_gros.pdf` (51 Mo, non versionné) pour le plafond de taille.
+
+**Ce que le jeu montre déjà** (lecture avec `pdftotext` de poppler, outil de
+vérification local, pas une dépendance du projet) :
+
+- `texte_illisible_latin` met en défaut les critères de qualité du spec §3 :
+  aucun `U+FFFD`, aucun caractère de zone privée, 100 % de lettres. Le texte
+  rendu est du bruit (« ŎŵŭťŲů… ») qui passerait le garde-fou tel que spécifié.
+  Il faudra un critère sur la part de caractères hors du jeu attendu.
+- Un lecteur courant **reconstruit** le `xref_casse` et lit le texte, et lit
+  le `chiffre` sans mot de passe : le refus de ces deux cas est une
+  **politique** d'Écluse (règle n°4), pas une conséquence de l'échec de la
+  lecture.
+- `scan_pur` donne un texte vide ; `tronque` et `sans_page` produisent une
+  erreur, pas un texte vide.
+
+Tests : `python3 -m unittest discover -s bench` (reproductibilité, jeu
+versionné identique à la génération, clés des identifiants, cohérence de la
+table xref des PDF intacts, présence des identifiants dans le texte extrait
+si `pdftotext` est installé).
+
 ### Entités floues : noms, adresses, dates, téléphones, emails, établissements
 
 Les identifiants à clé (NIR, RPPS, IBAN, FINESS) se valident ; les entités
@@ -294,3 +338,9 @@ python3 bench/generate_corpus.py --n 1000 --seed 42 --out bench/corpus.jsonl
 
 Les fichiers générés (`corpus.jsonl`, `predictions_*.jsonl`) ne sont
 pas versionnés : ils se régénèrent à l'identique.
+
+PDF synthétiques :
+
+```bash
+python3 bench/generate_pdfs.py --out bench/pdf
+```
