@@ -1,5 +1,7 @@
 import 'package:ecluse_core/ecluse_core.dart';
 
+import 'etablissement_keywords.dart';
+
 import 'french_first_names.dart';
 
 /// Détecteur heuristique de noms de personnes — **v0 de démonstration**.
@@ -79,6 +81,9 @@ final class NameDetector implements EntityDetector {
     r'Professeur|Me)[ \t]+'
     r"([A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*"
     r'(?:[ \t]+(?:(?:de|du|des|le|la|van|von)[ \t]+)?'
+    // Un mot-clé d'établissement n'est jamais un patronyme (voir
+    // `etablissementKeywords`).
+    '(?!(?:${etablissementKeywords.join('|')})\\b)'
     r"[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'-]*){0,2})",
   );
 
