@@ -57,8 +57,25 @@ final class AdresseDetector implements EntityDetector {
   ///   un document réel ; `\s` matche aussi le saut de ligne, ce qui
   ///   laissait un span avaler la ligne suivante en entier.
   static const _codePostalCommune =
-      "(?<!\\d)\\d{5}[ \\t]+(?<commune>[A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*)"
-      "(?:[ -][A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*){0,3}";
+      '(?<!\\d)\\d{5}[ \\t]+(?<commune>$_motCommune)'
+      '(?:[ -]$_connecteurs*(?!$_titres\\b)$_motCommune){0,3}';
+
+  /// Mot de commune : majuscule initiale (le motif est sensible à la casse,
+  /// voir [_pattern]).
+  static const _motCommune = "[A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*";
+
+  /// Petits mots **en minuscules** qui lient les parties d'un nom de commune
+  /// (« Saint-Rémy en Comté », « Neuilly sur Seine », « Villeneuve d'Ascq »).
+  /// Tout autre mot en minuscules arrête la commune : sinon le span avale le
+  /// texte qui suit (un email, un nom) et la résolution des chevauchements
+  /// supprime l'entité voisine au lieu de la masquer (fuite).
+  static const _connecteurs =
+      "(?:(?:de|du|des|la|le|les|en|sur|sous|lès|lez|aux)[ -]|[dl]['’])";
+
+  /// Civilités et titres qui ne sont jamais le dernier mot d'une commune :
+  /// ils annoncent un nom de personne, détecté à part.
+  static const _titres =
+      '(?:Mme|Mlle|Mr|Madame|Monsieur|Mademoiselle|Dr|Docteur|Pr|Professeur|Me|Maître|M)';
 
   /// Sépare le nom de voie du `CP_COMMUNE` qui suit : soit sur la **même
   /// ligne** (virgule optionnelle, comportement historique), soit via **un
@@ -69,22 +86,28 @@ final class AdresseDetector implements EntityDetector {
   /// s'interrompt — pas de logique de garde séparée à écrire.
   static const _voieVersCpCommune = '(?:,?[ \\t]*|[ \\t]*\\r?\\n[ \\t]*)';
 
+  /// Rend une chaîne insensible à la casse lettre par lettre (`rue` devient
+  /// `[Rr][Uu][Ee]`). Dart ne propose pas de drapeau local : le motif entier
+  /// ne peut pas être `caseSensitive: false` sans rendre la commune
+  /// insensible à la casse aussi.
+  static String _ci(String word) => word.split('').map((c) {
+        final up = c.toUpperCase();
+        final low = c.toLowerCase();
+        return up == low ? c : '[$up$low]';
+      }).join();
+
   /// Nom de voie borné à 80 caractères : le quantificateur paresseux non
   /// borné rendait le motif quadratique quand « N rue » se répète sans code
   /// postal (16 Ko = plus de 5 s). Un nom de voie plus long n'est plus
   /// reconnu en entier : seul « code postal + commune » est alors masqué.
   static final RegExp _pattern = RegExp(
-    "\\d{1,4}[ \\t]*,?[ \\t]*(?:${_voies.join('|')})"
+    "\\d{1,4}[ \\t]*,?[ \\t]*(?:${_voies.map(_ci).join('|')})"
     "[ \\t]+[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]{1,80}?"
     '$_voieVersCpCommune'
     '$_codePostalCommune',
-    caseSensitive: false,
   );
 
-  static final RegExp _codePostalCommuneOnly = RegExp(
-    _codePostalCommune,
-    caseSensitive: false,
-  );
+  static final RegExp _codePostalCommuneOnly = RegExp(_codePostalCommune);
 
   /// Unités de mesure courantes (SI et posologie clinique) — un nombre à 5
   /// chiffres suivi d'une unité (« 10000 UI », « 20000 ML ») a exactement
