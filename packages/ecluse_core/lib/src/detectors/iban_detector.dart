@@ -29,10 +29,10 @@ final class IbanFrDetector implements EntityDetector {
   /// `FR` + 2 chiffres + 23 alphanumériques, séparateurs espace ou tiret
   /// tolérés, non enchâssé dans une séquence alphanumérique plus longue.
   static final RegExp _candidate = RegExp(
-    r'(?<![A-Za-z0-9])[Ff][Rr][0-9]{2}(?:[ \-]?[0-9A-Za-z]){23}(?![0-9A-Za-z])',
+    r'(?<![A-Za-z0-9])[Ff][Rr][0-9]{2}(?:[ \-./]?[0-9A-Za-z]){23}(?![0-9A-Za-z])',
   );
 
-  static final RegExp _separators = RegExp(r'[ \-]');
+  static final RegExp _separators = RegExp(r'[ \-./]');
 
   @override
   List<DetectedEntity> detect(String text) {
