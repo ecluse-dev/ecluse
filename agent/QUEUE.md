@@ -62,6 +62,7 @@ tâches copiées ici sont prises par l'agent.
 | Id | Type | Tâche | Dépend de | Statut |
 |---|---|---|---|---|
 | P2-01 | spec | Critère GO/STOP du NER local (métriques, corpus de décision, plafonds, conditions d'arrêt) | — | fusionnée |
+| P2-02 | mesure | Référence chiffrée des heuristiques de noms et d'adresses sur les corpus flous (valeur à battre pour le GO/STOP du NER) | P2-01 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -316,3 +317,29 @@ critère GO/STOP validé par le mainteneur ; ce critère n'est écrit nulle part
   licences non lues sont signalées comme telles.
 - **Fini quand** : `agent/specs/P2-01.md` en PR, avec les décisions que le
   mainteneur doit trancher listées en fin de document.
+
+### P2-02 — Référence des heuristiques de noms et d'adresses (`mesure`)
+
+Contexte : `agent/specs/P2-01.md` § 4 compare le NER à la **référence rejouée**
+des heuristiques actuelles (`NameDetector`, `AdresseDetector`), pas aux valeurs
+publiées dans `bench/README.md`, qui peuvent être périmées.
+
+- Générer les trois corpus flous (`bench/generate_corpus_flou.py`, `--n 400`,
+  seed 42) et exécuter `Ecluse.redact` complet puis `bench/score_flou.py`,
+  avec les commandes de la section « Entités floues » de `bench/README.md`.
+- Rapporter, par corpus (réaliste, adversarial, témoin) et par type (nom,
+  adresse, et global) : rappel strict, F1 souple et **fuite au caractère** ;
+  pour le témoin, le nombre de documents avec une détection ; pour les trois
+  corpus, le nombre de documents à restauration non identique. Ce sont les
+  mesures nommées aux conditions A à D de P2-01.
+- Rejouer aussi les identifiants à clé sur le corpus v3 (`bench/score.py`,
+  `--n 1000 --seed 42`) : référence de la condition B.
+- Rejouer une seconde fois avec une autre graine (par exemple 7) pour donner
+  le corpus de **calibration** de P2-01 § 4.C, et indiquer l'écart entre les
+  deux graines.
+- Comparer aux valeurs publiées dans `bench/README.md` et signaler tout écart.
+  Ne modifier aucune ligne de détection, aucun générateur ni aucun scoreur.
+- **Fini quand** : un rapport `agent/specs/P2-02-reference.md` en PR, avec les
+  commandes exactes, les versions d'outils et les chiffres ; les écarts avec le
+  README, s'il y en a, sont listés ; si une commande ne peut pas s'exécuter
+  (Dart ou Python manquant), la PR le dit et s'arrête au lieu d'estimer.
