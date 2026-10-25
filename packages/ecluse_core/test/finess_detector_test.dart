@@ -96,4 +96,14 @@ void main() {
       expect(entities.single.confidence, 0.5);
     });
   });
+
+  group('FinessDetector — identifiant adjacent à un nombre', () {
+    test('nombre après un FINESS compact', () async {
+      const text = 'FINESS 570000125 12 lits';
+      final entities = await detect(text);
+      expect(entities, hasLength(1));
+      expect(text.substring(entities.single.start, entities.single.end),
+          '570000125');
+    });
+  });
 }

@@ -68,12 +68,12 @@ final class FinessDetector implements Detector {
   static List<DetectedEntity> _detectSync(String raw) {
     final compaction = DigitCompaction(raw);
     final results = <DetectedEntity>[];
-    for (final match in _candidate.allMatches(compaction.compact)) {
-      final digits = match.group(0)!;
+    for (final match in compaction.candidates(_candidate)) {
+      final digits = match.text;
       if (!isLuhnValid(digits)) continue;
 
-      final start = compaction.originalStart(match.start);
-      final end = compaction.originalEnd(match.end);
+      final start = match.start;
+      final end = match.end;
       final hasContext = _hasContext(raw, start, end);
       results.add(
         DetectedEntity(
