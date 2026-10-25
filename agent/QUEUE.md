@@ -33,7 +33,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-13 | code | Corpus : SIREN sans mot-clé, phrases FINESS + SIREN, ADELI avec/sans mot-clé (nouvelle version du générateur) | P1-03 | fusionnée |
 | P1-14 | code | Détecteur ADELI contextuel + `EntityType.adeli` + priorité sur `finess` | P1-13 | à faire |
 | P1-15 | code | Détecteur de secrets (`EntityType.secret`) | P1-13 | à faire |
-| P1-16 | code | `ecluse_audit` v0 (entrée, chaîne, vérificateur, sink en mémoire) | P1-08 | à faire |
+| P1-16 | code | `ecluse_audit` v0 (entrée, chaîne, vérificateur, sink en mémoire) | P1-08 | PR ouverte |
 | P1-17 | code | Ingestion PDF : `PdfTextSource`, garde-fou et refus | P1-18 | à faire |
 | P1-18 | code | Générateur de PDF synthétiques pour calibrer les seuils | P1-09 | à faire |
 | P1-19 | code | Core : un identifiant suivi d'un nombre (`NIR … 91 12 ans`, `RPPS … 12`) n'est plus détecté (fuite) | — | fusionnée |
