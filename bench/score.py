@@ -89,6 +89,10 @@ def main() -> None:
         for e in ents:
             n_gold[e["type"]] += 1
 
+    # Types annotés au-delà des quatre cibles historiques (ex. `adeli` du
+    # profil extended) : ajoutés à la table, sans effet sur le corpus v3.
+    TYPES.extend(sorted(t for t in n_gold if t not in TYPES))
+
     print(f"Corpus : {len(gold)} documents, "
           + ", ".join(f"{n_gold[t]} {t}" for t in TYPES))
 
