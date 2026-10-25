@@ -63,6 +63,7 @@ tâches copiées ici sont prises par l'agent.
 |---|---|---|---|---|
 | P2-01 | spec | Critère GO/STOP du NER local (métriques, corpus de décision, plafonds, conditions d'arrêt) | — | fusionnée |
 | P2-02 | mesure | Référence chiffrée des heuristiques de noms et d'adresses sur les corpus flous (valeur à battre pour le GO/STOP du NER) | P2-01 | fusionnée |
+| P2-03 | spec | Branchement de `ecluse_reid` dans `Ecluse.redact` : contrat public, généralisation irréversible distincte de la pseudonymisation, refus explicites | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -343,3 +344,43 @@ publiées dans `bench/README.md`, qui peuvent être périmées.
   commandes exactes, les versions d'outils et les chiffres ; les écarts avec le
   README, s'il y en a, sont listés ; si une commande ne peut pas s'exécuter
   (Dart ou Python manquant), la PR le dit et s'arrête au lieu d'estimer.
+
+### P2-03 — Branchement de `ecluse_reid` dans `Ecluse.redact` (`spec`)
+
+Contexte : `ecluse_reid` (estimation de F, bande de risque, généralisation
+suggérée) est une bibliothèque seule, **non utilisée** par `Ecluse.redact`
+(`LIMITES.md` §§ 6 et 7). Elle « estime et informe ; ne masque rien et ne
+décide rien seul » (`packages/ecluse_reid/lib/ecluse_reid.dart`). Aujourd'hui
+`ecluse_redact` ne dépend ni d'`ecluse_reid` ni d'`ecluse_reference`.
+
+- Écrire la spec du branchement. **Le contrat public n'est pas tranché** : la
+  spec compare au moins deux options — (a) un **rapport de risque seul**, qui
+  ne change pas le texte envoyé au LLM ; (b) une **généralisation appliquée**
+  au texte, irréversible, distincte de la pseudonymisation — avec leurs coûts
+  (utilité du texte, restauration, offsets, tests), donne une recommandation
+  motivée et **laisse le choix au mainteneur** en fin de document. Ne pas
+  trancher à sa place.
+- Traiter explicitement : l'API publique et le type de retour ; comment les
+  offsets et la traçabilité restent des invariants si le texte est modifié ;
+  le fait qu'une généralisation ne se restaure pas ; le contrat d'honnêteté
+  d'`ecluse_reid` (`honestyContract`), qui doit figurer dans chaque sortie ;
+  les communes homonymes (jamais « faible », voir `DECISIONS.md`).
+- **Refus explicite plutôt qu'échec silencieux** (règle 4) : Paris, Lyon,
+  Marseille (agrégés) et Mayotte sont aujourd'hui refusés par une exception
+  (`ArgumentError`, `LIMITES.md` § 7). Dire ce que le branchement en fait
+  (refus motivé dans le résultat, jamais « rien à signaler »).
+- Lever la tension avec `CONCEPTION_BOUCLE.md`, qui place la boucle « après le
+  NER » avec des QI « repérés par le NER », alors que `qi_extraction.dart` les
+  extrait de façon déterministe sans NER : préciser ce que le branchement
+  couvre sans NER et ce qu'il laisse à P2-01/NER.
+- Nommer les dépendances internes à ajouter (`ecluse_reid`, `ecluse_reference`
+  dans `ecluse_redact`) et vérifier qu'`ecluse_core` reste pur (règle 6). Aucune
+  dépendance pub ou pip.
+- Prévoir la mesure avant/après (règle 5) : quels cas de corpus montrent le
+  défaut visé, quelle fuite ou quel sur-masquage est attendu, avec quelles
+  commandes du benchmark ; toute valeur sans source est « proposée, non
+  mesurée ».
+- Aucune ligne de code de production.
+- **Fini quand** : `agent/specs/P2-03.md` en PR, avec les décisions du
+  mainteneur listées en fin de document (au minimum le choix entre les
+  options a et b).
