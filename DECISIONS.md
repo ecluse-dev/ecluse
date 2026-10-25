@@ -178,3 +178,71 @@ pas des décisions** tant que le mainteneur ne les a pas validés un par un.
 - **P2-03b (#75)** : une population légale nulle, ou plusieurs
   quasi-identifiants du même type, rendent le document « non évaluable »
   (comportement déjà livré).
+
+## 2026-10 — Préconisations des specs P2-01, P2-03 et P2-05 validées par délégation
+Le mainteneur a demandé à l'agent de **valider ses propres préconisations**
+pour que le travail continue (message du 25 octobre 2026). Ce sont donc des
+choix de l'agent, pris sur la base des specs et **révocables** : ils ne
+valent pas relecture par le mainteneur. Ce qui dépend d'une source externe ou
+d'une mesure reste **ouvert** (dernière rubrique).
+
+### P2-03 — branchement de `ecluse_reid` (`agent/specs/P2-03.md` § 8)
+1. **A puis B.** Livrer d'abord le rapport de risque seul : `Ecluse.redact`
+   ne change pas le texte envoyé. La généralisation (B) viendra plus tard,
+   appliquée explicitement par l'appelant ; elle est irréversible et ne se
+   déclenche jamais d'elle-même. Les suggestions positionnées d'A ne sont pas
+   livrées dans P2-04 (non nécessaires au rapport).
+2. **Désactivée par défaut**, référence fournie par l'appelant. Sans elle, la
+   sortie d'`Ecluse.redact` est octet pour octet celle d'avant.
+3. **Document de plusieurs personnes** : « non évaluable » avec motif, comme
+   l'évaluation livrée en P2-03b (plusieurs QI du même type, population
+   nulle). Limite : plusieurs personnes de QI de types différents ne sont pas
+   détectées comme telles et s'évaluent ensemble ; le rapport le dit.
+4. **Seuil** : *Standard* seul (F ≥ 10), valeur à confirmer avec les design
+   partners.
+5. **« Aucun QI détecté »** : jamais « sûr » ni « faible » ; le libellé de
+   `Evaluation` (« ce n'est pas un risque faible, c'est une absence
+   d'évaluation ») est conservé.
+6. **Dépendances internes** : `ecluse_redact` peut dépendre d'`ecluse_reid` et
+   d'`ecluse_reference` (paquets du monorepo, aucune dépendance externe).
+7. **Web non visé** pour l'instant (SDK JS/TS en phase 3). La référence est
+   fournie par l'appelant, mais `ecluse_reference` exporte `file_assets.dart`
+   (`dart:io`) : en important `ecluse_reid`, `ecluse_redact` tire `dart:io`
+   dans son graphe. Isoler `dart:io` reste à faire avant tout portage web
+   (constaté en P2-04).
+8. **Brancher maintenant**, sans NER, en affichant le rappel limité dans le
+   rapport.
+
+### P2-05 — pseudonymes cohérents par dossier (`agent/specs/P2-05.md` § 10)
+1. **Dossier** : notion de l'application cliente (D1, D2 ou D3 selon son
+   usage). La bibliothèque ne la définit pas ; elle reçoit un objet « dossier »
+   créé et fermé par l'appelant.
+2. **État perdu ou redémarrage** : l'état reste en mémoire, jamais sérialisé.
+   Un dossier fermé ou perdu **se signale** par un refus explicite avec motif ;
+   jamais de restauration partielle ou silencieuse.
+3. **Noms entre documents** : N1 (fusion seulement si l'identité complète est
+   identique, deux segments au moins).
+4. **Menace** : T1 reste une hypothèse de travail, non confirmée.
+5. **Cloisonnement** : C0 (état et numérotation propres à chaque dossier). C1
+   et C2 sont reportés tant que T1 n'est pas confirmée.
+6. **Jeton littéral dans un texte ultérieur** : avertir (`warnings`) ; le texte
+   n'est pas modifié ; la restauration de ce jeton littéral n'est alors pas
+   octet pour octet, et l'avertissement le dit.
+7. **API** : objet « dossier » en paramètre optionnel de `redact` ; sans lui,
+   comportement inchangé.
+8. **Concurrence** : appels d'un même dossier sérialisés (file d'attente), pas
+   de refus.
+
+### P2-01 — NER local (`agent/specs/P2-01.md` § 7)
+- **NER en option**, hors de `Ecluse.defaultDetectors`, tant que le critère
+  GO/STOP n'est pas validé (règle 7) ; paquet séparé, aucune dépendance
+  Flutter dans `ecluse_core`.
+- **Modèle** : téléchargement explicite avec empreinte vérifiée, jamais
+  silencieux ; poids hors du dépôt.
+- Les seuils restent ceux de la spec, **provisoires** jusqu'au test en local.
+
+### Reste ouvert (non validé)
+- Modèle de PC et de téléphone de référence (latence, mémoire).
+- **Licence des poids** du NER : à lire sur la page du modèle.
+- Confirmation de la menace T1 et du choix C0, C1 ou C2.
+- Valeurs de P2-04 à confirmer avec les design partners (seuil).
