@@ -111,4 +111,19 @@ void main() {
       expect(detector.detect(''), isEmpty);
     });
   });
+
+  group('IbanFrDetector — identifiant adjacent à un nombre', () {
+    const iban = 'FR76 3000 6000 0112 3456 7890 189';
+    test('nombre après', () {
+      const text = 'IBAN $iban 12';
+      final e = detector.detect(text).single;
+      expect(text.substring(e.start, e.end), iban);
+    });
+
+    test('code postal et commune après', () {
+      const text = 'IBAN $iban 75012 Paris';
+      final e = detector.detect(text).single;
+      expect(text.substring(e.start, e.end), iban);
+    });
+  });
 }

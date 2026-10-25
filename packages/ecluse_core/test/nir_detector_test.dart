@@ -131,4 +131,29 @@ void main() {
       expect(detector.detect(''), isEmpty);
     });
   });
+
+  group('NirDetector — identifiant adjacent à un nombre', () {
+    // Un nombre séparé par un blanc ne doit pas empêcher la détection : la
+    // normalisation des espaces internes ne doit pas coller le voisin.
+    const nir = '1 85 05 78 006 084 91';
+    const cas = {
+      'nombre après': 'NIR $nir 12 ans',
+      'nombre avant': 'Dossier 12 $nir',
+      'nombre des deux côtés': 'Page 3 $nir 12 ans',
+      'tabulation avant le nombre': 'NIR $nir\t12',
+    };
+    cas.forEach((nom, texte) {
+      test('détecte : $nom', () {
+        final entities = detector.detect(texte);
+        expect(entities, hasLength(1), reason: texte);
+        final e = entities.single;
+        expect(e.start, texte.indexOf(nir));
+        expect(texte.substring(e.start, e.end), nir);
+      });
+    });
+
+    test('un NIR collé à un chiffre reste rejeté', () {
+      expect(detector.detect('1850578006084912'), isEmpty);
+    });
+  });
 }
