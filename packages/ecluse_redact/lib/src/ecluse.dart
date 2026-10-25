@@ -129,10 +129,31 @@ String _identityKey(DetectedEntity entity) =>
 
 /// Ensemble de segments (minuscules) déjà associés à un jeton `nom`.
 final class _NomIdentity {
-  _NomIdentity(this.segments, this.token);
+  _NomIdentity(this.segments, this.token, this.gender);
 
   Set<String> segments;
   final String token;
+
+  /// `'m'`, `'f'` ou `null` : sexe indiqué par la civilité qui précède la
+  /// mention (« M. », « Mme »…), quand il y en a une.
+  String? gender;
+}
+
+/// Sexe indiqué par la civilité qui précède immédiatement [start] dans
+/// [text], ou `null`. Sert à ne pas fusionner « M. Jean Dupont » et
+/// « Mme Dupont » (un couple) sur leur seul patronyme commun.
+String? _genderBefore(String text, int start) {
+  final head = text.substring(start < 20 ? 0 : start - 20, start);
+  if (RegExp(r'(?:^|[^\wÀ-ÿ])(?:M\.|Mr\.?|Monsieur)[ \t\u00A0\u202F]*$')
+      .hasMatch(head)) {
+    return 'm';
+  }
+  if (RegExp(r'(?:^|[^\wÀ-ÿ])(?:Mme|Mlle|Mrs\.?|Madame|Mademoiselle)'
+          r'[ \t\u00A0\u202F]*$')
+      .hasMatch(head)) {
+    return 'f';
+  }
+  return null;
 }
 
 /// Segments (minuscules, sans doublons) d'une mention de nom — insensible
@@ -177,25 +198,37 @@ String _resolveNomToken(
   String text,
 ) {
   final segments = _nameSegments(entity.value);
+  final gender = _genderBefore(text, entity.start);
   final matches = identities
       .where(
         (identity) =>
-            segments.every(identity.segments.contains) ||
-            identity.segments.every(segments.contains),
+            // Deux civilités de sexe différent désignent deux personnes,
+            // même avec un patronyme commun (un couple).
+            !(gender != null &&
+                identity.gender != null &&
+                gender != identity.gender) &&
+            (segments.every(identity.segments.contains) ||
+                identity.segments.every(segments.contains)),
       )
       .toList();
 
   if (matches.length == 1) {
     final identity = matches.single;
+    identity.gender ??= gender;
     if (segments.length > identity.segments.length) {
+      // Forme la plus complète rencontrée : la carte de restauration la
+      // reprend (« Dr Nadia Costa » plutôt que le « Costa » de la première
+      // mention), comme le promet `LIMITES.md` §5.3 — sans cela, les
+      // mentions complètes perdaient prénom et titre à la restauration.
       identity.segments = segments;
+      mapping[identity.token] = entity.value;
     }
     return identity.token;
   }
 
   final token = _freshToken(EntityType.nom, counterByType, text);
   mapping[token] = entity.value;
-  identities.add(_NomIdentity(segments, token));
+  identities.add(_NomIdentity(segments, token, gender));
   return token;
 }
 
