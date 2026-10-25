@@ -65,6 +65,7 @@ void main() {
       final request = Request(
         'POST',
         Uri.parse('http://l/api/process'),
+        headers: {'content-type': 'application/json'},
         body: jsonEncode({
           'text': 'M. Jean Dupont est arrivé.',
           'instruction': 'Résume.',
@@ -88,6 +89,7 @@ void main() {
       final request = Request(
         'POST',
         Uri.parse('http://l/api/process'),
+        headers: {'content-type': 'application/json'},
         body: jsonEncode({'text': 'Un texte.', 'instruction': 'Résume.'}),
       );
       final response = await handler(request);
@@ -106,6 +108,7 @@ void main() {
       final request = Request(
         'POST',
         Uri.parse('http://l/api/process'),
+        headers: {'content-type': 'application/json'},
         body: jsonEncode({'instruction': 'Résume.'}),
       );
       final response = await handler(request);
