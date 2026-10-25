@@ -398,10 +398,11 @@ pas une garantie d'anonymat. Limites connues :
   chevauche 65 ans passe directement au retrait.
 - **Données embarquées** : millésimes mélangés (populations communales
   2023→2026, pyramide 2026 France entière) ; provenance et licence documentées
-  dans `DATA_SOURCES.md` et `NOTICE` (Licence Ouverte v2.0). **Reste à valider
-  par le mainteneur** : que la redistribution d'extraits transformés dans un
-  dépôt Apache 2.0 respecte la condition de non-altération du sens des données.
-  La date de téléchargement d'origine des assets n'a pas été enregistrée.
+  dans `DATA_SOURCES.md` et `NOTICE`. Les données restent sous la Licence Ouverte
+  v2.0 de leurs producteurs (non relicenciées sous Apache 2.0) ; la redistribution
+  d'extraits transformés a été décidée par le mainteneur le 25 octobre 2026, sans
+  avis juridique extérieur. La date de téléchargement d'origine des assets n'a pas
+  été enregistrée.
 
 ## 8. Journal d'audit (`ecluse_audit` v0)
 

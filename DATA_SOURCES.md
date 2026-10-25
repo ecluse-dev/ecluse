@@ -35,7 +35,7 @@ vient de la page de l'INSEE « Mentions légales et crédits »
 > celle-ci est connue et de ne pas altérer le sens des informations ou induire
 > en erreur quant à leur interprétation.
 
-Deux points que le mainteneur doit connaître :
+Deux points à connaître :
 
 1. C'est une déclaration **pour l'ensemble du site**, avec la réserve « Sauf
    mention contraire ». Aucune mention contraire n'a été vue sur les quatre
@@ -47,7 +47,7 @@ Deux points que le mainteneur doit connaître :
    la condition (art. 2.2) que les données « ne soient pas altérées » et que
    « leurs sources et la date de leur dernière mise à jour soient mentionnées ».
    Elle vise « l'acquéreur d'un produit de diffusion ». Elle est plus ancienne
-   et je ne peux pas vérifier si elle est caduque ; les deux textes convergent
+   et sa caducité n'a pas pu être vérifiée ; les deux textes convergent
    sur les obligations (source, date, non-altération).
 
 Corroboration secondaire, non décisive : l'API de data.gouv.fr donne pour la
@@ -88,7 +88,7 @@ comparaison jetable, hors dépôt). Résultats :
   `irsocsd2025_pop.zip`) : total 69 079 962, **identique année par année** à
   `age_pyramide.json`. Réserve : le nom `Population-2025.zip` utilisé par le script
   **n'apparaît pas** sur la page (qui propose `irsocsd2025_pop.zip`) ; l'identification
-  repose sur le contenu, pas sur le nom. Je ne peux pas dire si le fichier
+  repose sur le contenu, pas sur le nom. On ne peut pas dire si le fichier
   d'origine datait d'une édition antérieure à celle du 15/06/2026 ; la feuille 2026
   est la même.
 - **Prénoms** : la page 8894961 (édition juillet 2025, naissances 1900-2024)
@@ -123,13 +123,24 @@ sont des **extraits transformés** (`tools/build_reference_assets.py` filtre,
 normalise et agrège), d'autant que les deux textes INSEE posent la condition de
 ne pas altérer le sens des données.
 
-## Ce qui reste à décider (mainteneur)
+## Décision du mainteneur (25 octobre 2026)
 
-- Confirmer que la Licence Ouverte v2.0 autorise la redistribution d'extraits
-  transformés dans un dépôt Apache 2.0 (la licence autorise la réutilisation, avec
-  citation de la source) et que la page de 2019 ne s'y oppose pas.
-- Date de téléchargement des assets : irrécupérable ; l'enregistrer à la prochaine
-  régénération.
+Le mainteneur décide de **redistribuer ces extraits transformés dans le dépôt**.
+Portée exacte de cette décision :
 
-`LIMITES.md` § 7 a été mis à jour : provenance et licence sont déclarées ; reste
-la validation de la redistribution (premier point ci-dessus).
+- le **code** reste sous Apache 2.0 (`LICENSE`) ; les **données** embarquées ne
+  sont **pas relicenciées** : elles restent sous la Licence Ouverte v2.0 de leurs
+  producteurs, ce que dit `NOTICE` ;
+- les obligations de la Licence Ouverte sont tenues par `NOTICE` (source, date de
+  mise à jour, extraits transformés) ; le texte intégral de la Licence Ouverte n'a
+  pas été relu pour cette PR, seules les formulations citées plus haut l'ont été ;
+- l'analyse de la condition de non-altération du sens des données est celle du
+  mainteneur ; aucun avis juridique extérieur n'est joint ;
+- la page INSEE de 2019 (conditions générales des produits de diffusion) est
+  considérée comme ne s'appliquant pas à ces fichiers en libre téléchargement ;
+  cette lecture n'a pas pu être vérifiée auprès de l'INSEE.
+
+Reste ouvert : la date de téléchargement d'origine des assets, irrécupérable, à
+enregistrer à la prochaine régénération.
+
+`LIMITES.md` § 7 renvoie à ce fichier.
