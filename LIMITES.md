@@ -14,7 +14,7 @@ absence de protection connue.
 1. **Deux niveaux de confiance.** Un `[NIR_1]` masqué est une quasi-certitude
    (clé de contrôle vérifiée) ; un `[NOM_1]` masqué est une estimation
    (heuristique v0).
-2. **Non détectés** : le BIC, les clés d'API et autres secrets, les IBAN
+2. **Non détectés** : le BIC, les secrets sans forme reconnaissable (voir §7), les IBAN
    non français, les identifiants ADELI (un ADELI à clé valide est masqué
    mais **sous l'étiquette FINESS** ; à clé invalide il n'est pas détecté),
    les lieux isolés sans structure d'adresse (« reçu à Nantes »).
@@ -104,8 +104,24 @@ accepte espace, tiret, point et barre oblique.
 - **IBAN non français** (DE, BE, ES…) : seul l'IBAN `FR` est détecté.
 - **FINESS de Corse** (préfixes 2A/2B) : le détecteur n'accepte que des
   chiffres.
-- **Secrets** (clés d'API, jetons, clés privées, chaînes de connexion) : non
-  détectés. Spécifié (`agent/specs/P1-07-secrets.md`), pas implémenté.
+- **Secrets.** `SecretDetector` reconnaît des formats à préfixe (jetons
+  GitHub, identifiants d'accès AWS, clés Google `AIza`, Stripe *live*, Slack,
+  Anthropic, OpenAI), les blocs PEM de clé privée et le
+  `utilisateur:motdepasse` des chaînes de connexion. **Non détectés** : un
+  mot de passe choisi par un humain, la clé secrète AWS seule (40 caractères
+  sans préfixe), les clés Stripe de test, tout jeton propriétaire sans
+  préfixe connu, et tout ce que seule l'entropie révélerait (pas de détection
+  par entropie : hachages, UUID et identifiants de commit auraient le même
+  aspect). Les préfixes viennent de sources secondaires et évoluent
+  (OpenAI, GitHub) : la liste exige un entretien. Un PEM dont les sauts de
+  ligne sont remplacés par `\n` littéraux est reconnu ; un PEM sans ligne
+  `END` est masqué jusqu'à la fin de son corps (confiance 0,8). Masquer ne
+  rend pas inoffensif un secret déjà envoyé ailleurs : l'avertissement
+  (`RedactResult.warnings`) demande de le révoquer. Les secrets ne sont
+  **pas restaurés** par défaut (`restoreSecrets: false`) ; le mode strict
+  (`refuseSecrets: true`) refuse le texte au lieu de le masquer.
+  Mesure : 0 détection sur 5 000 documents synthétiques sans secret
+  (corpus v3, étendu et trois corpus flous, seed 42).
 - **ADELI.** Pas de détecteur dédié (spécifié, non implémenté). Sur le
   corpus étendu du benchmark (`bench/README.md`), un ADELI à clé Luhn valide
   est masqué par `FinessDetector` — donc étiqueté « FINESS » — et un ADELI à

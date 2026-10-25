@@ -19,6 +19,11 @@ enum EntityType {
   /// `FinessDetector` pour la collision structurelle assumée.
   finess,
 
+  /// Secret technique : clé d'API, jeton, clé privée PEM, mot de passe d'une
+  /// chaîne de connexion. Pas une donnée personnelle ; masqué parce que
+  /// l'envoyer à un tiers est une fuite irréversible. Voir `SecretDetector`.
+  secret,
+
   /// Nom de personne (détection heuristique, voir `ecluse_redact`).
   nom,
 

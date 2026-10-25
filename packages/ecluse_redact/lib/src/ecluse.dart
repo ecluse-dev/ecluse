@@ -56,6 +56,7 @@ abstract final class Ecluse {
     LegacyDetectorAdapter(EmailDetector(), DetectorTier.pattern, name: 'email'),
     LegacyDetectorAdapter(EtablissementDetector(), DetectorTier.pattern,
         name: 'etablissement'),
+    SecretDetector(),
   ];
 
   /// Détecte les entités personnelles de [text] et produit un texte masqué
@@ -64,13 +65,28 @@ abstract final class Ecluse {
   ///
   /// Une même valeur détectée reçoit toujours le même jeton dans tout le
   /// texte, pour que le LLM garde le fil des références.
+  ///
+  /// **Secrets** (clés d'API, jetons, clés privées) : masqués comme le reste,
+  /// avec un avertissement dans [RedactResult.warnings]. Ils ne sont **pas**
+  /// ajoutés à la table de restauration, sauf si [restoreSecrets] est vrai :
+  /// un secret restauré dans la réponse affichée pourrait finir copié dans
+  /// un autre outil. Avec [refuseSecrets], la présence d'un secret lève
+  /// [SecretsRefusedException] au lieu de masquer (mode strict).
   static Future<RedactResult> redact(
     String text, {
     List<Detector>? detectors,
+    bool restoreSecrets = false,
+    bool refuseSecrets = false,
   }) async {
     final engine = EcluseEngine(detectors ?? defaultDetectors);
     final detection = await engine.run(text);
     final resolved = detection.entities;
+
+    final secretCount =
+        resolved.where((e) => e.type == EntityType.secret).length;
+    if (refuseSecrets && secretCount > 0) {
+      throw SecretsRefusedException(secretCount);
+    }
 
     final mapping = <String, String>{};
     final tokenByIdentity = <String, String>{};
@@ -91,7 +107,9 @@ abstract final class Ecluse {
             )
           : tokenByIdentity.putIfAbsent(_identityKey(entity), () {
               final generated = _freshToken(entity.type, counterByType, text);
-              mapping[generated] = entity.value;
+              if (entity.type != EntityType.secret || restoreSecrets) {
+                mapping[generated] = entity.value;
+              }
               return generated;
             });
       buffer.write(token);
@@ -103,6 +121,12 @@ abstract final class Ecluse {
       maskedText: buffer.toString(),
       mapping: Map.unmodifiable(mapping),
       entities: resolved,
+      warnings: [
+        if (secretCount > 0)
+          'Un secret a été masqué ($secretCount occurrence'
+              '${secretCount > 1 ? 's' : ''}) : pensez à le révoquer s\'il a '
+              'déjà été partagé ailleurs.',
+      ],
     );
   }
 
@@ -250,4 +274,17 @@ String _freshToken(
   } while (tolerantTokenPattern(token).hasMatch(text));
   counterByType[type] = next;
   return token;
+}
+
+/// Levée par `Ecluse.redact(refuseSecrets: true)` quand le texte contient au
+/// moins un secret. Le message ne reproduit jamais le secret.
+final class SecretsRefusedException implements Exception {
+  const SecretsRefusedException(this.count);
+
+  /// Nombre d'occurrences de secrets détectées.
+  final int count;
+
+  @override
+  String toString() => 'SecretsRefusedException: $count secret(s) détecté(s) ; '
+      'envoi refusé (mode strict).';
 }

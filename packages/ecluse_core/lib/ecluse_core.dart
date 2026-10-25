@@ -26,5 +26,6 @@ export 'src/detectors/iban_detector.dart';
 export 'src/detectors/ins_detector.dart';
 export 'src/detectors/nir_detector.dart';
 export 'src/detectors/rpps_detector.dart';
+export 'src/detectors/secret_detector.dart';
 export 'src/entity.dart';
 export 'src/resolver.dart';
