@@ -1,5 +1,5 @@
 /// Formats de fichier pris en charge en v1.
-enum IngestFormat { txt, md, docx, odt }
+enum IngestFormat { txt, md, docx, odt, pdf }
 
 /// Résultat d'une tentative d'ingestion de fichier.
 ///
@@ -34,7 +34,12 @@ final class IngestedText extends IngestResult {
 /// incohérent avec l'extension, ou encodage non reconnu. [reason] est un
 /// message humain destiné à être affiché tel quel à l'utilisateur.
 final class IngestRefused extends IngestResult {
-  const IngestRefused(this.reason);
+  const IngestRefused(this.reason, {this.code});
 
   final String reason;
+
+  /// Motif stable lisible par une machine (ex. `chiffre`, `sans_texte` pour
+  /// un PDF), pour les tests et le journal d'audit. `null` pour les refus
+  /// qui n'en portent pas encore.
+  final String? code;
 }

@@ -96,9 +96,9 @@ Objectif : qu'un premier design partner l'utilise en production.
   (`SecretDetector`, spec `agent/specs/P1-07-secrets.md`)
 - 🟡 Publication de l'article de benchmark — brouillon `bench/ARTICLE.md`,
   relecture du mainteneur attendue
-- 🟡 **Import de fichiers texte natifs** — `ecluse_ingest` livré pour
-  txt, md, docx et odt ; reste le PDF texte + garde-fou PDF-image
-  (spécifié, `agent/specs/P1-09-pdf.md`). Rend la
+- 🟢 **Import de fichiers texte natifs** — `ecluse_ingest` livré pour
+  txt, md, docx, odt et PDF à texte natif avec garde-fou PDF-image
+  (`agent/specs/P1-09-pdf.md`, limites dans `LIMITES.md` § 4). Rend la
   démo nettement plus concrète — « déposez votre compte rendu, regardez ce
   qui ressort ».
 
