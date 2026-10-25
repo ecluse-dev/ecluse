@@ -61,7 +61,7 @@ tâches copiées ici sont prises par l'agent.
 
 | Id | Type | Tâche | Dépend de | Statut |
 |---|---|---|---|---|
-| P2-01 | spec | Critère GO/STOP du NER local (métriques, corpus de décision, plafonds, conditions d'arrêt) | — | PR ouverte |
+| P2-01 | spec | Critère GO/STOP du NER local (métriques, corpus de décision, plafonds, conditions d'arrêt) | — | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
