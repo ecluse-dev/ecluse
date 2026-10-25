@@ -40,6 +40,21 @@ final class AdresseDetector implements EntityDetector {
     'passage',
     'cours',
     'lotissement',
+    'chaussée',
+    'chaussee',
+    'faubourg',
+    'esplanade',
+    'villa',
+    'hameau',
+    'cité',
+    'cite',
+    // Abréviations courantes (point facultatif, voir [_voieMotif]).
+    'av',
+    'ave',
+    'bd',
+    'bvd',
+    'rte',
+    'fbg',
   ];
 
   /// `code postal (5 chiffres) + commune`, réutilisé tel quel comme fin du
@@ -56,9 +71,12 @@ final class AdresseDetector implements EntityDetector {
   ///   code postal et sa commune sont toujours sur la **même ligne** dans
   ///   un document réel ; `\s` matche aussi le saut de ligne, ce qui
   ///   laissait un span avaler la ligne suivante en entier.
-  static const _codePostalCommune =
-      '(?<!\\d)\\d{5}[ \\t]+(?<commune>$_motCommune)'
-      '(?:[ -]$_connecteurs*(?!$_titres\\b)$_motCommune){0,3}';
+  static const _codePostalCommune = '(?<!\\d)\\d{5}$_h+(?<commune>$_motCommune)'
+      '(?:[ \\u00A0\\u202F-]$_connecteurs*(?!$_titres\\b)$_motCommune){0,3}';
+
+  /// Blanc horizontal : espace, tabulation, espace insécable (U+00A0), espace
+  /// fine insécable (U+202F). Jamais un saut de ligne.
+  static const _h = '[ \\t\\u00A0\\u202F]';
 
   /// Mot de commune : majuscule initiale (le motif est sensible à la casse,
   /// voir [_pattern]).
@@ -84,7 +102,8 @@ final class AdresseDetector implements EntityDetector {
   /// naturellement échouer les deux alternatives : `\d{5}` ne suit alors
   /// plus immédiatement (aux espaces horizontaux près), donc le span
   /// s'interrompt — pas de logique de garde séparée à écrire.
-  static const _voieVersCpCommune = '(?:,?[ \\t]*|[ \\t]*\\r?\\n[ \\t]*)';
+  static const _voieVersCpCommune =
+      '(?:,?[ \\t\\u00A0\\u202F]*|[ \\t]*\\r?\\n[ \\t]*)';
 
   /// Rend une chaîne insensible à la casse lettre par lettre (`rue` devient
   /// `[Rr][Uu][Ee]`). Dart ne propose pas de drapeau local : le motif entier
@@ -96,13 +115,37 @@ final class AdresseDetector implements EntityDetector {
         return up == low ? c : '[$up$low]';
       }).join();
 
+  /// Type de voie, avec point facultatif pour les abréviations (`av.`, `bd.`).
+  static final String _voieMotif = '(?:${_voies.map(_ci).join('|')})\\.?';
+
+  /// Numéro de voie : 1 à 4 chiffres, suffixe facultatif `bis`, `ter`…
+  /// (« 12 bis rue », « 12bis rue »).
+  static final String _numero = '\\d{1,4}(?:$_h*(?:${[
+    'bis',
+    'ter',
+    'quater',
+    'quinquies'
+  ].map(_ci).join('|')}))?';
+
   /// Nom de voie borné à 80 caractères : le quantificateur paresseux non
   /// borné rendait le motif quadratique quand « N rue » se répète sans code
   /// postal (16 Ko = plus de 5 s). Un nom de voie plus long n'est plus
   /// reconnu en entier : seul « code postal + commune » est alors masqué.
+  static const String _nomVoie = "[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]{1,80}?";
+
   static final RegExp _pattern = RegExp(
-    "\\d{1,4}[ \\t]*,?[ \\t]*(?:${_voies.map(_ci).join('|')})"
-    "[ \\t]+[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]{1,80}?"
+    '$_numero$_h*,?$_h*$_voieMotif'
+    '$_h+$_nomVoie'
+    '$_voieVersCpCommune'
+    '$_codePostalCommune',
+  );
+
+  /// Variante sans numéro (« rue des Lilas, 75015 Paris ») : exige que le
+  /// type de voie ne soit pas collé à un mot qui précède, et un code postal
+  /// + commune derrière. Confiance plus faible (0.6) que la forme numérotée.
+  static final RegExp _patternSansNumero = RegExp(
+    '(?<![\\wÀ-ÿ])$_voieMotif'
+    '$_h+$_nomVoie'
     '$_voieVersCpCommune'
     '$_codePostalCommune',
   );
@@ -158,6 +201,26 @@ final class AdresseDetector implements EntityDetector {
           end: end,
           value: match.group(0)!,
           confidence: 0.7,
+        ),
+      );
+      claimed.add(_Range(start, end));
+    }
+
+    // Voie sans numéro : après la forme numérotée (qui la contient), pour
+    // ne pas produire deux entités sur la même adresse.
+    for (final match in _patternSansNumero.allMatches(text)) {
+      if (_looksLikeUnit(match)) continue;
+      if (!_communeStartsWithUppercase(match)) continue;
+      final start = match.start;
+      final end = match.end;
+      if (claimed.any((r) => r.overlaps(start, end))) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.adresse,
+          start: start,
+          end: end,
+          value: match.group(0)!,
+          confidence: 0.6,
         ),
       );
       claimed.add(_Range(start, end));
