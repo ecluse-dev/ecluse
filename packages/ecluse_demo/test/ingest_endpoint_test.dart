@@ -125,7 +125,7 @@ void main() {
   });
 
   group('POST /api/ingest — refus explicite', () {
-    test('.pdf refusé avec un message clair', () async {
+    test('.pdf illisible refusé avec un message clair', () async {
       final body = await _postIngest(
         handler,
         filename: 'contrat.pdf',
@@ -134,7 +134,7 @@ void main() {
 
       expect(body['text'], isNull);
       expect(body['error'], isNotEmpty);
-      expect(body['error'], contains('non traité'));
+      expect(body['error'], contains('PDF'));
     });
 
     test('extension inconnue -> refus explicite', () async {

@@ -1,8 +1,9 @@
 /// Ingestion de fichiers texte natifs pour Écluse — fichier -> texte brut
 /// fiable (offsets stables), avec refus explicite hors périmètre.
 ///
-/// Formats v1 : `.txt`, `.md`, `.docx`. Le PDF (même texte) est hors
-/// périmètre v1 et refusé explicitement, comme tout autre format.
+/// Formats : `.txt`, `.md`, `.docx`, `.odt` et `.pdf` à texte natif. Un PDF
+/// image, numérisé, mixte, chiffré, illisible ou malformé est refusé en
+/// entier, avec un motif (`IngestRefused.code`) : voir `LIMITES.md` § 4.
 ///
 /// Aucune détection ni pseudonymisation ici : le texte de [IngestedText]
 /// est destiné à être transmis tel quel, sans transformation

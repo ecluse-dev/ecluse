@@ -102,12 +102,7 @@ void main() {
   group(
       'refus explicite — jamais de "rien à masquer" sur un fichier non '
       'lu', () {
-    test(
-        '.pdf est toujours refusé en v1, y compris avec une couche de '
-        'texte lisible', () {
-      // Le PDF (texte ou image) est intégralement hors périmètre v1 : ce
-      // test couvre a fortiori le cas du PDF-image (couche texte vide),
-      // puisque même un PDF parfaitement lisible est refusé.
+    test('un PDF dont la structure est incomplète est refusé', () {
       final result = ingestFile(
         utf8.encode('%PDF-1.4\n% contenu texte plausible mais ignoré'),
         filename: 'compte_rendu_scanne.pdf',
