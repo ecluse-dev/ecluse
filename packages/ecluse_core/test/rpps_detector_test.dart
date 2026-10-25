@@ -32,6 +32,47 @@ void main() {
     });
   });
 
+  group('RppsDetector — variantes de séparateurs', () {
+    // Même RPPS (clé Luhn valide) écrit avec chaque séparateur : le span et
+    // la valeur doivent couvrir exactement le texte d'origine.
+    const variantes = {
+      'espace insécable (U+00A0)': '10001\u00A0234\u00A0565',
+      'espace fine insécable (U+202F)': '10001\u202F234\u202F565',
+      'tabulation': '10001\t234\t565',
+      'espaces multiples': '10001   234  565',
+      'points': '10001.234.565',
+      'tirets': '10001-234-565',
+      'mélange': '10001 \u00A0234.565',
+    };
+    variantes.forEach((nom, rpps) {
+      test('détecte un RPPS avec $nom', () {
+        final text = 'Dr Martin, RPPS $rpps, cabinet.';
+        final entities = detector.detect(text);
+        expect(entities, hasLength(1));
+        final e = entities.single;
+        expect(e.start, text.indexOf(rpps));
+        expect(e.end, text.indexOf(rpps) + rpps.length);
+        expect(e.value, rpps);
+        expect(text.substring(e.start, e.end), e.value);
+      });
+    });
+
+    test('un espace de mot ordinaire n\'est pas absorbé', () {
+      const text = 'RPPS 10001234565 inscrit';
+      final e = detector.detect(text).single;
+      expect(text.substring(e.start, e.end), '10001234565');
+    });
+
+    test('rejette une clé Luhn invalide malgré les séparateurs', () {
+      expect(detector.detect('10001\u00A0234\u00A0566'), isEmpty);
+      expect(detector.detect('10001.234.566'), isEmpty);
+    });
+
+    test('ne matche pas dans une séquence plus longue à séparateurs', () {
+      expect(detector.detect('1000.1234.5651.2'), isEmpty);
+    });
+  });
+
   group('RppsDetector — rejets', () {
     test('rejette une clé Luhn invalide', () {
       expect(detector.detect('10001234566'), isEmpty);
