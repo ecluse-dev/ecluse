@@ -48,10 +48,10 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-28 | code | Bench : `score.py` (types inconnus, mode souple), `ecluse_sim.py`, README, test d'équivalence | — | fusionnée |
 | P1-29 | code | Docs : `LIMITES.md`, `ROADMAP.md`, README du benchmark, `NOTES_SECURITE.md` manquant | — | fusionnée |
 | P1-30 | code | Core : NIR à mois fictifs, séparateurs U+2009 et `/`, saut de ligne dans un identifiant groupé | — | fusionnée |
-| P1-31 | code | Reid : un nom de commune ambigu (homonymes) est signalé, jamais « faible » | — | à faire |
-| P1-32 | code | Core : NIR à mois `00` et `21-29` (test d'abord, clé mod 97 exigée) | — | à faire |
+| P1-31 | code | Reid : un nom de commune ambigu (homonymes) est signalé, jamais « faible » | — | fusionnée |
+| P1-32 | code | Core : NIR à mois `00` et `21-29` (test d'abord, clé mod 97 exigée) | — | fusionnée |
 | P1-33 | code | `DATA_SOURCES.md` : URL, date et licence (lue sur la page) de chaque jeu de données embarqué | — | à faire |
-| P1-34 | code | README du benchmark : résultats des entités floues dans un tableau séparé | — | à faire |
+| P1-34 | code | README du benchmark : résultats des entités floues dans un tableau séparé | — | fusionnée |
 | P1-35 | mesure | Presidio avec reconnaisseurs NIR/RPPS écrits à la main (objection prévisible à l'article) | P1-01 | à faire |
 
 Les phases 2 et 3 seront découpées ici quand la phase 1 sera fusionnée.
