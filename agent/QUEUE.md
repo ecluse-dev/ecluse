@@ -64,7 +64,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-01 | spec | Critère GO/STOP du NER local (métriques, corpus de décision, plafonds, conditions d'arrêt) | — | fusionnée |
 | P2-02 | mesure | Référence chiffrée des heuristiques de noms et d'adresses sur les corpus flous (valeur à battre pour le GO/STOP du NER) | P2-01 | fusionnée |
 | P2-03 | spec | Branchement de `ecluse_reid` dans `Ecluse.redact` : contrat public, généralisation irréversible distincte de la pseudonymisation, refus explicites | — | fusionnée |
-| P2-03a | code | Profil de corpus de quasi-identifiants annotés (profession, lieu, âge) et son scoreur, dans `bench/` | P2-03 | à faire |
+| P2-03a | code | Profil de corpus de quasi-identifiants annotés (profession, lieu, âge) et son scoreur, dans `bench/` | P2-03 | PR ouverte |
 | P2-03b | code | `ecluse_reid` : extraction des QI avec positions et estimation totale (résultat typé, sans exception), en ajout et sans changer `estimate` | P2-03a | à faire |
 | P2-04 | code | Branchement de `ecluse_reid` dans `Ecluse.redact` selon l'option retenue dans la spec P2-03 (test d'équivalence d'abord, mesure avant/après) | P2-03, P2-03a, P2-03b | bloquée |
 
