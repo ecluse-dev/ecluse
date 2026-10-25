@@ -10,30 +10,28 @@ Appariement strict (span exact + type) :
 | Moteur | Entité | Précision | Rappel | F1 |
 |---|---|---:|---:|---:|
 | **Écluse** | NIR | 100 % | 100 % | 100 % |
-| **Écluse** | RPPS | 99,4 % | 100 % | 99,7 % |
+| **Écluse** | RPPS | 100 % | 100 % | 100 % |
 | **Écluse** | IBAN FR | 100 % | 100 % | 100 % |
 | **Écluse** | FINESS | 75,4 % | 100 % | 86,0 % |
-| **Écluse** | **TOTAL** | **94,8 %** | **100 %** | **97,3 %** |
+| **Écluse** | **TOTAL** | **94,9 %** | **100 %** | **97,4 %** |
 | Presidio¹ | NIR | — | 0 % | 0 % |
 | Presidio¹ | RPPS | — | 0 % | 0 % |
-| Presidio¹ | IBAN FR | 100 % | 100 % | 100 % |
+| Presidio¹ | IBAN FR | 100 % | 68,7 % | 81,4 % |
 | Presidio¹ | FINESS | — | 0 % | 0 % |
-| Presidio¹ | **TOTAL** | 100 % | **32,5 %** | **49,0 %** |
+| Presidio¹ | **TOTAL** | 100 % | **18,9 %** | **31,8 %** |
 
-¹ Chiffres Presidio mesurés sur le **corpus v1** (733 entités, sans
-espacement irrégulier, sans FINESS) et non rejoués depuis les extensions
-du corpus (`presidio-analyzer`/`spacy` non installés dans l'environnement
-qui a produit cette mise à jour). Le rappel NIR/RPPS/FINESS à 0 % est
-structurel (aucun recognizer français ni FINESS livré par défaut) et
-resterait vrai sur n'importe quel corpus — Presidio ne fournit tout
-simplement pas de recognizer FINESS, quelle que soit la configuration
-« out-of-the-box » (voir *Collision FINESS ↔ SIREN* ci-dessous) ; la
-ligne IBAN/TOTAL est donc à reproduire avant de la citer sur le corpus
-v3 — voir *Reproduire* ci-dessous.
+¹ Presidio rejoué sur le **corpus v3** (seed 42, 1000 documents,
+778 entités), configuration par défaut (`presidio-analyzer` 2.2.364,
+modèle spaCy `en_core_web_lg`, seuil 0,35). Le rappel NIR/RPPS/FINESS à
+0 % est structurel (aucun recognizer français ni FINESS livré par
+défaut). Le rappel IBAN de 68,7 % (147/214) vient du style
+`irregular` : les 67 IBAN à espacement irrégulier (voir plus bas) ne
+sont pas reconnus. Commande exacte de reproduction : voir *Reproduire*.
 
 Lecture : en configuration par défaut, Presidio ne couvre **aucun
 identifiant spécifiquement français** (NIR, RPPS, FINESS). Son recognizer
-IBAN, à validation de clé, est excellent — à égalité avec Écluse. Le
+IBAN, à validation de clé, est précis (aucun faux positif) mais ne
+retrouve pas les IBAN à espacement irrégulier (rappel 68,7 %). Le
 corpus contient des pièges (NIR/IBAN à clé invalide, RPPS à Luhn cassé,
 téléphones, SIRET, SIREN) : aucun moteur n'y est tombé à tort, à
 l'exception du cas de collision FINESS/SIREN — assumé et mesuré, pas un
@@ -125,7 +123,7 @@ un angle mort.
 
 ```bash
 # 1. Dépendances Python
-pip install -r requirements.txt
+pip install -r requirements.txt   # épingle cymem/preshed/murmurhash (voir ce fichier)
 python -m spacy download en_core_web_lg   # config Presidio standard
 
 # 2. Générer le corpus (déterministe)

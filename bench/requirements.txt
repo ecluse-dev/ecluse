@@ -1,1 +1,7 @@
 presidio-analyzer>=2.2
+# Épinglages de dépendances transitives de spaCy : avec cymem 2.0.16 /
+# preshed 3.0.14 / murmurhash 1.0.16, tout chargement de pipeline spaCy
+# échoue (OverflowError dans Tokenizer._flush_specials).
+cymem==2.0.11
+preshed==3.0.9
+murmurhash==1.0.12
