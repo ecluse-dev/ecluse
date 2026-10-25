@@ -124,4 +124,18 @@ void main() {
       expect(entities.single.value, '10001234565');
     });
   });
+
+  group('RppsDetector — identifiant adjacent à un nombre', () {
+    test('nombre après', () {
+      const text = 'RPPS 10001234565 12';
+      final e = detector.detect(text).single;
+      expect(text.substring(e.start, e.end), '10001234565');
+    });
+
+    test('nombre avant', () {
+      const text = 'Dossier 3 10001234565';
+      final e = detector.detect(text).single;
+      expect(text.substring(e.start, e.end), '10001234565');
+    });
+  });
 }
