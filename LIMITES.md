@@ -341,8 +341,33 @@ partagent un patronyme sont en revanche fusionnées (« M. Jean Dupont » et
 qu'un patronyme en clair.
 
 C'est le **seul cas connu** où le texte restauré n'est pas octet-pour-octet
-identique à l'original. Choix assumé : cohérence d'identité pour le LLM >
-fidélité mot-à-mot d'une re-mention.
+identique à l'original, **hors dossier** (voir ci-dessous pour les dossiers).
+Choix assumé : cohérence d'identité pour le LLM > fidélité mot-à-mot d'une
+re-mention.
+
+**Entre plusieurs documents (dossier).** Sans `Dossier`, chaque appel repart de
+`[NOM_1]` : la même personne reçoit des jetons différents d'un document à
+l'autre et deux personnes peuvent recevoir le même jeton. Avec
+`Ecluse.redact(texte, dossier: d)`, l'état est conservé **en mémoire
+seulement** (jamais sérialisé ; perdu au redémarrage ; un dossier fermé refuse
+de masquer et de restaurer). Règle de noms entre documents (décision N1) :
+seule une identité **complète** identique (au moins deux segments) garde son
+jeton ; une mention partielle (« Mme Verdier » après « Mme Sophie Verdier »)
+reçoit un **nouveau** jeton, car la fusion par patronyme entre documents
+exposerait à de fausses fusions sans qu'on puisse les mesurer. Conséquence
+assumée mais coûteuse : le LLM voit deux personnes là où il n'y en a qu'une.
+Mesure sur les corpus synthétiques de dossiers (P2-06) : les collisions
+disparaissent (réaliste 16–17 % → 0 %), mais la cohérence des noms baisse
+(réaliste 63 % → 44–46 %) car l'ancienne valeur tenait en partie à la
+coïncidence de la numérotation.
+Un **jeton littéral** déjà attribué dans le dossier et retrouvé en clair dans
+un texte ultérieur est signalé par un avertissement, le texte n'est pas
+modifié, mais sa restauration n'est alors **pas identique** : c'est un
+deuxième cas connu de restauration non octet-pour-octet. Le dossier ne protège
+pas du contenu en clair, des quasi-identifiants ni des métadonnées de requête,
+et la menace de recoupement entre dossiers (T1) reste une hypothèse non
+confirmée : le cloisonnement retenu (C0) ne rend pas les numérotations
+indistinguables.
 
 ### 5.4 Portée du rattrapage des mentions partielles
 
