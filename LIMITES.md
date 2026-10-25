@@ -231,6 +231,13 @@ complète déjà rencontrée. Aucun caractère n'est perdu ni déplacé ailleurs
 dans le document — seul le libellé de cette re-mention change, parfois de
 façon un peu artificielle (ex. « S. » suivi du prénom complet restauré).
 
+**Deux personnes, un patronyme.** Deux civilités de sexe différent
+(« M. Jean Dupont », « Mme Dupont ») ne sont jamais fusionnées : un couple
+garde deux jetons. Deux personnes **de même sexe** (ou sans civilité) qui
+partagent un patronyme sont en revanche fusionnées (« M. Jean Dupont » et
+« M. Dupont » peuvent désigner deux frères) : mieux vaut un jeton partagé
+qu'un patronyme en clair.
+
 C'est le **seul cas connu** où le texte restauré n'est pas octet-pour-octet
 identique à l'original. Choix assumé : cohérence d'identité pour le LLM >
 fidélité mot-à-mot d'une re-mention.
