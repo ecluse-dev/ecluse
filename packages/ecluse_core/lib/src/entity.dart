@@ -19,6 +19,10 @@ enum EntityType {
   /// `FinessDetector` pour la collision structurelle assumée.
   finess,
 
+  /// Numéro ADELI — ancien identifiant des professionnels de santé. Émis
+  /// uniquement avec le mot « ADELI » accolé : voir `AdeliDetector`.
+  adeli,
+
   /// Nom de personne (détection heuristique, voir `ecluse_redact`).
   nom,
 
