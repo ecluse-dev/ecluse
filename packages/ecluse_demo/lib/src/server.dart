@@ -178,7 +178,7 @@ Future<Response> _handleProcess(
 }
 
 /// Reçoit un fichier déposé (`{filename, bytes}`, `bytes` en base64) et
-/// délègue l'extraction à `ecluse_ingest`. Un format hors périmètre (PDF,
+/// délègue l'extraction à `ecluse_ingest`. Un format hors périmètre (PDF image,
 /// image, extension inconnue) ou un contenu incohérent avec l'extension
 /// revient comme `{error}` explicite — jamais un texte vide silencieux.
 ///

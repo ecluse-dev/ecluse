@@ -22,9 +22,9 @@ absence de protection connue.
    valide ils sont masqués mais sous l'étiquette FINESS ; à clé invalide ou
    corses, ils ne sont pas détectés),
    les lieux isolés sans structure d'adresse (« reçu à Nantes »).
-3. **Fichiers** : `.txt`, `.md`, `.docx` et `.odt`. Le PDF, les images, les
-   scans et le manuscrit sont **refusés explicitement** — jamais lus à
-   moitié. Les en-têtes, pieds de page, notes et commentaires de
+3. **Fichiers** : `.txt`, `.md`, `.docx`, `.odt` et `.pdf` **à texte
+   natif** (voir § 4). Les images, les scans, les PDF-image et le manuscrit
+   sont **refusés explicitement** — jamais lus à moitié. Les en-têtes, pieds de page, notes et commentaires de
    `.docx`/`.odt` ne sont pas lus (avertissement `ignored_parts`).
 4. **Sur-masquage possible** : en cas de doute, Écluse masque. Un mot
    capitalisé adjacent à un prénom connu, ou un SIREN pris pour un FINESS,
@@ -162,11 +162,54 @@ quasi-identifiant en clair dans le texte envoyé au LLM.
 
 ## 4. Fichiers pris en charge (`ecluse_ingest`)
 
-Seuls `.txt`, `.md`, `.docx` et `.odt` sont ingérés en v1.
+Sont ingérés : `.txt`, `.md`, `.docx`, `.odt` et `.pdf` à texte natif.
 
-**Le PDF est refusé explicitement, systématiquement** — y compris un PDF
-avec une couche de texte lisible : ce n'est pas encore implémenté, et un
-fichier refusé vaut mieux qu'un fichier mal lu.
+**PDF.** Un PDF n'est accepté que si Écluse peut affirmer que **tout son
+contenu informatif est du texte lu** ; sinon le document entier est refusé,
+avec un motif stable (`IngestRefused.code`) :
+
+| Motif | Cas |
+|---|---|
+| `sans_texte` | scan pur, image avec quelques caractères, document sans page lue |
+| `partiellement_numerise` | pages de texte et pages image mêlées (pages listées) |
+| `numerise_couche_ocr` | texte invisible (`3 Tr`) laissé par un OCR sur un scan |
+| `texte_illisible` | police sans table `ToUnicode`, caractères de zone privée / U+FFFD, bruit hors du jeu de caractères d'un texte français |
+| `chiffre` | PDF chiffré, **même ouvrable sans mot de passe** |
+| `malforme` | pas d'en-tête, pas de `%%EOF`, `startxref` qui ne pointe pas sur une table de références, bibliothèque en échec |
+| `plafond_taille`, `plafond_pages`, `plafond_duree` | plus de 50 Mo, plus de 200 pages, plus de 30 s |
+
+Le refus d'un PDF tronqué, à table `xref` cassée ou chiffré sans mot de passe
+est une **politique** d'Écluse, pas la conséquence d'un échec de lecture : la
+bibliothèque (`pdf_graphics`, version fixée) reconstruit sans erreur ces
+fichiers ; un contrôle de structure préalable les refuse.
+
+Avertissements (`IngestedText.warnings`) pour ce qui n'est **pas lu** :
+`images_non_traitees:<pages>` (image sur une page de texte : tampon,
+signature), `metadonnees_non_extraites`, `annotations_non_extraites`,
+`formulaires_non_extraits`, `javascript_ignore` (jamais exécuté),
+`pages_blanches:<n>`. **Le contenu des métadonnées, annotations et champs de
+formulaire n'est pas détecté** : il peut contenir un identifiant.
+
+Limites propres au PDF :
+
+- **Ordre de lecture** (colonnes, tableaux) et **coupures de ligne** : un
+  identifiant coupé par une fin de ligne ou une césure peut échapper à la
+  détection (cas `texte_iban_coupe` du jeu synthétique).
+- Une image atteinte seulement par un XObject de formulaire n'est pas vue
+  (pas d'avertissement `images_non_traitees`). Une page de texte avec une
+  image qui porte du texte (texte incrusté dans une image) est acceptée avec
+  avertissement ; le texte de l'image n'est pas lu.
+- Le plafond de durée est vérifié **entre** les pages ; une seule page
+  pathologique ne peut pas être interrompue.
+- Seuils de départ non calibrés sur des documents réels (aucun n'est
+  utilisé) : 20 caractères alphanumériques pour qu'une page « ait du texte »,
+  5 % de caractères parasites, 50 % de lettres/chiffres. Mesure sur le jeu
+  synthétique : 18 fichiers, tous conformes à `bench/pdf/expected.json` ;
+  200 pages de 30 lignes en ~0,3 s.
+- `pdf_graphics` est récent (dix versions majeures en trois semaines au moment
+  du choix), à mainteneur unique, et exige Dart ≥ 3.5. Ses dépendances
+  transitives (dont `bidi`) n'ont pas été auditées par nous. La version est
+  fixée exactement.
 
 **Aucune image, aucun scan, aucun manuscrit n'est traité.** Un OCR ou une
 reconnaissance manuscrite introduirait des erreurs de lecture qui feraient
