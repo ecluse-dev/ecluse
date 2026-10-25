@@ -65,6 +65,15 @@ adresses avec caractères accentués dans la partie locale (`é@…`),
 domaines internationalisés (IDN), et toute adresse coupée par un saut de
 ligne ou un trait d'union de césure.
 
+**Fichiers : contenus non lus.** `.docx` et `.odt` ne sont lus que dans leur
+corps (`word/document.xml`, `content.xml`). Les **en-têtes, pieds de page,
+notes de bas de page et de fin, commentaires** (docx) et les **en-têtes et
+pieds de page** (odt) ne sont ni extraits ni masqués ; quand ils contiennent
+du texte, l'ingestion le signale par l'avertissement `ignored_parts`. Un
+document dont l'espace de noms XML utilise un autre préfixe que `w:` /
+`text:`, une section CDATA, une entité XML illisible ou un fichier texte avec
+des caractères NUL (UTF-16 sans BOM) sont **refusés avec un motif**. Un
+document sans aucun texte reçoit l'avertissement `empty`.
 **Identifiant collé à un nombre.** Un NIR, un RPPS, un IBAN ou un FINESS
 suivi ou précédé d'un nombre séparé par un simple blanc est détecté
 (`NIR 1 85 05 78 006 084 91 12 ans`). **Reste non détecté** : un

@@ -12,6 +12,20 @@ const List<String> supportedExtensions = ['txt', 'md', 'docx', 'odt'];
 /// tout contenu incohérent avec l'extension déclarée, produit un
 /// [IngestRefused] explicite.
 IngestResult ingestFile(List<int> bytes, {required String filename}) {
+  try {
+    return _ingest(bytes, filename);
+  } catch (_) {
+    // Filet de sécurité : quoi qu'il arrive dans un extracteur, l'appelant
+    // reçoit un refus explicite, jamais une exception ni un texte vide. Le
+    // message ne reprend pas l'erreur (elle pourrait citer du contenu).
+    return const IngestRefused(
+      'Fichier illisible : erreur interne pendant la lecture. Fichier '
+      'refusé.',
+    );
+  }
+}
+
+IngestResult _ingest(List<int> bytes, String filename) {
   final extension = _extensionOf(filename);
 
   switch (extension) {
