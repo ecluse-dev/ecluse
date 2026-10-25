@@ -92,8 +92,8 @@ Objectif : qu'un premier design partner l'utilise en production.
 - 🟡 Détecteurs prioritaires : 🟢 FINESS (collision SIREN assumée), 🟢 INS,
   🟢 téléphone FR et email durcis (octobre 2026) ; ⚪ ADELI (spécifié,
   `agent/specs/P1-06-adeli.md`, avec ses points ouverts)
-- ⚪ Secret scanning (clés API, tokens) — parité avec les gateways génériques
-  (spécifié, `agent/specs/P1-07-secrets.md`)
+- 🟢 Secret scanning (clés API, tokens) — parité avec les gateways génériques
+  (`SecretDetector`, spec `agent/specs/P1-07-secrets.md`)
 - 🟡 Publication de l'article de benchmark — brouillon `bench/ARTICLE.md`,
   relecture du mainteneur attendue
 - 🟡 **Import de fichiers texte natifs** — `ecluse_ingest` livré pour
