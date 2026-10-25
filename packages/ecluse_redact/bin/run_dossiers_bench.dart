@@ -53,18 +53,22 @@ List<Map<String, dynamic>> mentionsAvecJeton(
 ///
 /// Avec `--dossier` (P2-06), les documents d'un même dossier sont masqués avec
 /// un même [Dossier] (clé `dossier` du corpus) et restaurés par ce dossier ;
-/// sans, un appel par document, état d'avant.
+/// sans, un appel par document, état d'avant. Avec `--regle=n2` (P2-13, implique
+/// `--dossier`), les dossiers utilisent la fusion par inclusion entre documents
+/// (`RegleNoms.inclusion`) au lieu de N1 (défaut).
 ///
 /// Usage :
-///   dart run bin/run_dossiers_bench.dart [--dossier] <corpus.jsonl> <sortie.jsonl>
+///   dart run bin/run_dossiers_bench.dart [--dossier|--regle=n2] <corpus.jsonl> <sortie.jsonl>
 Future<void> main(List<String> arguments) async {
-  final avecDossier = arguments.contains('--dossier');
+  final regleN2 = arguments.contains('--regle=n2');
+  final avecDossier = arguments.contains('--dossier') || regleN2;
   final args = [
     for (final a in arguments)
-      if (a != '--dossier') a
+      if (a != '--dossier' && a != '--regle=n2') a
   ];
   if (args.length != 2) {
-    stderr.writeln('Usage : dart run bin/run_dossiers_bench.dart [--dossier] '
+    stderr.writeln(
+        'Usage : dart run bin/run_dossiers_bench.dart [--dossier|--regle=n2] '
         '<corpus.jsonl> <sortie.jsonl>');
     exitCode = 64;
     return;
@@ -81,8 +85,13 @@ Future<void> main(List<String> arguments) async {
     final doc = jsonDecode(ligne) as Map<String, dynamic>;
     final texte = doc['text'] as String;
 
-    final dossier =
-        avecDossier ? dossiers.putIfAbsent(doc['dossier'], Dossier.new) : null;
+    final dossier = avecDossier
+        ? dossiers.putIfAbsent(
+            doc['dossier'],
+            () => Dossier(
+                regle:
+                    regleN2 ? RegleNoms.inclusion : RegleNoms.identiteComplete))
+        : null;
     final resultat = await Ecluse.redact(texte, dossier: dossier);
     final restaure = dossier != null
         ? dossier.restore(resultat.maskedText)

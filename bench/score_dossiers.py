@@ -107,7 +107,8 @@ def mesure(corpus, preds):
     """Dictionnaire de mesures pour un corpus et ses predictions."""
     liens = associe(corpus, preds)
     non_detectees = Counter()
-    ambigues = {"total": 0, "detectees": 0, "fusionnees": 0}
+    ambigues = {"total": 0, "detectees": 0, "fusionnees": 0,
+                "fusionnees_dossier": 0}
 
     # Jetons par (dossier, identite) et par (dossier, document).
     par_ident = defaultdict(list)  # (dossier, identite, type) -> [jeton]
@@ -115,6 +116,8 @@ def mesure(corpus, preds):
     par_doc = defaultdict(set)     # (doc, jeton) -> {identite}
     jetons_doc_ident = defaultdict(set)  # doc -> jetons d'identites connues
     ambigues_doc = []              # (doc, jeton)
+    ambigues_dossier = []          # (dossier, jeton)
+    jetons_dossier_ident = defaultdict(set)  # dossier -> jetons d'identites
 
     for doc, g, jeton in liens:
         if g.get("ambigue"):
@@ -122,6 +125,7 @@ def mesure(corpus, preds):
             if jeton is not None:
                 ambigues["detectees"] += 1
                 ambigues_doc.append((doc["id"], jeton))
+                ambigues_dossier.append((doc["dossier"], jeton))
             continue
         if jeton is None:
             non_detectees[g["type"]] += 1
@@ -131,8 +135,11 @@ def mesure(corpus, preds):
         par_jeton[(doc["dossier"], jeton)].add(ident)
         par_doc[(doc["id"], jeton)].add(ident)
         jetons_doc_ident[doc["id"]].add(jeton)
+        jetons_dossier_ident[doc["dossier"]].add(jeton)
     ambigues["fusionnees"] = sum(1 for d, j in ambigues_doc
                                  if j in jetons_doc_ident[d])
+    ambigues["fusionnees_dossier"] = sum(
+        1 for d, j in ambigues_dossier if j in jetons_dossier_ident[d])
 
     # 1. Coherence : identites citees >= 2 fois dans un dossier.
     coherence = defaultdict(lambda: [0, 0])  # type -> [un seul jeton, total]
@@ -247,7 +254,8 @@ def affiche(nom, m):
     am = m["ambigues"]
     print(f"  Mentions ambiguës (à part) : {am['total']} ; détectées "
           f"{am['detectees']} ; portant le jeton d'une identité connue du "
-          f"même document {am['fusionnees']}")
+          f"même document {am['fusionnees']}, du même dossier "
+          f"{am['fusionnees_dossier']}")
     if m["non_detectees"]:
         nd = ", ".join(f"{t} {n}" for t, n in sorted(
             m["non_detectees"].items()))

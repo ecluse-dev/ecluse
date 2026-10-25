@@ -360,6 +360,18 @@ Mesure sur les corpus synthétiques de dossiers (P2-06) : les collisions
 disparaissent (réaliste 16–17 % → 0 %), mais la cohérence des noms baisse
 (réaliste 63 % → 44–46 %) car l'ancienne valeur tenait en partie à la
 coïncidence de la numérotation.
+**N2 à la demande.** `Dossier(regle: RegleNoms.inclusion)` applique entre
+documents la règle d'inclusion d'un document : une mention partielle rejoint
+l'unique identité qu'elle recoupe, avec les mêmes garde-fous (civilités de sexe
+différent, plusieurs identités possibles → nouveau jeton). Mesure sur les
+corpus synthétiques de dossiers (P2-13, 400 documents, graines 42 et 7) :
+cohérence des noms 100 % (réaliste, témoin) et 83–88 % (adversarial) contre
+44–46 %, 0 % et 28–34 % avec N1 ; aucune collision ni fausse fusion mesurée ;
+mais **restaurations non identiques** 25 % (réaliste), 40–42 % (adversarial) et
+78 % (témoin) contre 0 %, 9–13 % et 0 % avec N1, car un jeton ne restitue
+qu'une graphie : « Mme Verdier » est restaurée « Mme Sophie Verdier ». Le corpus
+ne contient pas de vrais homonymes inconnus du dossier ; le risque de fausse
+fusion entre documents, non mesuré hors ce corpus, reste entier.
 Un **jeton littéral** déjà attribué dans le dossier et retrouvé en clair dans
 un texte ultérieur est signalé par un avertissement, le texte n'est pas
 modifié, mais sa restauration n'est alors **pas identique** : c'est un

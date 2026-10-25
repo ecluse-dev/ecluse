@@ -295,7 +295,7 @@ String _resolveNomToken(
   final matches = etat.nomIdentities
       .where(
         (identity) =>
-            identity.doc == docId &&
+            (etat.regle == RegleNoms.inclusion || identity.doc == docId) &&
             compatible(identity) &&
             (segments.every(identity.segments.contains) ||
                 identity.segments.every(segments.contains)),
@@ -304,6 +304,7 @@ String _resolveNomToken(
 
   if (matches.length == 1) {
     final identity = matches.single;
+    identity.doc = docId;
     identity.gender ??= gender;
     if (segments.length > identity.segments.length) {
       // Forme la plus complète rencontrée : la carte de restauration la
@@ -319,7 +320,9 @@ String _resolveNomToken(
   // Entre documents d'un dossier (N1, `agent/specs/P2-05.md` § 5) : seule une
   // identité complète identique (deux segments au moins) rejoint une identité
   // d'un document précédent ; une mention partielle reçoit un nouveau jeton.
-  if (matches.isEmpty && segments.length >= 2) {
+  if (matches.isEmpty &&
+      etat.regle == RegleNoms.identiteComplete &&
+      segments.length >= 2) {
     final anterieures = etat.nomIdentities
         .where((identity) =>
             identity.doc != docId &&
@@ -379,6 +382,11 @@ final class SecretsRefusedException implements Exception {
 /// Un appel sans [Dossier] en crée un neuf (comportement historique) ; un
 /// [Dossier] conserve le sien entre les appels.
 final class _Etat {
+  _Etat([this.regle = RegleNoms.identiteComplete]);
+
+  /// Règle de rapprochement des noms entre les documents du dossier.
+  final RegleNoms regle;
+
   final Map<String, String> mapping = {};
   final Map<String, String> tokenByIdentity = {};
   final List<_NomIdentity> nomIdentities = [];
