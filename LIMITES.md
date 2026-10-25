@@ -312,9 +312,12 @@ pas une garantie d'anonymat. Limites connues :
   Paris, Lyon, Marseille (agrégés) et Mayotte n'ont pas de population
   complète dans les données, leur département est **refusé** (`ArgumentError`).
   Les arrondissements ne sont pas modélisés.
-- **Communes homonymes** (« Saint-Denis », ~3 700 communes concernées) : ignorées
-  par `extractQis`, l'estimation retombe alors sur la France entière sans
-  signal.
+- **Communes homonymes** (« Saint-Denis », ~3 700 communes concernées) :
+  `extractLieu` retient la **plus petite** commune de ce nom (cas le plus
+  prudent : F le plus bas, donc le risque le plus élevé) et
+  `extractQisDetailed` / `extractLieuAmbigu` signalent l'ambiguïté. Un mot
+  capitalisé qui coïncide avec un nom de commune ambigu (« La Chapelle »)
+  produit désormais un QI de lieu prudent, parfois à tort.
 - **Âges** : la pyramide couvre 0 à 104 ans ; une tranche de 10 ans qui
   chevauche 65 ans passe directement au retrait.
 - **Données embarquées** : millésimes mélangés (populations communales
