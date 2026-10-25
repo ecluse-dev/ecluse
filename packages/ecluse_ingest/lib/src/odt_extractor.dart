@@ -6,6 +6,7 @@ import 'package:archive/archive.dart';
 import 'ingest_result.dart';
 import 'magic_bytes.dart';
 import 'odt_xml.dart';
+import 'xml_guards.dart';
 import 'zip_guard.dart';
 
 /// Type MIME attendu dans l'entrée `mimetype` d'un `.odt` valide (norme
@@ -128,8 +129,57 @@ IngestResult ingestOdt(List<int> bytes,
     );
   }
 
+  final refusal = namespacePrefixRefusal(
+        xml,
+        namespace: _odtTextNamespace,
+        expectedPrefix: 'text',
+        format: '.odt',
+      ) ??
+      unsupportedXmlRefusal(xml, format: '.odt');
+  if (refusal != null) return IngestRefused(refusal);
+
+  final String text;
+  try {
+    text = extractOdtPlainText(xml);
+  } catch (_) {
+    return const IngestRefused(
+      'Fichier .odt refusé : contenu XML de « content.xml » malformé '
+      '(entité ou balise illisible).',
+    );
+  }
+
   return IngestedText(
-    text: extractOdtPlainText(xml),
+    text: text,
     format: IngestFormat.odt,
+    warnings: [
+      if (text.trim().isEmpty) 'empty',
+      if (_hasHeaderFooterText(archive, maxEntryBytes)) 'ignored_parts',
+    ],
   );
+}
+
+const String _odtTextNamespace =
+    'urn:oasis:names:tc:opendocument:xmlns:text:1.0';
+
+final RegExp _headerFooterBlock = RegExp(
+  r'<style:(?:header|footer)(?:-left|-first)?\b[^>]*>([\s\S]*?)'
+  r'</style:(?:header|footer)(?:-left|-first)?>',
+);
+
+/// En-têtes et pieds de page ODT : ils vivent dans `styles.xml`, que
+/// l'extracteur ne lit pas. Signalés quand ils contiennent du texte.
+bool _hasHeaderFooterText(Archive archive, int maxEntryBytes) {
+  final styles = archive.findFile('styles.xml');
+  if (styles == null) return false;
+  if (styles.size > maxEntryBytes) return true;
+  try {
+    final xml = utf8.decode(decompressBounded(styles, maxEntryBytes),
+        allowMalformed: true);
+    for (final block in _headerFooterBlock.allMatches(xml)) {
+      if (extractOdtPlainText(block.group(1)!).trim().isNotEmpty) return true;
+    }
+    return false;
+  } catch (_) {
+    return true;
+  }
 }
