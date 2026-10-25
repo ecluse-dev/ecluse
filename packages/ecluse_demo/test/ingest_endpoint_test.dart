@@ -30,6 +30,7 @@ Future<Map<String, dynamic>> _postIngest(
   final request = Request(
     'POST',
     Uri.parse('http://l/api/ingest'),
+    headers: {'content-type': 'application/json'},
     body: jsonEncode({'filename': filename, 'bytes': base64Encode(bytes)}),
   );
   final response = await handler(request);
@@ -153,6 +154,7 @@ void main() {
       final request = Request(
         'POST',
         Uri.parse('http://l/api/ingest'),
+        headers: {'content-type': 'application/json'},
         body: jsonEncode({'bytes': base64Encode(utf8.encode('x'))}),
       );
       final response = await handler(request);
@@ -167,6 +169,7 @@ void main() {
       final request = Request(
         'POST',
         Uri.parse('http://l/api/ingest'),
+        headers: {'content-type': 'application/json'},
         body: 'ceci n\'est pas du JSON',
       );
       final response = await handler(request);
