@@ -31,7 +31,7 @@ Photos, scans, PDF-image, écriture manuscrite : **non traités**.
   textuels** — signature, tampon, en-tête, logo d'établissement, visage —
   qu'aucun pipeline OCR ne « lit ». Couvrir l'image sans les traiter
   produit un faux sentiment de sécurité, la faille n°1 de
-  `NOTES_SECURITE.md`.
+  `LIMITES.md`.
 - **Raison prospection.** Besoin non validé : 1 confirmation (#1), 1 « je
   ne sais pas » (#2). Et aucun des deux chantiers concrets nommés par #2
   — retranscription de réunions, contrats RH — n'est manuscrit.
@@ -88,12 +88,17 @@ Objectif : qu'un premier design partner l'utilise en production.
 - 🟢 `ecluse_redact` — pseudonymisation réversible, map jamais sérialisée
 - 🟢 `ecluse_demo` — trajet complet en 4 panneaux, réversibilité prouvée
 - ⚪ `ecluse_audit` — journal chaîné horodaté (version minimale)
-- ⚪ Détecteurs prioritaires : FINESS, ADELI, téléphone FR, email
-  (heuristiques v0 en place, à durcir)
+  (spécifié, `agent/specs/P1-08-audit.md`)
+- 🟡 Détecteurs prioritaires : 🟢 FINESS (collision SIREN assumée), 🟢 INS,
+  🟢 téléphone FR et email durcis (octobre 2026) ; ⚪ ADELI (spécifié,
+  `agent/specs/P1-06-adeli.md`, avec ses points ouverts)
 - ⚪ Secret scanning (clés API, tokens) — parité avec les gateways génériques
-- ⚪ Publication de l'article de benchmark
+  (spécifié, `agent/specs/P1-07-secrets.md`)
+- 🟡 Publication de l'article de benchmark — brouillon `bench/ARTICLE.md`,
+  relecture du mainteneur attendue
 - 🟡 **Import de fichiers texte natifs** — `ecluse_ingest` livré pour
-  txt, md, docx et odt ; reste le PDF texte + garde-fou PDF-image. Rend la
+  txt, md, docx et odt ; reste le PDF texte + garde-fou PDF-image
+  (spécifié, `agent/specs/P1-09-pdf.md`). Rend la
   démo nettement plus concrète — « déposez votre compte rendu, regardez ce
   qui ressort ».
 
@@ -104,11 +109,14 @@ Objectif : occuper le coin vide de la carte.
 - ⚪ Export AIPD aux normes CNIL (registre de traitement pré-rempli)
 - ⚪ NER local embarqué (GLiNER/ONNX) pour noms et adresses — confiance
   graduée. Remplace les détecteurs heuristiques v0 de `ecluse_redact`.
-- ⚪ Généralisation géographique : remplacer un lieu trop précis par une
+- 🟡 Généralisation géographique (bibliothèque `ecluse_reid` livrée : commune
+  → département → France ; régions non calculées, non branchée dans le
+  pipeline — voir `LIMITES.md` § 7) : remplacer un lieu trop précis par une
   zone large (ville → région → Nord/Sud/Est/Ouest) pour réduire la
   ré-identification par recoupement. Mode irréversible, distinct de la
   pseudonymisation. S'appuie sur le NER + table INSEE commune/région.
-- ⚪ Score de ré-identification du texte : indice de risque (élevé/moyen/
+- 🟡 Score de ré-identification du texte (estimation F livrée dans
+  `ecluse_reid` pour profession/lieu/âge, non branchée dans le pipeline) : indice de risque (élevé/moyen/
   faible) calculé sur l'ensemble du texte, même sans identifiant direct
   (logique k-anonymat rendue visible). Aide à la décision pour le DPO.
 - ⚪ Pseudonymes cohérents et cloisonnés : même entité → même jeton au sein

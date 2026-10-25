@@ -21,7 +21,7 @@ import '../luhn.dart';
 /// présence d'un indice de contexte (« FINESS » à proximité) : confiance
 /// haute si présent, basse sinon (collision SIREN assumée). Un SIREN
 /// capté par erreur à confiance basse est un sur-masquage d'un identifiant
-/// d'organisation, pas une fuite — coût acceptable (cf. `NOTES_SECURITE`).
+/// d'organisation, pas une fuite — coût acceptable (cf. `LIMITES.md` § 1).
 ///
 /// Le préfixe département (2 premiers chiffres) n'est délibérément **pas**
 /// vérifié, même comme signal doux : le format outre-mer reste incertain
