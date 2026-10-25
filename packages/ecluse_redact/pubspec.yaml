@@ -11,6 +11,10 @@ environment:
 dependencies:
   ecluse_core:
     path: ../ecluse_core
+  ecluse_reference:
+    path: ../ecluse_reference
+  ecluse_reid:
+    path: ../ecluse_reid
 
 dev_dependencies:
   lints: ^4.0.0

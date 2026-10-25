@@ -160,6 +160,13 @@ trop précis par une zone plus large — est un traitement **différent** du
 masquage, prévu en phase 2. En attendant, un lieu isolé reste un
 quasi-identifiant en clair dans le texte envoyé au LLM.
 
+Depuis P2-04, `Ecluse.redact(texte, riskReference: référence)` ajoute un
+**rapport de risque** (`RedactResult.risque`) qui repère le lieu, l'âge et la
+profession de santé restés dans le texte masqué et estime la ré-identification.
+Il **ne change pas le texte envoyé** : le lieu reste en clair tant que
+l'application n'agit pas (la généralisation appliquée est prévue ensuite, à la
+demande de l'appelant). Sans référence, rien n'est évalué et `risque` est nul.
+
 ## 4. Fichiers pris en charge (`ecluse_ingest`)
 
 Sont ingérés : `.txt`, `.md`, `.docx`, `.odt` et `.pdf` à texte natif.
@@ -360,8 +367,9 @@ d'apprentissage. Limites de cette approche :
 
 ## 6. Hors périmètre v0
 
-- Branchement de l'estimation de ré-identification et de la généralisation
-  dans `Ecluse.redact` (la bibliothèque `ecluse_reid` existe, voir § 7).
+- Généralisation appliquée au texte envoyé (le rapport de risque de
+  `Ecluse.redact(riskReference: …)` existe depuis P2-04, voir § 7 ; la
+  réécriture du texte est irréversible et reste à la charge de l'appelant).
 - Dictée vocale.
 - Branchement du journal d'audit (`ecluse_audit`) dans les applications.
 - Le mode par défaut est automatique et invisible ; l'aperçu avec validation
@@ -372,10 +380,25 @@ Voir `ROADMAP.md` pour le calendrier de ces briques.
 
 ## 7. Estimation de ré-identification (`ecluse_reid`, `ecluse_reference`)
 
-Bibliothèque seule, **non utilisée** par `Ecluse.redact` : elle estime la
+Bibliothèque, **utilisée par `Ecluse.redact` seulement si l'appelant fournit
+`riskReference`** (rapport seul, désactivé par défaut) : elle estime la
 taille F de la classe d'équivalence d'une combinaison de quasi-identifiants
 (profession de santé, lieu, âge) et suggère une généralisation. Ce n'est
 pas une garantie d'anonymat. Limites connues :
+
+- **Rappel limité, sans NER.** Les quasi-identifiants ne sont repérés que par
+  des règles (13 spécialités et 4 professions par mot-clé, communes par nom
+  capitalisé, âge en chiffres). « Aucun quasi-identifiant détecté » n'est pas
+  un risque faible. Le rapport porte sur le **texte masqué** : un lieu déjà
+  masqué par un autre détecteur n'y est pas évalué.
+- **Plusieurs personnes dans un document.** Le dépôt ne sait pas attribuer un
+  quasi-identifiant à une personne : plusieurs QI du même type donnent « non
+  évaluable » ; des QI de types différents (un lieu d'une personne, un âge
+  d'une autre) s'évaluent ensemble, ce qui peut surestimer ou sous-estimer F.
+- **Statut changé par le masquage.** Sur les corpus synthétiques de QI, le
+  rapport sur le texte masqué diffère de l'évaluation du texte d'origine pour
+  0 à 36 documents sur 400 selon le corpus et la graine (0 sur le témoin ;
+  mesure de la PR P2-04).
 
 - **Hypothèse d'indépendance lieu × âge** (population du lieu × part d'âge) ;
   pas de facteur sexe.
@@ -386,7 +409,8 @@ pas une garantie d'anonymat. Limites connues :
   infirmiers, kinésithérapeutes et autres sont absents.
 - **Lieux** : les niveaux région et grande zone ne sont pas calculables ;
   Paris, Lyon, Marseille (agrégés) et Mayotte n'ont pas de population
-  complète dans les données, leur département est **refusé** (`ArgumentError`).
+  complète dans les données, leur département est **refusé** (`ArgumentError` de
+  `estimate` ; le rapport de `Ecluse.redact` le restitue en « non évaluable »).
   Les arrondissements ne sont pas modélisés.
 - **Communes homonymes** (« Saint-Denis », ~3 700 communes concernées) :
   `extractLieu` retient la **plus petite** commune de ce nom (cas le plus

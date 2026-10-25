@@ -205,9 +205,11 @@ d'une mesure reste **ouvert** (dernière rubrique).
    d'évaluation ») est conservé.
 6. **Dépendances internes** : `ecluse_redact` peut dépendre d'`ecluse_reid` et
    d'`ecluse_reference` (paquets du monorepo, aucune dépendance externe).
-7. **Web non visé** pour l'instant (SDK JS/TS en phase 3). `ecluse_redact`
-   n'importe pas `dart:io` pour cette fonction : la référence est fournie par
-   l'appelant.
+7. **Web non visé** pour l'instant (SDK JS/TS en phase 3). La référence est
+   fournie par l'appelant, mais `ecluse_reference` exporte `file_assets.dart`
+   (`dart:io`) : en important `ecluse_reid`, `ecluse_redact` tire `dart:io`
+   dans son graphe. Isoler `dart:io` reste à faire avant tout portage web
+   (constaté en P2-04).
 8. **Brancher maintenant**, sans NER, en affichant le rappel limité dans le
    rapport.
 
