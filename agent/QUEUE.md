@@ -68,7 +68,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-03b | code | `ecluse_reid` : extraction des QI avec positions et estimation totale (résultat typé, sans exception), en ajout et sans changer `estimate` | P2-03a | fusionnée |
 | P2-04 | code | Branchement de `ecluse_reid` dans `Ecluse.redact` selon l'option retenue dans la spec P2-03 (test d'équivalence d'abord, mesure avant/après) | P2-03, P2-03a, P2-03b | bloquée |
 | P2-05 | spec | Pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers : définition du dossier, état en mémoire, menace du recoupement | — | fusionnée |
-| P2-06 | code | État de dossier en mémoire dans `ecluse_redact` : pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers, selon les décisions de la spec P2-05 (test d'équivalence d'abord, mesure avant/après) | P2-05 | bloquée |
+| P2-05a | code | Profil de corpus multi-documents (dossiers, personnes, identités) et son scoreur, avec la mesure de l'état actuel sans dossier | P2-05 | à faire |
+| P2-06 | code | État de dossier en mémoire dans `ecluse_redact` : pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers, selon les décisions de la spec P2-05 (test d'équivalence d'abord, mesure avant/après) | P2-05, P2-05a | bloquée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -559,10 +560,8 @@ Préalables :
   perte ou au redémarrage, la règle de noms entre documents (N1, N2 ou N3), la menace
   à contrer et l'option de cloisonnement (C0, C1 ou C2), la forme de l'API, le
   traitement d'un jeton littéral dans un texte ultérieur et la concurrence.
-- Un profil de corpus multi-documents annoté (mêmes personnes dans plusieurs
-  documents, homonymes, plusieurs dossiers) et son scoreur sont fusionnés : c'est la
-  tâche `code` n° 1 du § 9 de la spec, **qui n'est pas encore dans la file**. Sans
-  elle, aucune mesure avant/après n'est possible (règle 5).
+- P2-05a est fusionnée : le profil de corpus multi-documents annoté, son scoreur et
+  la mesure de l'état actuel sans dossier (le « avant », règle 5).
 
 Travail :
 
@@ -588,3 +587,58 @@ Travail :
   fusions et effet sur la restauration.
 - **Fini quand** : `format`, `analyze` et `test` passent, les mesures sont dans la
   PR, et la PR liste ce que le mainteneur doit vérifier.
+
+### P2-05a — Profil de corpus multi-documents et scoreur (`code`)
+
+Contexte : `agent/specs/P2-05.md` § 8 et § 9. Aucun corpus ne contient plusieurs
+documents qui parlent des mêmes personnes, donc la cohérence des pseudonymes entre
+documents ne se mesure pas. Cette tâche ne touche à aucun détecteur ni à
+`Ecluse.redact` : elle fournit l'outil de mesure (règle 5) et chiffre l'état actuel.
+Indépendante des décisions du § 10 de la spec : la vérité terrain se construit par
+génération, quelle que soit la définition retenue du dossier.
+
+- Créer `bench/generate_corpus_dossiers.py`, déterministe (`--n`, `--seed`,
+  `--out-dir`), même format JSONL que `bench/generate_corpus_flou.py` avec, par
+  document, un champ `dossier` (entier) et `rang` (position dans le dossier), et, par
+  entité, un champ `identite` (entier, unique **par personne ou par valeur**, commun à
+  tous les dossiers pour pouvoir mesurer le recoupement). Types annotés : `nom`,
+  `email`, `telephone`. Offsets enregistrés à l'insertion, jamais retrouvés par
+  recherche. Peut importer le constructeur de documents du générateur existant **sans
+  le modifier**.
+- Trois corpus séparés, jamais fusionnés : *réaliste* (3 à 6 documents par dossier, une
+  poignée de personnes, mentions complètes puis partielles), *adversarial* (même
+  personne citée dans des ordres différents, deux personnes en première position, deux
+  homonymes de même sexe et un couple, patronymes répandus, mention partielle
+  ambiguë marquée `ambigue`, e-mail et téléphone répétés d'un document à l'autre,
+  jeton littéral du type `[NOM_1]` dans un texte ultérieur, mêmes personnes dans
+  plusieurs dossiers), *témoin* (plusieurs dossiers **sans aucune personne en
+  commun**, pour vérifier qu'aucun jeton n'est partagé à tort).
+- Personnes, textes, e-mails et téléphones **synthétiques** (règle 1) : prénoms et
+  patronymes pris dans les listes de `generate_corpus_flou.py`, adresses en
+  `example.fr`, téléphones des plages réservées à la fiction.
+- Écrire `bench/score_dossiers.py` : à partir des prédictions (un jeton par mention,
+  voir ci-dessous), rapporter pour chaque corpus : **cohérence** (part des identités
+  qui reçoivent un seul jeton dans un dossier), **collisions** (jetons qui désignent
+  plusieurs identités dans un dossier), **fausses fusions**, **restaurations non
+  identiques**, et, pour les identités présentes dans deux dossiers, la part qui reçoit
+  **le même jeton dans les deux** (signal de corrélation structurelle, à interpréter
+  seulement une fois la menace de la spec confirmée). Les mentions `ambigue` sont
+  comptées à part, jamais dans les taux.
+- Format des prédictions : une ligne par document, `{"id", "mentions": [{"type",
+  "start", "end", "jeton"}], "restaure": bool}`, où `restaure` dit si le texte masqué
+  puis restauré redonne le texte d'origine octet pour octet.
+- Ajouter `packages/ecluse_redact/bin/run_dossiers_bench.dart` (sur le modèle de
+  `run_redact_bench.dart`) qui masque **chaque document séparément** avec l'
+  `Ecluse.redact` actuel (aucun état partagé), restaure le texte masqué avec la carte
+  de ce même appel, et écrit les prédictions. Aucune modification de `lib/`.
+- Tests : `python3 -m unittest discover -s bench` (reproductibilité par graine,
+  offsets exacts, identités cohérentes par construction, absence de données réelles,
+  scoreur sur prédictions parfaites, vides et en collision) ; `format`, `analyze` et
+  `test` Dart pour le paquet touché.
+- Documenter dans `bench/README.md` une section « Dossiers » (conventions, commandes
+  de reproduction, limites) ; ne modifier aucun tableau de résultats existant. Les
+  fichiers générés ne sont pas versionnés (`.gitignore`).
+- **Fini quand** : les tests passent, la PR chiffre l'état actuel (cohérence,
+  collisions, fausses fusions, restaurations non identiques, recoupement) sur les trois
+  corpus et deux graines, dit ce qui n'est pas mesuré, et liste ce que le mainteneur
+  doit vérifier.
