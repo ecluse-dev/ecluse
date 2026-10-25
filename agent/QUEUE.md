@@ -76,6 +76,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-10 | spec | Transcription vocale locale : choix Vosk ou whisper.cpp, preuve qu'aucun son ne sort de l'appareil, limite sur les chiffres, critère GO/STOP propre | — | bloquée |
 | P2-11 | code | `ecluse_bench` : retirer `pubspec_overrides.yaml` (chemin Windows) du suivi git | — | PR ouverte |
 | P2-12 | code | Script reproductible du décompte de la fuite des noms hors civilité, versionné dans `bench/` | P2-02 | PR ouverte |
+| P2-13 | code | `Dossier` : règle de noms entre documents activable (N3) : N1 par défaut, fusion par inclusion (N2) à la demande de l'application | P2-06 | à faire |
+| P2-14 | code | Patronyme seul : mesurer ce qu'un rattrapage sans liste externe ni NER peut détecter, et ne l'implémenter que si le budget de faux positifs est tenu | P2-05a | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -742,3 +744,63 @@ peut pas figurer dans l'article (`DECISIONS.md`).
 - Section dans `bench/README.md` avec la commande ; aucun tableau existant modifié.
 - **Fini quand** : tests passent et la PR donne les chiffres reproduits et la
   commande exacte.
+
+### P2-13 — Règle de noms entre documents activable : N3 (`code`)
+
+Contexte : `agent/specs/P2-05.md` § 5 (options N1, N2, N3) et la PR P2-06. N1 a été
+retenue par délégation (`DECISIONS.md`) : entre documents d'un dossier, seule une
+identité complète identique (deux segments au moins) garde son jeton. La mesure de
+P2-06 a montré le coût : la cohérence des noms baisse (réaliste 63 % → 44–46 %)
+parce qu'une mention partielle (« Mme Verdier » après « Mme Sophie Verdier ») reçoit
+un nouveau jeton. Le mainteneur demande N3 : N1 par défaut, N2 activable.
+
+- Ajouter à `Dossier` une option explicite (par exemple un paramètre nommé du
+  constructeur) qui choisit la règle de noms entre documents : N1 (défaut) ou N2
+  (la règle d'inclusion et de civilité de `_resolveNomToken`, appliquée comme dans un
+  document). Sans l'option, comportement **octet pour octet** celui de P2-06 (test
+  d'équivalence d'abord).
+- Sous N2, garder les garde-fous de la règle actuelle (civilités de sexe différent,
+  ambiguïté entre plusieurs identités) et décrire dans la doc de l'option le risque
+  de fausse fusion entre documents (homonymes, patronyme répandu) et la restauration
+  qui écrit la forme la plus complète.
+- Mesurer avant/après avec `run_dossiers_bench.dart --dossier` (ajouter l'option au
+  programme) sur les trois corpus de P2-05a, graines 42 et 7 : cohérence, collisions,
+  fausses fusions, restaurations non identiques, pour N1 et pour N2. Rapporter les
+  deux dans la PR sans choisir à la place du mainteneur lequel recommander par défaut.
+- Mettre à jour `LIMITES.md` § 5.3 et `DECISIONS.md` (N3 demandé après la mesure de
+  P2-06).
+- `ecluse_core` inchangé (règle 6). Aucune dépendance pub ou pip.
+- **Fini quand** : `format`, `analyze` et `test` passent, la PR chiffre N1 et N2 et
+  liste ce que le mainteneur doit vérifier.
+
+### P2-14 — Patronyme seul : ce qu'un rattrapage sans liste ni NER peut détecter (`code`)
+
+Contexte : P2-06 a relevé que, dans le corpus réaliste de dossiers (graine 42), 112
+mentions nominales sur 116 qui sont un patronyme seul (sans civilité ni prénom) ne
+sont pas détectées. `LIMITES.md` § 2 et § 5.4 posent que le rattrapage ne s'arme que
+sur un patronyme déjà établi dans le même document, « jamais de liste externe,
+jamais d'apprentissage », et que l'arbitrage plus large « attend le NER local de la
+phase 2 » (règle 7 : le NER ONNX n'est pas fusionné sans GO/STOP). Cette tâche ne
+touche pas au NER.
+
+- **Mesurer d'abord** (règle 5). Ajouter au corpus de dossiers ou aux corpus flous des
+  cas annotés de patronyme seul, en séparant : (a) le patronyme seul **après** une
+  mention établie dans le même document (déjà rattrapé par § 5.4) ; (b) le patronyme
+  seul **en première mention** ; (c) le patronyme seul dans un **autre document** du
+  dossier. Chiffrer le rappel actuel pour chaque cas.
+- Identifier ce qui est atteignable **sans liste externe ni NER** et quel budget de
+  faux positifs cela coûte sur le corpus témoin (seuil de référence : 1 % de faux
+  positifs sur le témoin, voir `agent/specs/P2-01.md` § 4). Ne rien implémenter si le
+  budget est dépassé : la PR est alors une mesure.
+- Si une règle tient le budget, l'implémenter avec ses tests (cas valides, rejets,
+  positions), sans toucher aux détecteurs hors du périmètre, et chiffrer avant/après
+  (précision, rappel, fuite globale, budget de faux positifs). Vérifier que les
+  mesures de P2-02 sont inchangées hors cas visés (fuite globale 7,5 % réaliste,
+  16,8 % adversarial, 59 restaurations non identiques).
+- Mettre à jour `LIMITES.md` §§ 2 et 5.4 avec ce qui est et n'est pas couvert.
+- Aucune dépendance pub ou pip ; `ecluse_core` reste inchangé sauf si la règle vit
+  dans un détecteur du cœur (le dire dans la PR).
+- **S'arrêter et rendre la main** si la seule voie est une liste de patronymes ou un
+  NER.
+- **Fini quand** : la mesure par cas est dans la PR, la règle éventuelle est
+  implémentée ou l'impossibilité sans NER est établie par les chiffres.
