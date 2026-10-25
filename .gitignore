@@ -48,3 +48,5 @@ bench/corpus_flou_*.jsonl
 bench/pred_*.jsonl
 bench/pred_redact_*.jsonl
 bench/flou/
+bench/qi/
+bench/corpus_qi_*.jsonl
