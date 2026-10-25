@@ -35,7 +35,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-15 | code | Détecteur de secrets (`EntityType.secret`) | P1-13 | fusionnée |
 | P1-16 | code | `ecluse_audit` v0 (entrée, chaîne, vérificateur, sink en mémoire) | P1-08 | fusionnée |
 | P1-17 | code | Ingestion PDF : `PdfTextSource`, garde-fou et refus | P1-18 | à faire |
-| P1-18 | code | Générateur de PDF synthétiques pour calibrer les seuils | P1-09 | PR ouverte |
+| P1-18 | code | Générateur de PDF synthétiques pour calibrer les seuils | P1-09 | fusionnée |
 | P1-19 | code | Core : un identifiant suivi d'un nombre (`NIR … 91 12 ans`, `RPPS … 12`) n'est plus détecté (fuite) | — | fusionnée |
 | P1-20 | code | Redact : une adresse, un nom ou un établissement en chevauchement partiel écrase l'entité voisine (email cassé, nom en clair) | — | fusionnée |
 | P1-21 | code | Redact : collision avec des jetons littéraux du texte (`[NOM_1]`) | — | fusionnée |
@@ -52,7 +52,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-32 | code | Core : NIR à mois `00` et `21-29` (test d'abord, clé mod 97 exigée) | — | fusionnée |
 | P1-33 | code | `DATA_SOURCES.md` : URL, date et licence (lue sur la page) de chaque jeu de données embarqué | — | à faire |
 | P1-34 | code | README du benchmark : résultats des entités floues dans un tableau séparé | — | fusionnée |
-| P1-35 | mesure | Presidio avec reconnaisseurs NIR/RPPS écrits à la main (objection prévisible à l'article) | P1-01 | à faire |
+| P1-35 | mesure | Presidio avec reconnaisseurs NIR/RPPS écrits à la main (objection prévisible à l'article) | P1-01 | PR ouverte |
 
 Les phases 2 et 3 seront découpées ici quand la phase 1 sera fusionnée.
 
