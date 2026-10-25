@@ -113,31 +113,23 @@ aucune). Le jeu est constitué de **tableaux agrégés** (effectifs au 1er janvi
 par département et profession), produits par la DREES à partir d'une extraction
 du RPPS ; aucune donnée individuelle n'est redistribuée.
 
-## Mentions de source (proposition, non appliquée)
+## Mentions de source (appliquées)
 
 Les licences exigent de citer la source et la date de mise à jour, sans suggérer
-que le producteur cautionne la réutilisation. Je n'ai rien ajouté à `NOTICE` ni au
-README du paquet : décision du mainteneur. Mentions minimales proposées :
-
-- `Source : Insee` — Code officiel géographique au 1er janvier 2026 (mis à jour
-  le 24/02/2026), populations légales 2023 (18/12/2025), population au 1er janvier
-  par sexe et âge (15/06/2026), fichier des prénoms (16/07/2026) ;
-- `Source : DREES` — démographie des professionnels de santé (RPPS), jeu modifié le
-  2 juillet 2026.
-
-Ces fichiers sont des **extraits transformés** (`tools/build_reference_assets.py`
-filtre, normalise et agrège) : la mention doit le dire, d'autant que les deux
-textes INSEE posent la condition de ne pas altérer le sens des données.
+que le producteur cautionne la réutilisation. Les mentions sont dans `NOTICE`
+(racine du dépôt) : « Source : Insee » avec les dates des quatre jeux,
+« Source : DREES » avec la date de modification, et l'indication que les fichiers
+sont des **extraits transformés** (`tools/build_reference_assets.py` filtre,
+normalise et agrège), d'autant que les deux textes INSEE posent la condition de
+ne pas altérer le sens des données.
 
 ## Ce qui reste à décider (mainteneur)
 
 - Confirmer que la Licence Ouverte v2.0 autorise la redistribution d'extraits
   transformés dans un dépôt Apache 2.0 (la licence autorise la réutilisation, avec
   citation de la source) et que la page de 2019 ne s'y oppose pas.
-- Ajouter les mentions de source dans `NOTICE` ou le README du paquet.
 - Date de téléchargement des assets : irrécupérable ; l'enregistrer à la prochaine
   régénération.
 
-`LIMITES.md` § 7 signale que la provenance et la licence des jeux embarqués
-ne sont pas déclarées ; ce fichier lève désormais cette réserve (à mettre à jour
-par le mainteneur s'il le juge utile).
+`LIMITES.md` § 7 a été mis à jour : provenance et licence sont déclarées ; reste
+la validation de la redistribution (premier point ci-dessus).
