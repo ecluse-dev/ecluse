@@ -51,15 +51,25 @@ List<Map<String, dynamic>> mentionsAvecJeton(
 /// `restaure` vaut vrai quand le texte masqué puis restauré est identique à
 /// l'original, octet pour octet.
 ///
+/// Avec `--dossier` (P2-06), les documents d'un même dossier sont masqués avec
+/// un même [Dossier] (clé `dossier` du corpus) et restaurés par ce dossier ;
+/// sans, un appel par document, état d'avant.
+///
 /// Usage :
-///   dart run bin/run_dossiers_bench.dart <corpus.jsonl> <sortie.jsonl>
-Future<void> main(List<String> args) async {
+///   dart run bin/run_dossiers_bench.dart [--dossier] <corpus.jsonl> <sortie.jsonl>
+Future<void> main(List<String> arguments) async {
+  final avecDossier = arguments.contains('--dossier');
+  final args = [
+    for (final a in arguments)
+      if (a != '--dossier') a
+  ];
   if (args.length != 2) {
-    stderr.writeln('Usage : dart run bin/run_dossiers_bench.dart '
+    stderr.writeln('Usage : dart run bin/run_dossiers_bench.dart [--dossier] '
         '<corpus.jsonl> <sortie.jsonl>');
     exitCode = 64;
     return;
   }
+  final dossiers = <Object?, Dossier>{};
   final sink = File(args[1]).openWrite();
   var documents = 0;
   var mentions = 0;
@@ -71,8 +81,12 @@ Future<void> main(List<String> args) async {
     final doc = jsonDecode(ligne) as Map<String, dynamic>;
     final texte = doc['text'] as String;
 
-    final resultat = await Ecluse.redact(texte);
-    final restaure = Ecluse.restore(resultat.maskedText, resultat.mapping);
+    final dossier =
+        avecDossier ? dossiers.putIfAbsent(doc['dossier'], Dossier.new) : null;
+    final resultat = await Ecluse.redact(texte, dossier: dossier);
+    final restaure = dossier != null
+        ? dossier.restore(resultat.maskedText)
+        : Ecluse.restore(resultat.maskedText, resultat.mapping);
     final identique = restaure == texte;
     if (!identique) nonRestaures++;
 
@@ -89,7 +103,8 @@ Future<void> main(List<String> args) async {
 
   await sink.flush();
   await sink.close();
-  stdout.writeln('Ecluse redact (un appel par document) : $documents '
+  stdout.writeln(
+      'Ecluse redact (${avecDossier ? 'avec dossier' : 'un appel par document'}) : $documents '
       'documents, $mentions mentions -> ${args[1]}');
   if (nonRestaures > 0) {
     stdout.writeln('  restaurations non identiques : $nonRestaures');
