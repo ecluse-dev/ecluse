@@ -1,5 +1,7 @@
 import 'package:ecluse_core/ecluse_core.dart';
 
+import 'risque.dart';
+
 /// Résultat d'un appel à `Ecluse.redact`.
 final class RedactResult {
   const RedactResult({
@@ -7,6 +9,7 @@ final class RedactResult {
     required this.mapping,
     required this.entities,
     this.warnings = const [],
+    this.risque,
   });
 
   /// Texte à envoyer à l'IA — les entités personnelles sont remplacées par
@@ -27,4 +30,9 @@ final class RedactResult {
   /// l'instant : un secret technique a été masqué et doit être considéré
   /// comme compromis s'il a déjà quitté la machine.
   final List<String> warnings;
+
+  /// Rapport de risque de ré-identification, seulement si l'appelant a fourni
+  /// `riskReference` à `Ecluse.redact` ; `null` signifie « fonction inactive »,
+  /// **pas** « aucun risque ». Ne modifie ni [maskedText] ni [mapping].
+  final RiskReport? risque;
 }

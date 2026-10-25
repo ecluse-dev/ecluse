@@ -19,5 +19,6 @@ export 'src/heuristics/etablissement_detector.dart';
 export 'src/heuristics/name_detector.dart';
 export 'src/heuristics/telephone_detector.dart';
 export 'src/redact_result.dart';
+export 'src/risque.dart';
 export 'src/samples.dart';
 export 'src/tokenizer.dart' show entityTypeLabel;
