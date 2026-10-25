@@ -18,6 +18,7 @@ Future<void> main(List<String> args) async {
     LegacyDetectorAdapter(IbanFrDetector(), DetectorTier.structural,
         name: 'iban'),
     FinessDetector(),
+    AdeliDetector(),
   ]);
 
   final sink = File(outPath).openWrite();
