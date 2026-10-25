@@ -50,3 +50,6 @@ bench/pred_redact_*.jsonl
 bench/flou/
 bench/qi/
 bench/corpus_qi_*.jsonl
+bench/dossiers/
+bench/corpus_dossiers_*.jsonl
+bench/pred_dossiers_*.jsonl
