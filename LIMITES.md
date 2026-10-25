@@ -397,9 +397,12 @@ pas une garantie d'anonymat. Limites connues :
 - **Âges** : la pyramide couvre 0 à 104 ans ; une tranche de 10 ans qui
   chevauche 65 ans passe directement au retrait.
 - **Données embarquées** : millésimes mélangés (populations communales
-  2023→2026, pyramide 2026 France entière) ; **provenance et licence des jeux
-  de données non déclarées dans le dépôt** — à documenter avant toute
-  diffusion.
+  2023→2026, pyramide 2026 France entière) ; provenance et licence documentées
+  dans `DATA_SOURCES.md` et `NOTICE`. Les données restent sous la Licence Ouverte
+  v2.0 de leurs producteurs (non relicenciées sous Apache 2.0) ; la redistribution
+  d'extraits transformés a été décidée par le mainteneur le 25 octobre 2026, sans
+  avis juridique extérieur. La date de téléchargement d'origine des assets n'a pas
+  été enregistrée.
 
 ## 8. Journal d'audit (`ecluse_audit` v0)
 

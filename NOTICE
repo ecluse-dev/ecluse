@@ -1,0 +1,23 @@
+Écluse
+Copyright Écluse contributors. Licence Apache 2.0 (voir LICENSE).
+
+Données de référence embarquées
+-------------------------------
+
+Les fichiers de `packages/ecluse_reference/assets/` sont des extraits
+transformés (filtrés, normalisés, agrégés par `tools/build_reference_assets.py`)
+de jeux de données publics. Ils ne sont pas couverts par la licence Apache 2.0
+du code mais par la Licence Ouverte v2.0 (Etalab) de leurs producteurs :
+https://www.etalab.gouv.fr/licence-ouverte-open-licence
+
+- Source : Insee. Code officiel géographique au 1er janvier 2026 (mis à jour le
+  24/02/2026) ; populations légales 2023 (paru le 18/12/2025) ; population au
+  1er janvier par sexe et âge (paru le 15/06/2026) ; fichier des prénoms (paru
+  le 16/07/2026). https://www.insee.fr
+
+- Source : DREES. La démographie des professionnels de santé depuis 2012 (RPPS),
+  jeu modifié le 2 juillet 2026.
+  https://data.drees.solidarites-sante.gouv.fr
+
+Les producteurs ne cautionnent pas cette réutilisation. URL de chaque jeu et
+détail des vérifications : DATA_SOURCES.md.
