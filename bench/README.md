@@ -161,6 +161,65 @@ python3 bench/score.py --corpus bench/corpus_ext.jsonl \
   --pred "Ecluse=bench/predictions_ext.jsonl"
 ```
 
+### Presidio avec reconnaisseurs NIR et RPPS écrits à la main (P1-35)
+
+L'objection prévisible : « Presidio est extensible ». `run_presidio.py
+--recognizers` ajoute à Presidio deux `PatternRecognizer` écrits à la main
+(aucune dépendance de plus, code dans `french_recognizers`) :
+
+- `simple` : une expression régulière par identifiant, séparateurs (espaces,
+  tabulations, insécables, points) tolérés ;
+- `validated` : la même expression + vérification de la clé via
+  `validate_result` (mod 97 pour le NIR, Luhn pour le RPPS) — la pratique
+  recommandée par Presidio. C'est le **meilleur reconnaisseur raisonnable** :
+  je l'ai écrit tolérant, pour ne pas affaiblir artificiellement Presidio.
+
+Corpus v3 (seed 42, 1000 documents, 778 entités), appariement strict, même
+configuration Presidio que la note ¹ (modèle `en_core_web_lg`, seuil 0,35) :
+
+| Configuration | NIR (préc. / rappel) | RPPS (préc. / rappel) | IBAN FR | FINESS | TOTAL (préc. / rappel) |
+|---|---:|---:|---:|---:|---:|
+| Presidio par défaut | — / 0 % | — / 0 % | 100 % / 68,7 % | — / 0 % | 100 % / 18,9 % |
+| + reconnaisseurs `simple` | 85,7 % / 100 % | 81,0 % / 100 % | 100 % / 68,7 % | — / 0 % | 87,4 % / 74,8 % |
+| + reconnaisseurs `validated` | **100 % / 100 %** | **100 % / 100 %** | 100 % / 68,7 % | — / 0 % | 100 % / 74,8 % |
+| Écluse | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 75,4 % / 100 % | 94,9 % / 100 % |
+
+Lecture, sans l'arrondir en faveur d'Écluse :
+
+- **Sur le NIR et le RPPS, un Presidio étendu et validé égale Écluse** sur ce
+  corpus : la valeur d'Écluse n'est pas dans ces deux détecteurs-là, mais dans
+  le fait de les livrer déjà écrits et testés. Sans la clé, la précision
+  tombe à 85,7 % (NIR, 45 faux positifs) et 81,0 % (RPPS, 39 faux positifs) :
+  la validation de clé est ce qui compte, pas le moteur.
+- **L'écart restant vient de l'IBAN et du FINESS.** Le recognizer IBAN livré
+  par Presidio ne reconnaît pas les 67 IBAN à espacement irrégulier (rappel
+  68,7 %, fuite au caractère de 36,6 %), et rien ne couvre le FINESS. Un
+  utilisateur pourrait écrire ces deux reconnaisseurs aussi : ce n'est pas
+  mesuré ici (hors de la tâche).
+- **Le même défaut apparaît des deux côtés** : sur le corpus étendu, le RPPS
+  validé de Presidio a les mêmes 6 faux positifs que celui d'Écluse (les
+  numéros de TVA passent la clé de Luhn par coïncidence), RPPS 95,1 % de
+  précision pour les deux.
+- Hors périmètre de cette comparaison : tout ce qu'Écluse fait en plus
+  (noms, adresses, restauration réversible, garde-fous d'ingestion) et que
+  Presidio fait autrement (reconnaissance d'entités nommées anglophone).
+
+Limites : un seul corpus synthétique généré par nous, une graine, un seul
+auteur des reconnaisseurs (moi), seuil 0,35 non optimisé. Les scores de
+reconnaisseurs (0,6 et 0,4) sont mes choix ; avec la validation, Presidio
+remonte le score d'un motif valide à 1,0, donc le seuil n'intervient pas.
+
+Reproduire :
+
+```bash
+for r in none simple validated; do
+  (cd bench && python3 run_presidio.py --corpus corpus.jsonl \
+     --out predictions_presidio_$r.jsonl --recognizers $r)
+done
+(cd bench && python3 score.py --corpus corpus.jsonl \
+   --pred "Presidio_valide=predictions_presidio_validated.jsonl")
+```
+
 ### PDF synthétiques pour calibrer l'ingestion (P1-18)
 
 `generate_pdfs.py` (bibliothèque standard seule) écrit à la main 18 PDF
@@ -279,8 +338,9 @@ Les fichiers générés (`bench/flou/`) ne sont pas versionnés.
 ## Honnêteté méthodologique
 
 - **Presidio est extensible.** Un développeur peut écrire des
-  recognizers NIR/RPPS personnalisés. Ce benchmark mesure ce qui est
-  livré clé en main, parce que c'est ce que 95 % des équipes déploient.
+  recognizers NIR/RPPS personnalisés. Le tableau principal mesure ce qui est
+  livré clé en main ; l'extension est mesurée à part (P1-35, plus haut) et
+  **égale Écluse sur le NIR et le RPPS** dès qu'elle vérifie la clé.
 - **Le corpus est synthétique et généré par nous.** Générateur et seed
   publics : quiconque peut le reproduire, le critiquer ou l'étendre
   (`generate_corpus.py --seed 42 --n 1000`). Changer le générateur

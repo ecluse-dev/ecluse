@@ -63,6 +63,14 @@ qui leur sont propres ; les pièges du corpus (clés invalides, numéros
 voisins comme SIRET ou téléphones) n'ont produit aucun faux positif pour
 Écluse sur ces trois types.
 
+**Presidio étendu à la main égale Écluse sur le NIR et le RPPS.** Avec
+deux reconnaisseurs écrits à la main, clé de contrôle vérifiée, Presidio
+atteint 100 % de précision et de rappel sur ces deux identifiants (corpus
+v3) ; sans vérification de clé, la précision tombe à 85,7 % (NIR) et 81,0 %
+(RPPS). L'écart restant sur ce corpus vient de l'IBAN à espacement
+irrégulier (rappel 68,7 %) et du FINESS. Voir `bench/README.md`, « Presidio
+avec reconnaisseurs NIR et RPPS écrits à la main ».
+
 ## Une limite assumée : FINESS et SIREN
 
 Le FINESS (établissement de santé) et le SIREN (entreprise) ont chacun 9
