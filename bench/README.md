@@ -132,6 +132,20 @@ Ces chiffres **ne sont pas comparables** à ceux du corpus v3 ci-dessus
   passent la clé de Luhn du RPPS par coïncidence. Défaut nouveau, révélé
   par ce profil.
 
+**Après P1-14** (`AdeliDetector`, même corpus, seed 42, appariement strict) :
+
+| Entité | Précision | Rappel | TP | FP | FN |
+|---|---:|---:|---:|---:|---:|
+| FINESS | 44,3 % | 100 % | 172 | 216 | 0 |
+| ADELI | 100 % | 74,4 % | 93 | 0 | 32 |
+
+Fuite au caractère des ADELI : 20,0 % → **0,0 %**. Les 32 faux négatifs
+stricts sont les ADELI sans le mot « ADELI » : ils sont masqués, sous
+l'étiquette `finess` (voir la fuite à 0 %). Les 68 ADELI avec mot-clé
+cessent de compter comme faux positifs FINESS (284 → 216) ; NIR, RPPS et
+IBAN sont inchangés. Le rappel `adeli` reste bas par construction (décision
+§3.3 de la spec) : il n'est pas un défaut à corriger.
+
 Limites de cette mesure : mêmes que le corpus v3 (synthétique, généré par
 nous, une graine) ; les codes profession des ADELI sont tirés au hasard (la
 liste officielle n'est pas connue) ; pas d'ADELI corse (règle de la lettre

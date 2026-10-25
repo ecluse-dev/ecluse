@@ -24,6 +24,10 @@ enum EntityType {
   /// l'envoyer à un tiers est une fuite irréversible. Voir `SecretDetector`.
   secret,
 
+  /// Numéro ADELI — ancien identifiant des professionnels de santé. Émis
+  /// uniquement avec le mot « ADELI » accolé : voir `AdeliDetector`.
+  adeli,
+
   /// Nom de personne (détection heuristique, voir `ecluse_redact`).
   nom,
 
