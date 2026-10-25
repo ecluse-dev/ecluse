@@ -19,13 +19,70 @@ List<Qi> extractAge(String text) {
   return qis;
 }
 
+/// Un nom de commune porté par plusieurs communes (« Saint-Denis », ~3 700
+/// communes concernées sur ~35 000). Rendu à l'appelant pour qu'il sache
+/// que le lieu est ambigu : le silence donnait F = population de la France
+/// entière, un « risque faible » trompeur.
+class LieuAmbigu {
+  const LieuAmbigu(this.nom, this.candidats);
+
+  /// Nom tel qu'écrit dans le texte.
+  final String nom;
+
+  /// Toutes les communes de ce nom.
+  final List<Commune> candidats;
+
+  /// Le candidat le plus **prudent** : la plus petite population connue
+  /// (F le plus bas, donc le risque le plus élevé). `null` si aucune des
+  /// communes n'a de population dans les données.
+  Commune? get plusPetite {
+    Commune? best;
+    for (final c in candidats) {
+      final pop = c.pmun;
+      if (pop == null) continue;
+      if (best == null || pop < best.pmun!) best = c;
+    }
+    return best;
+  }
+}
+
 /// Gazetteer des communes (spec §2) : scanne des séquences de 1 à 3 tokens
 /// capitalisés et teste chacune contre `GeoHierarchy.communesByName`.
-/// Couche mince : les homonymes (plusieurs communes du même nom) sont
-/// silencieusement ignorés — l'entrée structurée est recommandée quand
-/// l'ambiguïté compte.
+///
+/// Un nom **ambigu** (plusieurs communes) n'est plus ignoré : il produit le
+/// QI de la commune la plus petite (cas le plus prudent, voir
+/// [LieuAmbigu.plusPetite]) et est listé par [extractLieuAmbigu]. L'entrée
+/// structurée reste recommandée quand l'ambiguïté compte.
 List<Qi> extractLieu(EcluseReference ref, String text) {
   final qis = <Qi>[];
+  for (final found in _scanCommunes(ref, text)) {
+    if (found.length == 1) {
+      qis.add(Qi(QiType.lieu, found.single.code));
+    } else {
+      final prudent = LieuAmbigu('', found).plusPetite;
+      if (prudent != null) qis.add(Qi(QiType.lieu, prudent.code));
+    }
+  }
+  return qis;
+}
+
+/// Les noms de commune ambigus du texte, avec leurs candidats.
+List<LieuAmbigu> extractLieuAmbigu(EcluseReference ref, String text) {
+  final out = <LieuAmbigu>[];
+  for (final (nom, candidats) in _scanCommunesNommees(ref, text)) {
+    if (candidats.length > 1) out.add(LieuAmbigu(nom, candidats));
+  }
+  return out;
+}
+
+Iterable<List<Commune>> _scanCommunes(EcluseReference ref, String text) =>
+    _scanCommunesNommees(ref, text).map((e) => e.$2);
+
+List<(String, List<Commune>)> _scanCommunesNommees(
+  EcluseReference ref,
+  String text,
+) {
+  final found = <(String, List<Commune>)>[];
   final tokens = RegExp(r"[A-ZÀ-Ý][\wÀ-ÿ'-]*").allMatches(text).toList();
   for (var i = 0; i < tokens.length; i++) {
     for (var span = 3; span >= 1; span--) {
@@ -33,12 +90,10 @@ List<Qi> extractLieu(EcluseReference ref, String text) {
       final candidate =
           text.substring(tokens[i].start, tokens[i + span - 1].end);
       final matches = ref.geo.communesByName(candidate);
-      if (matches.length == 1) {
-        qis.add(Qi(QiType.lieu, matches.single.code));
-      }
+      if (matches.isNotEmpty) found.add((candidate, matches));
     }
   }
-  return qis;
+  return found;
 }
 
 /// Mots-clés des 14 spécialités DREES (code numérique) + 4 professions
@@ -97,3 +152,25 @@ List<Qi> extractQis(EcluseReference ref, String text) => [
       ...extractLieu(ref, text),
       ...extractAge(text),
     ];
+
+/// Résultat détaillé d'une extraction : les QI et les avertissements à
+/// montrer à l'utilisateur (aujourd'hui : les lieux ambigus).
+class QiExtraction {
+  const QiExtraction(this.qis, this.avertissements);
+
+  final List<Qi> qis;
+  final List<String> avertissements;
+}
+
+/// Comme [extractQis], mais signale explicitement les noms de commune
+/// ambigus : le QI retenu est celui de la plus petite commune homonyme.
+QiExtraction extractQisDetailed(EcluseReference ref, String text) {
+  final avertissements = <String>[
+    for (final a in extractLieuAmbigu(ref, text))
+      'Lieu « ${a.nom} » ambigu (${a.candidats.length} communes de ce nom) : '
+          'estimation faite sur la plus petite '
+          '(${a.plusPetite?.libelle ?? "population inconnue"}, '
+          'dép. ${a.plusPetite?.dep ?? "?"}) par prudence.',
+  ];
+  return QiExtraction(extractQis(ref, text), avertissements);
+}
