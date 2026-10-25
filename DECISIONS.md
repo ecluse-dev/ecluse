@@ -87,3 +87,72 @@ est marqué **ouvert**.
 - Piste « contexte obligatoire » écartée (rappel 66,7 %).
 - Avant toute correction : enrichir le corpus (SIREN sans mot-clé, phrases
   mêlant FINESS et SIREN), puis mesurer.
+
+## 2026-10 — Réponses du mainteneur aux points ouverts des specs
+Complète et remplace, là où ils se contredisent, les points « ouverts » de
+l'entrée « Specs de phase 1 » ci-dessus. Les sources non lues par l'agent
+restent signalées comme telles.
+
+### ADELI
+- Structure : 9 caractères (2 département, 2 profession, 4 numéro
+  d'enregistrement, 1 clé). La clé est de type Luhn selon une fiche ASIP/ANS ;
+  ni cette fiche ni App'Ines ne donnent l'algorithme (on applique Luhn, à
+  re-vérifier si une source officielle le contredit).
+- **Numéro corse** (lettre `2A`/`2B` dans les deux premiers caractères) :
+  **pas de validation de clé** tant que la règle n'est pas écrite. Précédé du
+  mot « ADELI », il est masqué sans validation.
+- `EntityType.adeli` dans l'API publique d'`ecluse_core` : **confirmé**.
+- Exception à « Détection stricte » (confiance 0,6 pour un numéro à clé
+  invalide) : **confirmée uniquement quand le mot « ADELI » est accolé au
+  numéro**.
+
+### Secrets
+- Motifs de gitleaks : licence MIT d'après deux sources secondaires, fichier
+  `LICENSE` du dépôt non lu. Motifs réécrits par nous dans tous les cas.
+- Fournisseurs de la v1 : jetons GitHub, identifiants d'accès AWS (préfixés),
+  clés OpenAI et Anthropic, clés Google (`AIza…`), jetons Slack, clés Stripe
+  live, blocs de clé privée PEM, chaînes de connexion avec mot de passe.
+  Les préfixes viennent de la connaissance du mainteneur, pas d'une
+  vérification du jour : la tâche cite la source de chaque format.
+- Exception à « Détection stricte » : **confirmée** pour les formats à
+  préfixe spécifique uniquement ; ni détection par entropie, ni clé AWS
+  secrète nue.
+
+### Journal d'audit
+- `package:crypto` : BSD-3-Clause, **approuvé** pour un nouveau paquet
+  `ecluse_audit`.
+- Avis d'un DPO : nécessaire **avant d'affirmer publiquement** que le journal
+  n'est pas une donnée personnelle, pas pour coder.
+
+### PDF
+- `pdf_graphics` : **approuvé**, version **fixée exactement**. Dépendances
+  directes permissives (`bidi` et `image` en MIT, `pdf_cos` et `pdf_document`
+  en Apache-2.0) ; les dépendances de `bidi` ne sont pas auditées.
+- Plafonds de départ, à calibrer sur les PDF synthétiques de P1-18 : 50 Mo,
+  200 pages, 30 secondes, refus avec motif au-delà (valeurs proposées, non
+  sourcées).
+
+### Estimation de ré-identification
+- Communes homonymes : l'API doit **signaler l'ambiguïté** et ne jamais
+  renvoyer « faible » ; prendre le cas le plus prudent (plus petite
+  population parmi les candidates) ou « indéterminé ».
+- Fichier `DATA_SOURCES.md` à créer : URL, date de téléchargement et licence
+  **lue sur la page du jeu de données**, pour chaque fichier embarqué.
+
+### NIR, mois fictifs
+- Source citée par le mainteneur : nomenclature DGFiP (annexe 2, via l'AMUE)
+  et Wikipédia : `00` et `20` à `30` (mois inconnu), `31` à `42` (mois connu
+  codé +30), `50` et suivants (mois inconnu). L'instruction INSEE n'a pas été
+  lue. Le code accepte `01-12, 20, 30-42, 50-99` : il faut ajouter `00` et
+  `21-29` (la clé mod 97 filtre les faux positifs), test d'abord.
+
+### Divers
+- Résultats du benchmark des entités floues : à ajouter au README du
+  benchmark, dans un tableau séparé, avec les mêmes mises en garde.
+- Avant publication de l'article : mesurer Presidio avec des reconnaisseurs
+  NIR/RPPS écrits à la main (c'est l'objection prévisible d'un lecteur).
+  « 18,9 % » = Presidio en configuration par défaut, à dire dès le chapeau.
+- Dependabot : #7 et #8 à fusionner si la CI passe ; #18 (melos 6.3.3 →
+  8.9.0, saut majeur) à tester en local avant fusion. PR #10 et #11 : ne pas
+  y toucher.
+
