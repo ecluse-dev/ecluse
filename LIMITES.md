@@ -65,6 +65,13 @@ adresses avec caractères accentués dans la partie locale (`é@…`),
 domaines internationalisés (IDN), et toute adresse coupée par un saut de
 ligne ou un trait d'union de césure.
 
+**Identifiant collé à un nombre.** Un NIR, un RPPS, un IBAN ou un FINESS
+suivi ou précédé d'un nombre séparé par un simple blanc est détecté
+(`NIR 1 85 05 78 006 084 91 12 ans`). **Reste non détecté** : un
+identifiant à espacement *irrégulier* (espaces multiples, tabulation,
+espace insécable) **et** collé à un nombre voisin, et un FINESS écrit avec
+des espaces suivi d'un nombre.
+
 **Ne pas confondre les deux.**
 
 ## 2. Identifiants non couverts

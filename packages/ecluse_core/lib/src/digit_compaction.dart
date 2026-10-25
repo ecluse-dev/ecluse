@@ -20,7 +20,10 @@
 /// majuscules (ex. « IBAN 1234 » ne doit jamais devenir « IBAN1234 »,
 /// sans quoi le motif du détecteur ne reconnaît plus son propre début).
 final class DigitCompaction {
-  const DigitCompaction._(this.compact, this._originalIndex);
+  const DigitCompaction._(this.original, this.compact, this._originalIndex);
+
+  /// Texte d'origine, tel que reçu.
+  final String original;
 
   /// Texte compacté, à utiliser pour la détection (`RegExp.allMatches`).
   final String compact;
@@ -69,7 +72,8 @@ final class DigitCompaction {
       i = runEnd;
     }
 
-    return DigitCompaction._(String.fromCharCodes(compactUnits), originalIndex);
+    return DigitCompaction._(
+        original, String.fromCharCodes(compactUnits), originalIndex);
   }
 
   /// Y a-t-il un chiffre en fin de [units], quitte à traverser une unique
@@ -97,6 +101,38 @@ final class DigitCompaction {
 
   static bool _isUpperUnit(int unit) => unit >= 0x41 && unit <= 0x5A;
 
+  /// Candidats de [pattern] trouvés sur le texte compacté **et** sur le texte
+  /// d'origine, dédoublonnés, triés, avec des positions dans le texte
+  /// d'origine.
+  ///
+  /// Pourquoi les deux : la compaction retire tout blanc entre deux chiffres,
+  /// y compris entre un identifiant et un **nombre voisin** (`NIR … 91 12
+  /// ans`). Les garde-fous de bord du motif (`(?<![0-9])`, `(?![0-9])`) voient
+  /// alors un seul nombre trop long et rejettent le candidat : une fuite. Le
+  /// passage sur le texte d'origine retrouve ces identifiants au format
+  /// courant (un séparateur simple), le passage compacté garde les
+  /// espacements irréguliers (espaces multiples, NBSP, tabulation). Reste non
+  /// couvert : un espacement irrégulier **et** un nombre voisin (voir
+  /// `LIMITES.md`).
+  List<CompactCandidate> candidates(RegExp pattern) {
+    final found = <CompactCandidate>[];
+    final seen = <(int, int)>{};
+    for (final m in pattern.allMatches(compact)) {
+      final start = originalStart(m.start);
+      final end = originalEnd(m.end);
+      if (seen.add((start, end))) {
+        found.add(CompactCandidate(start, end, m.group(0)!));
+      }
+    }
+    for (final m in pattern.allMatches(original)) {
+      if (seen.add((m.start, m.end))) {
+        found.add(CompactCandidate(m.start, m.end, m.group(0)!));
+      }
+    }
+    found.sort((a, b) => a.start - b.start);
+    return found;
+  }
+
   /// Position, dans le texte d'origine, du début d'un match `[compactStart,
   /// compactEnd)` obtenu sur [compact].
   int originalStart(int compactStart) => _originalIndex[compactStart];
@@ -105,4 +141,14 @@ final class DigitCompaction {
   /// `[compactStart, compactEnd)` obtenu sur [compact]. N'inclut jamais les
   /// espaces neutralisés qui suivraient le dernier caractère du match.
   int originalEnd(int compactEnd) => _originalIndex[compactEnd - 1] + 1;
+}
+
+/// Un candidat d'un motif : positions dans le texte d'origine et texte
+/// apparié (compacté ou d'origine selon le passage qui l'a trouvé).
+final class CompactCandidate {
+  const CompactCandidate(this.start, this.end, this.text);
+
+  final int start;
+  final int end;
+  final String text;
 }
