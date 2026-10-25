@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:ecluse_core/ecluse_core.dart';
 import 'package:ecluse_reference/ecluse_reference.dart' show EcluseReference;
 
@@ -10,6 +12,8 @@ import 'heuristics/telephone_detector.dart';
 import 'redact_result.dart';
 import 'risque.dart';
 import 'tokenizer.dart';
+
+part 'dossier.dart';
 
 /// Façade de pseudonymisation réversible d'Écluse.
 ///
@@ -81,13 +85,42 @@ abstract final class Ecluse {
   /// profession de santé, lieu et âge restés dans le texte masqué. Sans elle,
   /// la sortie est exactement celle d'avant : fonction inactive, `risque` nul.
   /// Le rapport ne change jamais le texte envoyé.
+  ///
+  /// **Dossier** (P2-06) : avec [dossier], les jetons et les identités sont
+  /// conservés d'un appel à l'autre, en mémoire seulement. Une même valeur
+  /// (e-mail, téléphone…) ou une même identité de nom **complète** (au moins
+  /// deux segments, identiques) y garde son jeton ; une mention partielle
+  /// d'un autre document reçoit un nouveau jeton, jamais une fusion par
+  /// patronyme. Les appels d'un même dossier sont sérialisés. Sans [dossier],
+  /// la sortie est exactement celle d'avant.
   static Future<RedactResult> redact(
     String text, {
     List<Detector>? detectors,
     bool restoreSecrets = false,
     bool refuseSecrets = false,
     EcluseReference? riskReference,
-  }) async {
+    Dossier? dossier,
+  }) {
+    if (dossier == null) {
+      return _redact(text, _Etat(), detectors, restoreSecrets, refuseSecrets,
+          riskReference);
+    }
+    return dossier._serialise(() {
+      final etat = dossier._etat;
+      if (etat == null) throw const DossierFermeException();
+      return _redact(
+          text, etat, detectors, restoreSecrets, refuseSecrets, riskReference);
+    });
+  }
+
+  static Future<RedactResult> _redact(
+    String text,
+    _Etat etat,
+    List<Detector>? detectors,
+    bool restoreSecrets,
+    bool refuseSecrets,
+    EcluseReference? riskReference,
+  ) async {
     final engine = EcluseEngine(detectors ?? defaultDetectors);
     final detection = await engine.run(text);
     final resolved = detection.entities;
@@ -98,30 +131,37 @@ abstract final class Ecluse {
       throw SecretsRefusedException(secretCount);
     }
 
-    final mapping = <String, String>{};
-    final tokenByIdentity = <String, String>{};
-    final nomIdentities = <_NomIdentity>[];
-    final counterByType = <EntityType, int>{};
+    // Jetons déjà attribués dans le dossier qui figurent en clair dans ce
+    // texte : ils seront remplacés à la restauration (relevé avant tout
+    // changement d'état).
+    final litteraux = [
+      for (final token in etat.attribues)
+        if (tolerantTokenPattern(token).hasMatch(text)) token
+    ];
+    final docId = etat.documents++;
+    final utilises = <String>{};
     final buffer = StringBuffer();
     var cursor = 0;
 
     for (final entity in resolved) {
       buffer.write(text.substring(cursor, entity.start));
-      final token = entity.type == EntityType.nom
-          ? _resolveNomToken(
-              entity,
-              nomIdentities,
-              counterByType,
-              mapping,
-              text,
-            )
-          : tokenByIdentity.putIfAbsent(_identityKey(entity), () {
-              final generated = _freshToken(entity.type, counterByType, text);
-              if (entity.type != EntityType.secret || restoreSecrets) {
-                mapping[generated] = entity.value;
-              }
-              return generated;
-            });
+      final String token;
+      if (entity.type == EntityType.nom) {
+        token = _resolveNomToken(entity, etat, docId, text);
+      } else {
+        final key = _identityKey(entity);
+        var existant = etat.tokenByIdentity[key];
+        if (existant == null) {
+          existant = _freshToken(entity.type, etat.counterByType, text);
+          etat.tokenByIdentity[key] = existant;
+          etat.attribues.add(existant);
+        }
+        token = existant;
+        if (entity.type != EntityType.secret || restoreSecrets) {
+          etat.mapping[token] = entity.value;
+        }
+      }
+      utilises.add(token);
       buffer.write(token);
       cursor = entity.end;
     }
@@ -130,13 +170,20 @@ abstract final class Ecluse {
     final maskedText = buffer.toString();
     return RedactResult(
       maskedText: maskedText,
-      mapping: Map.unmodifiable(mapping),
+      mapping: Map.unmodifiable({
+        for (final token in utilises)
+          if (etat.mapping.containsKey(token)) token: etat.mapping[token]!
+      }),
       entities: resolved,
       warnings: [
         if (secretCount > 0)
           'Un secret a été masqué ($secretCount occurrence'
               '${secretCount > 1 ? 's' : ''}) : pensez à le révoquer s\'il a '
               'déjà été partagé ailleurs.',
+        for (final token in litteraux)
+          'Le texte contient en clair $token (littéral), jeton déjà attribué '
+              'dans ce dossier : il sera remplacé à la restauration, qui ne '
+              'sera pas identique à ce passage du texte.',
       ],
       risque: riskReference == null
           ? null
@@ -167,7 +214,11 @@ String _identityKey(DetectedEntity entity) =>
 
 /// Ensemble de segments (minuscules) déjà associés à un jeton `nom`.
 final class _NomIdentity {
-  _NomIdentity(this.segments, this.token, this.gender);
+  _NomIdentity(this.segments, this.token, this.gender, this.doc);
+
+  /// Dernier document (numéro d'appel dans le dossier) où l'identité a été
+  /// vue : la règle d'inclusion ne s'applique qu'au sein d'un document.
+  int doc;
 
   Set<String> segments;
   final String token;
@@ -230,21 +281,22 @@ Set<String> _nameSegments(String value) => value
 /// d'identité.
 String _resolveNomToken(
   DetectedEntity entity,
-  List<_NomIdentity> identities,
-  Map<EntityType, int> counterByType,
-  Map<String, String> mapping,
+  _Etat etat,
+  int docId,
   String text,
 ) {
   final segments = _nameSegments(entity.value);
   final gender = _genderBefore(text, entity.start);
-  final matches = identities
+  // Deux civilités de sexe différent désignent deux personnes, même avec un
+  // patronyme commun (un couple).
+  bool compatible(_NomIdentity identity) =>
+      !(gender != null && identity.gender != null && gender != identity.gender);
+
+  final matches = etat.nomIdentities
       .where(
         (identity) =>
-            // Deux civilités de sexe différent désignent deux personnes,
-            // même avec un patronyme commun (un couple).
-            !(gender != null &&
-                identity.gender != null &&
-                gender != identity.gender) &&
+            identity.doc == docId &&
+            compatible(identity) &&
             (segments.every(identity.segments.contains) ||
                 identity.segments.every(segments.contains)),
       )
@@ -259,14 +311,34 @@ String _resolveNomToken(
       // mention), comme le promet `LIMITES.md` §5.3 — sans cela, les
       // mentions complètes perdaient prénom et titre à la restauration.
       identity.segments = segments;
-      mapping[identity.token] = entity.value;
+      etat.mapping[identity.token] = entity.value;
     }
     return identity.token;
   }
 
-  final token = _freshToken(EntityType.nom, counterByType, text);
-  mapping[token] = entity.value;
-  identities.add(_NomIdentity(segments, token, gender));
+  // Entre documents d'un dossier (N1, `agent/specs/P2-05.md` § 5) : seule une
+  // identité complète identique (deux segments au moins) rejoint une identité
+  // d'un document précédent ; une mention partielle reçoit un nouveau jeton.
+  if (matches.isEmpty && segments.length >= 2) {
+    final anterieures = etat.nomIdentities
+        .where((identity) =>
+            identity.doc != docId &&
+            compatible(identity) &&
+            identity.segments.length == segments.length &&
+            segments.every(identity.segments.contains))
+        .toList();
+    if (anterieures.length == 1) {
+      final identity = anterieures.single;
+      identity.doc = docId;
+      identity.gender ??= gender;
+      return identity.token;
+    }
+  }
+
+  final token = _freshToken(EntityType.nom, etat.counterByType, text);
+  etat.attribues.add(token);
+  etat.mapping[token] = entity.value;
+  etat.nomIdentities.add(_NomIdentity(segments, token, gender, docId));
   return token;
 }
 
@@ -301,4 +373,29 @@ final class SecretsRefusedException implements Exception {
   @override
   String toString() => 'SecretsRefusedException: $count secret(s) détecté(s) ; '
       'envoi refusé (mode strict).';
+}
+
+/// État de masquage : jetons attribués, identités de noms, compteurs et carte.
+/// Un appel sans [Dossier] en crée un neuf (comportement historique) ; un
+/// [Dossier] conserve le sien entre les appels.
+final class _Etat {
+  final Map<String, String> mapping = {};
+  final Map<String, String> tokenByIdentity = {};
+  final List<_NomIdentity> nomIdentities = [];
+  final Map<EntityType, int> counterByType = {};
+
+  /// Tous les jetons attribués, y compris ceux qui ne sont pas dans la carte
+  /// (secrets non restaurables).
+  final Set<String> attribues = {};
+
+  /// Nombre de documents déjà masqués avec cet état.
+  int documents = 0;
+
+  void efface() {
+    mapping.clear();
+    tokenByIdentity.clear();
+    nomIdentities.clear();
+    counterByType.clear();
+    attribues.clear();
+  }
 }
