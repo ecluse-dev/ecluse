@@ -126,4 +126,18 @@ void main() {
       expect(text.substring(e.start, e.end), iban);
     });
   });
+
+  group('IbanFrDetector — séparateurs supplémentaires', () {
+    for (final iban in [
+      'FR76/3000/6000/0112/3456/7890/189',
+      'FR76.3000.6000.0112.3456.7890.189',
+      'FR76\u20093000\u20096000\u20090112\u20093456\u20097890\u2009189',
+    ]) {
+      test('détecte ${iban.replaceAll('\u2009', '<U+2009>')}', () {
+        final texte = 'IBAN $iban merci';
+        final e = detector.detect(texte).single;
+        expect(texte.substring(e.start, e.end), iban);
+      });
+    }
+  });
 }
