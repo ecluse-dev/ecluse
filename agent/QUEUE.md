@@ -31,23 +31,28 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-11 | code | Brouillon d'article de benchmark (`bench/ARTICLE.md`) à partir des résultats à jour | P1-01, P1-03 | fusionnée |
 | P1-12 | humain | Relire et publier l'article de benchmark | P1-11 | humain |
 | P1-13 | code | Corpus : SIREN sans mot-clé, phrases FINESS + SIREN, ADELI avec/sans mot-clé (nouvelle version du générateur) | P1-03 | fusionnée |
-| P1-14 | code | Détecteur ADELI contextuel + `EntityType.adeli` + priorité sur `finess` | P1-13 | bloquée |
-| P1-15 | code | Détecteur de secrets (`EntityType.secret`) | P1-13 | bloquée |
-| P1-16 | code | `ecluse_audit` v0 (entrée, chaîne, vérificateur, sink en mémoire) | P1-08 | bloquée |
-| P1-17 | code | Ingestion PDF : `PdfTextSource`, garde-fou et refus | P1-18 | bloquée |
+| P1-14 | code | Détecteur ADELI contextuel + `EntityType.adeli` + priorité sur `finess` | P1-13 | à faire |
+| P1-15 | code | Détecteur de secrets (`EntityType.secret`) | P1-13 | à faire |
+| P1-16 | code | `ecluse_audit` v0 (entrée, chaîne, vérificateur, sink en mémoire) | P1-08 | à faire |
+| P1-17 | code | Ingestion PDF : `PdfTextSource`, garde-fou et refus | P1-18 | à faire |
 | P1-18 | code | Générateur de PDF synthétiques pour calibrer les seuils | P1-09 | à faire |
 | P1-19 | code | Core : un identifiant suivi d'un nombre (`NIR … 91 12 ans`, `RPPS … 12`) n'est plus détecté (fuite) | — | fusionnée |
 | P1-20 | code | Redact : une adresse, un nom ou un établissement en chevauchement partiel écrase l'entité voisine (email cassé, nom en clair) | — | fusionnée |
 | P1-21 | code | Redact : collision avec des jetons littéraux du texte (`[NOM_1]`) | — | fusionnée |
 | P1-22 | code | Ingest : contenus non lus en silence (préfixe XML autre que `w:`, en-têtes/pieds, UTF-16 sans BOM, exceptions non rattrapées) | — | fusionnée |
 | P1-23 | code | Robustesse : ReDoS email et adresse ; démo (taille de corps, JSON non-objet, `Host`/`Origin`, masquage de la consigne) | — | fusionnée |
-| P1-24 | code | Redact : noms (prénoms accentués, particules, `Mr`, `Maître`, apostrophe typographique) | — | PR ouverte |
+| P1-24 | code | Redact : noms (prénoms accentués, particules, `Mr`, `Maître`, apostrophe typographique) | — | fusionnée |
 | P1-25 | code | Redact : variantes de dates, établissements, adresses et téléphones non détectées | — | fusionnée |
 | P1-26 | code | Redact : fusion de deux personnes de même patronyme à la restauration ; carte vs `LIMITES.md` §5.3 | — | fusionnée |
 | P1-27 | code | Reid/reference : paliers d'âge, population des départements, normalisation œ, homonymes, validations | — | fusionnée |
 | P1-28 | code | Bench : `score.py` (types inconnus, mode souple), `ecluse_sim.py`, README, test d'équivalence | — | fusionnée |
-| P1-29 | code | Docs : `LIMITES.md`, `ROADMAP.md`, README du benchmark, `NOTES_SECURITE.md` manquant | — | PR ouverte |
+| P1-29 | code | Docs : `LIMITES.md`, `ROADMAP.md`, README du benchmark, `NOTES_SECURITE.md` manquant | — | fusionnée |
 | P1-30 | code | Core : NIR à mois fictifs, séparateurs U+2009 et `/`, saut de ligne dans un identifiant groupé | — | fusionnée |
+| P1-31 | code | Reid : un nom de commune ambigu (homonymes) est signalé, jamais « faible » | — | à faire |
+| P1-32 | code | Core : NIR à mois `00` et `21-29` (test d'abord, clé mod 97 exigée) | — | à faire |
+| P1-33 | code | `DATA_SOURCES.md` : URL, date et licence (lue sur la page) de chaque jeu de données embarqué | — | à faire |
+| P1-34 | code | README du benchmark : résultats des entités floues dans un tableau séparé | — | à faire |
+| P1-35 | mesure | Presidio avec reconnaisseurs NIR/RPPS écrits à la main (objection prévisible à l'article) | P1-01 | à faire |
 
 Les phases 2 et 3 seront découpées ici quand la phase 1 sera fusionnée.
 
@@ -184,27 +189,39 @@ La mesure FINESS est circulaire (un seul gabarit SIREN).
 
 ### P1-14 — Détecteur ADELI (`code`)
 
-Spec : `agent/specs/P1-06-adeli.md`, décisions de `DECISIONS.md` (2026-10).
-**Bloquée** tant que le mainteneur n'a pas confirmé la structure, la clé de
-Luhn et la règle de la lettre corse sur la fiche officielle, ni confirmé
-l'exception à « Détection stricte ». Ajoute `EntityType.adeli`.
+Spec : `agent/specs/P1-06-adeli.md`, décisions de `DECISIONS.md` (2026-10,
+« Réponses du mainteneur »). Débloquée. Ajoute `EntityType.adeli`. Clé =
+Luhn sur les 9 caractères (algorithme non fourni par les sources : le dire
+dans le code). **Numéro corse (`2A`/`2B`) : aucune validation de clé** ; masqué
+sans validation quand le mot « ADELI » est accolé. Exception à « Détection
+stricte » (confiance 0,6, clé invalide) **uniquement avec le mot « ADELI »
+accolé**. Mesurer avant/après sur `--profile extended` (FINESS ne doit pas
+régresser).
 
 ### P1-15 — Détecteur de secrets (`code`)
 
-Spec : `agent/specs/P1-07-secrets.md`. **Bloquée** tant que la liste des
-fournisseurs n'est pas fixée et la licence de la source de motifs
-confirmée. Motifs réécrits, valeurs de test fabriquées à l'exécution.
+Spec : `agent/specs/P1-07-secrets.md`. Débloquée. Fournisseurs de la v1 :
+jetons GitHub, identifiants d'accès AWS (préfixés), clés OpenAI et Anthropic,
+clés Google (`AIza…`), jetons Slack, clés Stripe live, blocs PEM, chaînes de
+connexion avec mot de passe. **Citer la source de chaque format** (les
+préfixes ne sont pas vérifiés du jour). Motifs réécrits par nous (gitleaks :
+licence MIT d'après des sources secondaires, fichier `LICENSE` non lu), valeurs
+de test fabriquées à l'exécution, **pas** de détection par entropie ni de
+clé AWS secrète nue.
 
 ### P1-16 — `ecluse_audit` v0 (`code`)
 
-Spec : `agent/specs/P1-08-audit.md`. **Bloquée** tant que la licence de
-`package:crypto` n'est pas confirmée et la dépendance approuvée.
+Spec : `agent/specs/P1-08-audit.md`. Débloquée. **Dépendance approuvée** :
+`package:crypto` (BSD-3-Clause), uniquement dans le nouveau paquet
+`ecluse_audit`. Pas d'empreinte du texte en v0 ; horodatage à la minute.
 
 ### P1-17 — Ingestion PDF (`code`)
 
-Spec : `agent/specs/P1-09-pdf.md`. **Bloquée** tant que `pdf_graphics` (et
-ses dépendances transitives) n'est pas audité en licence, et que les
-plafonds de pages et de durée ne sont pas fixés. Dépend de P1-18.
+Spec : `agent/specs/P1-09-pdf.md`. Débloquée une fois P1-18 fusionnée.
+**Dépendance approuvée** : `pdf_graphics`, version fixée exactement (dans
+`ecluse_ingest` seulement). Dépendances de `bidi` non auditées : le signaler.
+Plafonds de départ à calibrer sur les PDF de P1-18 : 50 Mo, 200 pages,
+30 secondes, refus avec motif au-delà.
 
 ### P1-18 — PDF synthétiques (`code`)
 
@@ -249,3 +266,25 @@ avant/après. Les défauts ci-dessous ont été reproduits par exécution.
   mois fictifs du NIR, IBAN FR seul) ; `NOTES_SECURITE.md` cité mais absent.
 - **P1-30** — NIR à clé valide avec mois 30/42/50/99 non détecté ; U+2009, `/`
   et saut de ligne non gérés.
+
+### P1-31 à P1-35 — Suites des réponses du mainteneur (octobre 2026)
+
+- **P1-31** — `extractQis` ignore un nom de commune ambigu (« Saint-Denis »,
+  ~3 700 communes concernées) et `estimate` retombe sur la France entière
+  (F = 69 M, « faible »). L'API doit signaler l'ambiguïté ; cas le plus
+  prudent = plus petite population parmi les candidates, ou « indéterminé ».
+  Changement d'API autorisé par le mainteneur. Test d'abord.
+- **P1-32** — `00` et `21-29` (mois inconnus selon la nomenclature DGFiP citée
+  dans `DECISIONS.md`) ; la clé mod 97 reste exigée ; 13-19 et 43-49 restent
+  rejetés. Test d'abord, mesure avant/après sur le benchmark.
+- **P1-33** — Pour chaque fichier de `packages/ecluse_reference/assets/` :
+  URL du jeu sur data.gouv.fr ou site source, date de téléchargement,
+  licence **lue sur la page**. Si une page est inaccessible ou si le fichier
+  ne correspond à aucune source identifiable, s'arrêter et le signaler (ne
+  rien inventer).
+- **P1-34** — Tableau séparé (réaliste / adversarial / témoin, strict, souple,
+  fuite) avec les commandes de reproduction du profil `generate_corpus_flou.py`
+  et les mises en garde (corpus synthétique, civilité conservée par choix).
+- **P1-35** — `bench/run_presidio.py` avec deux reconnaisseurs personnalisés
+  (NIR, RPPS) écrits à la main, **sans nouvelle dépendance** ; rapporter
+  précision/rappel avant/après ; ne rien corriger côté Écluse.
