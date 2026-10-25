@@ -87,8 +87,8 @@ Objectif : qu'un premier design partner l'utilise en production.
 - 🟢 Harnais de benchmark reproductible vs Presidio
 - 🟢 `ecluse_redact` — pseudonymisation réversible, map jamais sérialisée
 - 🟢 `ecluse_demo` — trajet complet en 4 panneaux, réversibilité prouvée
-- ⚪ `ecluse_audit` — journal chaîné horodaté (version minimale)
-  (spécifié, `agent/specs/P1-08-audit.md`)
+- 🟢 `ecluse_audit` — journal chaîné horodaté (version minimale, non branché)
+  (`agent/specs/P1-08-audit.md`)
 - 🟡 Détecteurs prioritaires : 🟢 FINESS (collision SIREN assumée), 🟢 INS,
   🟢 téléphone FR et email durcis (octobre 2026) ; ⚪ ADELI (spécifié,
   `agent/specs/P1-06-adeli.md`, avec ses points ouverts)

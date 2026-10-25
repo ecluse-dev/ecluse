@@ -34,8 +34,9 @@ absence de protection connue.
 5. **Une seule entorse à la fidélité** : quand une même personne est nommée
    de deux façons, la re-mention est harmonisée sur la forme la plus
    complète à la restauration. Aucun caractère n'est perdu.
-6. **Hors périmètre v0** : dictée vocale, journal d'audit chaîné (voir
-   `ROADMAP.md`). L'estimation de ré-identification et la généralisation
+6. **Hors périmètre v0** : dictée vocale. Le journal d'audit existe comme
+   bibliothèque (`ecluse_audit`, voir § 8) mais **n'est pas branché** dans
+   `Ecluse.redact`. L'estimation de ré-identification et la généralisation
    existent comme bibliothèque (`ecluse_reid`) mais **ne sont pas branchées**
    dans `Ecluse.redact` ; leurs limites sont au § 7.
 
@@ -319,7 +320,7 @@ d'apprentissage. Limites de cette approche :
 - Branchement de l'estimation de ré-identification et de la généralisation
   dans `Ecluse.redact` (la bibliothèque `ecluse_reid` existe, voir § 7).
 - Dictée vocale.
-- Journal d'audit chaîné et horodaté.
+- Branchement du journal d'audit (`ecluse_audit`) dans les applications.
 - Le mode par défaut est automatique et invisible ; l'aperçu avec validation
   manuelle avant envoi est une option de confort, pas une garantie de
   contrôle a priori sur chaque détection.
@@ -356,6 +357,36 @@ pas une garantie d'anonymat. Limites connues :
   2023→2026, pyramide 2026 France entière) ; **provenance et licence des jeux
   de données non déclarées dans le dépôt** — à documenter avant toute
   diffusion.
+
+## 8. Journal d'audit (`ecluse_audit` v0)
+
+Le paquet fabrique et vérifie des entrées chaînées par SHA-256 ; il **n'écrit
+nulle part** (l'application fournit un `AuditSink`). Une entrée contient :
+version de schéma, numéro d'ordre, horodatage UTC **à la minute**, version du
+moteur et détecteurs actifs, opération, comptes par type d'entité, code de
+motif d'un refus, hash précédent, hash. Elle ne contient **jamais** le
+texte, une valeur détectée, un jeton, une position ou une longueur, une
+empreinte du texte, l'identité de l'utilisateur ni un nom de fichier.
+
+Ce que la vérification **détecte** : modification d'une entrée,
+suppression ou insertion au milieu, réordonnancement. Ce qu'elle **ne
+détecte pas** (un test l'affirme) :
+
+- la **troncature en fin de journal** : la chaîne restante reste valide. Il
+  faut ancrer régulièrement le dernier `hash` hors du journal ;
+- la **réécriture complète** par qui contrôle tout le fichier et recalcule la
+  chaîne : un hash chaîné n'est **pas une signature** (signature et ancrage
+  externe sont hors v0) ;
+- la **justesse de l'horloge** : l'horodatage vient de l'appareil. Ce n'est
+  pas un horodatage qualifié (RFC 3161 / eIDAS).
+
+Le journal prouve la cohérence interne de la chaîne, pas la vérité des
+événements. Les comptes révèlent la nature d'un document (deux NIR et un IBAN
+évoquent un dossier de paie) et un horodatage rapproché des journaux d'une
+application peut relier une entrée à une personne : **l'affirmation « ce
+journal n'est pas une donnée personnelle » n'est pas validée** (avis d'un DPO
+attendu ; ceci n'est pas un avis juridique). Le README parle d'un journal
+« signé » : ce n'est pas le cas en v0.
 
 ---
 
