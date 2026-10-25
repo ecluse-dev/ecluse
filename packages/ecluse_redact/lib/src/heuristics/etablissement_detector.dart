@@ -61,8 +61,10 @@ final class EtablissementDetector implements EntityDetector {
   // et fusionnerait deux entités sans rapport (bug corrigé précédemment).
   static final RegExp _pattern = RegExp(
     r'\b'
-    '(?:${_keywords.join('|')})'
-    '[ \\t]+$_segment(?:[ \\t]+$_segment)*',
+    '(?:${[..._keywords, ...etablissementKeywordsMinuscules].join('|')})'
+    // Nom entre guillemets (« Les Tilleuls », "Les Tilleuls") ou nu.
+    '[ \\t]+(?:["«“][ \\t]?$_segment(?:[ \\t]+$_segment)*[ \\t]?["»”]'
+    '|$_segment(?:[ \\t]+$_segment)*)',
   );
 
   @override

@@ -15,15 +15,24 @@ final class TelephoneDetector implements EntityDetector {
   @override
   EntityType get type => EntityType.telephone;
 
-  /// Séparateur toléré entre groupes : espace, point, tiret, NBSP, U+202F.
-  static const String _sep = r'[ .\-\u00A0\u202F]';
+  /// Séparateur toléré entre groupes : espace, point, tiret, barre oblique,
+  /// NBSP, U+202F.
+  static const String _sep = r'[ .\-/\u00A0\u202F]';
 
-  /// Préfixe national `0X`, international `+33 X` / `+33 (0)X`, ou `0033 X`.
-  /// Le chiffre significatif X va de 1 à 9 ; `(0)` n'est admis que
-  /// parenthésé (un `+33 0…` nu n'est pas un format valide).
+  /// Préfixe national `0X`, national entre parenthèses `(0X)`, international
+  /// `+33 X` / `+33 (0)X` / `0033 X` / `00 33 X`. Le chiffre significatif X
+  /// va de 1 à 9 ; `(0)` n'est admis que parenthésé (un `+33 0…` nu n'est pas
+  /// un format valide).
+  static const String _prefixe = '(?:\\(0[1-9]\\)|0[1-9]|'
+      '(?:\\+33|00$_sep?33)$_sep?(?:\\(0\\)$_sep?)?[1-9])';
+
   static final RegExp _pattern = RegExp(
-    '(?<![0-9])(?:0[1-9]|(?:\\+33|0033)$_sep?(?:\\(0\\)$_sep?)?[1-9])'
-    '(?:$_sep?[0-9]{2}){4}(?![0-9])',
+    '(?<![0-9])(?:'
+    // Dix chiffres en groupes de 2 (format courant).
+    '$_prefixe(?:$_sep?[0-9]{2}){4}'
+    // Format 4-3-3 (« 0612 345 678 »).
+    '|0[1-9][0-9]{2}$_sep[0-9]{3}$_sep[0-9]{3}'
+    ')(?![0-9])',
   );
 
   @override
