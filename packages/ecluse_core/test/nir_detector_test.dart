@@ -156,4 +156,50 @@ void main() {
       expect(detector.detect('1850578006084912'), isEmpty);
     });
   });
+
+  group('NirDetector — mois fictifs et séparateurs supplémentaires', () {
+    // Mois fictifs INSEE (personnes dont la date de naissance est incomplète) :
+    // 20 (inconnu), 30 à 42 et 50 à 99. Clé de contrôle calculée, donc la
+    // détection reste « stricte » : seule la plage de mois est élargie.
+    const valides = {
+      '20': '1 85 20 78 006 084 40',
+      '30': '1 85 30 78 006 084 06',
+      '42': '1 85 42 78 006 084 04',
+      '50': '1 85 50 78 006 084 35',
+      '99': '1 85 99 78 006 084 43',
+    };
+    valides.forEach((mois, nir) {
+      test('mois fictif $mois détecté', () {
+        final texte = 'NIR $nir.';
+        final e = detector.detect(texte).single;
+        expect(texte.substring(e.start, e.end), nir);
+      });
+    });
+
+    const invalides = {
+      '13': '1 85 13 78 006 084 25',
+      '19': '1 85 19 78 006 084 24',
+      '43': '1 85 43 78 006 084 20',
+      '49': '1 85 49 78 006 084 19',
+    };
+    invalides.forEach((mois, nir) {
+      test('mois $mois toujours rejeté (clé valide mais mois impossible)', () {
+        expect(detector.detect('NIR $nir'), isEmpty);
+      });
+    });
+
+    test('espace fine U+2009 entre les groupes', () {
+      const nir = '1\u200985\u200905\u200978\u2009006\u2009084\u200991';
+      final texte = 'NIR $nir.';
+      final e = detector.detect(texte).single;
+      expect(texte.substring(e.start, e.end), nir);
+    });
+
+    test('barre oblique entre les groupes', () {
+      const nir = '1/85/05/78/006/084/91';
+      final texte = 'NIR $nir.';
+      final e = detector.detect(texte).single;
+      expect(texte.substring(e.start, e.end), nir);
+    });
+  });
 }
