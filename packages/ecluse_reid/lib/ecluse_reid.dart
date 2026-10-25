@@ -10,6 +10,7 @@ library;
 
 export 'src/age_bands.dart';
 export 'src/estimator.dart';
+export 'src/evaluation.dart';
 export 'src/generalizer.dart';
 export 'src/honesty.dart';
 export 'src/labels.dart';

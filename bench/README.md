@@ -341,8 +341,8 @@ Les corpus précédents mesurent des **entités masquées**. `ecluse_reid`
 (`LIMITES.md` § 7) travaille sur autre chose : trois quasi-identifiants (QI) qui
 restent en clair dans le texte masqué, et dont la combinaison peut ré-identifier
 une personne. Rien ne mesurait leur extraction ; ce profil est l'outil de mesure
-qui manquait (règle 5 de `CLAUDE.md`). **Aucun moteur n'est mesuré ici** : les
-premiers résultats viendront de P2-03b.
+qui manquait (règle 5 de `CLAUDE.md`). Première mesure de `ecluse_reid` plus bas
+(P2-03b).
 
 Trois corpus séparés, jamais fusionnés (graine 42, 400 documents chacun) :
 
@@ -373,6 +373,72 @@ python3 bench/score_qi.py --corpus bench/qi/corpus_qi_realiste.jsonl \
 ```
 
 Les fichiers générés (`bench/qi/`) ne sont pas versionnés.
+
+#### Première mesure : `ecluse_reid` avant et après P2-03b
+
+```bash
+for c in realiste adversarial temoin; do
+  # Avant : chaîne extractQis puis estimate (exceptions par cause)
+  (cd packages/ecluse_reid && dart run bin/run_reid_bench.dart --avant \
+     ../../bench/qi/corpus_qi_$c.jsonl)
+  # Après : extractQiSpans + evaluateText (QI positionnés et statut)
+  (cd packages/ecluse_reid && dart run bin/run_reid_bench.dart \
+     ../../bench/qi/corpus_qi_$c.jsonl ../../bench/qi/pred_qi_$c.jsonl)
+  python3 bench/score_qi.py --corpus bench/qi/corpus_qi_$c.jsonl \
+     --pred "Ecluse=bench/qi/pred_qi_$c.jsonl"
+done
+```
+
+Avant : sur combien de documents la chaîne actuelle lève-t-elle une exception ?
+(400 documents par corpus ; graine 42, puis graine 7 entre parenthèses.)
+
+| Corpus | Documents en exception | Cause | Sans QI, classés « risque faible » |
+|---|---:|---|---:|
+| Réaliste | 66 = 16,5 % (48 = 12,0 %) | doublon de type | 0 |
+| Adversarial | 166 = 41,5 % (170 = 42,5 %) | 138 doublons de type, 28 professions sans lieu | 0 |
+| Témoin | 75 = 18,8 % (69 = 17,3 %) | doublon de type | 63 (67) |
+
+Même sur le corpus **réaliste**, où chaque document ne parle que d'une personne,
+des exceptions surviennent : l'extraction actuelle produit des doublons à partir
+d'un seul mot (« médecin généraliste » donne deux professions, « chirurgien-
+dentiste » en donne trois, « pharmacienne » deux) et lit un patronyme qui est
+aussi une commune (« Chevrier ») comme un second lieu.
+
+Après : l'évaluation totale n'a **aucune exception** sur les six corpus. Graine 42 :
+
+| Corpus | évalué | non évaluable | aucun QI |
+|---|---:|---:|---:|
+| Réaliste | 364 | 36 | 0 |
+| Adversarial | 215 | 185 | 0 |
+| Témoin | 262 | 75 | 63 |
+
+Extraction (strict, graine 42) :
+
+| Corpus | Type | Précision | Rappel | Non couverts |
+|---|---|---:|---:|---:|
+| Réaliste | âge / lieu / profession | 100 % / 88,2 % / 100 % | 100 % / 100 % / 100 % | 0 % / 0 % / 0 % |
+| Adversarial | âge | 100 % | 95,5 % | 12,7 % |
+| Adversarial | lieu | 92,3 % | 100 % | 0 % |
+| Adversarial | profession | 100 % | 96,2 % | 2,0 % |
+| Témoin | tous types | 412 extractions, 337 documents sur 400 touchés | | |
+
+Lecture, sans l'arrondir :
+
+- **Le rappel de 100 % du corpus réaliste ne prouve rien** : ce corpus est écrit avec
+  les mots que l'extraction connaît. Il n'est pas indépendant du vocabulaire.
+  Les manques apparaissent dans l'adversarial : âges en toutes lettres (« trente et
+  un ans », « soixante-douze ans ») et abréviations ou graphies (« pneumo »,
+  « gynéco », « pediatre »). Le vocabulaire n'a **pas** été élargi.
+- **Les faux positifs du réaliste sont tous le même mot** : « Chevrier », un
+  patronyme du corpus qui est aussi une commune (43 sur 43). Distinguer un nom de
+  personne d'un nom de lieu demande le contexte, donc plutôt un NER ; ce n'est pas
+  corrigé ici.
+- **Le témoin est dense en leurres par construction** (un par document) : le taux de
+  337 documents sur 400 n'est pas une fréquence réelle. Il montre quels leurres
+  passent : « Nuits » et « Tours » (« Nuits de garde ») lus comme communes, et des
+  durées (« depuis 7 ans ») lues comme des âges.
+- Un document « évalué » du témoin est une **fausse évaluation** : le statut dit
+  que F est estimé, pas que l'estimation est juste.
 
 Limites : corpus synthétique et généré par nous, une graine par exécution (aucune variance mesurée),
 vocabulaire court (23 communes courantes, 16 professions, quelques gabarits de
