@@ -63,6 +63,11 @@ class GeoHierarchy {
   Map<String, String>? _regLabel;
   Map<String, int>? _depPopulation;
 
+  /// Départements dont au moins une commune n'a pas de population dans les
+  /// données (Paris, Lyon et Marseille agrégées, Mayotte) : leur total serait
+  /// faux, il est donc refusé plutôt que renvoyé.
+  Set<String>? _depIncomplete;
+
   /// Charge les assets si nécessaire. Idempotent.
   Future<void> load() async {
     if (_byCode != null) return;
@@ -72,6 +77,7 @@ class GeoHierarchy {
     final byCode = <String, Commune>{};
     final byNorm = <String, List<String>>{};
     final depPopulation = <String, int>{};
+    final depIncomplete = <String>{};
     for (final line in lines.skip(1)) {
       if (line.isEmpty) continue;
       final fields = line.split(';');
@@ -79,8 +85,12 @@ class GeoHierarchy {
       final dep = fields[1];
       final reg = fields[2];
       final pmunRaw = fields[3];
-      final norm = fields[4];
       final libelle = fields[5];
+      // Normalisation recalculée avec celle des requêtes (`normName`) plutôt
+      // que lue dans la colonne NORM du CSV : le script Python de génération
+      // supprime œ, æ, ß… là où `normName` les développe (« Nœux » →
+      // « NOEUX »), ce qui rendait ~110 communes introuvables par leur nom.
+      final norm = normName(libelle);
       final commune = Commune(
         code,
         libelle,
@@ -89,6 +99,7 @@ class GeoHierarchy {
         reg,
         pmunRaw.isEmpty ? null : int.parse(pmunRaw),
       );
+      if (commune.pmun == null) depIncomplete.add(dep);
       byCode[code] = commune;
       byNorm.putIfAbsent(norm, () => []).add(code);
       depPopulation.update(
@@ -100,6 +111,7 @@ class GeoHierarchy {
     _byCode = byCode;
     _byNorm = byNorm;
     _depPopulation = depPopulation;
+    _depIncomplete = depIncomplete;
 
     final hierBytes = await _assets('geo_hierarchie.json');
     final hier = jsonDecode(utf8.decode(hierBytes)) as Map<String, dynamic>;
@@ -143,9 +155,23 @@ class GeoHierarchy {
   ///
   /// Ajouté au Jalon 3 : nécessaire à l'estimateur de ré-identification
   /// (`ecluse_reid`) après généralisation lieu commune → département.
+  ///
+  /// Lève [ArgumentError] pour un département inconnu ou dont la population
+  /// est incomplète dans les données (voir `_depIncomplete`) : renvoyer 0
+  /// ou un total partiel donnait un faux « risque élevé » (F = 0).
   int populationOfDep(String dep) {
     _checkLoaded();
-    return _depPopulation![dep] ?? 0;
+    final total = _depPopulation![dep];
+    if (total == null) {
+      throw ArgumentError('département "$dep" inconnu.');
+    }
+    if (_depIncomplete!.contains(dep)) {
+      throw ArgumentError(
+        'population du département "$dep" incomplète dans les données '
+        '(commune sans population) : estimation refusée.',
+      );
+    }
+    return total;
   }
 
   String? regionOfDep(String dep) {
