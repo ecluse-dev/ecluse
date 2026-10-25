@@ -777,7 +777,7 @@ un nouveau jeton. Le mainteneur demande N3 : N1 par défaut, N2 activable.
 
 Contexte : P2-06 a relevé que, dans le corpus réaliste de dossiers (graine 42), 112
 mentions nominales sur 116 qui sont un patronyme seul (sans civilité ni prénom) ne
-sont pas détectées. `LIMITES.md` § 2 et § 5.4 posent que le rattrapage ne s'arme que
+sont pas détectées. `LIMITES.md` § 5.2 et § 5.4 posent que le rattrapage ne s'arme que
 sur un patronyme déjà établi dans le même document, « jamais de liste externe,
 jamais d'apprentissage », et que l'arbitrage plus large « attend le NER local de la
 phase 2 » (règle 7 : le NER ONNX n'est pas fusionné sans GO/STOP). Cette tâche ne
@@ -797,7 +797,7 @@ touche pas au NER.
   (précision, rappel, fuite globale, budget de faux positifs). Vérifier que les
   mesures de P2-02 sont inchangées hors cas visés (fuite globale 7,5 % réaliste,
   16,8 % adversarial, 59 restaurations non identiques).
-- Mettre à jour `LIMITES.md` §§ 2 et 5.4 avec ce qui est et n'est pas couvert.
+- Mettre à jour `LIMITES.md` §§ 5.2 et 5.4 avec ce qui est et n'est pas couvert.
 - Aucune dépendance pub ou pip ; `ecluse_core` reste inchangé sauf si la règle vit
   dans un détecteur du cœur (le dire dans la PR).
 - **S'arrêter et rendre la main** si la seule voie est une liste de patronymes ou un
