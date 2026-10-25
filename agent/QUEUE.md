@@ -54,7 +54,16 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-34 | code | README du benchmark : résultats des entités floues dans un tableau séparé | — | fusionnée |
 | P1-35 | mesure | Presidio avec reconnaisseurs NIR/RPPS écrits à la main (objection prévisible à l'article) | P1-01 | fusionnée |
 
-Les phases 2 et 3 seront découpées ici quand la phase 1 sera fusionnée.
+## Phase 2 — La profondeur qui rend seul
+
+Découpage proposé dans `agent/specs/P2-decoupage-propose.md` ; seules les
+tâches copiées ici sont prises par l'agent.
+
+| Id | Type | Tâche | Dépend de | Statut |
+|---|---|---|---|---|
+| P2-01 | spec | Critère GO/STOP du NER local (métriques, corpus de décision, plafonds, conditions d'arrêt) | — | à faire |
+
+La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
 ---
 
@@ -288,3 +297,22 @@ avant/après. Les défauts ci-dessous ont été reproduits par exécution.
 - **P1-35** — `bench/run_presidio.py` avec deux reconnaisseurs personnalisés
   (NIR, RPPS) écrits à la main, **sans nouvelle dépendance** ; rapporter
   précision/rappel avant/après ; ne rien corriger côté Écluse.
+
+### P2-01 — Critère GO/STOP du NER local (`spec`)
+
+Contexte : `CLAUDE.md` règle 7 interdit de fusionner le NER ONNX sans un
+critère GO/STOP validé par le mainteneur ; ce critère n'est écrit nulle part.
+`packages/ecluse_ner` est aujourd'hui un stub sans dépendance native.
+
+- Définir les métriques de décision pour les noms et les adresses : rappel,
+  précision et budget de faux positifs, en modes strict et souple du
+  benchmark (`bench/score.py`), sur un corpus de décision nommé.
+- Définir les plafonds non fonctionnels : taille du modèle, latence, mémoire,
+  absence de dépendance native non maîtrisée, licence du modèle et du runtime.
+- Écrire les conditions d'arrêt (STOP) explicites et ce qui se passe quand le
+  gain de rappel est insuffisant ou que le budget de faux positifs est dépassé.
+- Aucune ligne de code de production et aucune dépendance ajoutée. Toute
+  valeur chiffrée sans source est marquée « proposée, non mesurée » ; les
+  licences non lues sont signalées comme telles.
+- **Fini quand** : `agent/specs/P2-01.md` en PR, avec les décisions que le
+  mainteneur doit trancher listées en fin de document.
