@@ -63,7 +63,7 @@ tâches copiées ici sont prises par l'agent.
 |---|---|---|---|---|
 | P2-01 | spec | Critère GO/STOP du NER local (métriques, corpus de décision, plafonds, conditions d'arrêt) | — | fusionnée |
 | P2-02 | mesure | Référence chiffrée des heuristiques de noms et d'adresses sur les corpus flous (valeur à battre pour le GO/STOP du NER) | P2-01 | fusionnée |
-| P2-03 | spec | Branchement de `ecluse_reid` dans `Ecluse.redact` : contrat public, généralisation irréversible distincte de la pseudonymisation, refus explicites | — | PR ouverte |
+| P2-03 | spec | Branchement de `ecluse_reid` dans `Ecluse.redact` : contrat public, généralisation irréversible distincte de la pseudonymisation, refus explicites | — | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
