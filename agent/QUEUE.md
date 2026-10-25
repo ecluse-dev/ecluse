@@ -30,12 +30,24 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-10 | humain | Valider les specs P1-06 à P1-09 et créer les tâches `code` correspondantes | P1-06, P1-07, P1-08, P1-09 | humain |
 | P1-11 | code | Brouillon d'article de benchmark (`bench/ARTICLE.md`) à partir des résultats à jour | P1-01, P1-03 | fusionnée |
 | P1-12 | humain | Relire et publier l'article de benchmark | P1-11 | humain |
-| P1-13 | code | Corpus : SIREN sans mot-clé, phrases FINESS + SIREN, ADELI avec/sans mot-clé (nouvelle version du générateur) | P1-03 | PR ouverte |
+| P1-13 | code | Corpus : SIREN sans mot-clé, phrases FINESS + SIREN, ADELI avec/sans mot-clé (nouvelle version du générateur) | P1-03 | fusionnée |
 | P1-14 | code | Détecteur ADELI contextuel + `EntityType.adeli` + priorité sur `finess` | P1-13 | bloquée |
 | P1-15 | code | Détecteur de secrets (`EntityType.secret`) | P1-13 | bloquée |
 | P1-16 | code | `ecluse_audit` v0 (entrée, chaîne, vérificateur, sink en mémoire) | P1-08 | bloquée |
 | P1-17 | code | Ingestion PDF : `PdfTextSource`, garde-fou et refus | P1-18 | bloquée |
 | P1-18 | code | Générateur de PDF synthétiques pour calibrer les seuils | P1-09 | à faire |
+| P1-19 | code | Core : un identifiant suivi d'un nombre (`NIR … 91 12 ans`, `RPPS … 12`) n'est plus détecté (fuite) | — | à faire |
+| P1-20 | code | Redact : une adresse, un nom ou un établissement en chevauchement partiel écrase l'entité voisine (email cassé, nom en clair) | — | à faire |
+| P1-21 | code | Redact : collision avec des jetons littéraux du texte (`[NOM_1]`) | — | à faire |
+| P1-22 | code | Ingest : contenus non lus en silence (préfixe XML autre que `w:`, en-têtes/pieds, UTF-16 sans BOM, exceptions non rattrapées) | — | à faire |
+| P1-23 | code | Robustesse : ReDoS email et adresse ; démo (taille de corps, JSON non-objet, `Host`/`Origin`, masquage de la consigne) | — | à faire |
+| P1-24 | code | Redact : noms (prénoms accentués, particules, `Mr`, `Maître`, apostrophe typographique) | — | à faire |
+| P1-25 | code | Redact : variantes de dates, établissements, adresses et téléphones non détectées | — | à faire |
+| P1-26 | code | Redact : fusion de deux personnes de même patronyme à la restauration ; carte vs `LIMITES.md` §5.3 | — | à faire |
+| P1-27 | code | Reid/reference : paliers d'âge, population des départements, normalisation œ, homonymes, validations | — | à faire |
+| P1-28 | code | Bench : `score.py` (types inconnus, mode souple), `ecluse_sim.py`, README, test d'équivalence | — | à faire |
+| P1-29 | code | Docs : `LIMITES.md`, `ROADMAP.md`, README du benchmark, `NOTES_SECURITE.md` manquant | — | à faire |
+| P1-30 | code | Core : NIR à mois fictifs, séparateurs U+2009 et `/`, saut de ligne dans un identifiant groupé | — | à faire |
 
 Les phases 2 et 3 seront découpées ici quand la phase 1 sera fusionnée.
 
@@ -200,3 +212,40 @@ Spec : `agent/specs/P1-09-pdf.md` §6. Script qui **génère** des PDF de test
 (texte, scan, mixte, chiffré, illisible, tronqué) sans bibliothèque ajoutée
 sans accord. Si la génération exige une dépendance, s'arrêter et le signaler.
 **Fini quand** : jeu de PDF reproductible et attendus documentés.
+
+### P1-19 à P1-30 — Corrections issues de la relecture du code (octobre 2026)
+
+Source : relecture en lecture seule de tous les paquets (rapport de session du
+25 oct. 2026). Chaque tâche suit la règle n°5 : **un test ou un cas de corpus
+qui montre le défaut d'abord**, puis la correction, puis la mesure
+avant/après. Les défauts ci-dessous ont été reproduits par exécution.
+
+- **P1-19** — `NIR 1 85 05 78 006 084 91 12 ans`, `RPPS 10001234565 12`,
+  `Dossier 12 1 85 05 78 006 084 91` : 0 détection (la normalisation colle
+  le nombre voisin). Idem IBAN ; FINESS à vérifier.
+- **P1-20** — `12 rue des Lilas, 75015 Paris et jean.dupont@example.fr` donne
+  `[ADRESSE_1].dupont@example.fr` ; `M. Marc Herbin Foyer Les Tilleuls` laisse
+  le nom en clair. Cause : motif de commune insensible à la casse + résolution
+  qui supprime tout le perdant d'un chevauchement partiel.
+- **P1-21** — `Voir [NOM_1] et M. Jean Dupont.` se restaure en
+  `Voir Jean Dupont …`. Attendu : refus avec motif ou numérotation qui évite
+  les jetons déjà présents.
+- **P1-22** — docx avec préfixe `ns0:` : texte vide sans avertissement ;
+  en-têtes/pieds/notes/commentaires ignorés sans signal ; UTF-16 sans BOM
+  accepté ; `&#x110000;` fait planter l'appelant. Règle n°4.
+- **P1-23** — motif email : 16 000 « a » = 5,5 s ; motif adresse : 16 Ko
+  répétés = 5,8 s à 22 s. Démo : pas de limite de taille, JSON non-objet = 500,
+  `instruction` envoyée sans masquage, pas de contrôle `Host`/`Origin`.
+- **P1-24 à P1-26** — détails dans les cas reproduits du rapport (prénoms
+  accentués, particules multiples, `1er`, `Né le :`, CHU, formats de
+  téléphone, `12 bis rue`, fusion `Mme Dupont` / `M. Jean Dupont`).
+- **P1-27** — palier 65-69 ans → `0-64` ; Paris/Lyon/Marseille/Mayotte à
+  population 0 ; communes en « œ » introuvables ; homonymes ignorés ;
+  validations manquantes.
+- **P1-28** — `score.py` ignore les types non listés et compte 1 caractère
+  de recouvrement comme succès (mode souple) ; `ecluse_sim.py` diverge du
+  moteur Dart sur un document ; README du benchmark périmé.
+- **P1-29** — `LIMITES.md` et `ROADMAP.md` en retard (odt, INS, `ecluse_reid`,
+  mois fictifs du NIR, IBAN FR seul) ; `NOTES_SECURITE.md` cité mais absent.
+- **P1-30** — NIR à clé valide avec mois 30/42/50/99 non détecté ; U+2009, `/`
+  et saut de ligne non gérés.
