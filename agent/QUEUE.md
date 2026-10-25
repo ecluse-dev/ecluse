@@ -20,7 +20,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-00 | humain | Pousser les tests produits par l'essai d'agent du 10 août (branche locale `test-prime-agent`) | — | humain |
 | P1-01 | mesure | Rejouer Presidio sur le corpus v3 et mettre à jour le tableau du benchmark | — | fusionnée |
 | P1-02 | code | RPPS : couvrir les variantes de séparateurs (NBSP, espace fine, tabulation, espaces multiples, points, tirets) | — | fusionnée |
-| P1-03 | mesure | FINESS : analyser les faux positifs (collision SIREN) et proposer des pistes chiffrées | P1-01 | à faire |
+| P1-03 | mesure | FINESS : analyser les faux positifs (collision SIREN) et proposer des pistes chiffrées | P1-01 | PR ouverte |
 | P1-04 | code | Téléphone FR : durcir l'heuristique (formats +33, 0033, séparateurs) | — | PR ouverte |
 | P1-05 | code | Email : durcir l'heuristique (obfuscations courantes, bornes de span) | — | à faire |
 | P1-06 | spec | Détecteur ADELI : structure officielle, validation possible, risque de faux positifs | — | à faire |
