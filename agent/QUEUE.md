@@ -38,7 +38,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-18 | code | Générateur de PDF synthétiques pour calibrer les seuils | P1-09 | à faire |
 | P1-19 | code | Core : un identifiant suivi d'un nombre (`NIR … 91 12 ans`, `RPPS … 12`) n'est plus détecté (fuite) | — | PR ouverte |
 | P1-20 | code | Redact : une adresse, un nom ou un établissement en chevauchement partiel écrase l'entité voisine (email cassé, nom en clair) | — | à faire |
-| P1-21 | code | Redact : collision avec des jetons littéraux du texte (`[NOM_1]`) | — | à faire |
+| P1-21 | code | Redact : collision avec des jetons littéraux du texte (`[NOM_1]`) | — | PR ouverte |
 | P1-22 | code | Ingest : contenus non lus en silence (préfixe XML autre que `w:`, en-têtes/pieds, UTF-16 sans BOM, exceptions non rattrapées) | — | à faire |
 | P1-23 | code | Robustesse : ReDoS email et adresse ; démo (taille de corps, JSON non-objet, `Host`/`Origin`, masquage de la consigne) | — | à faire |
 | P1-24 | code | Redact : noms (prénoms accentués, particules, `Mr`, `Maître`, apostrophe typographique) | — | à faire |

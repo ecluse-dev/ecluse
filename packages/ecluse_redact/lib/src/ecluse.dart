@@ -87,11 +87,10 @@ abstract final class Ecluse {
               nomIdentities,
               counterByType,
               mapping,
+              text,
             )
           : tokenByIdentity.putIfAbsent(_identityKey(entity), () {
-              final next = (counterByType[entity.type] ?? 0) + 1;
-              counterByType[entity.type] = next;
-              final generated = '[${entityTypeLabel(entity.type)}_$next]';
+              final generated = _freshToken(entity.type, counterByType, text);
               mapping[generated] = entity.value;
               return generated;
             });
@@ -175,6 +174,7 @@ String _resolveNomToken(
   List<_NomIdentity> identities,
   Map<EntityType, int> counterByType,
   Map<String, String> mapping,
+  String text,
 ) {
   final segments = _nameSegments(entity.value);
   final matches = identities
@@ -193,10 +193,28 @@ String _resolveNomToken(
     return identity.token;
   }
 
-  final next = (counterByType[EntityType.nom] ?? 0) + 1;
-  counterByType[EntityType.nom] = next;
-  final token = '[${entityTypeLabel(EntityType.nom)}_$next]';
+  final token = _freshToken(EntityType.nom, counterByType, text);
   mapping[token] = entity.value;
   identities.add(_NomIdentity(segments, token));
+  return token;
+}
+
+/// Prochain jeton libre pour [type] : saute tout numéro dont le jeton figure
+/// déjà dans le texte d'origine (comparaison tolérante, la même que celle de
+/// la restauration). Sans cela, un texte qui contient `[NOM_1]` serait
+/// confondu avec un jeton généré et `restore` réinjecterait la valeur d'une
+/// personne à la place du texte de l'utilisateur.
+String _freshToken(
+  EntityType type,
+  Map<EntityType, int> counterByType,
+  String text,
+) {
+  var next = counterByType[type] ?? 0;
+  String token;
+  do {
+    next++;
+    token = '[${entityTypeLabel(type)}_$next]';
+  } while (tolerantTokenPattern(token).hasMatch(text));
+  counterByType[type] = next;
   return token;
 }
