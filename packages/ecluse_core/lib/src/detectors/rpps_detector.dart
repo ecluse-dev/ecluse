@@ -44,7 +44,7 @@ final class RppsDetector implements EntityDetector {
   /// `resolveOverlaps`. Se fier à la seule *forme* (pas à la validité)
   /// écarte le candidat à la source, que l'IBAN soit valide ou non.
   static final RegExp _ibanShapedContext = RegExp(
-    r'(?<![A-Za-z0-9])[Ff][Rr][0-9]{2}(?:[ \-]?[0-9A-Za-z]){23}(?![0-9A-Za-z])',
+    r'(?<![A-Za-z0-9])[Ff][Rr][0-9]{2}(?:[ \-./]?[0-9A-Za-z]){23}(?![0-9A-Za-z])',
   );
 
   @override

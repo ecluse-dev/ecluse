@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
-"""Port Python fidèle des détecteurs Écluse (ecluse_core).
+"""Port Python APPROXIMATIF des détecteurs Écluse (ecluse_core).
 
-Sert de runner de secours dans les environnements sans SDK Dart, et de
-double implémentation de contrôle. La référence reste le code Dart du
-monorepo (packages/ecluse_core) — exécuté via :
+Sert de runner de secours dans les environnements sans SDK Dart. La
+référence reste le code Dart du monorepo (packages/ecluse_core), exécuté
+depuis packages/ecluse_bench :
 
-    dart run ecluse_bench:run_ecluse corpus.jsonl predictions_ecluse.jsonl
+    dart run bin/run_ecluse.dart ../../bench/corpus.jsonl \\
+        ../../bench/predictions_ecluse.jsonl
 
-Toute divergence entre les deux implémentations est un bug à signaler.
+Ce port n'est PAS équivalent au moteur Dart : il ne reprend ni la règle
+« RPPS enchâssé dans une forme d'IBAN » (RppsDetector), ni les séparateurs
+et blancs ajoutés depuis (DigitCompaction, U+2009, « / », point dans
+l'IBAN), ni la détection d'un identifiant collé à un nombre. Sur le corpus
+v3 il diffère du moteur Dart sur au moins 1 document sur 1000 (un faux
+positif RPPS dans un IBAN à clé invalide). Les chiffres publiés viennent du
+runner Dart, jamais de ce port.
 
 NOTE : le FINESS n'est PAS porté ici. `resolve_overlaps` ci-dessous utilise
 une confiance fixe par type (table `conf`), incompatible avec la confiance

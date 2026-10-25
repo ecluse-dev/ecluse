@@ -13,7 +13,7 @@ import '../entity.dart';
 /// │ │  │  │  │   └───── numéro d'ordre (3 chiffres)
 /// │ │  │  │  └───────── commune ou pays de naissance (3 chiffres)
 /// │ │  │  └──────────── département (01-99, 2A, 2B)
-/// │ │  └─────────────── mois de naissance (01-12)
+/// │ │  └─────────────── mois de naissance (01-12, ou fictif 20, 30-42, 50-99)
 /// │ └────────────────── année de naissance (2 chiffres)
 /// └──────────────────── sexe / catégorie (1-8)
 /// ```
@@ -39,17 +39,17 @@ final class NirDetector implements EntityDetector {
   /// séquence de chiffres plus longue.
   static final RegExp _candidate = RegExp(
     r'(?<![0-9])'
-    r'[1-8][ .\-]?'
-    r'[0-9]{2}[ .\-]?'
-    r'[0-9]{2}[ .\-]?'
-    r'(?:[0-9]{2}|2[ABab])[ .\-]?'
-    r'[0-9]{3}[ .\-]?'
-    r'[0-9]{3}[ .\-]?'
+    r'[1-8][ .\-/]?'
+    r'[0-9]{2}[ .\-/]?'
+    r'[0-9]{2}[ .\-/]?'
+    r'(?:[0-9]{2}|2[ABab])[ .\-/]?'
+    r'[0-9]{3}[ .\-/]?'
+    r'[0-9]{3}[ .\-/]?'
     r'[0-9]{2}'
     r'(?![0-9])',
   );
 
-  static final RegExp _separators = RegExp(r'[ .\-]');
+  static final RegExp _separators = RegExp(r'[ .\-/]');
 
   @override
   List<DetectedEntity> detect(String text) {
@@ -85,15 +85,24 @@ final class NirDetector implements EntityDetector {
     return results;
   }
 
+  static bool _isPlausibleMonth(int month) =>
+      (month >= 1 && month <= 12) ||
+      month == 20 ||
+      (month >= 30 && month <= 42) ||
+      (month >= 50 && month <= 99);
+
   /// Valide un NIR normalisé (15 caractères, sans séparateurs, majuscules).
   static bool _isValidNir(String nir) {
     if (nir.length != 15) return false;
 
-    // Mois de naissance : 01 à 12.
-    // NOTE v0 : les mois fictifs attribués par l'INSEE en cas de date
-    // inconnue (20, 30-42, 50-99) ne sont pas encore acceptés.
+    // Mois de naissance : 01 à 12, ou mois fictif attribué par l'INSEE quand
+    // la date est incomplète : 20 (inconnu), 30 à 42 et 50 à 99 (plages
+    // telles que rapportées par la documentation publique du NIR, à
+    // confirmer sur la source INSEE). La clé de contrôle reste exigée : la
+    // détection ne devient pas moins stricte, seul le filtre de plage
+    // s'élargit.
     final month = int.tryParse(nir.substring(3, 5));
-    if (month == null || month < 1 || month > 12) return false;
+    if (month == null || !_isPlausibleMonth(month)) return false;
 
     // Département : 01-99 ou 2A/2B (Corse).
     final dept = nir.substring(5, 7);
