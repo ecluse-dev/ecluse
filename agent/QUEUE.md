@@ -68,6 +68,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-03b | code | `ecluse_reid` : extraction des QI avec positions et estimation totale (résultat typé, sans exception), en ajout et sans changer `estimate` | P2-03a | fusionnée |
 | P2-04 | code | Branchement de `ecluse_reid` dans `Ecluse.redact` selon l'option retenue dans la spec P2-03 (test d'équivalence d'abord, mesure avant/après) | P2-03, P2-03a, P2-03b | bloquée |
 | P2-05 | spec | Pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers : définition du dossier, état en mémoire, menace du recoupement | — | fusionnée |
+| P2-06 | code | État de dossier en mémoire dans `ecluse_redact` : pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers, selon les décisions de la spec P2-05 (test d'équivalence d'abord, mesure avant/après) | P2-05 | bloquée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -539,3 +540,51 @@ de restauration non octet pour octet (`LIMITES.md` § 5.3).
 - **Fini quand** : `agent/specs/P2-05.md` en PR, avec les décisions du mainteneur
   listées en fin de document (au minimum : la définition du dossier et l'option de
   cloisonnement).
+
+### P2-06 — État de dossier en mémoire dans `ecluse_redact` (`code`)
+
+**Bloquée** : ne pas prendre tant que les préalables ci-dessous ne sont pas
+réunis. Passer à `à faire` est une décision du mainteneur.
+
+Contexte : `agent/specs/P2-05.md`. Aujourd'hui `Ecluse.redact` numérote les jetons
+et résout les identités de noms à l'intérieur d'un seul appel ; deux appels
+repartent de `[NOM_1]`. La spec a établi par exécution que la même personne reçoit
+deux jetons, que deux personnes reçoivent le même jeton, et qu'une réponse restaurée
+avec la mauvaise carte remplace une personne par une autre sans signal.
+
+Préalables :
+
+- Les décisions du § 10 de `agent/specs/P2-05.md` sont écrites dans
+  `DECISIONS.md`, au minimum : la définition du dossier, ce que devient l'état à la
+  perte ou au redémarrage, la règle de noms entre documents (N1, N2 ou N3), la menace
+  à contrer et l'option de cloisonnement (C0, C1 ou C2), la forme de l'API, le
+  traitement d'un jeton littéral dans un texte ultérieur et la concurrence.
+- Un profil de corpus multi-documents annoté (mêmes personnes dans plusieurs
+  documents, homonymes, plusieurs dossiers) et son scoreur sont fusionnés : c'est la
+  tâche `code` n° 1 du § 9 de la spec, **qui n'est pas encore dans la file**. Sans
+  elle, aucune mesure avant/après n'est possible (règle 5).
+
+Travail :
+
+- Écrire **d'abord** le test d'équivalence : sans dossier, la sortie d'
+  `Ecluse.redact` est octet pour octet celle d'avant. Puis les tests du nouveau
+  comportement, qui échouent avant le code : même personne dans deux documents, même
+  jeton ; deux personnes, deux jetons ; restauration d'une réponse qui cite un jeton
+  d'un message précédent.
+- Implémenter l'état de dossier selon les décisions prises, en mémoire uniquement :
+  jamais sérialisé, journalisé ni écrit, sans représentation textuelle qui expose la
+  carte ; fermeture explicite qui l'efface ; un dossier fermé ou perdu **se signale**
+  au lieu de renvoyer des jetons sans correspondance (règle 4). Aucune valeur ni aucun
+  jeton ne va dans `ecluse_audit`.
+- Appliquer la règle de noms entre documents et l'option de cloisonnement retenues.
+  Gérer la collision avec un jeton littéral d'un texte ultérieur comme décidé, et la
+  concurrence sur un même dossier.
+- `ecluse_core` reste inchangé (règle 6). Aucune dépendance pub ou pip.
+- Mesurer avant/après avec le corpus du préalable : cohérence (même personne, même
+  jeton), collisions, fausses fusions, restaurations non identiques. Vérifier que les
+  mesures de P2-02 sont inchangées sans dossier (fuite globale 7,5 % réaliste, 16,8 %
+  adversarial, 59 restaurations non identiques).
+- Mettre à jour `LIMITES.md` § 5.3 : cohérence entre documents, risque de fausses
+  fusions et effet sur la restauration.
+- **Fini quand** : `format`, `analyze` et `test` passent, les mesures sont dans la
+  PR, et la PR liste ce que le mainteneur doit vérifier.
