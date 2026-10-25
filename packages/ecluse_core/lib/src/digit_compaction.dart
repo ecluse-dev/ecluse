@@ -32,7 +32,28 @@ final class DigitCompaction {
   /// caractère `compact[i]`.
   final List<int> _originalIndex;
 
-  static const _whitespace = {' ', '\t', '\u00A0', '\u202F'};
+  /// Blancs neutralisés entre deux chiffres : espace, tabulation, espace
+  /// insécable, espaces typographiques U+2000 à U+200A (dont l'espace fine
+  /// U+2009 des exports de traitement de texte), espace fine insécable U+202F
+  /// et espace idéographique U+3000. Jamais le saut de ligne.
+  static const _whitespace = {
+    ' ',
+    '\t',
+    '\u00A0',
+    '\u2000',
+    '\u2001',
+    '\u2002',
+    '\u2003',
+    '\u2004',
+    '\u2005',
+    '\u2006',
+    '\u2007',
+    '\u2008',
+    '\u2009',
+    '\u200A',
+    '\u202F',
+    '\u3000',
+  };
 
   factory DigitCompaction(String original) {
     final compactUnits = <int>[];

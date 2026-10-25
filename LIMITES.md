@@ -72,6 +72,14 @@ identifiant à espacement *irrégulier* (espaces multiples, tabulation,
 espace insécable) **et** collé à un nombre voisin, et un FINESS écrit avec
 des espaces suivi d'un nombre.
 
+**NIR et IBAN : variantes de forme.** Le NIR est reconnu avec un mois de
+naissance fictif (20, 30 à 42, 50 à 99, plages rapportées par la
+documentation publique, **à confirmer sur la source INSEE**) dès que la clé
+de contrôle est valide, et avec les séparateurs espace, point, tiret, barre
+oblique, tabulation, espace insécable et espaces typographiques (dont
+l'espace fine U+2009). L'IBAN accepte espace, tiret, point et barre oblique.
+**Non détecté** : un identifiant coupé par un **saut de ligne**.
+
 **Ne pas confondre les deux.**
 
 ## 2. Identifiants non couverts
