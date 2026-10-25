@@ -56,6 +56,15 @@ des approximations volontairement prudentes (« en cas de doute, on masque »),
 pas des preuves. Elles seront remplacées par un modèle NER local en phase 2
 (voir `ROADMAP.md`).
 
+**Email.** Détectés : adresse standard, sous-adressage (`+tag`),
+sous-domaines, TLD longs, majuscules, et les obfuscations entre crochets ou
+parenthèses `[at]`, `(at)`, `[arobase]`, `(arobase)` suivies d'un domaine.
+**Non détectés** : `jean at example.fr` et `jean arobase example.fr` en
+clair (trop proche du texte courant), `[dot]`/`(point)` à la place du point,
+adresses avec caractères accentués dans la partie locale (`é@…`),
+domaines internationalisés (IDN), et toute adresse coupée par un saut de
+ligne ou un trait d'union de césure.
+
 **Ne pas confondre les deux.**
 
 ## 2. Identifiants non couverts
