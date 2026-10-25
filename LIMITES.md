@@ -14,10 +14,14 @@ absence de protection connue.
 1. **Deux niveaux de confiance.** Un `[NIR_1]` masqué est une quasi-certitude
    (clé de contrôle vérifiée) ; un `[NOM_1]` masqué est une estimation
    (heuristique v0).
-2. **Non détectés** : le BIC, les identifiants ADELI, les lieux isolés sans
-   structure d'adresse (« reçu à Nantes »).
-3. **Fichiers** : seuls `.txt`, `.md` et `.docx`. Le PDF, les images, les
-   scans et le manuscrit sont **refusés explicitement** — jamais lus à moitié.
+2. **Non détectés** : le BIC, les clés d'API et autres secrets, les IBAN
+   non français, les identifiants ADELI (un ADELI à clé valide est masqué
+   mais **sous l'étiquette FINESS** ; à clé invalide il n'est pas détecté),
+   les lieux isolés sans structure d'adresse (« reçu à Nantes »).
+3. **Fichiers** : `.txt`, `.md`, `.docx` et `.odt`. Le PDF, les images, les
+   scans et le manuscrit sont **refusés explicitement** — jamais lus à
+   moitié. Les en-têtes, pieds de page, notes et commentaires de
+   `.docx`/`.odt` ne sont pas lus (avertissement `ignored_parts`).
 4. **Sur-masquage possible** : en cas de doute, Écluse masque. Un mot
    capitalisé adjacent à un prénom connu, ou un SIREN pris pour un FINESS,
    peuvent être masqués à tort. C'est un choix, pas un défaut. À l'inverse,
@@ -26,8 +30,10 @@ absence de protection connue.
 5. **Une seule entorse à la fidélité** : quand une même personne est nommée
    de deux façons, la re-mention est harmonisée sur la forme la plus
    complète à la restauration. Aucun caractère n'est perdu.
-6. **Hors périmètre v0** : score de ré-identification, généralisation
-   géographique, dictée vocale, journal d'audit chaîné (voir `ROADMAP.md`).
+6. **Hors périmètre v0** : dictée vocale, journal d'audit chaîné (voir
+   `ROADMAP.md`). L'estimation de ré-identification et la généralisation
+   existent comme bibliothèque (`ecluse_reid`) mais **ne sont pas branchées**
+   dans `Ecluse.redact` ; leurs limites sont au § 7.
 
 Le détail de chaque point suit.
 
@@ -94,8 +100,20 @@ l'espace fine U+2009). L'IBAN accepte espace, tiret, point et barre oblique.
 ## 2. Identifiants non couverts
 
 - **BIC** : non détecté (seul l'IBAN l'est).
-- Les identifiants professionnels autres que RPPS et FINESS (numéro ADELI,
-  identifiants d'établissement autres que FINESS, etc.).
+- **IBAN non français** (DE, BE, ES…) : seul l'IBAN `FR` est détecté.
+- **FINESS de Corse** (préfixes 2A/2B) : le détecteur n'accepte que des
+  chiffres.
+- **Secrets** (clés d'API, jetons, clés privées, chaînes de connexion) : non
+  détectés. Spécifié (`agent/specs/P1-07-secrets.md`), pas implémenté.
+- **ADELI.** Pas de détecteur dédié (spécifié, non implémenté). Sur le
+  corpus étendu du benchmark (`bench/README.md`), un ADELI à clé Luhn valide
+  est masqué par `FinessDetector` — donc étiqueté « FINESS » — et un ADELI à
+  clé invalide, même précédé du mot « ADELI », **n'est pas détecté**.
+- **INS** (Identité Nationale de Santé) : `InsDetector` masque les marqueurs
+  textuels et OID (« Matricule INS »), pas le numéro qui suit ; celui-ci n'est
+  masqué que si c'est un NIR à clé valide.
+- Les identifiants professionnels autres que RPPS et FINESS, et les
+  identifiants d'établissement autres que FINESS.
 
 ## 3. Lieux et quasi-identifiants
 
@@ -110,7 +128,7 @@ quasi-identifiant en clair dans le texte envoyé au LLM.
 
 ## 4. Fichiers pris en charge (`ecluse_ingest`)
 
-Seuls `.txt`, `.md` et `.docx` sont ingérés en v1.
+Seuls `.txt`, `.md`, `.docx` et `.odt` sont ingérés en v1.
 
 **Le PDF est refusé explicitement, systématiquement** — y compris un PDF
 avec une couche de texte lisible : ce n'est pas encore implémenté, et un
@@ -258,8 +276,8 @@ d'apprentissage. Limites de cette approche :
 
 ## 6. Hors périmètre v0
 
-- Score de ré-identification et boucle risque → généralise → re-mesure.
-- Généralisation géographique.
+- Branchement de l'estimation de ré-identification et de la généralisation
+  dans `Ecluse.redact` (la bibliothèque `ecluse_reid` existe, voir § 7).
 - Dictée vocale.
 - Journal d'audit chaîné et horodaté.
 - Le mode par défaut est automatique et invisible ; l'aperçu avec validation
@@ -267,6 +285,34 @@ d'apprentissage. Limites de cette approche :
   contrôle a priori sur chaque détection.
 
 Voir `ROADMAP.md` pour le calendrier de ces briques.
+
+## 7. Estimation de ré-identification (`ecluse_reid`, `ecluse_reference`)
+
+Bibliothèque seule, **non utilisée** par `Ecluse.redact` : elle estime la
+taille F de la classe d'équivalence d'une combinaison de quasi-identifiants
+(profession de santé, lieu, âge) et suggère une généralisation. Ce n'est
+pas une garantie d'anonymat. Limites connues :
+
+- **Hypothèse d'indépendance lieu × âge** (population du lieu × part d'âge) ;
+  pas de facteur sexe.
+- **Cas profession** : F est l'effectif du département (borne haute, plafonnée
+  à la population du lieu) ; l'âge fourni est ignoré. Le palier
+  « professionnel de santé » ne somme que les médecins et quatre professions
+  (pharmacien, chirurgien-dentiste, sage-femme, pédicure-podologue) :
+  infirmiers, kinésithérapeutes et autres sont absents.
+- **Lieux** : les niveaux région et grande zone ne sont pas calculables ;
+  Paris, Lyon, Marseille (agrégés) et Mayotte n'ont pas de population
+  complète dans les données, leur département est **refusé** (`ArgumentError`).
+  Les arrondissements ne sont pas modélisés.
+- **Communes homonymes** (« Saint-Denis », ~3 700 communes concernées) : ignorées
+  par `extractQis`, l'estimation retombe alors sur la France entière sans
+  signal.
+- **Âges** : la pyramide couvre 0 à 104 ans ; une tranche de 10 ans qui
+  chevauche 65 ans passe directement au retrait.
+- **Données embarquées** : millésimes mélangés (populations communales
+  2023→2026, pyramide 2026 France entière) ; **provenance et licence des jeux
+  de données non déclarées dans le dépôt** — à documenter avant toute
+  diffusion.
 
 ---
 
