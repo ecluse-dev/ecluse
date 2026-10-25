@@ -1,5 +1,7 @@
 import 'package:ecluse_core/ecluse_core.dart';
 
+import 'etablissement_keywords.dart';
+
 /// Détecteur heuristique de noms d'établissements — **v0 de
 /// démonstration**.
 ///
@@ -32,25 +34,7 @@ final class EtablissementDetector implements EntityDetector {
   @override
   EntityType get type => EntityType.etablissement;
 
-  static const _keywords = [
-    'Foyer',
-    'Résidence',
-    'Residence',
-    'IME',
-    'ITEP',
-    'ESAT',
-    'EHPAD',
-    'MAS',
-    'FAM',
-    'Centre',
-    'CH',
-    'SSIAD',
-    'Clinique',
-    'Hôpital',
-    'Hopital',
-    'Lycée',
-    'Lycee',
-  ];
+  static const _keywords = etablissementKeywords;
 
   /// Liste fermée de connecteurs — jamais absorbés seuls, uniquement
   /// lorsqu'ils sont suivis d'un mot valide (voir [_segment]).
