@@ -97,7 +97,7 @@ Lecture :
 3. Ne pas investir dans C tant qu'on n'a pas une source fiable sur les
    préfixes (outre-mer, Corse) ; gain mesuré : 0.
 4. Garder en tête que le coût d'un FP SIREN est un sur-masquage d'un
-   identifiant d'organisation, pas une fuite (cf. `NOTES_SECURITE`) : la
+   identifiant d'organisation, pas une fuite (cf. `LIMITES.md` § 1) : la
    précision FINESS de 75,4 % est une limite à documenter, pas un défaut
    bloquant.
 5. Si la précision FINESS devient un argument commercial, la liste
