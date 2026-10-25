@@ -147,6 +147,77 @@ python3 bench/score.py --corpus bench/corpus_ext.jsonl \
   --pred "Ecluse=bench/predictions_ext.jsonl"
 ```
 
+### Entités floues : noms, adresses, dates, téléphones, emails, établissements
+
+Les identifiants à clé (NIR, RPPS, IBAN, FINESS) se valident ; les entités
+« floues » non. Un second générateur (`generate_corpus_flou.py`) produit
+trois corpus **séparés, jamais fusionnés** : *réaliste* (documents
+plausibles), *adversarial* (pièges denses : prénoms étrangers, initiales,
+dates ISO, adresses atypiques) et *témoin* (aucune entité, que des leurres
+légitimes : toute détection est un faux positif). Le scoreur
+(`score_flou.py`) donne trois mesures : strict (span exact + type), souple
+(recouvrement) et **fuite au caractère** (part des caractères sensibles
+restée en clair, toutes catégories confondues) — la fuite est la mesure de
+référence. Moteur : `Ecluse.redact` complet (détecteurs à clé + heuristiques),
+seed 42, 400 documents par corpus.
+
+| Corpus | Type | Annotés | Détectés | Rappel strict | F1 souple | Fuite |
+|---|---|---:|---:|---:|---:|---:|
+| Réaliste | adresse | 159 | 159 | 100 % | 100 % | 0 % |
+| Réaliste | date de naissance | 159 | 159 | 100 % | 100 % | 0 % |
+| Réaliste | email | 247 | 247 | 100 % | 100 % | 0 % |
+| Réaliste | établissement | 400 | 400 | 79,2 % | 100 % | 0 % |
+| Réaliste | nom | 479 | 479 | 16,3 % | 100 % | 27,7 % ² |
+| Réaliste | téléphone | 233 | 233 | 100 % | 100 % | 0 % |
+| Réaliste | **global** | 1677 | 1677 | 71,1 % | 100 % | **7,5 %** |
+| Adversarial | adresse | 155 | 106 | 34,2 % | 81,2 % | 15,0 % |
+| Adversarial | date de naissance | 53 | 53 | 100 % | 100 % | 0 % |
+| Adversarial | email | 53 | 53 | 100 % | 100 % | 0 % |
+| Adversarial | établissement | 114 | 114 | 100 % | 100 % | 0 % |
+| Adversarial | nom | 594 | 504 | 53,4 % | 83,2 % | 27,2 % |
+| Adversarial | téléphone | 113 | 113 | 100 % | 100 % | 0 % |
+| Adversarial | **global** | 1082 | 943 | 65,0 % | 88,5 % | **16,8 %** |
+| Témoin | — | 0 | 0 | — | — | 0 détection (0 faux positif) |
+
+² La fuite de 27,7 % sur les noms du corpus réaliste est **entièrement** la
+civilité (« M. », « Monsieur », « Mme », « Madame », « Mademoiselle »), que
+le corpus annote dans le nom alors qu'Écluse la conserve volontairement en
+clair (`LIMITES.md`, point 4). Ce n'est pas une fuite de nom propre ; le
+rappel strict de 16,3 % est le même artefact de convention.
+
+Lecture : sur le corpus réaliste, aucun nom propre, adresse, date, email ni
+téléphone n'échappe. Sur le corpus adversarial, **16,8 % des caractères
+sensibles restent en clair** : surtout des prénoms hors gazetteer
+(Krzysztof, Souleymane, Yaroslav, Mei-Ling, Aïcha…), des initiales
+(« S. Vasseur ») et des adresses atypiques. Un NER local (phase 2) est la
+réponse prévue, pas ces heuristiques.
+
+**Restauration.** Le runner signale 59 documents du corpus adversarial dont
+la restauration n'est pas octet pour octet (0 sur le corpus réaliste). Ce
+sont les variantes d'ordre ou de casse d'une même personne
+(« PERROT Olivier », « Olivier Perrot », « OLIVIER PERROT »), harmonisées sur
+une seule graphie à la restauration : le compromis documenté en
+`LIMITES.md` § 5.3, pas une corruption.
+
+Limites : corpus synthétique et généré par nous, une seule graine, noms issus
+de listes courtes (les mêmes patronymes reviennent), corpus adversarial écrit
+pour trouver les angles morts. Aucun concurrent n'est mesuré ici.
+
+Reproduire (depuis la racine du dépôt) :
+
+```bash
+mkdir -p bench/flou
+python3 bench/generate_corpus_flou.py --n 400 --seed 42 --out-dir bench/flou
+for c in realiste adversarial temoin; do
+  (cd packages/ecluse_redact && dart run bin/run_redact_bench.dart \
+     ../../bench/flou/corpus_flou_$c.jsonl ../../bench/flou/pred_$c.jsonl)
+  (cd bench && python3 score_flou.py --corpus flou/corpus_flou_$c.jsonl \
+     --pred "Ecluse=flou/pred_$c.jsonl")
+done
+```
+
+Les fichiers générés (`bench/flou/`) ne sont pas versionnés.
+
 ## Honnêteté méthodologique
 
 - **Presidio est extensible.** Un développeur peut écrire des
