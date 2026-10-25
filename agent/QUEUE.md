@@ -64,7 +64,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-01 | spec | Critère GO/STOP du NER local (métriques, corpus de décision, plafonds, conditions d'arrêt) | — | fusionnée |
 | P2-02 | mesure | Référence chiffrée des heuristiques de noms et d'adresses sur les corpus flous (valeur à battre pour le GO/STOP du NER) | P2-01 | fusionnée |
 | P2-03 | spec | Branchement de `ecluse_reid` dans `Ecluse.redact` : contrat public, généralisation irréversible distincte de la pseudonymisation, refus explicites | — | fusionnée |
-| P2-04 | code | Branchement de `ecluse_reid` dans `Ecluse.redact` selon l'option retenue dans la spec P2-03 (test d'équivalence d'abord, mesure avant/après) | P2-03 | bloquée |
+| P2-03a | code | Profil de corpus de quasi-identifiants annotés (profession, lieu, âge) et son scoreur, dans `bench/` | P2-03 | à faire |
+| P2-03b | code | `ecluse_reid` : extraction des QI avec positions et estimation totale (résultat typé, sans exception), en ajout et sans changer `estimate` | P2-03a | à faire |
+| P2-04 | code | Branchement de `ecluse_reid` dans `Ecluse.redact` selon l'option retenue dans la spec P2-03 (test d'équivalence d'abord, mesure avant/après) | P2-03, P2-03a, P2-03b | bloquée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -398,11 +400,10 @@ Préalables :
   généralisation appliquée, ou A puis B), l'activation (désactivée par défaut ou
   non), la politique pour les documents de plusieurs personnes, l'acceptation des
   dépendances internes `ecluse_reid` et `ecluse_reference` dans `ecluse_redact`.
-- Les tâches `code` 1 et 2 du § 9 de la spec sont fusionnées (elles ne sont pas
-  encore dans la file) : un profil de corpus de quasi-identifiants annotés avec son
-  scoreur, puis `ecluse_reid` avec extraction **positionnée** et estimation
-  **totale** (résultat typé à la place des `ArgumentError`, statut « aucun QI
-  détecté » distinct de « risque faible »).
+- P2-03a et P2-03b sont fusionnées : un profil de corpus de quasi-identifiants
+  annotés avec son scoreur, puis `ecluse_reid` avec extraction **positionnée** et
+  estimation **totale** (résultat typé, statut « aucun QI détecté » distinct de
+  « risque faible »).
 
 Travail :
 
@@ -425,3 +426,69 @@ Travail :
   traitement » si l'option le couvre, avec les limites restantes.
 - **Fini quand** : `format`, `analyze` et `test` passent, les mesures sont dans la
   PR, et la PR liste ce que le mainteneur doit vérifier.
+
+### P2-03a — Profil de corpus de quasi-identifiants et scoreur (`code`)
+
+Contexte : `agent/specs/P2-03.md` § 7 : aucun corpus ne mesure ce que `ecluse_reid`
+extrait. Cette tâche ne touche à aucun détecteur ; elle fournit l'outil de mesure
+(règle 5) avant toute correction. Indépendante des décisions du § 8 de la spec.
+
+- Créer `bench/generate_corpus_qi.py`, déterministe (`--n`, `--seed`,
+  `--out-dir`), même format JSONL que `bench/generate_corpus_flou.py`
+  (`id`, `text`, `entities` avec `type`, `start`, `end`), offsets enregistrés à
+  l'insertion et jamais retrouvés par recherche. Peut importer le constructeur
+  de documents du générateur existant **sans le modifier**.
+- Types annotés : `profession`, `lieu`, `age` (ceux de `QiType`), sur le
+  fragment de texte qui porte l'information. Champ supplémentaire par document :
+  `personnes` (nombre de personnes évoquées).
+- Trois corpus séparés, jamais fusionnés : *réaliste* (compte rendu plausible, une
+  personne, les trois types), *adversarial* (communes homonymes, Paris/Lyon/
+  Marseille et Mayotte, plusieurs lieux, plusieurs âges, profession sans lieu,
+  âges aux bornes, accents, tirets, articles, documents de plusieurs personnes),
+  *témoin* (aucun QI rattaché à une personne : durées « depuis 3 ans », quantités,
+  mots communs qui coïncident avec un nom de commune).
+- Écrire `bench/score_qi.py` : rappel et précision stricts et souples par type,
+  fuite au caractère des QI laissés en clair, et taux de documents par statut si
+  les prédictions en portent un. Peut s'inspirer de `bench/score_flou.py` sans le
+  modifier.
+- Tests (`python3 -m unittest discover -s bench`) : reproductibilité par graine,
+  offsets exacts (`text[start:end]` égal à la mention), absence de toute donnée
+  réelle (règle 1 : personnes et textes synthétiques, seuls les noms de communes
+  publiques sont réels), scoreur sur prédictions parfaites et vides.
+- Documenter dans `bench/README.md` une section « Quasi-identifiants » avec les
+  commandes de reproduction ; ne modifier aucun tableau de résultats existant.
+- **Fini quand** : les tests Python passent, la PR donne le nombre d'entités par
+  type et par corpus, et liste ce que le mainteneur doit vérifier.
+
+### P2-03b — `ecluse_reid` : extraction positionnée et estimation totale (`code`)
+
+Contexte : `agent/specs/P2-03.md` § 4 (obstacles 1 à 3). Tâche **additive** : les
+fonctions existantes (`extractQis`, `extractQisDetailed`, `estimate`, `ReidLoop`)
+gardent leur signature et leur comportement, y compris les `ArgumentError`
+attendus par leurs tests. Aucun autre paquet n'appelle ces fonctions
+aujourd'hui.
+
+- **Test d'abord** (règle 5) : mesurer l'état actuel sur les corpus de P2-03a avec
+  un petit programme dans `packages/ecluse_reid/bin/` qui charge
+  `EcluseReference` (`ecluse_reference`, chargeur `fileAssets`, avec
+  `assetsDir: '../ecluse_reference/assets'` depuis le répertoire du paquet) et rapporte
+  le nombre et la part de documents sur lesquels la chaîne actuelle
+  `extractQis` puis `estimate` lève une exception, par cause. Ce chiffre est le
+  « avant ».
+- Ajouter une extraction qui renvoie, pour chaque QI, ses positions `[start, end)`
+  dans le texte d'origine, avec les avertissements de commune ambiguë existants.
+- Ajouter une estimation **totale** : elle ne lève jamais pour une entrée de
+  l'utilisateur et renvoie un résultat typé avec un statut explicite : évalué,
+  *aucun QI détecté* (jamais présenté comme un risque faible), ou *non évaluable*
+  avec un **motif lisible** : deux lieux, deux âges, profession sans lieu, code de
+  profession inconnu, commune inconnue ou sans population (Paris, Lyon, Marseille
+  agrégés, Mayotte), niveau de lieu non calculable.
+- Commune ambiguë : jamais « faible » (`DECISIONS.md`) ; cas le plus prudent ou
+  *indéterminé*. Contrat d'honnêteté (`honestyContract`) dans toute sortie.
+- Mesurer l'« après » avec `bench/score_qi.py` : rappel et précision d'extraction
+  par type, taux de documents par statut, **zéro exception** sur tous les corpus.
+- Ne modifier ni `ecluse_redact`, ni `Ecluse.redact`, ni `ecluse_core` (c'est
+  l'objet de P2-04). Aucune dépendance pub ou pip.
+- **Fini quand** : `format`, `analyze` et `test` passent, les tests écrits avant le
+  code sont dans la PR, le « avant » et l'« après » sont chiffrés, et la PR liste ce
+  que le mainteneur doit vérifier.
