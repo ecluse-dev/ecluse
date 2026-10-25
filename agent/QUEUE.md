@@ -30,6 +30,12 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-10 | humain | Valider les specs P1-06 à P1-09 et créer les tâches `code` correspondantes | P1-06, P1-07, P1-08, P1-09 | humain |
 | P1-11 | code | Brouillon d'article de benchmark (`bench/ARTICLE.md`) à partir des résultats à jour | P1-01, P1-03 | fusionnée |
 | P1-12 | humain | Relire et publier l'article de benchmark | P1-11 | humain |
+| P1-13 | code | Corpus : SIREN sans mot-clé, phrases FINESS + SIREN, ADELI avec/sans mot-clé (nouvelle version du générateur) | P1-03 | à faire |
+| P1-14 | code | Détecteur ADELI contextuel + `EntityType.adeli` + priorité sur `finess` | P1-13 | bloquée |
+| P1-15 | code | Détecteur de secrets (`EntityType.secret`) | P1-13 | bloquée |
+| P1-16 | code | `ecluse_audit` v0 (entrée, chaîne, vérificateur, sink en mémoire) | P1-08 | bloquée |
+| P1-17 | code | Ingestion PDF : `PdfTextSource`, garde-fou et refus | P1-18 | bloquée |
+| P1-18 | code | Générateur de PDF synthétiques pour calibrer les seuils | P1-09 | à faire |
 
 Les phases 2 et 3 seront découpées ici quand la phase 1 sera fusionnée.
 
@@ -150,3 +156,47 @@ détectée**.
   Aucun nom de prospect ni d'établissement.
 - **Fini quand** : brouillon en PR, chaque chiffre renvoie à une commande
   reproductible.
+
+### P1-13 — Corpus enrichi FINESS / SIREN / ADELI (`code`)
+
+Contexte : `agent/specs/P1-03-finess.md` §4 et `agent/specs/P1-06-adeli.md` §5.
+La mesure FINESS est circulaire (un seul gabarit SIREN).
+
+- Étendre `bench/generate_corpus.py` : SIREN sans le mot « SIREN » (RCS,
+  TVA, Kbis), phrases contenant à la fois FINESS et SIREN, ADELI avec et
+  sans mot-clé. Identifiants générés par `luhn_digit`, jamais copiés.
+- Ne pas corriger le détecteur : **mesurer** l'état actuel sur le nouveau
+  corpus et mettre à jour `bench/README.md` (version de corpus, chiffres).
+- **Fini quand** : corpus reproductible (seed 42), chiffres avant correction
+  dans la PR, aucune baisse sur NIR/RPPS/IBAN.
+
+### P1-14 — Détecteur ADELI (`code`)
+
+Spec : `agent/specs/P1-06-adeli.md`, décisions de `DECISIONS.md` (2026-10).
+**Bloquée** tant que le mainteneur n'a pas confirmé la structure, la clé de
+Luhn et la règle de la lettre corse sur la fiche officielle, ni confirmé
+l'exception à « Détection stricte ». Ajoute `EntityType.adeli`.
+
+### P1-15 — Détecteur de secrets (`code`)
+
+Spec : `agent/specs/P1-07-secrets.md`. **Bloquée** tant que la liste des
+fournisseurs n'est pas fixée et la licence de la source de motifs
+confirmée. Motifs réécrits, valeurs de test fabriquées à l'exécution.
+
+### P1-16 — `ecluse_audit` v0 (`code`)
+
+Spec : `agent/specs/P1-08-audit.md`. **Bloquée** tant que la licence de
+`package:crypto` n'est pas confirmée et la dépendance approuvée.
+
+### P1-17 — Ingestion PDF (`code`)
+
+Spec : `agent/specs/P1-09-pdf.md`. **Bloquée** tant que `pdf_graphics` (et
+ses dépendances transitives) n'est pas audité en licence, et que les
+plafonds de pages et de durée ne sont pas fixés. Dépend de P1-18.
+
+### P1-18 — PDF synthétiques (`code`)
+
+Spec : `agent/specs/P1-09-pdf.md` §6. Script qui **génère** des PDF de test
+(texte, scan, mixte, chiffré, illisible, tronqué) sans bibliothèque ajoutée
+sans accord. Si la génération exige une dépendance, s'arrêter et le signaler.
+**Fini quand** : jeu de PDF reproductible et attendus documentés.
