@@ -447,6 +447,43 @@ inventé. L'annotation d'une profession ou d'un âge « en toutes lettres » est
 choix de convention. Aucune vérité terrain n'existe pour la **taille d'une classe
 d'équivalence** (F) : ce profil mesure l'extraction, pas la justesse de F.
 
+## Dossiers (P2-05a)
+
+Corpus multi-documents et scoreur pour mesurer la cohérence des jetons d'un
+document à l'autre (spec `agent/specs/P2-05.md`). Un *dossier* est une suite de
+3 à 6 documents sur les mêmes personnes ; chaque mention annotée porte une
+`identite` (une par personne, ou par valeur pour e-mail et téléphone, partagée
+entre dossiers quand la même personne y figure). Trois corpus, jamais fusionnés :
+réaliste, adversarial (ordres différents, homonymes de même sexe, couple,
+patronymes courants, mention partielle `ambigue`, contacts répétés, jeton
+littéral `[NOM_1]` dans le texte, mêmes personnes dans plusieurs dossiers) et
+témoin (aucune personne commune entre dossiers).
+
+```bash
+python3 bench/generate_corpus_dossiers.py --n 400 --seed 42 --out-dir bench/dossiers
+(cd packages/ecluse_redact && dart run bin/run_dossiers_bench.dart \
+  ../../bench/dossiers/corpus_dossiers_realiste.jsonl \
+  ../../bench/dossiers/pred_dossiers_realiste.jsonl)
+python3 bench/score_dossiers.py \
+  --corpus bench/dossiers/corpus_dossiers_realiste.jsonl \
+  --pred bench/dossiers/pred_dossiers_realiste.jsonl
+python3 -m unittest discover -s bench
+```
+
+(`mkdir -p bench/dossiers` d'abord ; idem pour `adversarial` et `temoin`.)
+
+Le programme Dart masque chaque document **séparément** avec l'`Ecluse.redact`
+actuel et restaure avec la table de cet appel : il mesure l'état sans dossier.
+Le scoreur rapporte la cohérence, les collisions, les fausses fusions, les
+restaurations non identiques et le recoupement (définitions en tête de
+`score_dossiers.py`). Les mentions annotées non détectées sont comptées à part
+et exclues des autres mesures. Le recoupement est un signal structurel (la
+numérotation des jetons repart de 1 à chaque appel) : il est donné avec sa
+référence et ne s'interprète pas tant que la menace n'est pas confirmée.
+
+Les fichiers générés (`bench/dossiers/`, `bench/corpus_dossiers_*.jsonl`) ne
+sont pas versionnés.
+
 ## Honnêteté méthodologique
 
 - **Presidio est extensible.** Un développeur peut écrire des
