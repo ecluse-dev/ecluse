@@ -202,4 +202,37 @@ void main() {
       expect(texte.substring(e.start, e.end), nir);
     });
   });
+
+  group('NirDetector — mois 00 et 21 à 29 (nomenclature DGFiP)', () {
+    // Source citée par le mainteneur : mois inconnu = 00 et 20 à 30. La clé
+    // mod 97 reste exigée, donc la détection n'est pas moins stricte.
+    const valides = {
+      '00': '1 85 00 78 006 084 11',
+      '21': '1 85 21 78 006 084 56',
+      '25': '1 85 25 78 006 084 23',
+      '29': '1 85 29 78 006 084 87',
+    };
+    valides.forEach((mois, nir) {
+      test('mois $mois détecté', () {
+        final texte = 'NIR $nir.';
+        final e = detector.detect(texte).single;
+        expect(texte.substring(e.start, e.end), nir);
+      });
+    });
+
+    test('mois 13-19 et 43-49 toujours rejetés', () {
+      for (final nir in [
+        '1 85 13 78 006 084 25',
+        '1 85 19 78 006 084 24',
+        '1 85 43 78 006 084 20',
+        '1 85 49 78 006 084 19',
+      ]) {
+        expect(detector.detect('NIR $nir'), isEmpty, reason: nir);
+      }
+    });
+
+    test('mois 00 à clé invalide rejeté', () {
+      expect(detector.detect('NIR 1 85 00 78 006 084 12'), isEmpty);
+    });
+  });
 }
