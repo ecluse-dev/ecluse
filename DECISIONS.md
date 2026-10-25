@@ -156,3 +156,25 @@ restent signalées comme telles.
   8.9.0, saut majeur) à tester en local avant fusion. PR #10 et #11 : ne pas
   y toucher.
 
+
+## 2026-10 — Petits points de la phase 2 (validés par le mainteneur)
+Points validés explicitement (« ok pour les petits points »). Les autres
+avis échangés (décisions de P2-01, P2-03, P2-05, valeurs de P2-04) **ne sont
+pas des décisions** tant que le mainteneur ne les a pas validés un par un.
+
+- **Seuil de 5 points de fuite (P2-01)** : conservé comme valeur de départ,
+  **provisoire** jusqu'au test GO/STOP en local. Le motif avancé (« plus de
+  trois fois l'écart entre graines, 0,6 à 1,5 point ») n'a pas été retrouvé
+  dans le dépôt : à mesurer et à documenter avant de s'en servir.
+- **`packages/ecluse_bench/pubspec_overrides.yaml`** : le fichier versionné
+  contient un chemin Windows (`..\ecluse_core`) qui casse `dart pub get` sous
+  Linux. Décision : une tâche `code` le retirera de git (`git rm --cached`) ;
+  `.gitignore` l'exclut déjà. Melos le régénère.
+- **Décompte de la civilité** : le script qui produit le chiffre sera
+  versionné dans `bench/`. Un chiffre sans commande reproductible ne figure
+  pas dans l'article.
+- **P2-06 à P2-10** : à copier dans la file après relecture ; P1-00 et P1-12
+  restent `humain`.
+- **P2-03b (#75)** : une population légale nulle, ou plusieurs
+  quasi-identifiants du même type, rendent le document « non évaluable »
+  (comportement déjà livré).
