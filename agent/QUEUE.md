@@ -70,6 +70,12 @@ tâches copiées ici sont prises par l'agent.
 | P2-05 | spec | Pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers : définition du dossier, état en mémoire, menace du recoupement | — | fusionnée |
 | P2-05a | code | Profil de corpus multi-documents (dossiers, personnes, identités) et son scoreur, avec la mesure de l'état actuel sans dossier | P2-05 | fusionnée |
 | P2-06 | code | État de dossier en mémoire dans `ecluse_redact` : pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers, selon les décisions de la spec P2-05 (test d'équivalence d'abord, mesure avant/après) | P2-05, P2-05a | bloquée |
+| P2-07 | spec | Généralisation multi-dimensions (date de naissance vers tranche d'âge, âge vers palier, pathologie rare vers catégorie) : dimensions, table de catégories, honnêteté sur ce qui reste ré-identifiable | P2-03 | bloquée |
+| P2-08 | spec | Aperçu avec validation en un clic, option et non défaut (entretien #2) : contrat du composant, sans interface autonome | — | bloquée |
+| P2-09 | spec | Export AIPD : champs du registre pré-rempli, données d'`ecluse_audit` qui y entrent et qui n'y entrent pas | — | bloquée |
+| P2-10 | spec | Transcription vocale locale : choix Vosk ou whisper.cpp, preuve qu'aucun son ne sort de l'appareil, limite sur les chiffres, critère GO/STOP propre | — | bloquée |
+| P2-11 | code | `ecluse_bench` : retirer `pubspec_overrides.yaml` (chemin Windows) du suivi git | — | à faire |
+| P2-12 | code | Script reproductible du décompte de la fuite des noms hors civilité, versionné dans `bench/` | P2-02 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -642,3 +648,95 @@ génération, quelle que soit la définition retenue du dossier.
   collisions, fausses fusions, restaurations non identiques, recoupement) sur les trois
   corpus et deux graines, dit ce qui n'est pas mesuré, et liste ce que le mainteneur
   doit vérifier.
+
+### P2-07 — Généralisation multi-dimensions (`spec`)
+
+**Bloquée** : ne pas prendre tant que les préalables ne sont pas réunis. Passer à
+`à faire` est une décision du mainteneur.
+
+Préalables : la source de la table de catégories de pathologies est choisie
+(aucune n'existe dans le dépôt) ; les décisions de `agent/specs/P2-03.md` § 8
+concernant la généralisation sont écrites dans `DECISIONS.md`.
+
+Travail : écrire `agent/specs/P2-07.md`, **aucune ligne de code**. Lister les
+dimensions généralisables (date de naissance vers tranche d'âge, âge vers palier,
+pathologie rare vers catégorie), la table de catégories et sa source avec sa licence
+lue sur la page, l'effet sur l'estimation de `ecluse_reid`, et **ce qui reste
+ré-identifiable** après généralisation. La généralisation est irréversible : elle
+ne se déclenche que sur demande de l'appelant (spec P2-03). Ne pas trancher les
+choix produit : les poser au mainteneur en fin de document.
+
+### P2-08 — Aperçu avec validation en un clic (`spec`)
+
+**Bloquée** : l'ordre des tâches de la phase 2 dépend des signaux des design
+partners (`ROADMAP.md`). Passer à `à faire` est une décision du mainteneur.
+
+Travail : écrire `agent/specs/P2-08.md`, **aucune ligne de code**. Contrat d'un
+composant d'aperçu, **option** et non défaut (entretien #2) : ce qu'il reçoit de
+`Ecluse.redact` (texte masqué, entités, avertissements), ce qu'il renvoie
+(entités acceptées, refusées, ajoutées à la main), comment un refus ou un ajout
+reste cohérent avec les offsets et la traçabilité (règle 3). Pas d'interface
+autonome (phase 3). Dire ce que l'aperçu ne garantit pas (un oubli de détection
+n'apparaît pas à l'écran).
+
+### P2-09 — Export AIPD (`spec`)
+
+**Bloquée** : le gabarit de la CNIL n'a pas été lu, et l'avis d'un DPO est requis
+avant d'affirmer que le journal n'est pas une donnée personnelle
+(`DECISIONS.md`). Passer à `à faire` est une décision du mainteneur.
+
+Travail : écrire `agent/specs/P2-09.md`, **aucune ligne de code**. Lire le gabarit
+officiel et en citer l'URL et la date de lecture. Lister les champs du registre
+pré-rempli, les données d'`ecluse_audit` qui y entrent, **celles qui n'y entrent
+pas** (aucune valeur ni aucun jeton), et ce que l'export n'atteste pas. Ne rien
+affirmer sur la nature juridique du journal : poser la question au mainteneur.
+
+### P2-10 — Transcription vocale locale (`spec`)
+
+**Bloquée** : licences et tailles des modèles non vérifiées. Passer à `à faire`
+est une décision du mainteneur.
+
+Travail : écrire `agent/specs/P2-10.md`, **aucune ligne de code**. Comparer Vosk et
+whisper.cpp (licence du code et des poids lue sur la page, taille, langues,
+plateformes, latence annoncée **sans la présenter comme mesurée**). Décrire la
+preuve qu'aucun son ne sort de l'appareil (aucun repli cloud, comment le vérifier),
+la limite honnête sur les identifiants numériques (NIR, IBAN : taux d'erreur à
+mesurer, pas à supposer) et un critère GO/STOP propre au sens de la règle 7. Poser
+les choix au mainteneur en fin de document.
+
+### P2-11 — Retirer `pubspec_overrides.yaml` d'`ecluse_bench` du suivi git (`code`)
+
+Contexte : `packages/ecluse_bench/pubspec_overrides.yaml` est suivi par git alors que
+`.gitignore` exclut `pubspec_overrides.yaml` (fichier généré par Melos). Il contient
+un chemin Windows (`..\ecluse_core`) qui fait échouer `dart pub get` sous Linux.
+Décision du mainteneur : le retirer du suivi (`DECISIONS.md`, « Petits points de la
+phase 2 »).
+
+- `git rm --cached packages/ecluse_bench/pubspec_overrides.yaml` ; ne rien changer
+  d'autre dans `.gitignore`.
+- Vérifier avant la PR que `melos bootstrap` régénère le fichier sous Linux et que
+  `melos run format`, `analyze` et `test` passent. Vérifier que la CI n'en dépend
+  pas ; si elle en dépend, s'arrêter et le dire (`.github/` est une zone interdite).
+- **Fini quand** : le fichier n'est plus suivi, les trois commandes passent, la PR
+  dit ce qui a été vérifié.
+
+### P2-12 — Décompte reproductible de la fuite des noms hors civilité (`code`)
+
+Contexte : `agent/specs/P2-02-reference.md` (§ « Part de la fuite des noms due à la
+civilité ») donne un décompte obtenu par un script jetable non versionné : réaliste,
+0 caractère en clair hors civilité ; adversarial, 1865 caractères non blancs sur 2657
+(graine 42) et 1901 sur 2799 (graine 7). Un chiffre sans commande reproductible ne
+peut pas figurer dans l'article (`DECISIONS.md`).
+
+- Écrire `bench/leak_hors_civilite.py` : à partir d'un corpus flou et des
+  prédictions de `run_redact_bench.dart`, compter, mot par mot, les caractères non
+  blancs des noms annotés restés en clair, et la part qui n'est pas une civilité
+  (`M.`, `Monsieur`, `Mme`, `Madame`, `Mademoiselle`).
+- Retrouver les valeurs ci-dessus sur les corpus flous aux graines 42 et 7, ou
+  **expliquer l'écart** dans la PR. Ne pas ajuster le script pour retomber sur les
+  chiffres.
+- Tests (`python3 -m unittest discover -s bench`) : cas construits à la main,
+  civilité seule, civilité plus prénom, nom entièrement masqué, mention absente.
+- Section dans `bench/README.md` avec la commande ; aucun tableau existant modifié.
+- **Fini quand** : tests passent et la PR donne les chiffres reproduits et la
+  commande exacte.
