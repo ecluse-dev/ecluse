@@ -46,6 +46,7 @@ abstract final class Ecluse {
         name: 'iban'),
     LegacyDetectorAdapter(InsDetector(), DetectorTier.structural, name: 'ins'),
     FinessDetector(),
+    AdeliDetector(),
     LegacyDetectorAdapter(NameDetector(), DetectorTier.reference, name: 'nom'),
     LegacyDetectorAdapter(DateNaissanceDetector(), DetectorTier.pattern,
         name: 'date_naissance'),
