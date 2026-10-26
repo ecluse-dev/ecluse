@@ -118,14 +118,16 @@ final class AdresseDetector implements EntityDetector {
   /// Type de voie, avec point facultatif pour les abréviations (`av.`, `bd.`).
   static final String _voieMotif = '(?:${_voies.map(_ci).join('|')})\\.?';
 
-  /// Numéro de voie : 1 à 4 chiffres, suffixe facultatif `bis`, `ter`…
-  /// (« 12 bis rue », « 12bis rue »).
+  /// Numéro de voie : 1 à 4 chiffres, suffixe facultatif `bis`, `ter`… ou une
+  /// lettre majuscule A-F (« 12 bis rue », « 12bis rue », « 12 B rue »). La
+  /// lettre doit être majuscule et isolée : le type de voie qui suit reste
+  /// obligatoire, ce qui écarte « Annexe 12 B : voir page 3 ».
   static final String _numero = '\\d{1,4}(?:$_h*(?:${[
     'bis',
     'ter',
     'quater',
     'quinquies'
-  ].map(_ci).join('|')}))?';
+  ].map(_ci).join('|')}|[A-F](?![A-Za-zÀ-ÿ])))?';
 
   /// Nom de voie borné à 80 caractères : le quantificateur paresseux non
   /// borné rendait le motif quadratique quand « N rue » se répète sans code
