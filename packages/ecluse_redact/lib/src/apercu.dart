@@ -209,10 +209,15 @@ abstract final class Apercu {
     }
 
     final ajouts = <DetectedEntity>[];
-    for (final a in d.ajouts) {
-      if (a.start < 0 || a.end > texte.length || a.start >= a.end) {
-        throw ApercuException('ajout hors bornes ou vide : $a');
+    for (final brut in d.ajouts) {
+      if (brut.start < 0 || brut.end > texte.length || brut.start >= brut.end) {
+        throw ApercuException('ajout hors bornes ou vide : $brut');
       }
+      // Les blancs en bordure (sélection à la souris) ne sont pas masqués :
+      // deux mentions qui ne diffèrent que par eux partageraient un jeton dont
+      // la carte garderait la première forme, et la restauration ajouterait ou
+      // retirerait des espaces (P2-20).
+      final a = _sansBlancsEnBordure(brut, texte);
       if (a.type == EntityType.secret) {
         throw ApercuException('le type secret ne peut pas être ajouté : $a');
       }
@@ -244,4 +249,23 @@ abstract final class Apercu {
     ]..sort((x, y) => x.start.compareTo(y.start));
     return finales;
   }
+}
+
+final _blanc = RegExp(r'\s');
+
+/// [a] réduit pour que son texte ne commence ni ne finisse par un blanc ;
+/// [ApercuException] s'il ne reste rien.
+AjoutManuel _sansBlancsEnBordure(AjoutManuel a, String texte) {
+  var start = a.start;
+  var end = a.end;
+  while (start < end && _blanc.hasMatch(texte[start])) {
+    start++;
+  }
+  while (end > start && _blanc.hasMatch(texte[end - 1])) {
+    end--;
+  }
+  if (start == end) {
+    throw ApercuException('ajout fait seulement de blancs : $a');
+  }
+  return AjoutManuel(start, end, a.type);
 }
