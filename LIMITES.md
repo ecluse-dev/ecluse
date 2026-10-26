@@ -14,13 +14,10 @@ absence de protection connue.
 1. **Deux niveaux de confiance.** Un `[NIR_1]` masqué est une quasi-certitude
    (clé de contrôle vérifiée) ; un `[NOM_1]` masqué est une estimation
    (heuristique v0).
-2. **Non détectés** : le BIC, les secrets sans forme reconnaissable (voir §7), les IBAN
-   non français, les identifiants ADELI (un ADELI à clé valide est masqué
-   mais **sous l'étiquette FINESS** ; à clé invalide il n'est pas détecté),
-2. **Non détectés** : le BIC, les clés d'API et autres secrets, les IBAN
-   non français, les identifiants ADELI **sans le mot « ADELI » accolé** (à clé
-   valide ils sont masqués mais sous l'étiquette FINESS ; à clé invalide ou
-   corses, ils ne sont pas détectés),
+2. **Non détectés** : le BIC, les IBAN non français, les secrets sans préfixe
+   reconnaissable (mots de passe humains, voir § 2), les identifiants ADELI
+   **sans le mot « ADELI » accolé** (à clé valide ils sont masqués mais sous
+   l'étiquette FINESS ; à clé invalide ou corses, ils ne sont pas détectés),
    les lieux isolés sans structure d'adresse (« reçu à Nantes »).
 3. **Fichiers** : `.txt`, `.md`, `.docx`, `.odt` et `.pdf` **à texte
    natif** (voir § 4). Les images, les scans, les PDF-image et le manuscrit
@@ -127,12 +124,6 @@ accepte espace, tiret, point et barre oblique.
   (`refuseSecrets: true`) refuse le texte au lieu de le masquer.
   Mesure : 0 détection sur 5 000 documents synthétiques sans secret
   (corpus v3, étendu et trois corpus flous, seed 42).
-- **ADELI.** Pas de détecteur dédié (spécifié, non implémenté). Sur le
-  corpus étendu du benchmark (`bench/README.md`), un ADELI à clé Luhn valide
-  est masqué par `FinessDetector` — donc étiqueté « FINESS » — et un ADELI à
-  clé invalide, même précédé du mot « ADELI », **n'est pas détecté**.
-- **Secrets** (clés d'API, jetons, clés privées, chaînes de connexion) : non
-  détectés. Spécifié (`agent/specs/P1-07-secrets.md`), pas implémenté.
 - **ADELI.** `AdeliDetector` n'émet qu'avec le mot « ADELI » à moins de
   30 caractères avant le nombre, sans point ni chiffre entre les deux. Avec
   ce mot : clé Luhn valide → confiance 0,95 ; clé invalide ou numéro corse
