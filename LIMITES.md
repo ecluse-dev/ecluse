@@ -582,6 +582,14 @@ détecte pas** (un test l'affirme) :
 registre ou une analyse d'impact : matière première factuelle, comptes de faible
 effectif remplacés par « moins de 5 » (seuil provisoire), mentions d'honnêteté
 dans la sortie ; **ce n'est ni un registre ni une attestation de conformité**.
+Un compte masqué ne doit pas se retrouver par soustraction (P2-26) : le nombre
+d'entrées de la chaîne, qui publiait le total exact même sous « moins de 5 », suit
+le masquage du total ; le total n'est communiqué que si aucune opération n'est
+masquée ; et si un seul code de refus est masqué alors que le nombre de refus est
+exact, le plus petit autre code est retenu aussi (« non communiqué (recoupement) »).
+Ces règles couvrent les sommes que l'export publie lui-même ; elles ne protègent pas
+contre un attaquant qui connaît d'autres comptes (autres exports, journaux de
+l'application) : le seuil reste provisoire.
 
 Le journal prouve la cohérence interne de la chaîne, pas la vérité des
 événements. Les comptes révèlent la nature d'un document (deux NIR et un IBAN
@@ -589,7 +597,7 @@ Le journal prouve la cohérence interne de la chaîne, pas la vérité des
 application peut relier une entrée à une personne : **l'affirmation « ce
 journal n'est pas une donnée personnelle » n'est pas validée** (avis d'un DPO
 attendu ; ceci n'est pas un avis juridique). Le README parle d'un journal
-« signé » : ce n'est pas le cas en v0.
+« signé » : ce n'est pas le cas en v0 (le README a été corrigé en ce sens).
 
 ---
 

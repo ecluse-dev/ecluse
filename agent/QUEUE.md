@@ -89,6 +89,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-23 | code | `ecluse_redact` : rapport de risque de l'aperçu avant application (`Apercu.risque`, `Proposition.risque`), sans effet de bord | P2-22 | fusionnée |
 | P2-24 | code | `ecluse_ingest` : test de composition fichier → aperçu sur le texte extrait (décision 10 de P2-08) | P2-23 | fusionnée |
 | P2-25 | code | `ecluse_redact` : recherche des jetons littéraux sans compiler un motif par jeton et par appel (coût d'un gros dossier) | P2-24 | fusionnée |
+| P2-26 | code | `ecluse_audit` : l'export ne laisse plus retrouver un compte masqué par soustraction ni par le nombre d'entrées de la chaîne | P2-25 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1013,3 +1014,21 @@ attribués écrits en clair dans le texte (un motif compilé par jeton et par ap
   prédictions du banc dossiers inchangées octet pour octet.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` § 5.5 est à jour.
+
+### P2-26 — Recoupement des comptes masqués dans l'export du journal (`code`)
+
+Contexte : vérification de P2-15 (26 octobre 2026), deux divulgations reproduites :
+(1) `chaine.entrees` publiait le nombre exact d'entrées (3) alors que `operations` valait
+« moins de 5 » ; (2) avec 9 opérations `redact` et 3 refus, `operations = 12` et
+`redact = 9` redonnaient les 3 refus masqués.
+
+- Tests d'abord (4 rouges avant) : le nombre d'entrées de la chaîne suit le masquage ;
+  le total n'est exact que si aucune opération n'est masquée ; si un seul code de refus
+  est masqué alors que le nombre de refus est exact, un autre code l'est aussi ; propriété
+  (graine 42, 400 journaux) : jamais une seule inconnue dans une somme exacte.
+- Suppression complémentaire sous la mention « non communiqué (recoupement) » (jamais
+  « moins de N », qui serait faux pour un compte supérieur ou égal à N).
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent sur `ecluse_audit` et `LIMITES.md`
+  § 8 est à jour. Limite assumée : ces règles ne protègent que contre les sommes publiées
+  par l'export lui-même.
