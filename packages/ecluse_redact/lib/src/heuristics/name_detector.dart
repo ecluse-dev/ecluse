@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:ecluse_core/ecluse_core.dart';
 
 import 'etablissement_keywords.dart';
@@ -273,7 +275,7 @@ final class NameDetector implements EntityDetector {
     // désormais le titre pour une entité issue d'un titre professionnel,
     // ce qui casserait l'extraction du patronyme si on la lisait dessus.
     final surnameSources = <String>[];
-    final claimed = <_Range>[];
+    final claimed = _Reserve(text.length);
 
     for (final match in _civility.allMatches(text)) {
       final name = match.group(1)!;
@@ -291,7 +293,7 @@ final class NameDetector implements EntityDetector {
         ),
       );
       surnameSources.add(name);
-      claimed.add(_Range(match.start, match.end)); // réserve civilité + nom
+      claimed.add(match.start, match.end); // réserve civilité + nom
     }
 
     for (final match in _champNom.allMatches(text)) {
@@ -303,7 +305,7 @@ final class NameDetector implements EntityDetector {
           !_fichePrenomPrecede(text, match.start)) {
         continue;
       }
-      if (claimed.any((r) => r.overlaps(start, match.end))) continue;
+      if (claimed.overlaps(start, match.end)) continue;
       results.add(
         DetectedEntity(
           type: EntityType.nom,
@@ -314,14 +316,14 @@ final class NameDetector implements EntityDetector {
         ),
       );
       surnameSources.add(name);
-      claimed.add(_Range(start, match.end));
+      claimed.add(start, match.end);
     }
 
     // Nom de naissance ou d'épouse (P2-45).
     for (final match in _nomDeNaissance.allMatches(text)) {
       final name = match.group(1)!;
       final start = match.end - name.length;
-      if (claimed.any((r) => r.overlaps(start, match.end))) continue;
+      if (claimed.overlaps(start, match.end)) continue;
       results.add(
         DetectedEntity(
           type: EntityType.nom,
@@ -332,7 +334,7 @@ final class NameDetector implements EntityDetector {
         ),
       );
       surnameSources.add(name);
-      claimed.add(_Range(start, match.end));
+      claimed.add(start, match.end);
     }
 
     // Prénom(s) derrière l'étiquette « Prénom » (P2-40), connus ou non du
@@ -340,7 +342,7 @@ final class NameDetector implements EntityDetector {
     for (final match in _champPrenom.allMatches(text)) {
       final name = match.group(1)!;
       final start = match.end - name.length;
-      if (claimed.any((r) => r.overlaps(start, match.end))) continue;
+      if (claimed.overlaps(start, match.end)) continue;
       results.add(
         DetectedEntity(
           type: EntityType.nom,
@@ -351,25 +353,25 @@ final class NameDetector implements EntityDetector {
         ),
       );
       surnameSources.add(name);
-      claimed.add(_Range(start, match.end));
+      claimed.add(start, match.end);
     }
 
     for (final match in _capitalizedWord.allMatches(text)) {
       final word = match.group(0)!;
       if (_isExcludedAcronym(word)) continue;
       if (!_looksLikeKnownFirstName(word)) continue;
-      if (claimed.any((r) => r.overlaps(match.start, match.end))) continue;
+      if (claimed.overlaps(match.start, match.end)) continue;
 
       // Règle bidirectionnelle : un nom de famille supposé peut précéder
       // ou suivre le prénom reconnu, sans condition de casse dans un sens
       // comme dans l'autre (voir le commentaire de classe).
       final before = _matchPrevCapitalizedWord(text, match.start);
-      final hasFreeLastNameBefore = before != null &&
-          !claimed.any((r) => r.overlaps(before.start, before.end));
+      final hasFreeLastNameBefore =
+          before != null && !claimed.overlaps(before.start, before.end);
 
       final after = _matchNextCapitalizedWord(text, match.end);
-      final hasFreeLastNameAfter = after != null &&
-          !claimed.any((r) => r.overlaps(after.start, after.end));
+      final hasFreeLastNameAfter =
+          after != null && !claimed.overlaps(after.start, after.end);
 
       final int start;
       final int end;
@@ -397,7 +399,7 @@ final class NameDetector implements EntityDetector {
         ),
       );
       surnameSources.add(text.substring(start, end));
-      claimed.add(_Range(start, end));
+      claimed.add(start, end);
     }
 
     // --- Deuxième passe : rattrapage des mentions partielles via un
@@ -421,7 +423,7 @@ final class NameDetector implements EntityDetector {
         final word = match.group(0)!;
         if (_isExcludedAcronym(word)) continue;
         if (!knownSurnames.contains(word.toLowerCase())) continue;
-        if (claimed.any((r) => r.overlaps(match.start, match.end))) continue;
+        if (claimed.overlaps(match.start, match.end)) continue;
 
         // Uniquement la direction « après » (pas « avant ») : sans
         // vérification gazetteer sur le mot adjacent — le principe même de
@@ -432,8 +434,8 @@ final class NameDetector implements EntityDetector {
         // rapport (voir la limite déjà documentée sur la règle
         // bidirectionnelle).
         final after = _matchNextCapitalizedWord(text, match.end);
-        final hasFreeWordAfter = after != null &&
-            !claimed.any((r) => r.overlaps(after.start, after.end));
+        final hasFreeWordAfter =
+            after != null && !claimed.overlaps(after.start, after.end);
 
         final int start;
         final int end;
@@ -453,7 +455,7 @@ final class NameDetector implements EntityDetector {
             confidence: 0.6,
           ),
         );
-        claimed.add(_Range(start, end));
+        claimed.add(start, end);
       }
     }
 
@@ -553,7 +555,7 @@ final class NameDetector implements EntityDetector {
   /// `^` dans le motif, qui référence le tout début de la chaîne et non la
   /// position de départ passée en argument.
   static Match? _matchNextCapitalizedWord(String text, int from) {
-    final gapMatch = RegExp('$_h+').matchAsPrefix(text, from);
+    final gapMatch = _ecart.matchAsPrefix(text, from);
     if (gapMatch == null) return null;
     final wordMatch = _uniteAt.matchAsPrefix(text, gapMatch.end);
     if (wordMatch == null || _isExcludedAcronym(wordMatch.group(0)!)) {
@@ -568,15 +570,24 @@ final class NameDetector implements EntityDetector {
   /// [_excludedAcronyms]) — un sigle ne doit jamais être avalé comme s'il
   /// s'agissait d'un nom de famille adjacent à un prénom reconnu.
   static _WordSpan? _matchPrevCapitalizedWord(String text, int before) {
-    final head = text.substring(0, before);
+    // Fenêtre bornée (P2-48) : copier et parcourir tout le texte qui précède
+    // rendait la détection quadratique (4 000 mentions : 11 s). Un mot de plus de
+    // [_fenetreMotPrecedent] caractères n'est plus reconnu en entier.
+    final debut =
+        before > _fenetreMotPrecedent ? before - _fenetreMotPrecedent : 0;
+    final head = text.substring(debut, before);
     final match = _wordBeforeEnd.firstMatch(head);
     if (match == null) return null;
     final word = match.group(1)!;
     if (_isExcludedAcronym(word)) return null;
     // Le groupe capturé est en tête du motif : son début coïncide avec
     // celui du match entier.
-    return _WordSpan(match.start, match.start + word.length);
+    return _WordSpan(debut + match.start, debut + match.start + word.length);
   }
+
+  static const int _fenetreMotPrecedent = 400;
+
+  static final RegExp _ecart = RegExp('$_h+');
 }
 
 final class _WordSpan {
@@ -585,11 +596,25 @@ final class _WordSpan {
   final int end;
 }
 
-final class _Range {
-  const _Range(this.start, this.end);
-  final int start;
-  final int end;
+/// Plages du texte déjà réservées par une entité (P2-48). Un masque par caractère
+/// plutôt qu'une liste de plages parcourue à chaque mot candidat, qui rendait la
+/// détection quadratique avec des milliers de mentions. Même sémantique : deux
+/// plages se recouvrent si elles partagent au moins un caractère.
+final class _Reserve {
+  _Reserve(int length) : _pris = Uint8List(length);
 
-  bool overlaps(int otherStart, int otherEnd) =>
-      otherStart < end && start < otherEnd;
+  final Uint8List _pris;
+
+  void add(int start, int end) {
+    for (var i = start; i < end; i++) {
+      _pris[i] = 1;
+    }
+  }
+
+  bool overlaps(int start, int end) {
+    for (var i = start; i < end; i++) {
+      if (_pris[i] != 0) return true;
+    }
+    return false;
+  }
 }

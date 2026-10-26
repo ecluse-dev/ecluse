@@ -562,6 +562,19 @@ existantes. Intacts, testés : « Les msg arrivent », « Un abbé est venu », 
 professeure est venue » (le titre est suivi d'un mot en minuscule : aucun nom). **Sur-masquage possible** :
 un mot capitalisé après « Ms » ou « Abbé » qui n'est pas un nom (« Abbé Pierre » est bien une personne).
 
+**Coût de la détection de noms sur un texte à milliers de mentions (P2-48).** Mesure : 4 000 mentions
+(« Mme Dupont ben Ali ter ten » répétées) prenaient **11 s** et 32 000 plus de 100 s. Cause trouvée en
+chronométrant les passes (le détecteur de noms seul : 6 s, les autres : moins de 20 ms) : à chaque prénom
+candidat, le mot capitalisé qui le précède était cherché dans une **copie de tout le texte précédent**, donc
+un coût proportionnel à la position. La recherche est bornée à une fenêtre de 400 caractères, et les plages
+déjà réservées sont tenues dans un masque par caractère plutôt qu'une liste parcourue à chaque mot. Mesure
+après : 4 000 mentions en 0,5 s (22 fois plus vite), 32 000 en 13 s. Un test de non-régression est ajouté.
+Équivalence vérifiée : 1 500 textes aléatoires (graine 42) donnent exactement les mêmes sorties avant et
+après, le banc est inchangé octet pour octet et tous les tests passent. **Limites** : un mot de plus de 400
+caractères n'est plus reconnu en entier derrière un prénom ; un coût superlinéaire résiduel subsiste au-delà
+de ~10 000 mentions identiques d'un même texte (hors du détecteur de noms : la résolution des jetons), à
+traiter si un cas réel l'exige.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,

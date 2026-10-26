@@ -110,6 +110,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-44 | code | `ecluse_redact` : détecter « (+33) » et les indicatifs d'outre-mer (+262, +590, +594, +596) ; documenter l'exclusion des numéros étrangers | P2-43 | fusionnée |
 | P2-45 | code | `ecluse_redact` : masquer le nom de naissance ou d'épouse derrière « née », « épouse », « veuve », « nom de jeune fille » | P2-44 | fusionnée |
 | P2-46 | code | `ecluse_redact` : reconnaître « Professeure », « Docteure », « Dre », « Ms », « Mgr », « Abbé » comme civilités | P2-45 | fusionnée |
+| P2-48 | code | `ecluse_redact` : supprimer le coût quadratique de la détection de noms sur un texte à milliers de mentions | P2-46 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1347,5 +1348,18 @@ ne déclenchaient pas la règle de civilité ; un nom sans prénom connu restait
 - `name_detector.dart` : alternation de `_civility` étendue ; `Professeure`, `Docteure`, `Dre` ajoutés aux
   titres professionnels (masqués avec le nom).
 - Mesure : 10 rouges → verts ; banc inchangé octet pour octet ; 672 tests.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-48 — Coût quadratique de la détection de noms (`code`)
+
+Contexte : mesure (26 octobre 2026) : 4 000 mentions répétées prenaient 11 s (32 000 : plus de 100 s) ; le
+détecteur de noms seul en prenait 6.
+
+- Test d'abord (2 rouges, avant : 36 s) : 4 000 mentions en moins de 4 s.
+- `name_detector.dart` : recherche du mot précédent bornée à 400 caractères, plages réservées dans un
+  masque par caractère (`_Reserve`), expression d'écart précompilée.
+- Mesure : 4 000 mentions 11 s → 0,5 s ; 32 000 : 39 s → 13 s ; fuzz différentiel de 1 500 textes
+  identique avant/après ; banc inchangé octet pour octet ; 674 tests.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
