@@ -514,6 +514,35 @@ caractère hors civilité sur 2167 (graine 42) et 2366 (graine 7) ; adversarial,
 surtout des prénoms hors gazetteer et des patronymes. Ces valeurs retrouvent
 celles de `agent/specs/P2-02-reference.md`.
 
+## Patronyme seul (P2-14)
+
+`bench/generate_corpus_patronymes.py` et `bench/score_patronymes.py` séparent les
+cas du patronyme sans civilité ni prénom : **a** (après une mention complète du
+même document), **b** (en première mention, sans ancrage), **c** (dans un
+document ultérieur du dossier) et des **leurres** (le patronyme du dossier est
+aussi un mot courant : « Petit déjeuner », « Marchand de journaux »).
+« Rose » en est exclu : c'est aussi un prénom du gazetteer, déjà détecté seul.
+
+```bash
+mkdir -p bench/patronymes
+python3 bench/generate_corpus_patronymes.py --n 400 --seed 42 --out-dir bench/patronymes
+for c in a b c leurres; do
+  (cd packages/ecluse_redact && dart run bin/run_dossiers_bench.dart --dossier \
+    ../../bench/patronymes/corpus_patronymes_$c.jsonl \
+    ../../bench/patronymes/pred_patronymes_$c.jsonl)
+  python3 bench/score_patronymes.py \
+    --corpus bench/patronymes/corpus_patronymes_$c.jsonl \
+    --pred bench/patronymes/pred_patronymes_$c.jsonl
+done
+# faux positifs sur un corpus dont toutes les personnes sont annotées :
+python3 bench/score_patronymes.py --faux-positifs --corpus <corpus_dossiers.jsonl> --pred <pred.jsonl>
+# règle naïve « mot capitalisé hors début de phrase » sur le témoin flou :
+python3 bench/score_patronymes.py --regle-naive --corpus <corpus_flou_temoin.jsonl> --pred <pred_flou.jsonl>
+```
+
+Sans `--dossier`, le programme mesure l'état d'avant P2-14 (un appel par
+document). Résultats (400 documents, graines 42 et 7) : voir `LIMITES.md` § 5.4.
+
 ## Honnêteté méthodologique
 
 - **Presidio est extensible.** Un développeur peut écrire des

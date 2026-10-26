@@ -59,7 +59,16 @@ import 'french_first_names.dart';
 ///
 /// Sera remplacé en phase 2 par un modèle NER local (voir ROADMAP.md).
 final class NameDetector implements EntityDetector {
-  const NameDetector();
+  /// [knownSurnames] : patronymes (minuscules) établis **ailleurs** que dans le
+  /// texte analysé, par exemple dans les documents précédents d'un dossier
+  /// (P2-14). Ils amorcent la deuxième passe comme un patronyme extrait du
+  /// texte : jamais de liste externe ni d'apprentissage, seulement ce que
+  /// l'appelant a déjà établi par une mention certaine. Un mot courant égal à
+  /// un de ces patronymes (« Petit déjeuner » avec un patient nommé Petit) est
+  /// masqué : sur-masquage assumé, voir `LIMITES.md` § 5.4.
+  const NameDetector({this.knownSurnames = const {}});
+
+  final Set<String> knownSurnames;
 
   @override
   EntityType get type => EntityType.nom;
@@ -250,7 +259,7 @@ final class NameDetector implements EntityDetector {
     // d'un titre professionnel, `value` inclut le titre (« Pr Nadia
     // Costa »), ce qui ferait échouer `_extractSurname` (borné à 1 ou 2
     // mots). `surnameSources[i]` reste le nom seul dans tous les cas.
-    final knownSurnames = <String>{};
+    final knownSurnames = <String>{...this.knownSurnames};
     for (var i = 0; i < results.length; i++) {
       final surname = _extractSurname(results[i].confidence, surnameSources[i]);
       if (surname == null || _isExcludedAcronym(surname)) continue;
@@ -300,6 +309,29 @@ final class NameDetector implements EntityDetector {
 
     results.sort((a, b) => a.start - b.start);
     return results;
+  }
+
+  /// Patronyme (casse d'origine) qu'une entité `nom` déjà détectée établit
+  /// sans ambiguïté, ou `null` (P2-14). Sert à amorcer les documents suivants
+  /// d'un dossier. [value] peut commencer par un titre professionnel
+  /// (« Dr Nadia Costa »), qui est écarté. Retient : un mot après une civilité
+  /// (confiance 0.9) et un couple de deux mots dont **un seul** est un prénom
+  /// connu (confiance 0.6). Un prénom seul, un mot isolé ou un couple dont
+  /// aucun ou les deux mots sont des prénoms n'établissent rien.
+  static String? patronymeEtabli(String value, double confidence) {
+    var words = value.trim().split(RegExp(r'\s+'));
+    if (words.length > 1 && _professionalTitles.contains(words.first)) {
+      words = words.sublist(1);
+    }
+    final name = words.join(' ');
+    if (confidence == 0.9) return _extractSurname(confidence, name);
+    if (confidence == 0.6 && words.length == 2) {
+      final firstIsFirstName = _looksLikeKnownFirstName(words[0]);
+      final secondIsFirstName = _looksLikeKnownFirstName(words[1]);
+      if (firstIsFirstName == secondIsFirstName) return null;
+      return firstIsFirstName ? words[1] : words[0];
+    }
+    return null;
   }
 
   /// Patronyme extrait d'une mention **certaine** (civilité, ou couple

@@ -301,6 +301,10 @@ civilité ou non » ferait exploser les faux positifs sur les débuts de
 phrase — cet arbitrage n'est pas tranché ici, il attend le NER local de la
 phase 2.
 
+*Mise à jour (P2-14).* Le patronyme seul établi dans un document précédent du
+même `Dossier` est désormais masqué ; le patronyme seul en première mention
+reste non couvert. Mesures et coût : voir § 5.4.
+
 **Titres professionnels masqués, civilités de genre en clair.** Le
 détecteur distingue désormais deux familles. Les **titres professionnels**
 (`Dr`, `Docteur`, `Pr`, `Professeur`, `Me`) sont masqués AVEC le nom qu'ils
@@ -401,6 +405,31 @@ d'apprentissage. Limites de cette approche :
 - Un patronyme coïncidant avec un mot du quotidien (au-delà des sigles et
   médicaments déjà exclus) pourrait, en théorie, déclencher un rattrapage à
   tort. Aucune liste ne peut garantir une couverture exhaustive.
+
+**Patronyme seul : ce qui est couvert (P2-14).** Mesure sur les corpus
+synthétiques de `bench/` (400 documents, graines 42 et 7) :
+
+- *Après une mention complète du même document* : 100 % détecté (inchangé).
+- *Dans un document ultérieur d'un dossier* : **2 à 6 % avant, 100 % après**.
+  Les patronymes établis par une mention certaine (civilité ou titre, ou couple
+  prénom + nom dont un seul mot est un prénom connu) des documents précédents
+  d'un `Dossier` amorcent la deuxième passe de `NameDetector`. Jamais de liste
+  externe : seul ce que l'application a déjà fait établir par le dossier. Sans
+  `Dossier`, rien ne change. Des détecteurs fournis par l'appelant ne sont pas
+  modifiés.
+- *En première mention, sans ancrage* : **non couvert** (2 à 5 %, et seulement
+  des patronymes qui sont aussi des prénoms du gazetteer). La seule règle sans
+  liste ni NER testée, « tout mot capitalisé hors début de phrase est un nom »,
+  touche 76 à 78 % des documents du témoin flou (budget : 1 %) : impossible
+  sans NER ni liste.
+- *Coût du rattrapage par le dossier* : un mot courant égal au patronyme établi
+  est masqué (« Petit déjeuner » avec un patient nommé Petit : 100 % des 265 et 266
+  documents de leurre des deux graines, par construction). Sur les corpus de
+  dossiers dont toutes les personnes sont annotées, aucune détection hors
+  annotation, avant comme après (0 sur environ 480 à 620 détections par corpus). La
+  fréquence réelle de ce cas n'est pas mesurée.
+- Le jeton d'un patronyme seul d'un autre document est séparé en N1 (nouvelle
+  mention partielle) et fusionné en N2 (voir § 5.3).
 
 ## 6. Hors périmètre v0
 
