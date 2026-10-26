@@ -90,7 +90,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-24 | code | `ecluse_ingest` : test de composition fichier → aperçu sur le texte extrait (décision 10 de P2-08) | P2-23 | fusionnée |
 | P2-25 | code | `ecluse_redact` : recherche des jetons littéraux sans compiler un motif par jeton et par appel (coût d'un gros dossier) | P2-24 | fusionnée |
 | P2-26 | code | `ecluse_audit` : l'export ne laisse plus retrouver un compte masqué par soustraction ni par le nombre d'entrées de la chaîne | P2-25 | fusionnée |
-| P2-27 | code | `ecluse_ingest` : refuser un .docx/.odt dont le contenu ne correspond plus au CRC-32 de l'archive | P2-26 | PR ouverte |
+| P2-27 | code | `ecluse_ingest` : refuser un .docx/.odt dont le contenu ne correspond plus au CRC-32 de l'archive | P2-26 | fusionnée |
+| P2-28 | code | `ecluse_ingest` : refuser un PDF qui a plus d'objets page en clair que de pages atteignables (page perdue sans avertissement) | P2-27 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1048,5 +1049,23 @@ C'est un « lu à moitié » silencieux (règle 4).
   exception de lecture avec le motif « corrompue ».
 - Mesure : 81 textes altérés et 34 textes vides lus comme des succès, puis 0 et 0.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée (`getCrc32` vient d'`archive`).
+- **Fini quand** : `format`, `analyze`, `test` passent sur `ecluse_ingest` et `LIMITES.md`
+  § 4 est à jour.
+
+### P2-28 — Page de PDF perdue sans avertissement (`code`)
+
+Contexte : essai de falsification de l'ingestion PDF (26 octobre 2026) : sur 1 500 copies
+abîmées d'un PDF de trois pages, 63 étaient lues comme des succès sans une page, sans
+avertissement. La spec P1-09 § 3 n'accepte un PDF que si tout son contenu est lu.
+
+- Test d'abord (1 rouge avant) : une copie du PDF de bench abîmée en deux octets (page 3
+  perdue) est refusée (`malforme`) ; l'intact est lu en entier.
+- `ingestPdf` recoupe le nombre d'objets `/Type /Page` visibles en clair avec le nombre de
+  pages lues et refuse s'il y en a plus.
+- Mesure : pages perdues sans avertissement 63 -> 6 sur 1 500 ; 40 PDF de bench inchangés.
+- Limites assumées : flux compressés non comptés ; refus possible à tort pour un PDF
+  mis à jour par ajout (à mesurer sur de vrais fichiers) ; pas de détection d'un texte
+  modifié sans effet sur la structure.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent sur `ecluse_ingest` et `LIMITES.md`
   § 4 est à jour.
