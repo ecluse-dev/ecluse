@@ -448,6 +448,10 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   aléatoires (graine 42, hors entités structurelles et secrets) n'ajoutent
   aucune restauration non identique à celles que `redact` produit déjà (60
   documents sur 3 391 : harmonisation des re-mentions, point 5 de l'essentiel).
+  En dossier (530 dossiers, 2 382 documents, règles N1 et N2, 26 octobre 2026),
+  la séquence propose puis applique « tout accepté » reste identique à la
+  séquence d'`Ecluse.redact` : 0 différence de texte masqué, de carte ou
+  d'avertissement.
   Les blancs en bordure d'un ajout manuel ne sont pas masqués (P2-20) : deux
   mentions qui ne différaient que par eux partageaient un jeton et la
   restauration ajoutait des espaces. Un ajout de type `nom` reste soumis à
