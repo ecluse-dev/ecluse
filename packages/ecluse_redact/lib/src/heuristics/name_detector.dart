@@ -109,7 +109,7 @@ final class NameDetector implements EntityDetector {
   static const String _unite = '(?:$_particules)*$_cap';
 
   static final RegExp _civility = RegExp(
-    r'\b(?:M\.|Mrs\.?|Mr\.?|Mme|Mlle|Mademoiselle|Monsieur|Madame|Dr\.?|'
+    r'\b(?:M\.|Mrs\.?|Mr\.?|Mme\.?|Mlle\.?|Mademoiselle|Monsieur|Madame|Dr\.?|'
     r'Docteur|Pr\.?|Professeur|Maître|Maitre|Me)'
     '$_h+'
     '($_unite'
