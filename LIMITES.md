@@ -441,7 +441,12 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   analysé et au dossier qui l'a produite : si le dossier a masqué un autre
   document entre l'aperçu et l'application, elle est refusée comme périmée
   (P2-19). Le rapport de risque est calculé à
-  l'application, sur le texte réellement masqué. Mesure (26 octobre 2026,
+  l'application, sur le texte réellement masqué ; avant elle, `Apercu.risque`
+  (ou `Proposition.risque`, tout accepté, si l'appelant fournit une référence)
+  le calcule sur une copie de l'état, sans rien modifier (P2-23). Mesuré sur
+  2 191 documents synthétiques avec refus aléatoires (graine 42), dans un
+  dossier : 0 différence de statut, d'estimation ou de positions avec le
+  rapport de l'application (259 documents évalués). Mesure (26 octobre 2026,
   3 391 documents synthétiques des corpus dossiers, flou et étendu, 6 163
   entités) : « tout accepté » donne un texte masqué, une carte et des
   avertissements identiques à `Ecluse.redact` (0 différence) ; des refus
