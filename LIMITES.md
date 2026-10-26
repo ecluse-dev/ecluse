@@ -310,6 +310,17 @@ l'accord grammatical, et le masquer dégraderait la réponse du modèle
 le genre, lui, n'est pas retenu par l'écluse en v0. Son masquage optionnel
 est un arbitrage prévu en phase 2.
 
+Sondage de robustesse (26 octobre 2026, graine 42, script jetable) : 3 000 textes
+synthétiques assemblés au hasard à partir de civilités, noms, téléphones, courriels,
+adresses, dates, NIR, IBAN, émojis (dont séquences ZWJ et drapeaux), lettres
+mathématiques, accents composés, espaces insécables et de largeur nulle, retours à
+la ligne et crochets. Sur 2 544 entités détectées : 0 exception, 0 chevauchement,
+0 désordre, 0 valeur différente du texte à l'offset indiqué, 0 coupure d'une paire de
+substituts UTF-16. 7 textes se restaurent de façon non identique : ce sont les cas
+d'harmonisation des re-mentions (§ 5.3) sur des enchaînements absurdes (« Dr Dr »).
+Un sondage aléatoire n'est pas une preuve ; il n'a pas cherché les mises en forme
+propres aux vrais documents (§ 5.2).
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
