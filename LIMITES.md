@@ -548,9 +548,19 @@ majuscule initiale qui suivent « née », « épouse », « ép. », « veuve �
 « née en France », « Elle est née Lundi / Janvier » (mois et jours exclus), « épouse de l'intéressé », « sa
 veuve est présente ». **Sur-masquage assumé** : « La veuve Clicquot est une marque » masque « Clicquot ».
 **Coût** : 32 000 « née Dupont » successifs : ~5 s, même ordre de grandeur que les civilités existantes.
-**Titres et fonctions encore non reconnus** (relevés par la même sonde) : « Professeure », « Dre », « Ms »,
-« Mgr », « abbé », « Père », les grades (« Capitaine »), et les fonctions suivies d'un nom (« Infirmière
-Zorglub Quenelle », « IDE », « Pharmacien ») sans civilité ni prénom connu : même limite que § 5.4.
+**Titres et fonctions encore non reconnus** (relevés par la même sonde) : « Père », les grades
+(« Capitaine »), et les fonctions suivies d'un nom (« Infirmière Zorglub Quenelle », « IDE », « Pharmacien »)
+sans civilité ni prénom connu : même limite que § 5.4. Les titres « Professeure », « Docteure », « Dre »,
+« Ms », « Mgr » et « Abbé » sont traités en P2-46.
+
+**Titres supplémentaires (P2-46).** « Professeure », « Docteure », « Dre » (avec ou sans point), « Ms »,
+« Mgr » et « Abbé » / « abbé » déclenchent maintenant la règle de civilité : le nom qui suit est masqué
+même sans prénom connu. Les titres professionnels (Professeure, Docteure, Dre) sont masqués avec le nom,
+comme « Dr » et « Professeur » ; « Ms », « Mgr » et « Abbé » restent visibles comme « M. » ou « Mme ». Tests
+d'abord (10 rouges) ; banc inchangé octet pour octet ; 672 tests ; coût du même ordre que les civilités
+existantes. Intacts, testés : « Les msg arrivent », « Un abbé est venu », « Le mgr de la boîte », « La
+professeure est venue » (le titre est suivi d'un mot en minuscule : aucun nom). **Sur-masquage possible** :
+un mot capitalisé après « Ms » ou « Abbé » qui n'est pas un nom (« Abbé Pierre » est bien une personne).
 
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 

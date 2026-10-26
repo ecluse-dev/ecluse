@@ -109,6 +109,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-43 | code | `ecluse_redact` : reconnaître les variantes de contexte et d'écriture d'une date de naissance (département, abréviations, jour de semaine, mois anglais) | P2-42 | fusionnée |
 | P2-44 | code | `ecluse_redact` : détecter « (+33) » et les indicatifs d'outre-mer (+262, +590, +594, +596) ; documenter l'exclusion des numéros étrangers | P2-43 | fusionnée |
 | P2-45 | code | `ecluse_redact` : masquer le nom de naissance ou d'épouse derrière « née », « épouse », « veuve », « nom de jeune fille » | P2-44 | PR ouverte |
+| P2-46 | code | `ecluse_redact` : reconnaître « Professeure », « Docteure », « Dre », « Ms », « Mgr », « Abbé » comme civilités | P2-45 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1334,4 +1335,17 @@ en clair (de même « épouse », « ép. », « veuve », « nom de jeune fille
 - Mesure : 17 rouges → verts ; banc inchangé octet pour octet (sans cas couvrant la règle) ; 657 tests.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Non traité : titres et fonctions sans prénom connu (« Professeure », « Dre », « abbé », « Infirmière »…).
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-46 — Titres supplémentaires (`code`)
+
+Contexte : sonde de 24 civilités et titres (26 octobre 2026) : « Professeure », « Dre », « Ms », « Mgr », « Abbé »
+ne déclenchaient pas la règle de civilité ; un nom sans prénom connu restait en clair.
+
+- Tests d'abord (10 rouges, avant) ; 5 contre-exemples en minuscules ou sans nom intacts ; restauration
+  identique.
+- `name_detector.dart` : alternation de `_civility` étendue ; `Professeure`, `Docteure`, `Dre` ajoutés aux
+  titres professionnels (masqués avec le nom).
+- Mesure : 10 rouges → verts ; banc inchangé octet pour octet ; 672 tests.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
