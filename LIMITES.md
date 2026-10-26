@@ -215,6 +215,20 @@ reconnaissance manuscrite introduirait des erreurs de lecture qui feraient
 dans un NIR le fait rejeter comme invalide — et donc **fuir en clair**.
 C'est une posture assumée, pas une limite technique temporaire.
 
+### Intégrité des archives `.docx` et `.odt` (P2-27)
+
+Un `.docx` ou `.odt` dont le contenu ne correspond plus à la somme de contrôle
+(CRC-32) de l'archive est **refusé** (« archive corrompue »). Avant P2-27,
+`package:archive` 4.x ne vérifiait pas ce CRC (son option `verify` est sans
+effet dans la version utilisée) : sur 4 000 `.docx` synthétiques abîmés au hasard
+(graine 42 : octets modifiés, tronqués, supprimés ou insérés), 81 étaient lus avec
+un texte **altéré** (« JulienGVasseur ») et 34 avec un texte vide, tous comme des
+succès. Après : 0 texte altéré, 0 texte vide, 0 exception ; 3 654 refus, 346
+fichiers lus à l'identique (octets sans effet sur le contenu). Un fichier fabriqué
+avec un CRC volontairement faux pour un contenu modifié passe, bien sûr : le CRC
+détecte l'accident, pas l'adversaire. Les PDF (lecteur maison) ne sont pas concernés
+par cette vérification.
+
 ## 5. Limites résiduelles des heuristiques nom / adresse
 
 ### 5.1 Faux positifs assumés
