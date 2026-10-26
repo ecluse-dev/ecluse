@@ -121,7 +121,13 @@ abstract final class Ecluse {
     bool refuseSecrets,
     EcluseReference? riskReference,
   ) async {
-    final engine = EcluseEngine(detectors ?? defaultDetectors);
+    // Dans un dossier, les patronymes établis par les documents précédents
+    // amorcent la détection de noms (P2-14) ; des détecteurs fournis par
+    // l'appelant ne sont jamais modifiés.
+    final engine = EcluseEngine(detectors ??
+        (etat.patronymes.isEmpty
+            ? defaultDetectors
+            : _detecteursAvecPatronymes(etat.patronymes)));
     final detection = await engine.run(text);
     final resolved = detection.entities;
 
@@ -139,6 +145,12 @@ abstract final class Ecluse {
         if (tolerantTokenPattern(token).hasMatch(text)) token
     ];
     final docId = etat.documents++;
+    for (final entity in resolved) {
+      if (entity.type != EntityType.nom) continue;
+      final patronyme =
+          NameDetector.patronymeEtabli(entity.value, entity.confidence);
+      if (patronyme != null) etat.patronymes.add(patronyme.toLowerCase());
+    }
     final utilises = <String>{};
     final buffer = StringBuffer();
     var cursor = 0;
@@ -203,6 +215,19 @@ abstract final class Ecluse {
     return result;
   }
 }
+
+/// Les détecteurs par défaut, avec un [NameDetector] amorcé par [patronymes].
+List<Detector> _detecteursAvecPatronymes(Set<String> patronymes) => [
+      for (final detecteur in Ecluse.defaultDetectors)
+        if (detecteur is LegacyDetectorAdapter && detecteur.name == 'nom')
+          LegacyDetectorAdapter(
+            NameDetector(knownSurnames: Set.of(patronymes)),
+            DetectorTier.reference,
+            name: 'nom',
+          )
+        else
+          detecteur,
+    ];
 
 /// Clé d'identité pour les types **autres que `nom`** : l'identité est la
 /// valeur exacte. Deux adresses ou deux téléphones qui se ressemblent ne
@@ -392,6 +417,10 @@ final class _Etat {
   final List<_NomIdentity> nomIdentities = [];
   final Map<EntityType, int> counterByType = {};
 
+  /// Patronymes (minuscules) établis par une mention certaine d'un document
+  /// du dossier : amorcent la détection des documents suivants.
+  final Set<String> patronymes = {};
+
   /// Tous les jetons attribués, y compris ceux qui ne sont pas dans la carte
   /// (secrets non restaurables).
   final Set<String> attribues = {};
@@ -404,6 +433,7 @@ final class _Etat {
     tokenByIdentity.clear();
     nomIdentities.clear();
     counterByType.clear();
+    patronymes.clear();
     attribues.clear();
   }
 }

@@ -53,3 +53,4 @@ bench/corpus_qi_*.jsonl
 bench/dossiers/
 bench/corpus_dossiers_*.jsonl
 bench/pred_dossiers_*.jsonl
+bench/patronymes/
