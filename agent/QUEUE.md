@@ -82,6 +82,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-16 | code | `ecluse_redact` : scinder détection et application de `Ecluse.redact` (test d'équivalence d'abord), préalable de l'aperçu | P2-08 | fusionnée |
 | P2-17 | code | `ecluse_reid` : échelle de dates de naissance et dérivation d'âge avec date de référence injectée, palier 85+, en ajout | P2-07 | fusionnée |
 | P2-18 | code | `ecluse_redact` : composant d'aperçu avec validation (proposition, refus, ajouts manuels, application), sans interface | P2-16 | fusionnée |
+| P2-19 | code | `ecluse_redact` : une proposition d'aperçu périmée (dossier modifié depuis) ou appliquée à un autre dossier est refusée | P2-18 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -894,3 +895,18 @@ délégation, révocables). Bibliothèque seulement : aucune interface.
 - **Fini quand** : `format`, `analyze`, `test` passent et la PR dit ce qui n'est pas
   fait (interface, tests utilisateurs, trace d'audit, rapport de risque dans la
   proposition).
+
+### P2-19 — Péremption d'une proposition d'aperçu (`code`)
+
+Contexte : limite signalée par la PR de P2-18 et par `LIMITES.md` § 6 : une
+proposition établie sur un dossier n'était pas détectée comme périmée.
+
+- Une `Proposition` retient le dossier qui l'a produite et le nombre de documents
+  qu'il avait masqués (lu dans la même section sérialisée que la détection).
+- `Apercu.applique` refuse (`ApercuException`, avant toute modification d'état) si le
+  dossier diffère (y compris absent d'un côté) ou si le dossier a masqué un autre
+  document depuis.
+- Tests d'abord (5 cas rouges avant le correctif) ; comportement inchangé sans dossier
+  et pour toute séquence propose → applique directe.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent ; `LIMITES.md` mis à jour.

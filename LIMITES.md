@@ -446,9 +446,10 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   valeur en clair au tiers** : c'est un acte de l'utilisateur, pas une
   protection d'Écluse. Les refus ne sont pas journalisés. Un secret ne peut ni
   être refusé ni ajouté à la main ; refuser une entité à validation
-  structurelle exige une option explicite. La proposition n'est liée qu'au
-  texte analysé : si l'état du dossier change entre l'aperçu et l'application,
-  elle n'est pas détectée comme périmée. Le rapport de risque est calculé à
+  structurelle exige une option explicite. La proposition est liée au texte
+  analysé et au dossier qui l'a produite : si le dossier a masqué un autre
+  document entre l'aperçu et l'application, elle est refusée comme périmée
+  (P2-19). Le rapport de risque est calculé à
   l'application, sur le texte réellement masqué.
 
 Voir `ROADMAP.md` pour le calendrier de ces briques.

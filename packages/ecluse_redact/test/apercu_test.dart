@@ -263,6 +263,68 @@ void main() {
     });
   });
 
+  group('péremption (P2-19)', () {
+    test('une proposition périmée par un autre document est refusée', () async {
+      final d = Dossier();
+      final p = await Apercu.propose(_texte, dossier: d);
+      await Ecluse.redact('Verdier a rappelé.', dossier: d);
+      await expectLater(
+          Apercu.applique(p, const DecisionApercu(),
+              texteAEnvoyer: _texte, dossier: d),
+          throwsA(isA<ApercuException>()));
+    });
+
+    test('périmée par une autre application d\'aperçu', () async {
+      final d = Dossier();
+      final p1 = await Apercu.propose(_texte, dossier: d);
+      final p2 = await Apercu.propose(_texte, dossier: d);
+      await Apercu.applique(p1, const DecisionApercu(),
+          texteAEnvoyer: _texte, dossier: d);
+      await expectLater(
+          Apercu.applique(p2, const DecisionApercu(),
+              texteAEnvoyer: _texte, dossier: d),
+          throwsA(isA<ApercuException>()));
+    });
+
+    test('une proposition ne s\'applique qu\'au dossier qui l\'a produite',
+        () async {
+      final a = Dossier();
+      final p = await Apercu.propose(_texte, dossier: a);
+      await expectLater(
+          Apercu.applique(p, const DecisionApercu(),
+              texteAEnvoyer: _texte, dossier: Dossier()),
+          throwsA(isA<ApercuException>()));
+      await expectLater(
+          Apercu.applique(p, const DecisionApercu(), texteAEnvoyer: _texte),
+          throwsA(isA<ApercuException>()));
+    });
+
+    test('sans dossier à la proposition, aucun dossier à l\'application',
+        () async {
+      final p = await Apercu.propose(_texte);
+      await expectLater(
+          Apercu.applique(p, const DecisionApercu(),
+              texteAEnvoyer: _texte, dossier: Dossier()),
+          throwsA(isA<ApercuException>()));
+    });
+
+    test('un refus de péremption ne modifie pas le dossier', () async {
+      final d = Dossier();
+      final temoin = Dossier();
+      final p = await Apercu.propose(_texte, dossier: d);
+      await Ecluse.redact('Verdier a rappelé.', dossier: d);
+      await Ecluse.redact('Verdier a rappelé.', dossier: temoin);
+      await expectLater(
+          Apercu.applique(p, const DecisionApercu(),
+              texteAEnvoyer: _texte, dossier: d),
+          throwsA(isA<ApercuException>()));
+      final r = await Ecluse.redact(_texte, dossier: d);
+      final attendu = await Ecluse.redact(_texte, dossier: temoin);
+      expect(r.maskedText, attendu.maskedText);
+      expect(r.mapping, attendu.mapping);
+    });
+  });
+
   test(
       'propriété : restauration identique pour des décisions aléatoires '
       '(graine 42)', () async {
