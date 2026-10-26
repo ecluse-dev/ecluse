@@ -90,8 +90,12 @@ final class NameDetector implements EntityDetector {
   static const String _h = r'[ \t\u00A0\u202F]';
 
   /// Mot de nom propre : majuscule initiale, apostrophes droite et
-  /// typographique (« O’Connor »), tirets.
-  static const String _cap = r"[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ][\wÀ-ſ'’-]*";
+  /// typographique (« O’Connor »), tirets. La majuscule initiale couvre le
+  /// Latin-1 (À-Ö, Ø-Þ : Á, Ñ, Ø, Æ…) et le Latin étendu A (Œ, Ł, Ş, Ž…) ; les
+  /// lettres suivantes couvrent aussi le Latin étendu additionnel (vietnamien,
+  /// P2-33).
+  static const String _cap =
+      r"[A-ZÀ-ÖØ-ÞĀĂĄĆĈĊČĎĐĒĔĖĘĚĜĞĠĢĤĦĨĪĬĮİĲĴĶĹĻĽĿŁŃŅŇŊŌŎŐŒŔŖŘŚŜŞŠŢŤŦŨŪŬŮŰŲŴŶŸŹŻŽ][\wÀ-ſḀ-ỿ'’-]*";
 
   /// Particules d'un nom (« de la Fontaine », « Van Der Berg », « Le Gall »,
   /// « d'Angelo »), en minuscules **ou** capitalisées, chaînables. Une
