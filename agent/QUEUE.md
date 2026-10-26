@@ -102,6 +102,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-36 | code | `ecluse_redact` : masquer le patronyme derrière une étiquette de champ (« Nom de naissance : », « Nom : … Prénom : … ») | P2-35 | fusionnée |
 | P2-37 | code | `ecluse_redact` : masquer en entier une adresse dont le numéro de voie porte une lettre (« 12 B rue des Lilas ») | P2-36 | fusionnée |
 | P2-38 | code | `ecluse_redact` : détecter un identifiant à chiffres (NIR, IBAN, téléphone, date) coupé par une fin de ligne entre deux groupes | P2-37 | fusionnée |
+| P2-39 | code | `ecluse_redact` : détecter une date de naissance séparée de son étiquette (`\|`, `;`, saut de ligne) | P2-38 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1229,4 +1230,18 @@ entre deux groupes échappait à la détection (limite jusqu'ici documentée, `t
 - Mesure : 11 rouges → verts ; banc inchangé octet pour octet ; 533 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée. Assouplit une limite documentée
   (`LIMITES.md` § 5.2 conserve la règle pour noms, adresses, établissements).
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-39 — Date de naissance séparée de son étiquette (`code`)
+
+Contexte : sonde de formats de formulaire (26 octobre 2026) : « Date de naissance :⏎12/03/1950 », « Date de
+naissance | 12/03/1950 », « Date de naissance;12/03/1950 » n'étaient pas détectées.
+
+- Tests d'abord (10 rouges, avant) : formes avec saut de ligne (`\n`, `\r\n`), `|` (avec et sans barres
+  de bord), `;`, étiquettes « DDN » et « Né le », formats `12 mars 1950` et ISO ; contre-exemples
+  (ligne vide, ligne étrangère, virgule, « naissance du projet », date sans étiquette) intacts ;
+  restauration identique.
+- `date_naissance_detector.dart` : `_sepContexte` (blancs, `|` ou `;`, ou un seul saut de ligne).
+- Mesure : 10 rouges → verts ; banc inchangé octet pour octet ; 549 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
