@@ -349,19 +349,45 @@ int _versAscii(int c) {
   if (_autresFormes.hasMatch(vue)) {
     vue = String.fromCharCodes([for (final c in vue.codeUnits) _versAscii(c)]);
   }
-  if (!_invisibles.hasMatch(vue)) {
+  final coupures = _coupuresDeLigne.allMatches(vue).toList();
+  if (coupures.isEmpty && !_invisibles.hasMatch(vue)) {
     return (vue, null);
+  }
+  // Les caractères d'une coupure sont retirés comme les invisibles, sauf un
+  // espace conservé quand la coupure suit un chiffre.
+  final retires = <int>{};
+  final unites = vue.codeUnits.toList();
+  for (final m in coupures) {
+    // Après un séparateur (`12-` / `34`), la coupure disparaît ; après un
+    // chiffre, elle devient une espace.
+    final apresChiffre = vue.codeUnitAt(m.start - 1) >= 0x30 &&
+        vue.codeUnitAt(m.start - 1) <= 0x39;
+    var debut = m.start;
+    if (apresChiffre) {
+      unites[m.start] = 0x20;
+      debut++;
+    }
+    for (var i = debut; i < m.end; i++) {
+      retires.add(i);
+    }
   }
   final sb = StringBuffer();
   final positions = <int>[];
-  for (var i = 0; i < vue.length; i++) {
-    final c = vue.codeUnitAt(i);
-    if (_estInvisible(c)) continue;
+  for (var i = 0; i < unites.length; i++) {
+    final c = unites[i];
+    if (retires.contains(i) || _estInvisible(c)) continue;
     sb.writeCharCode(c);
     positions.add(i);
   }
   return (sb.toString(), positions);
 }
+
+/// Fin de ligne entre deux groupes d'un identifiant (P2-38) : après un chiffre
+/// ou l'un de `/ . -`, avant un chiffre, avec les blancs de part et d'autre.
+/// Volontairement étroite : un saut de ligne ordinaire (texte, nom, adresse)
+/// n'est pas touché, donc aucun span de texte ne traverse une ligne.
+final RegExp _coupuresDeLigne =
+    RegExp(r'(?<=[0-9/.\-])[ \t]*\r?\n[ \t]*(?=[0-9])');
 
 /// Les détecteurs par défaut, avec un [NameDetector] amorcé par [patronymes].
 List<Detector> _detecteursAvecPatronymes(Set<String> patronymes) => [

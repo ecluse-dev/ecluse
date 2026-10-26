@@ -96,7 +96,9 @@ la clé de contrôle est valide, et avec les séparateurs espace, point, tiret,
 barre oblique, tabulation, espace insécable et espaces typographiques (dont
 l'espace fine U+2009). Les mois 13 à 19 et 43 à 49 restent rejetés. L'IBAN
 accepte espace, tiret, point et barre oblique.
-**Non détecté** : un identifiant coupé par un **saut de ligne**.
+**Coupure de ligne** : un identifiant (NIR, IBAN, téléphone, date de naissance numérique) coupé par
+un saut de ligne **entre deux groupes de chiffres** est détecté (P2-38) ; une coupure ailleurs (au milieu
+d'un groupe, après une lettre) ne l'est pas.
 
 **Ne pas confondre les deux.**
 
@@ -191,8 +193,9 @@ formulaire n'est pas détecté** : il peut contenir un identifiant.
 Limites propres au PDF :
 
 - **Ordre de lecture** (colonnes, tableaux) et **coupures de ligne** : un
-  identifiant coupé par une fin de ligne ou une césure peut échapper à la
-  détection (cas `texte_iban_coupe` du jeu synthétique).
+  identifiant coupé par une fin de ligne entre deux groupes de chiffres est
+  détecté depuis P2-38 ; une césure au milieu d'un groupe, ou une coupure
+  après une lettre, peut encore échapper à la détection.
 - Une image atteinte seulement par un XObject de formulaire n'est pas vue
   (pas d'avertissement `images_non_traitees`). Une page de texte avec une
   image qui porte du texte (texte incrusté dans une image) est acceptée avec
@@ -444,6 +447,20 @@ de voie reste obligatoire, donc « Annexe 12 B : voir page 3 » n'est pas une ad
 non-détection). Tests d'abord (4 rouges) ; banc inchangé octet pour octet ; coût linéaire
 (« 1 B rue » × 4000 : ~0,2 s). **Restent non traités** : lettre minuscule (« 12 b rue »), lettres
 au-delà de F, « Lieu-dit », boîte postale, adresse sans code postal.
+
+**Identifiant coupé par une fin de ligne (P2-38).** Sonde de 14 formes : un téléphone, un NIR, un
+IBAN ou une date coupés entre deux groupes (« 01 99 00⏎12 34 », « FR76 3000 6000⏎0112 … ») n'étaient
+pas détectés, alors que l'extraction d'un PDF ou le retour automatique d'un traitement de texte les
+produisent souvent. La coupure est neutralisée **dans la vue de détection seulement** (le texte n'est
+jamais réécrit) : entre deux chiffres elle devient une espace, après `/ . -` elle disparaît ; les
+blancs et un `\r` autour sont absorbés. Tests d'abord (11 rouges) ; banc inchangé octet pour octet ;
+coût linéaire (40 000 fins de ligne : < 1 s). Garde-fous testés : « Total : 150⏎Page 12 », « Chambre
+12⏎Lit 3 » et « Tableau⏎12⏎34⏎56 » restent intacts, deux numéros sur deux lignes restent deux
+numéros. La règle générale du § 5.2 (« un span ne traverse jamais un saut de ligne ») demeure pour les
+noms, adresses et établissements ; **seuls les identifiants à chiffres sont concernés**, car leur
+validation (clé NIR, clé IBAN) ou leur forme étroite limite le risque de fusionner deux lignes sans
+rapport. **Restent non détectés** : l'adresse e-mail coupée après le `@`, une date écrite avec le
+mois en lettres sur deux lignes (« 12 mars⏎1950 »), un identifiant coupé au milieu d'un groupe.
 
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
