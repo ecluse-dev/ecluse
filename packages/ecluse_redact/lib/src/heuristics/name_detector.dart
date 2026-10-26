@@ -133,6 +133,18 @@ final class NameDetector implements EntityDetector {
     '($_unite(?:$_h+(?!(?:Pr[ée]nom|PR[ÉE]NOM)\\b)$_unite)?)',
   );
 
+  /// Prénom(s) derrière l'étiquette « Prénom » (P2-40) : toujours une personne
+  /// (« Prénom usuel », « Prénom de naissance »…), de 1 à 3 mots, sans jamais
+  /// absorber l'étiquette suivante (« Nom », « Prénom »). « Prénom du chat : »
+  /// n'est pas reconnu : seules les qualifications d'état civil le sont.
+  static final RegExp _champPrenom = RegExp(
+    r'\b(?:Pr[ée]noms?|PR[ÉE]NOMS?)(?:'
+    '$_h+(?:usuels?|de$_h+naissance|d[\u0027\u2019]usage|[àa]$_h+l[\u0027\u2019]'
+    r'[ée]tat$_h+civil))?'
+    '$_h*:$_h*'
+    '($_unite(?:$_h+(?!(?:Nom|NOM|Pr[ée]noms?|PR[ÉE]NOMS?)\\b)$_unite){0,2})',
+  );
+
   static final RegExp _prenomChamp = RegExp(r'\b(?:Pr[ée]nom|PR[ÉE]NOM)\b');
 
   /// Fenêtre de recherche de « Prénom » après un « Nom : » seul : fin de la
@@ -147,6 +159,19 @@ final class NameDetector implements EntityDetector {
     if (end == -1 || end > from + _fenetrePrenom) end = from + _fenetrePrenom;
     if (end > text.length) end = text.length;
     return _prenomChamp.hasMatch(text.substring(from, end));
+  }
+
+  /// « Prénom » dans la ligne courante ou la précédente, avant [to], dans la
+  /// même fenêtre bornée (fiche dont le prénom précède le nom).
+  static bool _fichePrenomPrecede(String text, int to) {
+    if (to <= 0) return false;
+    // Fenêtre bornée d'abord : remonter jusqu'au début de ligne serait
+    // quadratique sur une longue ligne de « Nom » répétés.
+    final fenetre =
+        text.substring(to < _fenetrePrenom ? 0 : to - _fenetrePrenom, to);
+    var debut = fenetre.lastIndexOf('\n');
+    if (debut > 0) debut = fenetre.lastIndexOf('\n', debut - 1);
+    return _prenomChamp.hasMatch(fenetre.substring(debut < 0 ? 0 : debut));
   }
 
   static final RegExp _capitalizedWord = RegExp(_cap);
@@ -241,9 +266,30 @@ final class NameDetector implements EntityDetector {
       final name = match.group(2)!;
       final start = match.end - name.length;
       // Groupe 1 : étiquette précise ; absent pour « Nom » seul.
-      if (match.group(1) == null && !_fichePrenomSuit(text, match.start)) {
+      if (match.group(1) == null &&
+          !_fichePrenomSuit(text, match.start) &&
+          !_fichePrenomPrecede(text, match.start)) {
         continue;
       }
+      if (claimed.any((r) => r.overlaps(start, match.end))) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.nom,
+          start: start,
+          end: match.end,
+          value: name,
+          confidence: 0.6,
+        ),
+      );
+      surnameSources.add(name);
+      claimed.add(_Range(start, match.end));
+    }
+
+    // Prénom(s) derrière l'étiquette « Prénom » (P2-40), connus ou non du
+    // gazetteer.
+    for (final match in _champPrenom.allMatches(text)) {
+      final name = match.group(1)!;
+      final start = match.end - name.length;
       if (claimed.any((r) => r.overlaps(start, match.end))) continue;
       results.add(
         DetectedEntity(

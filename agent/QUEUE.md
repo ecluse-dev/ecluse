@@ -103,6 +103,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-37 | code | `ecluse_redact` : masquer en entier une adresse dont le numéro de voie porte une lettre (« 12 B rue des Lilas ») | P2-36 | fusionnée |
 | P2-38 | code | `ecluse_redact` : détecter un identifiant à chiffres (NIR, IBAN, téléphone, date) coupé par une fin de ligne entre deux groupes | P2-37 | fusionnée |
 | P2-39 | code | `ecluse_redact` : détecter une date de naissance séparée de son étiquette (`\|`, `;`, saut de ligne) | P2-38 | fusionnée |
+| P2-40 | code | `ecluse_redact` : masquer le prénom derrière « Prénom : » et reconnaître la fiche « Prénom » avant « Nom » | P2-39 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1243,5 +1244,18 @@ naissance | 12/03/1950 », « Date de naissance;12/03/1950 » n'étaient pas dé
   restauration identique.
 - `date_naissance_detector.dart` : `_sepContexte` (blancs, `|` ou `;`, ou un seul saut de ligne).
 - Mesure : 10 rouges → verts ; banc inchangé octet pour octet ; 549 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-40 — Prénom derrière une étiquette, fiche Prénom avant Nom (`code`)
+
+Contexte : contrôle de P2-36 (26 octobre 2026) : « Prénom : Zorglub » (prénom hors gazetteer) restait en clair, et
+« Prénom : Zorglub⏎Nom : Quenelle » laissait le patronyme.
+
+- Tests d'abord (8 rouges, avant) : prénoms derrière « Prénom », « Prénoms » (3 mots), « Prénom usuel »,
+  « Prénom de naissance », majuscules ; ordre inverse Prénom → Nom ; contre-exemples (« Prénom du chat »,
+  minuscules, étiquette vide, « Nom : Aspirine ») intacts ; restauration identique.
+- `name_detector.dart` : `_champPrenom`, `_fichePrenomPrecede` (fenêtre bornée de 300 caractères).
+- Mesure : 8 rouges → verts ; banc inchangé octet pour octet (sans cas couvrant la règle) ; 563 tests.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

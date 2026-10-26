@@ -475,6 +475,22 @@ linéaire (16 000 répétitions < 1 s). Restent intacts, testés : une ligne vid
 dans un tableau, un CSV ou un JSON (« Quenelle ; Zorglub ») n'est pas détecté : limite connue des
 noms (§ 5.4), pas traitée ici.
 
+**Prénom derrière une étiquette de champ, fiche « Prénom » avant « Nom » (P2-40).** Contrôle de P2-36 :
+dans « Nom : Quenelle⏎Prénom : Zorglub », le patronyme était masqué mais un prénom **hors gazetteer**
+(« Zorglub ») restait en clair, et « Prénom : Zorglub⏎Nom : Quenelle » (prénom avant nom) laissait le
+patronyme, la fiche n'étant cherchée que *après* « Nom ». Sont maintenant masqués les un à trois mots
+capitalisés derrière « Prénom », « Prénoms », « Prénom usuel », « Prénom de naissance », « Prénom
+d'usage », « Prénom à l'état civil » (jamais l'étiquette suivante : « Prénom : Zorglub Nom : Quenelle »
+sur une ligne donne deux noms distincts), et « Nom : » seul est retenu si « Prénom » figure **avant** (ligne
+courante ou précédente) comme après (ligne courante ou suivante), dans une fenêtre de 300 caractères.
+Tests d'abord (8 rouges) ; banc inchangé octet pour octet (aucun corpus ne contient ces étiquettes :
+règle couverte par les tests seulement) ; 563 tests. Intacts, testés : « Prénom du chat : Zorglub »,
+« Prénom : inconnu » (minuscules), « Prénom : » vide, « Nom : Aspirine » sans « Prénom » proche.
+**Coût** : la recherche de la fenêtre est bornée (un premier calcul remontait toute la ligne, quadratique
+sur une longue ligne de « Nom » répétés). Les 32 000 mentions successives d'un même type (« Mme Anne
+Quenelle », « Prénom : Zorglub ») coûtent plusieurs secondes, croissance **déjà présente** pour les
+règles de civilité existantes et non propre à cette règle.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
