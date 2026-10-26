@@ -125,12 +125,20 @@ final class NameDetector implements EntityDetector {
   /// patronymique », « Nom marital ») désignent toujours une personne. « Nom »
   /// seul est ambigu (« Nom : Aspirine ») : il n'est retenu que si « Prénom »
   /// suit sur la même ligne ou la suivante, signe d'une fiche d'identité.
+  /// Qualifications d'une personne derrière « Nom » (P2-41) : « Nom du patient »,
+  /// « Nom de l'assurée »… Chaque forme existe en minuscules et en majuscules.
+  static final String _nomQualifie = [
+    'du$_h+(?:patient|bénéficiaire|demandeur|salarié|résident)',
+    'de$_h+la$_h+patiente',
+    "de$_h+l['\u2019](?:assuré|assurée|employé|employée)",
+  ].map((f) => '(?:$f|${f.toUpperCase()})').join('|');
+
   static final RegExp _champNom = RegExp(
     r'\b(?:Nom|NOM)(?:'
     '$_h+(de$_h+naissance|d[\u0027\u2019]usage|de$_h+famille|patronymique|'
-    r'marital))?'
+    'marital|$_nomQualifie))?'
     '$_h*:$_h*'
-    '($_unite(?:$_h+(?!(?:Pr[ée]nom|PR[ÉE]NOM)\\b)$_unite)?)',
+    '($_unite(?:$_h+(?!(?:Pr[ée]noms?|PR[ÉE]NOMS?)\\b)$_unite)?)',
   );
 
   /// Prénom(s) derrière l'étiquette « Prénom » (P2-40) : toujours une personne
