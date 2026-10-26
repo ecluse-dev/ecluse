@@ -3,8 +3,9 @@ import 'package:ecluse_core/ecluse_core.dart';
 /// Détecteur heuristique de numéros de téléphone français — **v0 de
 /// démonstration**.
 ///
-/// Formats couverts : `0X XX XX XX XX`, `+33 X XX XX XX XX`,
-/// `+33 (0)X ...` et `0033 X ...`, avec séparateurs espace, point, tiret,
+/// Formats couverts : `0X XX XX XX XX`, `+33 X XX XX XX XX`, `(+33) X ...`,
+/// `+33 (0)X ...`, `0033 X ...` et les indicatifs d'outre-mer (`+262`, `+590`,
+/// `+594`, `+596`), avec séparateurs espace, point, tiret,
 /// espace insécable (NBSP, U+202F) ou sans séparateur. Les numéros courts
 /// (15, 112, 3114…) ne sont jamais détectés : le motif exige 10 chiffres.
 /// Aucune clé de contrôle n'existe pour un numéro de téléphone : confiance
@@ -24,7 +25,13 @@ final class TelephoneDetector implements EntityDetector {
   /// va de 1 à 9 ; `(0)` n'est admis que parenthésé (un `+33 0…` nu n'est pas
   /// un format valide).
   static const String _prefixe = '(?:\\(0[1-9]\\)|0[1-9]|'
-      '(?:\\+33|00$_sep?33)$_sep?(?:\\(0\\)$_sep?)?[1-9])';
+      '(?:\\+33|\\(\\+33\\)|00$_sep?33)$_sep?(?:\\(0\\)$_sep?)?[1-9])';
+
+  /// Indicatifs des départements d'outre-mer, numéros français : La Réunion et
+  /// Mayotte `+262`, Guadeloupe `+590`, Guyane `+594`, Martinique `+596`
+  /// (« +262 692 12 34 56 », soit `0692 12 34 56`).
+  static const String _outreMer = '\\+(?:262|590|594|596)$_sep?'
+      '(?:\\(0\\)$_sep?)?[1-9][0-9]{2}(?:$_sep?[0-9]{2}){3}';
 
   static final RegExp _pattern = RegExp(
     '(?<![0-9])(?:'
@@ -32,6 +39,8 @@ final class TelephoneDetector implements EntityDetector {
     '$_prefixe(?:$_sep?[0-9]{2}){4}'
     // Format 4-3-3 (« 0612 345 678 »).
     '|0[1-9][0-9]{2}$_sep[0-9]{3}$_sep[0-9]{3}'
+    // Indicatifs d'outre-mer (« +262 692 12 34 56 »).
+    '|$_outreMer'
     ')(?![0-9])',
   );
 
