@@ -78,10 +78,10 @@ tâches copiées ici sont prises par l'agent.
 | P2-12 | code | Script reproductible du décompte de la fuite des noms hors civilité, versionné dans `bench/` | P2-02 | fusionnée |
 | P2-13 | code | `Dossier` : règle de noms entre documents activable (N3) : N1 par défaut, fusion par inclusion (N2) à la demande de l'application | P2-06 | fusionnée |
 | P2-14 | code | Patronyme seul : mesurer ce qu'un rattrapage sans liste externe ni NER peut détecter, et ne l'implémenter que si le budget de faux positifs est tenu | P2-05a | fusionnée |
-| P2-15 | code | `ecluse_audit` : agrégat d'export pour le registre et l'AIPD (période, comptes par type avec seuil, refus par code, versions, état de la chaîne), en lecture seule | P2-09 | PR ouverte |
-| P2-16 | code | `ecluse_redact` : scinder détection et application de `Ecluse.redact` (test d'équivalence d'abord), préalable de l'aperçu | P2-08 | PR ouverte |
-| P2-17 | code | `ecluse_reid` : échelle de dates de naissance et dérivation d'âge avec date de référence injectée, palier 85+, en ajout | P2-07 | PR ouverte |
-| P2-18 | code | `ecluse_redact` : composant d'aperçu avec validation (proposition, refus, ajouts manuels, application), sans interface | P2-16 | PR ouverte |
+| P2-15 | code | `ecluse_audit` : agrégat d'export pour le registre et l'AIPD (période, comptes par type avec seuil, refus par code, versions, état de la chaîne), en lecture seule | P2-09 | fusionnée |
+| P2-16 | code | `ecluse_redact` : scinder détection et application de `Ecluse.redact` (test d'équivalence d'abord), préalable de l'aperçu | P2-08 | fusionnée |
+| P2-17 | code | `ecluse_reid` : échelle de dates de naissance et dérivation d'âge avec date de référence injectée, palier 85+, en ajout | P2-07 | fusionnée |
+| P2-18 | code | `ecluse_redact` : composant d'aperçu avec validation (proposition, refus, ajouts manuels, application), sans interface | P2-16 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
