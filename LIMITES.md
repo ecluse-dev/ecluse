@@ -389,11 +389,19 @@ Lefèvre » devenait `Mme [NOM_1]́lodie Lefèvre`, le reste du nom **restait en
 script jetable, 371 donnaient autant de jetons qu'en forme composée ; après P2-32 : 397 sur
 397. Les diacritiques combinants (U+0300 à U+036F, U+1DC0 à U+1DFF, U+20D0 à U+20FF,
 U+FE20 à U+FE2F) sont retirés de la vue des détecteurs et rattachés à leur lettre quand une
-entité est ramenée au texte d'origine. Limite : les majuscules initiales hors Latin-1
-(Œ, Ł, Å, Ñ, lettres vietnamiennes…) ne sont pas reconnues comme début de nom ; sur 20
-formes de noms sondées, 15 sont détectées en entier avant P2-32, les 5 autres étant « Œil »,
-un nom vietnamien, « Ångström », « Łukasz » et un nom écrit sans majuscule. La détection de
-noms reste une heuristique sans liste exhaustive (§ 1).
+entité est ramenée au texte d'origine.
+
+**Lettres hors du jeu français usuel dans un nom (P2-33).** La majuscule initiale d'un mot de
+nom ne couvrait que A-Z et quelques lettres françaises : un nom commençant par Á, Ó, Ñ, Œ,
+Ł, Ş, Ž… ou contenant des lettres vietnamiennes n'était masqué qu'en partie (« François Œil »
+donnait `[NOM_1] Œil`). Sur 20 formes de noms sondées, 15 étaient détectées en entier ;
+après P2-33, 11 noms de test sur 11 (espagnols, portugais, polonais, tchèque, turc,
+vietnamien, scandinave) sont masqués en entier avec une restauration identique, sans mot
+capitalisé isolé pris pour un nom (« Œuvre », « Ångström » seuls). Les prédictions du banc
+(dossiers, flou, patronymes y compris les leurres de faux positifs) sont inchangées octet pour
+octet : les corpus ne contiennent pas ces lettres. Reste non détecté : un nom écrit sans
+majuscule. La détection de noms reste une heuristique sans liste exhaustive (§ 1) ; aucune
+mesure de faux positifs n'a été faite sur de vrais textes espagnols, polonais ou vietnamiens.
 
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
