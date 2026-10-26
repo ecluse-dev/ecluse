@@ -28,7 +28,7 @@ final class EntiteProposee {
 /// Résultat de [Apercu.propose] : ce qu'Écluse masquerait, sans rien avoir
 /// masqué. Liée au texte exact qui l'a produite.
 final class Proposition {
-  Proposition._(this.texte, this._brutes)
+  Proposition._(this.texte, this._brutes, this._dossier, this._documents)
       : entites = List.unmodifiable([
           for (var i = 0; i < _brutes.length; i++)
             EntiteProposee(
@@ -46,6 +46,12 @@ final class Proposition {
   final String texte;
   final List<EntiteProposee> entites;
   final List<DetectedEntity> _brutes;
+
+  /// Dossier qui a produit la proposition et nombre de documents qu'il avait
+  /// déjà masqués : au-delà, ses patronymes et ses jetons ont pu changer et la
+  /// proposition est périmée (P2-19).
+  final Dossier? _dossier;
+  final int _documents;
 
   /// Nombre d'entités proposées par type.
   Map<EntityType, int> get resume {
@@ -108,11 +114,24 @@ abstract final class Apercu {
     bool refuseSecrets = false,
     Dossier? dossier,
   }) async {
-    final entites =
-        await Ecluse.detect(text, detectors: detectors, dossier: dossier);
+    var documents = 0;
+    final List<DetectedEntity> entites;
+    if (dossier == null) {
+      entites = await Ecluse.detect(text, detectors: detectors);
+    } else {
+      // Détection et lecture du compteur dans la même section sérialisée.
+      (entites, documents) = await dossier._serialise(() async {
+        final etat = dossier._etat;
+        if (etat == null) throw const DossierFermeException();
+        return (
+          await Ecluse._detecter(text, etat, detectors),
+          etat.documents,
+        );
+      });
+    }
     final secrets = entites.where((e) => e.type == EntityType.secret).length;
     if (refuseSecrets && secrets > 0) throw SecretsRefusedException(secrets);
-    return Proposition._(text, entites);
+    return Proposition._(text, entites, dossier, documents);
   }
 
   /// Masque [texteAEnvoyer] selon [decision]. Toutes les vérifications ont
@@ -136,6 +155,14 @@ abstract final class Apercu {
     Dossier? dossier,
   }) {
     RedactResult appliquer(_Etat etat) {
+      if (!identical(proposition._dossier, dossier)) {
+        throw const ApercuException(
+            'la proposition ne s\'applique qu\'au dossier qui l\'a produite');
+      }
+      if (proposition._documents != etat.documents) {
+        throw const ApercuException(
+            'le dossier a changé depuis l\'aperçu : refaire l\'aperçu');
+      }
       final finales = _valide(
           proposition, decision, texteAEnvoyer, autoriserRefusStructurel);
       return Ecluse._appliquer(
