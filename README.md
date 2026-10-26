@@ -10,7 +10,7 @@ L'IA est trop utile pour qu'on s'en passe. Mais elle ne devrait pas exiger qu'on
 
 Les outils existants détectent des « données personnelles » : un nom ici, un email là. C'est nécessaire mais insuffisant. Car une personne n'est pas trahie seulement par son nom — elle l'est par un faisceau d'indices. « Le chef de service de pneumologie d'un petit hôpital de l'Est, spécialiste d'une pathologie rare » : aucun identifiant direct, et pourtant une seule personne au monde correspond.
 
-Écluse raisonne sur ce pouvoir d'identification, pas seulement sur les entités isolées. Il détecte les identifiants français avec une rigueur que les outils génériques n'ont pas — NIR, RPPS, FINESS, IBAN, validés structurellement. Mais il va plus loin : il généralise un lieu trop précis, signale les combinaisons qui ré-identifient, et mesure à quel point une personne reste reconnaissable une fois le texte nettoyé.
+Écluse raisonne sur ce pouvoir d'identification, pas seulement sur les entités isolées. Il détecte les identifiants français avec une rigueur que les outils génériques n'ont pas — NIR, RPPS, FINESS, IBAN, validés structurellement. Mais il va plus loin : une bibliothèque dédiée (`ecluse_reid`) sait généraliser un lieu trop précis, et estime, en rapport optionnel, à quel point une personne reste reconnaissable par la combinaison de sa profession, de son lieu et de son âge une fois le texte masqué. Ce rapport ne modifie jamais le texte envoyé ; la généralisation n'est pas appliquée automatiquement (voir `LIMITES.md` § 7).
 
 Nous ne prétendons pas rendre la ré-identification impossible — personne ne le peut honnêtement. Nous la rendons difficile, coûteuse, et surtout *mesurable* : vous savez ce que vous exposez avant de l'exposer.
 
