@@ -591,6 +591,14 @@ Ces règles couvrent les sommes que l'export publie lui-même ; elles ne protèg
 contre un attaquant qui connaît d'autres comptes (autres exports, journaux de
 l'application) : le seuil reste provisoire.
 
+Falsification de la chaîne (26 octobre 2026, 2 000 journaux synthétiques de 3 à 12
+entrées, graine 42, script jetable) : toute modification d'un champ (comptes,
+moteur, horodatage, rang), suppression au milieu ou de la première entrée, échange
+de deux entrées ou duplication est détectée (0 non détecté sur 10 000 essais
+environ) ; la troncature en fin de journal n'est **jamais** détectée (2 000 sur
+2 000), comme annoncé. Une réécriture complète par qui contrôle le fichier n'a pas
+été essayée : elle reste hors de portée d'un hash chaîné.
+
 Le journal prouve la cohérence interne de la chaîne, pas la vérité des
 événements. Les comptes révèlent la nature d'un document (deux NIR et un IBAN
 évoquent un dossier de paie) et un horodatage rapproché des journaux d'une
