@@ -84,6 +84,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-18 | code | `ecluse_redact` : composant d'aperçu avec validation (proposition, refus, ajouts manuels, application), sans interface | P2-16 | fusionnée |
 | P2-19 | code | `ecluse_redact` : une proposition d'aperçu périmée (dossier modifié depuis) ou appliquée à un autre dossier est refusée | P2-18 | fusionnée |
 | P2-20 | code | `ecluse_redact` : les blancs en bordure d'un ajout manuel d'aperçu ne sont pas masqués | P2-19 | fusionnée |
+| P2-21 | code | `ecluse_redact` : un ajout manuel d'aperçu dont une borne coupe une paire de substituts UTF-16 est refusé | P2-20 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -925,5 +926,21 @@ ajoutait un espace (3 documents non identiques en plus de `redact`).
   (ils restent en clair) avant les contrôles de chevauchement.
 - Mesure après : 3 → 2 documents ; les 2 restants relèvent de l'harmonisation des
   re-mentions (`LIMITES.md`, point 5), comportement existant et documenté.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-21 — Ajout manuel coupant une paire de substituts (`code`)
+
+Contexte : sondage du 26 octobre 2026. Un ajout `AjoutManuel` dont le début ou la fin
+tombe au milieu d'un émoji était accepté : le texte masqué contenait une moitié de
+caractère isolée (`Bonjour �[NOM_1] arrive.`), qui ne s'encode pas en UTF-8 sans
+remplacement. Une interface qui compte en unités UTF-16 peut produire ces bornes.
+
+- Test d'abord : trois bornes coupant l'émoji sont refusées ; un ajout qui encadre
+  l'émoji entier reste accepté et se restaure à l'identique.
+- `Apercu.applique` refuse (`ApercuException`, avant toute modification d'état) un
+  ajout dont une borne est entre un substitut haut et un substitut bas.
+- Sondage des détecteurs sur un échantillon d'émojis et de lettres mathématiques : 0
+  coupure sur 7 entités (étroit, non garanti).
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

@@ -458,6 +458,11 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   l'harmonisation des re-mentions (point 5) : sur 2 431 ajouts aléatoires de
   texte quelconque, 2 documents sur 2 191 y gagnent une restauration non
   identique (un ajout « le » inclus dans un ajout « le mardi »).
+  Un ajout dont une borne coupe une paire de substituts UTF-16 (un émoji, par
+  exemple) est refusé (P2-21) : accepté, il laissait une moitié de caractère
+  isolée dans le texte envoyé, non encodable. Les détecteurs n'ont produit
+  aucune coupure de ce genre sur 7 entités d'un échantillon d'émojis et de
+  lettres mathématiques : sondage étroit, pas une garantie.
 
 Voir `ROADMAP.md` pour le calendrier de ces briques.
 

@@ -213,6 +213,12 @@ abstract final class Apercu {
       if (brut.start < 0 || brut.end > texte.length || brut.start >= brut.end) {
         throw ApercuException('ajout hors bornes ou vide : $brut');
       }
+      if (_coupeUnePaire(texte, brut.start) ||
+          _coupeUnePaire(texte, brut.end)) {
+        throw ApercuException(
+            'ajout dont une borne coupe un caractère hors plan de base '
+            '(paire de substituts UTF-16) : $brut');
+      }
       // Les blancs en bordure (sélection à la souris) ne sont pas masqués :
       // deux mentions qui ne diffèrent que par eux partageraient un jeton dont
       // la carte garderait la première forme, et la restauration ajouterait ou
@@ -268,4 +274,17 @@ AjoutManuel _sansBlancsEnBordure(AjoutManuel a, String texte) {
     throw ApercuException('ajout fait seulement de blancs : $a');
   }
   return AjoutManuel(start, end, a.type);
+}
+
+/// Vrai si la position [i] tombe entre les deux moitiés d'une paire de
+/// substituts UTF-16 (émoji, etc.) : masquer à cette borne laisserait une
+/// moitié isolée dans le texte envoyé, non encodable (P2-21).
+bool _coupeUnePaire(String texte, int i) {
+  if (i <= 0 || i >= texte.length) return false;
+  final avant = texte.codeUnitAt(i - 1);
+  final apres = texte.codeUnitAt(i);
+  return avant >= 0xD800 &&
+      avant <= 0xDBFF &&
+      apres >= 0xDC00 &&
+      apres <= 0xDFFF;
 }

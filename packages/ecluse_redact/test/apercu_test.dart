@@ -194,6 +194,36 @@ void main() {
           throwsA(isA<ApercuException>()));
     });
 
+    test('un ajout qui coupe une paire de substituts est refusé (P2-21)',
+        () async {
+      const t = 'Bonjour 😀 Zanzibar arrive.';
+      final p = await Apercu.propose(t);
+      final i = t.indexOf('😀');
+      for (final (s, e) in [
+        (i + 1, i + 11), // début au milieu de l'émoji
+        (i - 3, i + 1), // fin au milieu de l'émoji
+        (i + 1, i + 2), // seulement la moitié basse
+      ]) {
+        await expectLater(
+            Apercu.applique(
+                p, DecisionApercu(ajouts: [AjoutManuel(s, e, EntityType.nom)]),
+                texteAEnvoyer: t),
+            throwsA(isA<ApercuException>()),
+            reason: '($s, $e)');
+      }
+    });
+
+    test('un ajout qui encadre un émoji entier reste accepté', () async {
+      const t = 'Bonjour 😀 Zanzibar arrive.';
+      final p = await Apercu.propose(t);
+      final i = t.indexOf('😀');
+      final r = await Apercu.applique(p,
+          DecisionApercu(ajouts: [AjoutManuel(i, i + 2 + 9, EntityType.nom)]),
+          texteAEnvoyer: t);
+      expect(r.maskedText, 'Bonjour [NOM_1] arrive.');
+      expect(Ecluse.restore(r.maskedText, r.mapping), t);
+    });
+
     test('le type secret est refusé pour un ajout', () async {
       final p = await Apercu.propose('abc def');
       await expectLater(
