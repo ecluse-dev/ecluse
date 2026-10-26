@@ -71,7 +71,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-05a | code | Profil de corpus multi-documents (dossiers, personnes, identités) et son scoreur, avec la mesure de l'état actuel sans dossier | P2-05 | fusionnée |
 | P2-06 | code | État de dossier en mémoire dans `ecluse_redact` : pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers, selon les décisions de la spec P2-05 (test d'équivalence d'abord, mesure avant/après) | P2-05, P2-05a | fusionnée |
 | P2-07 | spec | Généralisation multi-dimensions (date de naissance vers tranche d'âge, âge vers palier, pathologie rare vers catégorie) : dimensions, table de catégories, honnêteté sur ce qui reste ré-identifiable | P2-03 | fusionnée |
-| P2-08 | spec | Aperçu avec validation en un clic, option et non défaut (entretien #2) : contrat du composant, sans interface autonome | — | bloquée |
+| P2-08 | spec | Aperçu avec validation en un clic, option et non défaut (entretien #2) : contrat du composant, sans interface autonome | — | à faire |
 | P2-09 | spec | Export AIPD : champs du registre pré-rempli, données d'`ecluse_audit` qui y entrent et qui n'y entrent pas | — | bloquée |
 | P2-10 | spec | Transcription vocale locale : choix Vosk ou whisper.cpp, preuve qu'aucun son ne sort de l'appareil, limite sur les chiffres, critère GO/STOP propre | — | bloquée |
 | P2-11 | code | `ecluse_bench` : retirer `pubspec_overrides.yaml` (chemin Windows) du suivi git | — | fusionnée |
@@ -673,8 +673,9 @@ choix produit : les poser au mainteneur en fin de document.
 
 ### P2-08 — Aperçu avec validation en un clic (`spec`)
 
-**Bloquée** : l'ordre des tâches de la phase 2 dépend des signaux des design
-partners (`ROADMAP.md`). Passer à `à faire` est une décision du mainteneur.
+**Débloquée par le mainteneur le 26 octobre 2026** (l'ordre des tâches de la
+phase 2 dépendait des signaux des design partners, `ROADMAP.md`). Aucun autre
+préalable.
 
 Travail : écrire `agent/specs/P2-08.md`, **aucune ligne de code**. Contrat d'un
 composant d'aperçu, **option** et non défaut (entretien #2) : ce qu'il reçoit de
