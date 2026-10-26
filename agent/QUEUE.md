@@ -81,6 +81,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-15 | code | `ecluse_audit` : agrégat d'export pour le registre et l'AIPD (période, comptes par type avec seuil, refus par code, versions, état de la chaîne), en lecture seule | P2-09 | PR ouverte |
 | P2-16 | code | `ecluse_redact` : scinder détection et application de `Ecluse.redact` (test d'équivalence d'abord), préalable de l'aperçu | P2-08 | PR ouverte |
 | P2-17 | code | `ecluse_reid` : échelle de dates de naissance et dérivation d'âge avec date de référence injectée, palier 85+, en ajout | P2-07 | PR ouverte |
+| P2-18 | code | `ecluse_redact` : composant d'aperçu avec validation (proposition, refus, ajouts manuels, application), sans interface | P2-16 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -872,3 +873,24 @@ et n'a pas de palier pour les grands âges.
 - `ecluse_reid` : `format`, `analyze`, `test`. Aucune dépendance ajoutée.
 - **Fini quand** : tests passent et la PR dit ce que les nouveaux paliers changent à
   l'estimation (rien, tant qu'`estimate` n'est pas étendu).
+
+### P2-18 — Composant d'aperçu avec validation (`code`)
+
+Contexte : `agent/specs/P2-08.md` et `DECISIONS.md` (préconisations validées par
+délégation, révocables). Bibliothèque seulement : aucune interface.
+
+- `Apercu.propose` : détection sans masquer (via `Ecluse.detect`), entités
+  identifiées, résumé par type ; `refuseSecrets` avant toute proposition.
+- `Apercu.applique` : texte masqué selon la décision (refus d'entités, ajouts
+  manuels), via la même étape d'application que `Ecluse.redact` : « tout accepté »
+  est identique à `redact`.
+- Garde-fous : texte envoyé identique au texte analysé ; identifiant inconnu,
+  ajout hors bornes ou de type secret, chevauchement partiel : erreur explicite ;
+  refus d'une entité structurelle seulement avec une option ; refus d'un secret
+  interdit ; toute validation avant la première modification d'état.
+- Tests : équivalence, absence d'effet de bord, restauration identique sur décisions
+  aléatoires (graine fixe). Mesures : prédictions du banc inchangées.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et la PR dit ce qui n'est pas
+  fait (interface, tests utilisateurs, trace d'audit, rapport de risque dans la
+  proposition).

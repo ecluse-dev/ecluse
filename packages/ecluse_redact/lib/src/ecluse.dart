@@ -13,6 +13,7 @@ import 'redact_result.dart';
 import 'risque.dart';
 import 'tokenizer.dart';
 
+part 'apercu.dart';
 part 'dossier.dart';
 
 /// Façade de pseudonymisation réversible d'Écluse.
@@ -167,6 +168,22 @@ abstract final class Ecluse {
     if (refuseSecrets && secretCount > 0) {
       throw SecretsRefusedException(secretCount);
     }
+    return _appliquer(text, resolved, etat, restoreSecrets, riskReference);
+  }
+
+  /// Masque [resolved] (entités triées, sans chevauchement) dans [text] et
+  /// met à jour [etat]. Seule étape qui modifie l'état : [_redact] et
+  /// l'aperçu (`Apercu.applique`) passent par ici, pour que « tout accepté »
+  /// reste identique à [redact].
+  static RedactResult _appliquer(
+    String text,
+    List<DetectedEntity> resolved,
+    _Etat etat,
+    bool restoreSecrets,
+    EcluseReference? riskReference,
+  ) {
+    final secretCount =
+        resolved.where((e) => e.type == EntityType.secret).length;
 
     // Jetons déjà attribués dans le dossier qui figurent en clair dans ce
     // texte : ils seront remplacés à la restauration (relevé avant tout
