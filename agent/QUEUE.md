@@ -92,7 +92,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-26 | code | `ecluse_audit` : l'export ne laisse plus retrouver un compte masqué par soustraction ni par le nombre d'entrées de la chaîne | P2-25 | fusionnée |
 | P2-27 | code | `ecluse_ingest` : refuser un .docx/.odt dont le contenu ne correspond plus au CRC-32 de l'archive | P2-26 | fusionnée |
 | P2-28 | code | `ecluse_ingest` : refuser un PDF qui a plus d'objets page en clair que de pages atteignables (page perdue sans avertissement) | P2-27 | fusionnée |
-| P2-29 | code | `ecluse_redact` : détecter les identifiants contenant des caractères invisibles ou des tirets et espaces typographiques, sans réécrire le texte | P2-28 | PR ouverte |
+| P2-29 | code | `ecluse_redact` : détecter les identifiants contenant des caractères invisibles ou des tirets et espaces typographiques, sans réécrire le texte | P2-28 | fusionnée |
+| P2-30 | code | `ecluse_redact` : ramener les formes pleine chasse, chiffres arabes orientaux et barres de fraction à l'ASCII dans la vue des détecteurs | P2-29 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1087,4 +1088,18 @@ d'évasion facile et accident de copier-coller courant.
 - Mesure : 22/33 → 32/33 ; 47/48 avec cinq séparateurs de plus ; prédictions du banc
   (dossiers, flou) inchangées octet pour octet.
 - `ecluse_core` inchangé (règle 6). Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` § 5.2 est à jour.
+
+### P2-30 — Formes pleine chasse et autres chiffres dans un identifiant (`code`)
+
+Contexte : suite de P2-29. Sondage (26 octobre 2026) de 17 variantes : 4 non détectées après
+P2-29 (téléphone et NIR pleine chasse ; arobase pleine chasse ; barre de fraction dans une date).
+
+- Tests d'abord (6 rouges avant) : téléphone, NIR, IBAN pleine chasse ; courriel à arobase
+  pleine chasse ; téléphone en chiffres arabes orientaux ; date à barre de fraction ; un texte
+  pleine chasse sans identifiant reste intact.
+- La vue de détection ramène U+FF01 à U+FF5E, U+0660 à U+0669, U+06F0 à U+06F9, U+2044 et
+  U+2215 à l'ASCII (une unité pour une unité) ; positions, valeur et restauration d'origine.
+- Mesure : 4 variantes manquées → 0 ; banc (dossiers, flou) inchangé octet pour octet.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` § 5.2 est à jour.
