@@ -9,7 +9,9 @@ import 'package:ecluse_core/ecluse_core.dart';
 /// pas une validation structurelle.
 ///
 /// Formats couverts : `JJ/MM/AAAA`, `JJ-MM-AAAA`, `JJ.MM.AAAA` (année sur 2 ou
-/// 4 chiffres), ISO `AAAA-MM-JJ`, et la forme textuelle française
+/// 4 chiffres, blancs facultatifs autour des séparateurs : `12 / 03 / 1950`),
+/// blancs seuls (`12 03 1950`, contexte obligatoire), ISO `AAAA-MM-JJ`, et la
+/// forme textuelle française
 /// `12 mars 1985` (dont l'ordinal `1er mars 1985`).
 final class DateNaissanceDetector implements EntityDetector {
   const DateNaissanceDetector();
@@ -48,7 +50,8 @@ final class DateNaissanceDetector implements EntityDetector {
 
   static final RegExp _pattern = RegExp(
     '$_contexte$_b+'
-    '(\\d{1,2}[\\/\\-.]\\d{1,2}[\\/\\-.](?:\\d{4}|\\d{2}(?!\\d))'
+    '(\\d{1,2}$_b*[\\/\\-.]$_b*\\d{1,2}$_b*[\\/\\-.]$_b*(?:\\d{4}|\\d{2}(?!\\d))'
+    '|\\d{1,2}$_b+\\d{1,2}$_b+\\d{4}(?!\\d)'
     '|\\d{4}-\\d{2}-\\d{2}'
     '|\\d{1,2}(?:er|ᵉʳ)?$_b+(?:${_months.join('|')})$_b+\\d{4})',
     caseSensitive: false,
