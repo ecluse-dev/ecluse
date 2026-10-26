@@ -90,6 +90,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-24 | code | `ecluse_ingest` : test de composition fichier → aperçu sur le texte extrait (décision 10 de P2-08) | P2-23 | fusionnée |
 | P2-25 | code | `ecluse_redact` : recherche des jetons littéraux sans compiler un motif par jeton et par appel (coût d'un gros dossier) | P2-24 | fusionnée |
 | P2-26 | code | `ecluse_audit` : l'export ne laisse plus retrouver un compte masqué par soustraction ni par le nombre d'entrées de la chaîne | P2-25 | fusionnée |
+| P2-27 | code | `ecluse_ingest` : refuser un .docx/.odt dont le contenu ne correspond plus au CRC-32 de l'archive | P2-26 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1032,3 +1033,20 @@ Contexte : vérification de P2-15 (26 octobre 2026), deux divulgations reproduit
 - **Fini quand** : `format`, `analyze`, `test` passent sur `ecluse_audit` et `LIMITES.md`
   § 8 est à jour. Limite assumée : ces règles ne protègent que contre les sommes publiées
   par l'export lui-même.
+
+### P2-27 — Vérification du CRC-32 des archives `.docx` et `.odt` (`code`)
+
+Contexte : essai de falsification de l'ingestion (26 octobre 2026) : sur 4 000 `.docx`
+abîmés au hasard, 81 étaient lus avec un texte altéré et 34 avec un texte vide, comme des
+succès. Cause : `package:archive` 4.5.2 ne vérifie pas le CRC-32 (`verify` est sans effet).
+C'est un « lu à moitié » silencieux (règle 4).
+
+- Tests d'abord (2 rouges avant) : un `.docx` et un `.odt` dont un octet du contenu est
+  modifié sans toucher au CRC sont refusés ; les archives intactes restent lues.
+- `decompressBounded` compare le CRC-32 des octets réellement produits à celui de
+  l'entrée (`ZipCrcMismatch`, message sans contenu) ; les extracteurs refusent déjà toute
+  exception de lecture avec le motif « corrompue ».
+- Mesure : 81 textes altérés et 34 textes vides lus comme des succès, puis 0 et 0.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée (`getCrc32` vient d'`archive`).
+- **Fini quand** : `format`, `analyze`, `test` passent sur `ecluse_ingest` et `LIMITES.md`
+  § 4 est à jour.
