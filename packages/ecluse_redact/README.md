@@ -84,3 +84,27 @@ document.
 correspondance floue : un jeton trop modifié (ex. chiffre différent)
 n'est pas restauré, et reste tel quel dans le texte final plutôt que de
 risquer une substitution erronée.
+
+## Aperçu avec validation (bibliothèque seulement)
+
+`Apercu` sépare la détection de l'application, pour qu'une interface puisse
+montrer ce qui serait masqué et laisser l'utilisateur décider :
+
+```dart
+final proposition = await Apercu.propose(texte, dossier: dossier);
+// proposition.entites : id, type, position, valeur, confiance, tier
+final r = await Apercu.applique(
+  proposition,
+  DecisionApercu(refusees: {2}, ajouts: [AjoutManuel(10, 18, EntityType.nom)]),
+  texteAEnvoyer: texte,
+  dossier: dossier,
+);
+```
+
+Sans refus ni ajout, le résultat est identique à `Ecluse.redact`. Garde-fous :
+le texte envoyé doit être celui qui a été analysé ; une proposition est liée à
+son dossier et refusée si ce dossier a masqué un autre document depuis ; un
+secret ne peut ni être refusé ni ajouté ; refuser une entité à validation
+structurelle exige `autoriserRefusStructurel`. **Refuser une détection envoie
+la valeur en clair au tiers** (voir `LIMITES.md` § 6). Aucune interface n'est
+fournie.
