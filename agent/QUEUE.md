@@ -100,6 +100,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-34 | code | `ecluse_redact` : détecter une date de naissance aux séparateurs espacés (« 12 / 03 / 1950 », « 12 03 1950 ») | P2-33 | fusionnée |
 | P2-35 | code | `ecluse_redact` : reconnaître les civilités abrégées avec point (« Mme. », « Mlle. ») | P2-34 | fusionnée |
 | P2-36 | code | `ecluse_redact` : masquer le patronyme derrière une étiquette de champ (« Nom de naissance : », « Nom : … Prénom : … ») | P2-35 | fusionnée |
+| P2-37 | code | `ecluse_redact` : masquer en entier une adresse dont le numéro de voie porte une lettre (« 12 B rue des Lilas ») | P2-36 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1198,5 +1199,17 @@ Contexte : sonde de P2-35 : « Nom : Dupont ; Prénom : Jean » masquait « Jean
 - Mesure : 6 rouges → verts ; banc inchangé octet pour octet (sans cas couvrant la règle) ;
   509 tests. Une première version était cubique (126 s pour 2000 « Nom ») : corrigée avant
   fusion, test de non-régression ajouté.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-37 — Numéro de voie suivi d'une lettre (`code`)
+
+Contexte : sonde d'adresses (26 octobre 2026) : « 12 B rue des Lilas, 75011 Paris » laissait « 12 B ».
+
+- Tests d'abord (4 rouges, avant) : « 12 B », « 12B », « 3 A », « 7 C, » masqués en entier avec
+  restauration identique ; « Le groupe B rue vite », « Annexe 12 B : voir page 3 », « Lot 4 C du
+  marché » restent intacts.
+- `adresse_detector.dart` : `_numero` accepte une lettre majuscule A-F isolée.
+- Mesure : 4 rouges → verts ; banc inchangé octet pour octet ; 517 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
