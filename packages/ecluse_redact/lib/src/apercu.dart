@@ -163,10 +163,18 @@ abstract final class Apercu {
         throw const ApercuException(
             'le dossier a changé depuis l\'aperçu : refaire l\'aperçu');
       }
-      final finales = _valide(
+      final (finales, manuelles) = _valide(
           proposition, decision, texteAEnvoyer, autoriserRefusStructurel);
-      return Ecluse._appliquer(
+      final r = Ecluse._appliquer(
           texteAEnvoyer, finales, etat, restoreSecrets, riskReference);
+      return RedactResult(
+        maskedText: r.maskedText,
+        mapping: r.mapping,
+        entities: r.entities,
+        warnings: r.warnings,
+        risque: r.risque,
+        manuelles: List.unmodifiable(manuelles),
+      );
     }
 
     if (dossier == null) {
@@ -179,7 +187,7 @@ abstract final class Apercu {
     });
   }
 
-  static List<DetectedEntity> _valide(
+  static (List<DetectedEntity>, List<DetectedEntity>) _valide(
     Proposition p,
     DecisionApercu d,
     String texte,
@@ -253,7 +261,7 @@ abstract final class Apercu {
         if (!ajouts.any((a) => a.start <= e.start && e.end <= a.end)) e,
       ...ajouts,
     ]..sort((x, y) => x.start.compareTo(y.start));
-    return finales;
+    return (finales, ajouts);
   }
 }
 

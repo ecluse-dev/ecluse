@@ -10,6 +10,7 @@ final class RedactResult {
     required this.entities,
     this.warnings = const [],
     this.risque,
+    this.manuelles = const [],
   });
 
   /// Texte à envoyer à l'IA — les entités personnelles sont remplacées par
@@ -35,4 +36,9 @@ final class RedactResult {
   /// `riskReference` à `Ecluse.redact` ; `null` signifie « fonction inactive »,
   /// **pas** « aucun risque ». Ne modifie ni [maskedText] ni [mapping].
   final RiskReport? risque;
+
+  /// Entités ajoutées à la main dans un aperçu (`Apercu.applique`), déjà
+  /// comprises dans [entities] : c'est leur marque de provenance. Toujours
+  /// vide pour `Ecluse.redact`.
+  final List<DetectedEntity> manuelles;
 }

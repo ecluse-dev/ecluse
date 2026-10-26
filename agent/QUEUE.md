@@ -85,6 +85,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-19 | code | `ecluse_redact` : une proposition d'aperçu périmée (dossier modifié depuis) ou appliquée à un autre dossier est refusée | P2-18 | fusionnée |
 | P2-20 | code | `ecluse_redact` : les blancs en bordure d'un ajout manuel d'aperçu ne sont pas masqués | P2-19 | fusionnée |
 | P2-21 | code | `ecluse_redact` : un ajout manuel d'aperçu dont une borne coupe une paire de substituts UTF-16 est refusé | P2-20 | fusionnée |
+| P2-22 | code | `ecluse_redact` : marquer la provenance « manuelle » des entités ajoutées dans un aperçu (`RedactResult.manuelles`) | P2-21 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -944,3 +945,18 @@ remplacement. Une interface qui compte en unités UTF-16 peut produire ces borne
   coupure sur 7 entités (étroit, non garanti).
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-22 — Provenance « manuelle » des ajouts d'aperçu (`code`)
+
+Contexte : `DECISIONS.md`, P2-08, décision 4 : « provenance marquée "manuelle" ». P2-18
+ne la livrait pas : une entité ajoutée à la main était indiscernable d'une détection
+dans `RedactResult.entities`.
+
+- Test d'abord : après `Apercu.applique` avec un ajout, `RedactResult.manuelles`
+  contient l'entité ajoutée (positions, type) et pas les détections ; sans ajout et
+  pour `Ecluse.redact`, la liste est vide.
+- Champ additif `manuelles` (défaut vide) dans `RedactResult` ; les entités manuelles
+  restent comprises dans `entities`. Aucune autre sortie ne change.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze` et `test` passent sur `ecluse_redact` et
+  `analyze` sur les paquets qui consomment `RedactResult`.
