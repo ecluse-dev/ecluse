@@ -166,6 +166,34 @@ void main() {
       }
     });
 
+    test('les espaces en bordure d\'un ajout restent en clair (P2-20)',
+        () async {
+      const t = 'Voir le chef de projet puis le chef de projet encore.';
+      final p = await Apercu.propose(t);
+      final a = t.indexOf('chef');
+      final b = t.lastIndexOf('chef');
+      final r = await Apercu.applique(
+          p,
+          DecisionApercu(ajouts: [
+            // Sélection « à la souris » : espace avant et après.
+            AjoutManuel(a - 1, a + 'chef de projet'.length + 1, EntityType.nom),
+            AjoutManuel(b, b + 'chef de projet'.length, EntityType.nom),
+          ]),
+          texteAEnvoyer: t);
+      expect(r.mapping.values, ['chef de projet']);
+      expect(r.maskedText, 'Voir le [NOM_1] puis le [NOM_1] encore.');
+      expect(Ecluse.restore(r.maskedText, r.mapping), t);
+    });
+
+    test('un ajout fait seulement d\'espaces est refusé', () async {
+      final p = await Apercu.propose('abc   def');
+      await expectLater(
+          Apercu.applique(
+              p, DecisionApercu(ajouts: [AjoutManuel(3, 6, EntityType.nom)]),
+              texteAEnvoyer: 'abc   def'),
+          throwsA(isA<ApercuException>()));
+    });
+
     test('le type secret est refusé pour un ajout', () async {
       final p = await Apercu.propose('abc def');
       await expectLater(

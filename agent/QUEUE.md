@@ -83,6 +83,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-17 | code | `ecluse_reid` : échelle de dates de naissance et dérivation d'âge avec date de référence injectée, palier 85+, en ajout | P2-07 | fusionnée |
 | P2-18 | code | `ecluse_redact` : composant d'aperçu avec validation (proposition, refus, ajouts manuels, application), sans interface | P2-16 | fusionnée |
 | P2-19 | code | `ecluse_redact` : une proposition d'aperçu périmée (dossier modifié depuis) ou appliquée à un autre dossier est refusée | P2-18 | fusionnée |
+| P2-20 | code | `ecluse_redact` : les blancs en bordure d'un ajout manuel d'aperçu ne sont pas masqués | P2-19 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -910,3 +911,19 @@ proposition établie sur un dossier n'était pas détectée comme périmée.
   et pour toute séquence propose → applique directe.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent ; `LIMITES.md` mis à jour.
+
+### P2-20 — Blancs en bordure d'un ajout manuel (`code`)
+
+Contexte : mesure du 26 octobre 2026 sur 2 191 documents synthétiques avec 2 431 ajouts
+aléatoires de type `nom` : un ajout « e de » (avec espace final) et le même texte sans
+espace partageaient un jeton dont la carte gardait la première forme ; la restauration
+ajoutait un espace (3 documents non identiques en plus de `redact`).
+
+- Test d'abord : deux ajouts identiques à l'espace près (sélection à la souris) se
+  restaurent à l'identique ; un ajout fait seulement de blancs est refusé.
+- `Apercu.applique` réduit les bornes d'un ajout pour exclure les blancs de bordure
+  (ils restent en clair) avant les contrôles de chevauchement.
+- Mesure après : 3 → 2 documents ; les 2 restants relèvent de l'harmonisation des
+  re-mentions (`LIMITES.md`, point 5), comportement existant et documenté.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

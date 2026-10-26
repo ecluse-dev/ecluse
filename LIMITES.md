@@ -448,6 +448,12 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   aléatoires (graine 42, hors entités structurelles et secrets) n'ajoutent
   aucune restauration non identique à celles que `redact` produit déjà (60
   documents sur 3 391 : harmonisation des re-mentions, point 5 de l'essentiel).
+  Les blancs en bordure d'un ajout manuel ne sont pas masqués (P2-20) : deux
+  mentions qui ne différaient que par eux partageaient un jeton et la
+  restauration ajoutait des espaces. Un ajout de type `nom` reste soumis à
+  l'harmonisation des re-mentions (point 5) : sur 2 431 ajouts aléatoires de
+  texte quelconque, 2 documents sur 2 191 y gagnent une restauration non
+  identique (un ajout « le » inclus dans un ajout « le mardi »).
 
 Voir `ROADMAP.md` pour le calendrier de ces briques.
 
