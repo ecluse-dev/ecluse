@@ -107,6 +107,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-41 | code | `ecluse_redact` : masquer le nom derrière « Nom du patient : », « Nom de l'assuré : »… | P2-40 | fusionnée |
 | P2-42 | code | `ecluse_redact` : détecter un NIR dont la clé est nommée à part (« 2550814168025 clé 38 ») | P2-41 | fusionnée |
 | P2-43 | code | `ecluse_redact` : reconnaître les variantes de contexte et d'écriture d'une date de naissance (département, abréviations, jour de semaine, mois anglais) | P2-42 | fusionnée |
+| P2-44 | code | `ecluse_redact` : détecter « (+33) » et les indicatifs d'outre-mer (+262, +590, +594, +596) ; documenter l'exclusion des numéros étrangers | P2-43 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1302,5 +1303,20 @@ Contexte : sonde de 23 écritures (26 octobre 2026) : 12 manquées (« né(e) à
   (`naiss.`, `D.D.N.`, `date of birth`, `birth date`, `born on`), jour de semaine facultatif, année à
   deux chiffres avec un mois en lettres, mois anglais.
 - Mesure : 18 rouges → verts ; banc inchangé octet pour octet ; 617 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-44 — Téléphone : préfixe entre parenthèses et outre-mer (`code`)
+
+Contexte : sonde de 22 numéros (26 octobre 2026) : « (+33) 6 12 34 56 78 » laissait « (+33) » et classait le reste
+en FINESS ; « +262 692 12 34 56 » (outre-mer, numéro français) n'était pas détecté.
+
+- Tests d'abord (10 rouges, avant) : « (+33) » avec et sans « (0) » et sans séparateur ; +262, +590,
+  +594, +596 avec séparateurs variés ; contre-exemples (trop ou trop peu de chiffres) intacts ;
+  restauration identique.
+- `telephone_detector.dart` : `(+33)` dans le préfixe, `_outreMer`.
+- Documenté : les numéros étrangers (+32, +41, +44, +1…) ne sont pas détectés (limite non écrite
+  jusqu'ici).
+- Mesure : 10 rouges → verts ; banc inchangé octet pour octet ; 631 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

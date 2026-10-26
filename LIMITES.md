@@ -526,6 +526,18 @@ Le contexte de naissance reste obligatoire : « Rendez-vous le mardi 12 mars 195
 **Restent non détectées** : « 12-mars-1950 », les mois en chiffres romains (« 12.III.1950 »), une date
 écrite en toutes lettres (« douze mars mille neuf cent cinquante »), et une année seule.
 
+**Téléphone : préfixe entre parenthèses, outre-mer, numéros étrangers (P2-44).** Sonde de 22 numéros :
+« (+33) 6 12 34 56 78 » laissait « (+33) » et classait le reste en FINESS (masqué, mais sous un mauvais
+type), et les numéros d'outre-mer écrits avec leur indicatif (« +262 692 12 34 56 » à La Réunion et à
+Mayotte, « +590 » Guadeloupe, « +594 » Guyane, « +596 » Martinique) n'étaient pas détectés alors que leur
+forme nationale (« 0692 12 34 56 ») l'est. Sont maintenant détectés « (+33) » (avec ou sans « (0) ») et ces
+quatre indicatifs (10 tests, 4 contre-exemples intacts : trop peu de chiffres ou un chiffre de trop) ;
+banc inchangé octet pour octet ; 631 tests ; coût linéaire (32 000 répétitions : 1,3 s au plus).
+**Limite jusqu'ici non écrite, désormais documentée : les numéros étrangers ne sont pas détectés**
+(« +32 2 123 45 67 », « +41 21 123 45 67 », « +44 20 7946 0958 », « +1 (555) 123-4567 », « +352 621 123 456 »),
+le détecteur étant celui des numéros français. Autres collectivités d'outre-mer (« +687 », « +689 »,
+numéros à 6 chiffres) et numéros courts (« 3949 », « 15 ») non détectés non plus.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
