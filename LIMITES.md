@@ -425,16 +425,21 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
 ### 5.5 Coût d'un dossier volumineux
 
 Mesure du 26 octobre 2026 (machine de développement, textes synthétiques courts,
-environ trois jetons par document) : le temps d'un appel `Ecluse.redact` dans un
-même `Dossier` croît avec le nombre de documents déjà masqués, plus vite que
-linéairement : environ 1 ms après 100 documents, 3 ms après 500, 9 ms après 1 000
-et 53 ms après 2 000. `Apercu.risque`, qui copie l'état du dossier, coûte environ
-3 ms à 100 documents, 6 ms à 1 000 et 105 ms à 5 000. Le sondage n'a pas isolé la
-cause (la recherche des jetons déjà attribués écrits en clair dans le texte est
-une piste, non vérifiée). Pour une conversation ou un lot de quelques dizaines à
-quelques centaines de documents, le coût reste de l'ordre de la milliseconde ;
-au-delà de quelques milliers, prévoir de découper en plusieurs dossiers. Mesure
-unique, sans répétition ni intervalle de confiance.
+environ trois jetons par document ; mesure unique, sans répétition ni intervalle de
+confiance). Avant P2-25, le temps d'un appel `Ecluse.redact` dans un même `Dossier`
+croissait plus vite que linéairement avec le nombre de documents déjà masqués :
+environ 1 ms après 100 documents, 3 ms après 500, 9 ms après 1 000 et 53 ms après
+2 000. Cause isolée par un sondage : la recherche des jetons déjà attribués écrits en
+clair dans le texte compilait un motif par jeton et par appel (environ 38 ms sur 53
+à 2 000 documents).
+
+P2-25 ne cherche ces jetons que dans les segments `[...]` du texte (un motif de jeton
+ne peut pas se trouver ailleurs) et garde les motifs compilés. Résultat identique
+(test d'équivalence à l'ancienne définition, 13 variantes et 300 textes aléatoires,
+graine 42 ; prédictions du banc dossiers inchangées octet pour octet). Après : 0,3 ms
+par appel à 2 000 documents pour un texte sans crochet, 3,3 ms pour un texte qui en
+contient un. `Apercu.risque`, qui copie l'état du dossier, coûte environ 3 ms à
+100 documents, 6 ms à 1 000 et 105 ms à 5 000 (copie de l'état, non optimisée).
 
 ## 6. Hors périmètre v0
 
