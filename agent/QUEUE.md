@@ -94,7 +94,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-28 | code | `ecluse_ingest` : refuser un PDF qui a plus d'objets page en clair que de pages atteignables (page perdue sans avertissement) | P2-27 | fusionnée |
 | P2-29 | code | `ecluse_redact` : détecter les identifiants contenant des caractères invisibles ou des tirets et espaces typographiques, sans réécrire le texte | P2-28 | fusionnée |
 | P2-30 | code | `ecluse_redact` : ramener les formes pleine chasse, chiffres arabes orientaux et barres de fraction à l'ASCII dans la vue des détecteurs | P2-29 | fusionnée |
-| P2-31 | code | `ecluse_redact` : restaurer un jeton échappé en Markdown (`\\[NOM\\_1\\]`) sans jamais approcher le numéro | P2-30 | PR ouverte |
+| P2-31 | code | `ecluse_redact` : restaurer un jeton échappé en Markdown (`\\[NOM\\_1\\]`) sans jamais approcher le numéro | P2-30 | fusionnée |
+| P2-32 | code | `ecluse_redact` : détecter en entier un nom aux accents décomposés (NFD), sans laisser le reste du nom en clair | P2-31 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1122,3 +1123,19 @@ le jeton tel quel dans la réponse.
   restaurer la mauvaise valeur).
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` § 5.3 est à jour.
+
+### P2-32 — Noms aux accents décomposés (NFD) (`code`)
+
+Contexte : sonde de noms (26 octobre 2026) : un nom dont l'accent initial est écrit « E » + U+0301
+était détecté « E » seulement ; le reste du nom restait en clair (`Mme [NOM_1]́lodie Lefèvre`). Forme
+courante des noms de fichiers macOS et de copier-coller de PDF. Fuite directe d'un nom.
+
+- Tests d'abord (6 rouges avant) : six noms NFD (aigu initial, grave, cédille, tréma, accent
+  final, plusieurs accents) masqués en entier avec restauration identique ; la forme NFC est
+  inchangée ; un diacritique combinant hors nom ne crée pas d'entité.
+- La vue des détecteurs (P2-29) retire aussi les diacritiques combinants ; la fin d'une entité
+  ramenée au texte d'origine absorbe les diacritiques qui suivent sa dernière lettre.
+- Mesure : 371/397 → 397/397 documents accentués du corpus dossiers (NFD = NFC en nombre de
+  jetons) ; banc (dossiers, flou) inchangé octet pour octet.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` § 5.2 est à jour.
