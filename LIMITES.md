@@ -229,6 +229,23 @@ avec un CRC volontairement faux pour un contenu modifié passe, bien sûr : le C
 détecte l'accident, pas l'adversaire. Les PDF (lecteur maison) ne sont pas concernés
 par cette vérification.
 
+### PDF abîmés : pages perdues (P2-28)
+
+Sur 1 500 copies de `bench/pdf/texte_multipage.pdf` abîmées au hasard (graine 42,
+script jetable), 63 étaient lues comme des succès **sans une page** et sans
+avertissement (exemple : la page 3, celle du RPPS et de l'IBAN, disparaissait de
+l'arbre des pages). La page perdue n'est pas envoyée au tiers (seul le texte extrait
+est masqué puis envoyé), mais l'utilisateur croit avoir traité tout le document.
+Depuis P2-28, un PDF qui contient plus d'objets `/Type /Page` en clair que de pages
+atteignables est refusé (motif `malforme`). Après : 6 cas restants sur 1 500 (-90 %),
+1 080 refus au lieu de 1 020, 0 exception, et les 40 PDF intacts du jeu de bench sont
+toujours acceptés ou refusés comme avant. **Limites** : (1) les objets de page rangés
+dans un flux compressé ne sont pas comptés (l'écart ne joue que dans un sens) ; (2) un
+PDF mis à jour par ajout peut contenir d'anciennes versions d'une page et être refusé à
+tort : refus explicite, à mesurer sur de vrais fichiers ; (3) un octet modifié dans le
+texte d'une page, sans effet sur la structure, n'est pas détecté (un PDF n'a pas de
+somme de contrôle) : 82 sur 1 500 copies sont lues avec un texte différent.
+
 ## 5. Limites résiduelles des heuristiques nom / adresse
 
 ### 5.1 Faux positifs assumés
