@@ -369,6 +369,20 @@ corpus du banc (dossiers et flou), qui ne contiennent aucun de ces caractères. 
 un séparateur absent de ces listes, ou un caractère invisible *dans* un mot (nom,
 adresse) qui le coupe pour les détecteurs de noms, n'est pas couvert.
 
+**Accents décomposés (NFD) (P2-32).** Un nom dont les accents sont écrits en lettre de base
+plus diacritique combinant (« E » + U+0301 pour « É », forme courante des noms de fichiers
+macOS et de certains copier-coller de PDF) était coupé au premier diacritique : « Élodie
+Lefèvre » devenait `Mme [NOM_1]́lodie Lefèvre`, le reste du nom **restait en clair**. Sur les
+397 documents accentués du corpus dossiers (réaliste, graine 42) convertis en NFD par un
+script jetable, 371 donnaient autant de jetons qu'en forme composée ; après P2-32 : 397 sur
+397. Les diacritiques combinants (U+0300 à U+036F, U+1DC0 à U+1DFF, U+20D0 à U+20FF,
+U+FE20 à U+FE2F) sont retirés de la vue des détecteurs et rattachés à leur lettre quand une
+entité est ramenée au texte d'origine. Limite : les majuscules initiales hors Latin-1
+(Œ, Ł, Å, Ñ, lettres vietnamiennes…) ne sont pas reconnues comme début de nom ; sur 20
+formes de noms sondées, 15 sont détectées en entier avant P2-32, les 5 autres étant « Œil »,
+un nom vietnamien, « Ångström », « Łukasz » et un nom écrit sans majuscule. La détection de
+noms reste une heuristique sans liste exhaustive (§ 1).
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,

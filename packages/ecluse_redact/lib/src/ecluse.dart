@@ -159,7 +159,11 @@ abstract final class Ecluse {
       for (final e in entites)
         () {
           final debut = positions == null ? e.start : positions[e.start];
-          final fin = positions == null ? e.end : positions[e.end - 1] + 1;
+          var fin = positions == null ? e.end : positions[e.end - 1] + 1;
+          // Les diacritiques qui suivent la dernière lettre en font partie.
+          while (fin < text.length && _estCombinant(text.codeUnitAt(fin))) {
+            fin++;
+          }
           return DetectedEntity(
             type: e.type,
             start: debut,
@@ -284,7 +288,8 @@ abstract final class Ecluse {
 /// glisse dans un identifiant (U+200B espace sans chasse, U+200C/D, U+2060,
 /// U+FEFF, trait d'union conditionnel, marques de direction).
 final RegExp _invisibles = RegExp(
-    '[\u00AD\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]');
+    '[\u00AD\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF'
+    '\u0300-\u036F\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]');
 
 bool _estInvisible(int c) =>
     c == 0x00AD ||
@@ -293,7 +298,17 @@ bool _estInvisible(int c) =>
     (c >= 0x202A && c <= 0x202E) ||
     (c >= 0x2060 && c <= 0x2064) ||
     (c >= 0x2066 && c <= 0x2069) ||
-    c == 0xFEFF;
+    c == 0xFEFF ||
+    _estCombinant(c);
+
+/// Diacritique combinant (accent d'un nom écrit en forme décomposée, NFD) : retiré
+/// de la vue des détecteurs, mais rattaché à la lettre qui le porte quand une
+/// entité est ramenée au texte d'origine (P2-32).
+bool _estCombinant(int c) =>
+    (c >= 0x0300 && c <= 0x036F) ||
+    (c >= 0x1DC0 && c <= 0x1DFF) ||
+    (c >= 0x20D0 && c <= 0x20FF) ||
+    (c >= 0xFE20 && c <= 0xFE2F);
 
 /// Espaces Unicode autres que U+0020 et U+00A0 (déjà acceptés par les
 /// détecteurs).
