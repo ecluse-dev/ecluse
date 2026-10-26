@@ -253,3 +253,72 @@ a demandé N3 : N1 reste le **défaut**, N2 (fusion par inclusion) est activable
 par l'application à la création du `Dossier`
 (`RegleNoms.inclusion`). Le choix du défaut n'est pas modifié ; les mesures de
 N1 et N2 sont dans `LIMITES.md` § 5.3 et dans la PR P2-13.
+
+## 2026-10 — Préconisations des specs P2-07, P2-08 et P2-09 validées par délégation
+Le mainteneur a demandé formellement à l'agent de valider ses propres
+préconisations (message du 26 octobre 2026). Ce sont des choix de l'agent,
+**révocables**, qui ne valent pas relecture par le mainteneur. Tout ce qui
+dépend d'une source externe, d'une lecture de licence ou d'un avis juridique
+reste **ouvert** (dernière rubrique).
+
+### P2-07 — généralisation multi-dimensions (`agent/specs/P2-07.md` § 8)
+1. **v1 : date de naissance et âge seulement.** La pathologie est renvoyée à une
+   tâche ultérieure (ni extracteur, ni table, ni corpus annoté, rappel
+   dépendant d'un lexique).
+2. **Le masquage de la date de naissance n'est jamais relâché par défaut.**
+   Envoyer une année ou une tranche d'âge à la place du jeton est une option
+   explicite de l'appelant, irréversible, jamais déclenchée par le moteur.
+3. **Date de référence injectée par l'appelant** pour dériver un âge d'une date
+   (aucune horloge système dans le calcul).
+4. **Palier « 85+ »** ajouté pour les grands âges ; échelle des dates :
+   mois/année, année, décennie, retrait.
+5. **Seuil : *Standard* seul** en v1 (cohérent avec la décision P2-03 n° 4).
+6. **v1 = suggestions seulement** ; l'application explicite d'une suggestion est
+   une fonction appelée par l'application (option B de P2-03).
+7. **Dates d'événement : hors périmètre.**
+
+### P2-08 — aperçu avec validation en un clic (`agent/specs/P2-08.md` § 7)
+1. **Dans `ecluse_redact`** (le composant a besoin de l'état de masquage et de la
+   résolution des chevauchements) ; `ecluse_core` inchangé.
+2. **Deux temps** : proposer (pur), puis appliquer.
+3. **Refus** : interdit par défaut pour les entités structurelles
+   (`tier = structural`) et pour les secrets ; l'appelant peut l'autoriser par une
+   option explicite pour les entités structurelles, **jamais** pour les secrets.
+4. **Ajouts manuels** : tout type sauf `secret` ; un ajout qui recouvre entièrement
+   des détections les remplace ; un chevauchement partiel est une **erreur
+   explicite** ; un ajout inclus dans une détection est refusé (redondant) ;
+   provenance marquée « manuelle ».
+5. **Trace d'audit** : rien en v1 (aucune modification d'`ecluse_audit`).
+6. **Liaison au texte** : comparaison du texte d'origine complet, pas de condensat
+   (la proposition le contient déjà) ; aucune dépendance de hachage ajoutée.
+7. **Rapport de risque** : inclus dans la proposition quand l'appelant fournit une
+   référence.
+8. **Libellés** : laissés à l'application ; la bibliothèque fournit les comptes par
+   type.
+9. **`refuseSecrets`** refuse **avant** toute proposition (rien n'est affiché).
+10. **Fichiers** : l'aperçu porte sur le texte extrait, avec l'avertissement du § 5.5
+    de la spec.
+
+### P2-09 — export AIPD (`agent/specs/P2-09.md` § 8)
+1. **Objet** : matière première factuelle pour le registre des activités de
+   traitement et pour l'AIPD ; pas l'outil PIA de la CNIL.
+2. **Périmètre** : uniquement le contenu du § 4 de la spec ; aucune rubrique vide à
+   remplir, pour ne pas être pris pour un registre.
+3. **Format** : JSON structuré et texte lisible ; le tableur au format de la CNIL
+   seulement après lecture du modèle.
+4. **Seuil d'agrégation (provisoire)** : tout compte par type inférieur à 5 est
+   remplacé par la mention « moins de 5 » ; quand le nombre d'opérations est
+   inférieur à 5, la période est donnée au jour et non à la minute.
+5. **Code dans `ecluse_audit`**, en lecture seule des entrées ; aucune écriture.
+6. **Mentions d'honnêteté dans la sortie elle-même**, jamais omises.
+7. **Estimation de ré-identification : non journalisée** (hors périmètre).
+
+### Reste ouvert (non validé)
+- **Source de la table de catégories de pathologies** et lecture de sa licence sur la
+  page d'origine (P2-07 n° 4 de la spec) : aucune page n'a pu être lue.
+- **Avis d'un DPO** sur la nature du journal et sur la publication de l'export
+  (P2-09 n° 7 de la spec) ; l'export n'est pas publié avant son retour.
+- **Lecture du gabarit de registre de la CNIL** et du texte des articles 30 et 35 du
+  RGPD (P2-09) : pages injoignables depuis l'environnement d'exécution.
+- Seuil d'agrégation de l'export (5) et palier « 85+ » : à confirmer avec les design
+  partners.
