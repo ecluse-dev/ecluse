@@ -12,6 +12,13 @@ import 'audit_verifier.dart';
 /// agrégat de très faible effectif se confond avec une entrée : comptes et
 /// horodatage rapproché peuvent relier une entrée à une personne,
 /// `LIMITES.md` § 8). Un compte nul reste `0`. Le seuil est **provisoire**.
+///
+/// **Recoupement** (P2-26) : un compte masqué ne doit pas se retrouver par
+/// soustraction. Le total des opérations (et le nombre d'entrées de la chaîne,
+/// qui est la même quantité) n'est donc communiqué que si aucune opération n'est
+/// masquée ; et si un seul code de refus est masqué alors que le nombre de
+/// refus est exact, le plus petit autre code est masqué aussi, sous la mention
+/// [nonCommunique] (« moins de N » serait faux : il peut valoir N ou plus).
 final class AuditExport {
   const AuditExport._({
     required this.seuil,
@@ -71,7 +78,7 @@ final class AuditExport {
           'au_jour': periodeAuJour,
         },
         'chaine': switch (verification) {
-          AuditIntact(:final count) => {'etat': 'intacte', 'entrees': count},
+          AuditIntact() => {'etat': 'intacte', 'entrees': operations},
           AuditBroken(:final index, :final kind) => {
               'etat': 'rompue',
               'rang': index,
@@ -101,9 +108,9 @@ final class AuditExport {
     _liste(b, 'Refus par code de motif', refus);
     b.writeln('Moteurs : ${moteurs.isEmpty ? 'aucun' : moteurs.join(' ; ')}');
     switch (verification) {
-      case AuditIntact(:final count):
-        b.writeln('Chaîne : intacte sur $count entrée(s) ; la troncature en '
-            'fin de journal n\'est pas détectée.');
+      case AuditIntact():
+        b.writeln('Chaîne : intacte sur $operations entrée(s) ; la troncature '
+            'en fin de journal n\'est pas détectée.');
       case AuditBroken(:final index, :final kind):
         b.writeln('Chaîne : rompue à l\'entrée $index (${kind.name}).');
     }
@@ -121,6 +128,10 @@ final class AuditExport {
     }
   }
 }
+
+/// Valeur d'un compte exact retenu pour empêcher de retrouver, par différence
+/// avec un total, un compte voisin masqué.
+const String nonCommunique = 'non communiqué (recoupement)';
 
 /// Mentions d'honnêteté de l'export (spec P2-09 § 6).
 const List<String> mentionsAudit = [
@@ -163,12 +174,30 @@ abstract final class AuditExporter {
 
     final auJour = liste.isNotEmpty && liste.length < seuil;
     String? jour(String ts) => auJour ? ts.substring(0, 10) : ts;
+    final opsMasquees = _masqueTout(parOperation, seuil);
+    // Le total des opérations n'est exact que si aucune opération n'est
+    // masquée : sinon `total - autres` redonnerait le compte masqué.
+    final Object operations = liste.isNotEmpty && liste.length < seuil
+        ? 'moins de $seuil'
+        : opsMasquees.values.any((v) => v is String)
+            ? nonCommunique
+            : liste.length;
+    final refusMasques = _masqueTout(refus, seuil);
+    if (opsMasquees['ingest_refused'] is int &&
+        refusMasques.values.whereType<String>().length == 1) {
+      final exacts = refusMasques.entries.where((e) => e.value is int).toList()
+        ..sort((a, b) {
+          final c = (a.value as int).compareTo(b.value as int);
+          return c != 0 ? c : a.key.compareTo(b.key);
+        });
+      if (exacts.isNotEmpty) refusMasques[exacts.first.key] = nonCommunique;
+    }
     return AuditExport._(
       seuil: seuil,
-      operations: _masque(liste.length, seuil),
-      parOperation: _masqueTout(parOperation, seuil),
+      operations: operations,
+      parOperation: opsMasquees,
       entites: _masqueTout(entites, seuil),
-      refus: _masqueTout(refus, seuil),
+      refus: refusMasques,
       moteurs: moteurs.toList()..sort(),
       premiere: liste.isEmpty ? null : jour(liste.first.ts),
       derniere: liste.isEmpty ? null : jour(liste.last.ts),

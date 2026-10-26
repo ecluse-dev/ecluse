@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:ecluse_audit/ecluse_audit.dart';
 import 'package:test/test.dart';
@@ -161,6 +162,71 @@ void main() {
           AuditExporter.agrege(j).toTexte(), AuditExporter.agrege(j).toTexte());
       expect(jsonEncode(AuditExporter.agrege(j).toJson()),
           jsonEncode(AuditExporter.agrege(j).toJson()));
+    });
+  });
+
+  group('divulgation par recoupement (P2-26)', () {
+    test('le nombre d\'entrées de la chaîne suit le masquage de operations',
+        () {
+      final e = AuditExporter.agrege(_journal([
+        for (var i = 0; i < 3; i++) _redact({'nir': 1}),
+      ]));
+      expect(e.operations, 'moins de 5');
+      final chaine = e.toJson()['chaine'] as Map;
+      expect(chaine['etat'], 'intacte');
+      expect(chaine['entrees'], 'moins de 5');
+      expect(e.toTexte(), isNot(contains('3 entrée')));
+      expect(jsonEncode(e.toJson()), isNot(contains('"entrees":3')));
+    });
+
+    test('un total exact ne permet pas de retrouver une opération masquée', () {
+      final e = AuditExporter.agrege(_journal([
+        for (var i = 0; i < 9; i++) _redact({'nir': 1}),
+        for (var i = 0; i < 3; i++) _refus(AuditReason.pdfImage),
+      ]));
+      expect(e.parOperation, {'redact': 9, 'ingest_refused': 'moins de 5'});
+      expect(e.operations, isA<String>(),
+          reason: '12 - 9 donnerait les 3 refus');
+      expect((e.toJson()['chaine'] as Map)['entrees'], isA<String>());
+    });
+
+    test('un refus masqué ne se déduit pas du total des refus', () {
+      final e = AuditExporter.agrege(_journal([
+        for (var i = 0; i < 6; i++) _refus(AuditReason.unsupportedFormat),
+        for (var i = 0; i < 5; i++) _refus(AuditReason.other),
+        for (var i = 0; i < 3; i++) _refus(AuditReason.pdfImage),
+      ]));
+      expect(e.parOperation['ingest_refused'], 14);
+      final inconnus = e.refus.values.whereType<String>().length;
+      expect(inconnus, isNot(1), reason: '14 - 6 - 5 donnerait les 3');
+      // Aucun compte exact n'est faux : un compte masqué n'est jamais présenté
+      // comme « moins de 5 » s'il ne l'est pas.
+      expect(e.refus['other'], isNot('moins de 5'));
+    });
+
+    test(
+        'propriété : jamais une seule inconnue dans une somme exacte '
+        '(graine 42)', () {
+      final rng = Random(42);
+      for (var essai = 0; essai < 400; essai++) {
+        final ops =
+            <({AuditOp op, Map<String, int> counts, AuditReason? reason})>[
+          for (var i = 0; i < rng.nextInt(14); i++) _redact({'nir': 1}),
+          for (final r in AuditReason.values)
+            for (var i = 0; i < rng.nextInt(8); i++) _refus(r),
+        ];
+        final e = AuditExporter.agrege(_journal(ops));
+        // Groupe 1 : total des opérations et opérations.
+        final g1 = e.parOperation.values.whereType<String>().length;
+        if (e.operations is int) {
+          expect(g1, 0, reason: 'total exact avec une opération masquée');
+        }
+        // Groupe 2 : refus par code et nombre d'entrées « ingest_refused ».
+        final parent = e.parOperation['ingest_refused'];
+        if (parent is int) {
+          expect(e.refus.values.whereType<String>().length, isNot(1));
+        }
+      }
     });
   });
 }
