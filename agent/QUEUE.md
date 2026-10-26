@@ -110,7 +110,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-44 | code | `ecluse_redact` : détecter « (+33) » et les indicatifs d'outre-mer (+262, +590, +594, +596) ; documenter l'exclusion des numéros étrangers | P2-43 | fusionnée |
 | P2-45 | code | `ecluse_redact` : masquer le nom de naissance ou d'épouse derrière « née », « épouse », « veuve », « nom de jeune fille » | P2-44 | fusionnée |
 | P2-46 | code | `ecluse_redact` : reconnaître « Professeure », « Docteure », « Dre », « Ms », « Mgr », « Abbé » comme civilités | P2-45 | fusionnée |
-| P2-48 | code | `ecluse_redact` : supprimer le coût quadratique de la détection de noms sur un texte à milliers de mentions | P2-46 | PR ouverte |
+| P2-47 | code | `ecluse_redact` : reconnaître les particules da, dos, di, del, ben, bin, bint, ibn, ter, ten, zu, af dans un nom | P2-46 | PR ouverte |
+| P2-48 | code | `ecluse_redact` : supprimer le coût quadratique de la détection de noms sur un texte à milliers de mentions | P2-47 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1351,6 +1352,18 @@ ne déclenchaient pas la règle de civilité ; un nom sans prénom connu restait
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
 
+### P2-47 — Particules de noms d'origine étrangère (`code`)
+
+Contexte : sonde de 27 noms à particules (26 octobre 2026) : « M. Pedro dos Santos », « M. Luis da Silva »,
+« M. Ahmed ben Ali » étaient masqués à moitié.
+
+- Tests d'abord (15 rouges, avant) ; 4 contre-exemples sans civilité ni prénom connu intacts ;
+  restauration identique.
+- `name_detector.dart` : `_particules` étendue (da, das, do, dos, di, del, della, ben, bin, bint, ibn, ter,
+  ten, zu, af).
+- Mesure : 15 rouges → verts ; banc inchangé octet pour octet ; 691 tests. Le coût quadratique sur mentions
+  identiques est antérieur (10,9 s sur la base à ×4000) : non aggravé (5,3 s).
+
 ### P2-48 — Coût quadratique de la détection de noms (`code`)
 
 Contexte : mesure (26 octobre 2026) : 4 000 mentions répétées prenaient 11 s (32 000 : plus de 100 s) ; le
@@ -1361,5 +1374,6 @@ détecteur de noms seul en prenait 6.
   masque par caractère (`_Reserve`), expression d'écart précompilée.
 - Mesure : 4 000 mentions 11 s → 0,5 s ; 32 000 : 39 s → 13 s ; fuzz différentiel de 1 500 textes
   identique avant/après ; banc inchangé octet pour octet ; 674 tests.
+
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

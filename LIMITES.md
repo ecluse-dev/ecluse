@@ -562,6 +562,18 @@ existantes. Intacts, testés : « Les msg arrivent », « Un abbé est venu », 
 professeure est venue » (le titre est suivi d'un mot en minuscule : aucun nom). **Sur-masquage possible** :
 un mot capitalisé après « Ms » ou « Abbé » qui n'est pas un nom (« Abbé Pierre » est bien une personne).
 
+**Particules de noms d'origine étrangère (P2-47).** Sonde de 27 noms à particules : « M. Pedro dos Santos »,
+« M. Luis da Silva », « M. Ahmed ben Ali » et « Mme Fatima bint Ali » étaient masqués à moitié
+(« M. [NOM_1] dos Santos », « M. [NOM_1] ben [NOM_2] ») : la particule et le nom, ou le nom seul, restaient en
+clair. Sont ajoutées aux particules reconnues : « da », « das », « do », « dos », « di », « del », « della » (portugais,
+italien, espagnol), « ben », « bin », « bint », « ibn » (arabe), « ter », « ten » (néerlandais), « zu » (allemand) et
+« af » (suédois), en minuscules ou capitalisées, devant un mot à majuscule initiale. Tests d'abord (15 rouges) ;
+banc inchangé octet pour octet ; 691 tests. Intacts, testés : « Le dossier dos Santos est clos », « Une salade da
+Vinci », « le ben oui du jour » (aucune civilité ni prénom connu). **Sur-masquage possible** : un mot courant
+de la liste suivi d'un mot capitalisé après une civilité et un nom (« Mme Dupont do Something »). **Coût** : un
+texte de 4 000 « Mme Dupont ben Ali ter ten » prend ~5 s ; le coût quadratique sur des mentions identiques est
+**antérieur** à P2-47 (10,9 s sur la base avant la modification) et reste à traiter.
+
 **Coût de la détection de noms sur un texte à milliers de mentions (P2-48).** Mesure : 4 000 mentions
 (« Mme Dupont ben Ali ter ten » répétées) prenaient **11 s** et 32 000 plus de 100 s. Cause trouvée en
 chronométrant les passes (le détecteur de noms seul : 6 s, les autres : moins de 20 ms) : à chaque prénom
@@ -574,6 +586,7 @@ après, le banc est inchangé octet pour octet et tous les tests passent. **Limi
 caractères n'est plus reconnu en entier derrière un prénom ; un coût superlinéaire résiduel subsiste au-delà
 de ~10 000 mentions identiques d'un même texte (hors du détecteur de noms : la résolution des jetons), à
 traiter si un cas réel l'exige.
+
 
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 

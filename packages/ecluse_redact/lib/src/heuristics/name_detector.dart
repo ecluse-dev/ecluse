@@ -105,7 +105,8 @@ final class NameDetector implements EntityDetector {
   /// casse de titre (voir [_unite]).
   static const String _particules =
       '(?:(?:[Dd]e|[Dd]u|[Dd]es|[Ll]e|[Ll]a|[Ll]es|[Vv]an|[Vv]on|[Dd]er|[Dd]en|'
-      "[Ee]l|[Aa]l)$_h+|[DdLl]['’])";
+      '[Ee]l|[Aa]l|[Dd]a|[Dd]as|[Dd]o|[Dd]os|[Dd]i|[Dd]el|[Dd]ella|[Bb]en|[Bb]in|'
+      "[Bb]int|[Ii]bn|[Tt]er|[Tt]en|[Zz]u|[Aa]f)$_h+|[DdLl]['’])";
 
   /// Une unité de nom : particules éventuelles puis mot capitalisé.
   static const String _unite = '(?:$_particules)*$_cap';
