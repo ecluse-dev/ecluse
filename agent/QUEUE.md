@@ -104,6 +104,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-38 | code | `ecluse_redact` : détecter un identifiant à chiffres (NIR, IBAN, téléphone, date) coupé par une fin de ligne entre deux groupes | P2-37 | fusionnée |
 | P2-39 | code | `ecluse_redact` : détecter une date de naissance séparée de son étiquette (`\|`, `;`, saut de ligne) | P2-38 | fusionnée |
 | P2-40 | code | `ecluse_redact` : masquer le prénom derrière « Prénom : » et reconnaître la fiche « Prénom » avant « Nom » | P2-39 | fusionnée |
+| P2-41 | code | `ecluse_redact` : masquer le nom derrière « Nom du patient : », « Nom de l'assuré : »… | P2-40 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1258,4 +1259,18 @@ Contexte : contrôle de P2-36 (26 octobre 2026) : « Prénom : Zorglub » (prén
 - `name_detector.dart` : `_champPrenom`, `_fichePrenomPrecede` (fenêtre bornée de 300 caractères).
 - Mesure : 8 rouges → verts ; banc inchangé octet pour octet (sans cas couvrant la règle) ; 563 tests.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-41 — Étiquettes « Nom du patient », « Nom de l'assuré »… (`code`)
+
+Contexte : sonde d'étiquettes courantes (26 octobre 2026) : « Nom du patient : Quenelle » restait en clair.
+
+- Tests d'abord (10 rouges, avant) : patient(e), assuré(e), bénéficiaire, demandeur, salarié, employé(e),
+  résident, majuscules ; contre-exemples (« Nom du médicament », « du fichier », « du projet », valeur en
+  minuscules ou vide) intacts ; restauration identique.
+- `name_detector.dart` : `_nomQualifie` ajouté aux étiquettes précises de `_champNom`.
+- Mesure : 10 rouges → verts ; banc inchangé octet pour octet (sans cas couvrant la règle) ; tests passent.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Non traité : étiquettes génériques (« Contact : »…) + nom hors gazetteer sans civilité (décision de
+  périmètre, documentée).
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
