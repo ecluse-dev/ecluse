@@ -350,7 +350,8 @@ int _versAscii(int c) {
     vue = String.fromCharCodes([for (final c in vue.codeUnits) _versAscii(c)]);
   }
   final coupures = _coupuresDeLigne.allMatches(vue).toList();
-  if (coupures.isEmpty && !_invisibles.hasMatch(vue)) {
+  final cles = _cleNommee.allMatches(vue).toList();
+  if (coupures.isEmpty && cles.isEmpty && !_invisibles.hasMatch(vue)) {
     return (vue, null);
   }
   // Les caractères d'une coupure sont retirés comme les invisibles, sauf un
@@ -371,6 +372,14 @@ int _versAscii(int c) {
       retires.add(i);
     }
   }
+  // « 2550814168025 clé 38 » (P2-42) : le mot et ses marques disparaissent,
+  // une espace subsiste entre le numéro et la clé.
+  for (final m in cles) {
+    unites[m.start] = 0x20;
+    for (var i = m.start + 1; i < m.end; i++) {
+      retires.add(i);
+    }
+  }
   final sb = StringBuffer();
   final positions = <int>[];
   for (var i = 0; i < unites.length; i++) {
@@ -388,6 +397,13 @@ int _versAscii(int c) {
 /// n'est pas touché, donc aucun span de texte ne traverse une ligne.
 final RegExp _coupuresDeLigne =
     RegExp(r'(?<=[0-9/.\-])[ \t]*\r?\n[ \t]*(?=[0-9])');
+
+/// Clé de contrôle nommée à part (P2-42) : après un chiffre, « clé », « cle » ou
+/// « clef » (avec `(` et `:` facultatifs) puis deux chiffres. Neutralisée dans la
+/// vue de détection seulement : le NIR n'est reconnu que si la clé est juste.
+final RegExp _cleNommee =
+    RegExp(r'(?<=[0-9])[ \t]*\(?[ \t]*(?:[Cc]l[ée]f?|CL[ÉE]F?)[ \t]*:?[ \t]*'
+        r'(?=[0-9]{2}(?![0-9]))');
 
 /// Les détecteurs par défaut, avec un [NameDetector] amorcé par [patronymes].
 List<Detector> _detecteursAvecPatronymes(Set<String> patronymes) => [

@@ -503,6 +503,18 @@ légal : », « Patient : ») suivies d'un nom **hors gazetteer sans civilité**
 pas détectées. C'est la limite connue des noms (§ 5.4) ; l'étendre à ces étiquettes est une décision de
 périmètre (ces mots précèdent aussi des noms de service ou d'organisme) laissée au mainteneur.
 
+**Clé du NIR nommée à part (P2-42).** Sonde de variantes de NIR (métropole, Corse 2A/2B, DOM, naissance
+à l'étranger) : toutes les écritures à clé collée ou séparée par une espace étaient détectées, mais
+« 2550814168025 clé 38 » (le mot « clé » entre le numéro et sa clé) ne l'était pas et laissait les 13
+chiffres en clair dans les quatre familles. Le mot (« clé », « cle », « clef », avec `(` et `:`
+facultatifs) est neutralisé **dans la vue de détection seulement** quand il suit un chiffre et précède
+deux chiffres : le détecteur de NIR de `ecluse_core` reste inchangé et valide toujours la clé, donc
+une clé fausse (« clé 39 ») ou un nombre quelconque suivi de « clé 99 » n'est pas masqué (4
+contre-exemples testés). Tests d'abord (10 rouges) ; banc inchangé octet pour octet ; coût linéaire
+(32 000 occurrences : < 1 s). Effet de bord assumé : « 01 99 00 12 clé 34 » peut être lu comme un
+téléphone (sur-masquage possible, jamais de fuite). **Non couvert** : la clé sur une autre ligne ou dans
+une autre colonne que le numéro.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
