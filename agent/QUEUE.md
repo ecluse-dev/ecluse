@@ -86,7 +86,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-20 | code | `ecluse_redact` : les blancs en bordure d'un ajout manuel d'aperçu ne sont pas masqués | P2-19 | fusionnée |
 | P2-21 | code | `ecluse_redact` : un ajout manuel d'aperçu dont une borne coupe une paire de substituts UTF-16 est refusé | P2-20 | fusionnée |
 | P2-22 | code | `ecluse_redact` : marquer la provenance « manuelle » des entités ajoutées dans un aperçu (`RedactResult.manuelles`) | P2-21 | fusionnée |
-| P2-23 | code | `ecluse_redact` : rapport de risque de l'aperçu avant application (`Apercu.risque`, `Proposition.risque`), sans effet de bord | P2-22 | PR ouverte |
+| P2-23 | code | `ecluse_redact` : rapport de risque de l'aperçu avant application (`Apercu.risque`, `Proposition.risque`), sans effet de bord | P2-22 | fusionnée |
+| P2-24 | code | `ecluse_ingest` : test de composition fichier → aperçu sur le texte extrait (décision 10 de P2-08) | P2-23 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -979,3 +980,18 @@ P2-18 : le rapport n'était calculé qu'à l'application.
   dossier, 0 différence avec le rapport de l'application.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-24 — Aperçu d'un fichier : composition sur le texte extrait (`code`)
+
+Contexte : `DECISIONS.md`, P2-08, décision 10 : l'aperçu porte sur le texte extrait.
+
+- Aucun code d'intégration : `ingestFile` donne le texte, `Apercu.propose` le prend.
+  Le livrable est un **test de caractérisation** dans `ecluse_ingest` (txt, md, docx) :
+  entités retombant sur le texte extrait, « tout accepté » égal à `Ecluse.redact`, un
+  refus restauré à l'identique ; un fichier refusé ne donne aucun aperçu.
+- `LIMITES.md` : ce qui n'est pas extrait n'apparaît pas dans l'aperçu ; l'application
+  doit afficher les avertissements d'ingestion avec lui.
+- Le test n'était pas rouge avant : il fixe un comportement, il n'en corrige pas.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée (`ecluse_ingest` dépendait déjà
+  d'`ecluse_redact`).
+- **Fini quand** : `format`, `analyze`, `test` passent sur `ecluse_ingest`.
