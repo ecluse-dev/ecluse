@@ -516,6 +516,11 @@ détecte pas** (un test l'affirme) :
 - la **justesse de l'horloge** : l'horodatage vient de l'appareil. Ce n'est
   pas un horodatage qualifié (RFC 3161 / eIDAS).
 
+`AuditExporter.agrege` (P2-15) produit un agrégat de ce journal pour alimenter un
+registre ou une analyse d'impact : matière première factuelle, comptes de faible
+effectif remplacés par « moins de 5 » (seuil provisoire), mentions d'honnêteté
+dans la sortie ; **ce n'est ni un registre ni une attestation de conformité**.
+
 Le journal prouve la cohérence interne de la chaîne, pas la vérité des
 événements. Les comptes révèlent la nature d'un document (deux NIR et un IBAN
 évoquent un dossier de paie) et un horodatage rapproché des journaux d'une
