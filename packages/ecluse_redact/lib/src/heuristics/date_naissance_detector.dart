@@ -24,6 +24,10 @@ final class DateNaissanceDetector implements EntityDetector {
     'janvier', 'février', 'fevrier', 'mars', 'avril', 'mai', 'juin',
     'juillet', 'août', 'aout', 'septembre', 'octobre', 'novembre',
     'décembre', 'decembre', //
+    // Mois anglais (« DOB: 12 March 1950 »), contexte de naissance obligatoire.
+    'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august',
+    'september', 'october', 'november', 'december', 'jan', 'feb', 'mar', 'apr',
+    'jun', 'jul', 'aug', 'sept', 'sep', 'oct', 'nov', 'dec', //
   ];
 
   // `[ \t]` plutôt que `\s` partout : une date de naissance (ou son
@@ -37,17 +41,21 @@ final class DateNaissanceDetector implements EntityDetector {
   /// Lieu de naissance facultatif entre « né(e) » et « le » (« né à Paris
   /// le … ») : 1 à 3 mots, pour ne pas ouvrir la porte à une phrase entière.
   static const String _lieu =
-      "(?:$_b+(?:à|au|aux|en)$_b+[\\wÀ-ÿ'’-]+(?:$_b+[\\wÀ-ÿ'’-]+){0,2})?";
+      "(?:$_b+(?:à|au|aux|en)$_b+[\\wÀ-ÿ'’-]+(?:$_b+[\\wÀ-ÿ'’-]+){0,2}"
+      '(?:$_b*\\([^)\\n]{1,20}\\))?)?';
 
   /// Contexte déclencheur : « né(e) [à lieu] le [:] », « date de naissance
   /// [:] », « naissance : » (deux-points obligatoire, sinon « la naissance
   /// du projet »), « DDN [:] », « DOB [:] ».
   static final String _contexte =
       '(?<![\\wÀ-ÿ])(?:né(?:e)?(?:\\(e\\))?$_lieu$_b+le$_b*:?'
-      '|date$_b+de$_b+naissance$_b*:?'
+      '|date$_b+(?:de$_b+)?naiss(?:ance|\\.)?$_b*:?'
       '|naissance$_b*:'
-      '|DDN$_b*:?'
-      '|DOB$_b*:?)';
+      '|D\\.?D\\.?N\\.?$_b*:?'
+      '|DOB$_b*:?'
+      '|date$_b+of$_b+birth$_b*:?'
+      '|birth$_b*date$_b*:?'
+      '|born$_b+on$_b*:?)';
 
   /// Séparation entre le contexte et la date (P2-39) : des blancs, un `|` ou un
   /// `;` (tableau, CSV), ou **un seul** saut de ligne (étiquette seule sur sa
@@ -55,12 +63,15 @@ final class DateNaissanceDetector implements EntityDetector {
   /// entre les deux interrompt la détection.
   static const String _sepContexte = '(?:$_b+|$_b*[|;]$_b*|$_b*\\r?\\n$_b*)';
 
+  static const String _jours =
+      '(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)$_b+';
+
   static final RegExp _pattern = RegExp(
-    '$_contexte$_sepContexte'
+    '$_contexte$_sepContexte(?:$_jours)?'
     '(\\d{1,2}$_b*[\\/\\-.]$_b*\\d{1,2}$_b*[\\/\\-.]$_b*(?:\\d{4}|\\d{2}(?!\\d))'
     '|\\d{1,2}$_b+\\d{1,2}$_b+\\d{4}(?!\\d)'
     '|\\d{4}-\\d{2}-\\d{2}'
-    '|\\d{1,2}(?:er|ᵉʳ)?$_b+(?:${_months.join('|')})$_b+\\d{4})',
+    '|\\d{1,2}(?:er|ᵉʳ)?$_b+(?:${_months.join('|')})$_b+(?:\\d{4}|\\d{2}(?!\\d)))',
     caseSensitive: false,
   );
 
