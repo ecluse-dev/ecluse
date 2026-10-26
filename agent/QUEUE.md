@@ -100,7 +100,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-34 | code | `ecluse_redact` : détecter une date de naissance aux séparateurs espacés (« 12 / 03 / 1950 », « 12 03 1950 ») | P2-33 | fusionnée |
 | P2-35 | code | `ecluse_redact` : reconnaître les civilités abrégées avec point (« Mme. », « Mlle. ») | P2-34 | fusionnée |
 | P2-36 | code | `ecluse_redact` : masquer le patronyme derrière une étiquette de champ (« Nom de naissance : », « Nom : … Prénom : … ») | P2-35 | fusionnée |
-| P2-37 | code | `ecluse_redact` : masquer en entier une adresse dont le numéro de voie porte une lettre (« 12 B rue des Lilas ») | P2-36 | PR ouverte |
+| P2-37 | code | `ecluse_redact` : masquer en entier une adresse dont le numéro de voie porte une lettre (« 12 B rue des Lilas ») | P2-36 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
