@@ -422,6 +422,20 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
 - Le jeton d'un patronyme seul d'un autre document est séparé en N1 (nouvelle
   mention partielle) et fusionné en N2 (voir § 5.3).
 
+### 5.5 Coût d'un dossier volumineux
+
+Mesure du 26 octobre 2026 (machine de développement, textes synthétiques courts,
+environ trois jetons par document) : le temps d'un appel `Ecluse.redact` dans un
+même `Dossier` croît avec le nombre de documents déjà masqués, plus vite que
+linéairement : environ 1 ms après 100 documents, 3 ms après 500, 9 ms après 1 000
+et 53 ms après 2 000. `Apercu.risque`, qui copie l'état du dossier, coûte environ
+3 ms à 100 documents, 6 ms à 1 000 et 105 ms à 5 000. Le sondage n'a pas isolé la
+cause (la recherche des jetons déjà attribués écrits en clair dans le texte est
+une piste, non vérifiée). Pour une conversation ou un lot de quelques dizaines à
+quelques centaines de documents, le coût reste de l'ordre de la milliseconde ;
+au-delà de quelques milliers, prévoir de découper en plusieurs dossiers. Mesure
+unique, sans répétition ni intervalle de confiance.
+
 ## 6. Hors périmètre v0
 
 - Généralisation appliquée au texte envoyé (le rapport de risque de
