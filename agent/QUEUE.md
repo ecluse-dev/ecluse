@@ -88,6 +88,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-22 | code | `ecluse_redact` : marquer la provenance « manuelle » des entités ajoutées dans un aperçu (`RedactResult.manuelles`) | P2-21 | fusionnée |
 | P2-23 | code | `ecluse_redact` : rapport de risque de l'aperçu avant application (`Apercu.risque`, `Proposition.risque`), sans effet de bord | P2-22 | fusionnée |
 | P2-24 | code | `ecluse_ingest` : test de composition fichier → aperçu sur le texte extrait (décision 10 de P2-08) | P2-23 | fusionnée |
+| P2-25 | code | `ecluse_redact` : recherche des jetons littéraux sans compiler un motif par jeton et par appel (coût d'un gros dossier) | P2-24 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -995,3 +996,20 @@ Contexte : `DECISIONS.md`, P2-08, décision 10 : l'aperçu porte sur le texte ex
 - `ecluse_core` inchangé. Aucune dépendance ajoutée (`ecluse_ingest` dépendait déjà
   d'`ecluse_redact`).
 - **Fini quand** : `format`, `analyze`, `test` passent sur `ecluse_ingest`.
+
+### P2-25 — Coût de la recherche des jetons littéraux dans un gros dossier (`code`)
+
+Contexte : mesure du 26 octobre 2026 (`LIMITES.md` § 5.5) : 53 ms par appel après 2 000
+documents d'un même `Dossier`, dont environ 38 ms pour la recherche des jetons déjà
+attribués écrits en clair dans le texte (un motif compilé par jeton et par appel).
+
+- Test d'équivalence d'abord (vert avant et après) : les avertissements « jeton
+  littéral » sont ceux de `tolerantTokenPattern` sur 13 variantes (casse, espaces,
+  jeton collé, crochet ouvert ou fermé seul, imbriqué, sur plusieurs lignes) et 300
+  textes aléatoires (graine 42).
+- La recherche se limite aux segments `[...]` sans crochet du texte et réutilise les
+  motifs compilés (cache par jeton dans l'état du dossier).
+- Mesure : 52,65 → 0,3 ms par appel à 2 000 documents sans crochet, 3,3 ms avec ;
+  prédictions du banc dossiers inchangées octet pour octet.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` § 5.5 est à jour.
