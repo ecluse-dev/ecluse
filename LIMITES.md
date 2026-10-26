@@ -352,6 +352,23 @@ d'harmonisation des re-mentions (§ 5.3) sur des enchaînements absurdes (« Dr 
 Un sondage aléatoire n'est pas une preuve ; il n'a pas cherché les mises en forme
 propres aux vrais documents (§ 5.2).
 
+**Caractères invisibles et séparateurs typographiques dans un identifiant (P2-29).**
+Un copier-coller depuis le web ou un PDF glisse souvent un espace sans chasse (U+200B),
+un trait d'union conditionnel (U+00AD) ou un lien de mots (U+2060) dans un numéro ; un
+traitement de texte remplace parfois le trait d'union par un tiret demi-cadratin ou
+insécable. Avant P2-29, un NIR, un IBAN ou un téléphone ainsi écrit n'était **pas
+détecté** (donc non masqué) : sur 11 séparateurs et 3 types (33 cas), 22 étaient
+détectés en entier (tous les cas U+200B, U+2011 et U+2013 manquaient, ainsi que
+l'espace fine U+2009 et la tabulation pour le téléphone). Les détecteurs tournent
+désormais sur une vue du texte : espaces Unicode ramenés à l'espace, tirets
+typographiques à `-` (même longueur), caractères invisibles retirés ; les positions et
+la valeur sont ramenées au texte d'origine, qui n'est jamais réécrit. Après : 32 cas sur
+33 (reste : tabulation dans un téléphone) ; 47 sur 48 avec cinq séparateurs de plus
+(U+200C, U+2060, U+FEFF, U+00AD, U+2212). Sorties inchangées, octet pour octet, sur les
+corpus du banc (dossiers et flou), qui ne contiennent aucun de ces caractères. Limite :
+un séparateur absent de ces listes, ou un caractère invisible *dans* un mot (nom,
+adresse) qui le coupe pour les détecteurs de noms, n'est pas couvert.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
