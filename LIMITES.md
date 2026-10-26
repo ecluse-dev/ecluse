@@ -403,6 +403,19 @@ octet : les corpus ne contiennent pas ces lettres. Reste non détecté : un nom 
 majuscule. La détection de noms reste une heuristique sans liste exhaustive (§ 1) ; aucune
 mesure de faux positifs n'a été faite sur de vrais textes espagnols, polonais ou vietnamiens.
 
+**Dates de naissance aux séparateurs espacés (P2-34).** Sonde de 23 formulations d'une date
+de naissance : 16 détectées. Parmi les 7 manquées, deux sont des formes numériques courantes :
+des blancs autour des séparateurs (« né le 12 / 03 / 1950 ») et des blancs pour tout
+séparateur (« née le 12 03 1950 »). Elles sont désormais détectées (11 tests, contexte « né
+le », « DDN »… toujours obligatoire ; les négatifs restent non détectés : année sur 5 chiffres,
+jour sur 3 chiffres, date sans contexte) ; banc inchangé octet pour octet. **Restent non
+détectées, par choix de périmètre** (le détecteur exige un contexte de naissance et une date
+complète) : une année ou un mois et une année seuls (« née en 1950 », « né en mars 1950 »), une
+date suivie d'un âge sans mot de naissance (« 12/03/1950 (73 ans) »), un âge seul (« âgé de
+73 ans »). Ce sont des quasi-identifiants que le masquage ne retire pas ; le rapport de risque
+(`Ecluse.redact(riskReference: …)`) repère l'âge en chiffres, mais pas une année de naissance
+seule (rappel limité, § 7).
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
