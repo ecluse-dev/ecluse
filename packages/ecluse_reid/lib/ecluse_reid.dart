@@ -9,6 +9,7 @@
 library;
 
 export 'src/age_bands.dart';
+export 'src/birth_dates.dart';
 export 'src/estimator.dart';
 export 'src/evaluation.dart';
 export 'src/generalizer.dart';
