@@ -108,6 +108,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-42 | code | `ecluse_redact` : détecter un NIR dont la clé est nommée à part (« 2550814168025 clé 38 ») | P2-41 | fusionnée |
 | P2-43 | code | `ecluse_redact` : reconnaître les variantes de contexte et d'écriture d'une date de naissance (département, abréviations, jour de semaine, mois anglais) | P2-42 | fusionnée |
 | P2-44 | code | `ecluse_redact` : détecter « (+33) » et les indicatifs d'outre-mer (+262, +590, +594, +596) ; documenter l'exclusion des numéros étrangers | P2-43 | fusionnée |
+| P2-45 | code | `ecluse_redact` : masquer le nom de naissance ou d'épouse derrière « née », « épouse », « veuve », « nom de jeune fille » | P2-44 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1319,4 +1320,18 @@ en FINESS ; « +262 692 12 34 56 » (outre-mer, numéro français) n'était pas 
   jusqu'ici).
 - Mesure : 10 rouges → verts ; banc inchangé octet pour octet ; 631 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-45 — Nom de naissance ou d'épouse (`code`)
+
+Contexte : sonde de 24 civilités et titres (26 octobre 2026) : « Mme Quenelle née Dupont » laissait « Dupont »
+en clair (de même « épouse », « ép. », « veuve », « nom de jeune fille »).
+
+- Tests d'abord (17 rouges, avant) ; 9 contre-exemples (« née le », « née à », « Née Lundi », « épouse de
+  l'intéressé »…) intacts ; restauration identique.
+- `name_detector.dart` : `_nomDeNaissance` (marqueur + un ou deux mots à majuscule initiale, mois et jours
+  exclus), confiance 0,7 ; le nom alimente la deuxième passe.
+- Mesure : 17 rouges → verts ; banc inchangé octet pour octet (sans cas couvrant la règle) ; 657 tests.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Non traité : titres et fonctions sans prénom connu (« Professeure », « Dre », « abbé », « Infirmière »…).
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

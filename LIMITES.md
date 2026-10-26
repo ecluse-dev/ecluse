@@ -538,6 +538,20 @@ banc inchangé octet pour octet ; 631 tests ; coût linéaire (32 000 répétiti
 le détecteur étant celui des numéros français. Autres collectivités d'outre-mer (« +687 », « +689 »,
 numéros à 6 chiffres) et numéros courts (« 3949 », « 15 ») non détectés non plus.
 
+**Nom de naissance ou d'épouse (P2-45).** Sonde de 24 civilités et titres : « Mme Quenelle née Dupont »
+masquait le nom d'usage mais laissait le **nom de naissance** en clair ; « épouse Dupont », « ép. »,
+« veuve », « divorcée » et « nom de jeune fille » de même. Seul un nom figurant aussi au gazetteer des
+prénoms (« épouse Martin ») était masqué, par hasard. Sont maintenant masqués les un ou deux mots à
+majuscule initiale qui suivent « née », « épouse », « ép. », « veuve », « divorcée » ou « nom de jeune fille
+(:) » (le marqueur peut ouvrir une phrase). Tests d'abord (17 rouges) ; banc inchangé octet pour octet
+(aucun corpus ne contient ces marqueurs) ; 657 tests. Intacts, testés : « née le 12/03/1950 », « née à Lyon »,
+« née en France », « Elle est née Lundi / Janvier » (mois et jours exclus), « épouse de l'intéressé », « sa
+veuve est présente ». **Sur-masquage assumé** : « La veuve Clicquot est une marque » masque « Clicquot ».
+**Coût** : 32 000 « née Dupont » successifs : ~5 s, même ordre de grandeur que les civilités existantes.
+**Titres et fonctions encore non reconnus** (relevés par la même sonde) : « Professeure », « Dre », « Ms »,
+« Mgr », « abbé », « Père », les grades (« Capitaine »), et les fonctions suivies d'un nom (« Infirmière
+Zorglub Quenelle », « IDE », « Pharmacien ») sans civilité ni prénom connu : même limite que § 5.4.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
