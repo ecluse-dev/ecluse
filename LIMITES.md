@@ -446,7 +446,12 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   le calcule sur une copie de l'état, sans rien modifier (P2-23). Mesuré sur
   2 191 documents synthétiques avec refus aléatoires (graine 42), dans un
   dossier : 0 différence de statut, d'estimation ou de positions avec le
-  rapport de l'application (259 documents évalués). Mesure (26 octobre 2026,
+  rapport de l'application (259 documents évalués).
+  Pour un fichier (`ecluse_ingest`), l'aperçu porte sur le **texte extrait**
+  (P2-24) : ce qui n'est pas lu (en-têtes, pieds de page, notes, images,
+  scans) n'apparaît pas dans la proposition ; l'application doit afficher les
+  avertissements d'ingestion (`ignored_parts`) avec l'aperçu, sans quoi
+  l'utilisateur croira avoir validé tout le document. Mesure (26 octobre 2026,
   3 391 documents synthétiques des corpus dossiers, flou et étendu, 6 163
   entités) : « tout accepté » donne un texte masqué, une carte et des
   avertissements identiques à `Ecluse.redact` (0 différence) ; des refus
