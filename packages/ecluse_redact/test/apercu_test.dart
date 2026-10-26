@@ -224,6 +224,35 @@ void main() {
       expect(Ecluse.restore(r.maskedText, r.mapping), t);
     });
 
+    test('la provenance manuelle est marquée dans le résultat (P2-22)',
+        () async {
+      const t = 'Le dossier de Zanzibar est clos, mail: a.b@example.fr.';
+      final p = await Apercu.propose(t);
+      final debut = t.indexOf('Zanzibar');
+      final r = await Apercu.applique(
+          p,
+          DecisionApercu(
+              ajouts: [AjoutManuel(debut, debut + 8, EntityType.nom)]),
+          texteAEnvoyer: t);
+      expect(r.manuelles.map((e) => (e.start, e.end, e.type)),
+          [(debut, debut + 8, EntityType.nom)]);
+      // Les entités manuelles figurent aussi parmi les entités du résultat,
+      // les détectées n'apparaissent pas dans `manuelles`.
+      expect(r.entities.any((e) => e.type == EntityType.email), isTrue);
+      expect(r.manuelles.any((e) => e.type == EntityType.email), isFalse);
+      for (final m in r.manuelles) {
+        expect(r.entities, contains(m));
+      }
+    });
+
+    test('sans ajout, ou par Ecluse.redact, aucune entité manuelle', () async {
+      final p = await Apercu.propose(_texte);
+      final r = await Apercu.applique(p, const DecisionApercu(),
+          texteAEnvoyer: _texte);
+      expect(r.manuelles, isEmpty);
+      expect((await Ecluse.redact(_texte)).manuelles, isEmpty);
+    });
+
     test('le type secret est refusé pour un ajout', () async {
       final p = await Apercu.propose('abc def');
       await expectLater(
