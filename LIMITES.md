@@ -369,6 +369,18 @@ corpus du banc (dossiers et flou), qui ne contiennent aucun de ces caractères. 
 un séparateur absent de ces listes, ou un caractère invisible *dans* un mot (nom,
 adresse) qui le coupe pour les détecteurs de noms, n'est pas couvert.
 
+Formes d'autres systèmes d'écriture (P2-30) : sur 17 variantes sondées après P2-29 (courriel,
+date, noms, téléphone), 4 restaient non détectées : chiffres et lettres pleine chasse
+(« ０１ ９９ … »), arobase pleine chasse, barre de fraction dans une date. La vue des
+détecteurs ramène aussi les formes pleine chasse (U+FF01 à U+FF5E), les chiffres arabes
+orientaux et les barres de fraction et de division à leur équivalent ASCII (une unité pour
+une unité : positions et valeur d'origine inchangées). Après : les 4 variantes sont
+détectées, ainsi que 2 de plus (NIR et IBAN pleine chasse, téléphone en chiffres arabes
+orientaux) ; banc inchangé octet pour octet. Non couverts : les autres jeux de chiffres
+(devanagari, etc.), les homoglyphes de lettres (cyrillique, grec) dans un identifiant
+alphanumérique comme l'IBAN, et la normalisation NFKC complète (les ligatures changent la
+longueur).
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
