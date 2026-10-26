@@ -72,7 +72,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-06 | code | État de dossier en mémoire dans `ecluse_redact` : pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers, selon les décisions de la spec P2-05 (test d'équivalence d'abord, mesure avant/après) | P2-05, P2-05a | fusionnée |
 | P2-07 | spec | Généralisation multi-dimensions (date de naissance vers tranche d'âge, âge vers palier, pathologie rare vers catégorie) : dimensions, table de catégories, honnêteté sur ce qui reste ré-identifiable | P2-03 | fusionnée |
 | P2-08 | spec | Aperçu avec validation en un clic, option et non défaut (entretien #2) : contrat du composant, sans interface autonome | — | PR ouverte |
-| P2-09 | spec | Export AIPD : champs du registre pré-rempli, données d'`ecluse_audit` qui y entrent et qui n'y entrent pas | — | bloquée |
+| P2-09 | spec | Export AIPD : champs du registre pré-rempli, données d'`ecluse_audit` qui y entrent et qui n'y entrent pas | — | à faire |
 | P2-10 | spec | Transcription vocale locale : choix Vosk ou whisper.cpp, preuve qu'aucun son ne sort de l'appareil, limite sur les chiffres, critère GO/STOP propre | — | bloquée |
 | P2-11 | code | `ecluse_bench` : retirer `pubspec_overrides.yaml` (chemin Windows) du suivi git | — | fusionnée |
 | P2-12 | code | Script reproductible du décompte de la fuite des noms hors civilité, versionné dans `bench/` | P2-02 | fusionnée |
@@ -687,12 +687,15 @@ n'apparaît pas à l'écran).
 
 ### P2-09 — Export AIPD (`spec`)
 
-**Bloquée** : le gabarit de la CNIL n'a pas été lu, et l'avis d'un DPO est requis
-avant d'affirmer que le journal n'est pas une donnée personnelle
-(`DECISIONS.md`). Passer à `à faire` est une décision du mainteneur.
+**Débloquée par le mainteneur le 26 octobre 2026.** Deux préalables ne sont **pas**
+levés et restent à traiter dans la spec, sans être tranchés par l'agent : le
+gabarit de la CNIL n'a pas été lu (la spec le lit, ou dit qu'elle ne peut pas le
+lire), et l'avis d'un DPO est requis avant d'affirmer que le journal n'est pas une
+donnée personnelle (`DECISIONS.md`) : la spec pose la question, elle n'y répond pas.
 
 Travail : écrire `agent/specs/P2-09.md`, **aucune ligne de code**. Lire le gabarit
-officiel et en citer l'URL et la date de lecture. Lister les champs du registre
+officiel et en citer l'URL et la date de lecture ; si la page est inaccessible, le
+dire et ne rien affirmer sur son contenu. Lister les champs du registre
 pré-rempli, les données d'`ecluse_audit` qui y entrent, **celles qui n'y entrent
 pas** (aucune valeur ni aucun jeton), et ce que l'export n'atteste pas. Ne rien
 affirmer sur la nature juridique du journal : poser la question au mainteneur.
