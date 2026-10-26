@@ -90,8 +90,9 @@ Objectif : qu'un premier design partner l'utilise en production.
 - 🟢 `ecluse_audit` — journal chaîné horodaté (version minimale, non branché)
   (`agent/specs/P1-08-audit.md`)
 - 🟡 Détecteurs prioritaires : 🟢 FINESS (collision SIREN assumée), 🟢 INS,
-  🟢 téléphone FR et email durcis (octobre 2026) ; ⚪ ADELI (spécifié,
-  `agent/specs/P1-06-adeli.md`, avec ses points ouverts)
+  🟢 téléphone FR et email durcis (octobre 2026) ; 🟢 ADELI (`AdeliDetector`,
+  avec le mot « ADELI » accolé ; algorithme de clé non vérifié, voir
+  `LIMITES.md` § 2 et `agent/specs/P1-06-adeli.md`)
 - 🟢 Secret scanning (clés API, tokens) — parité avec les gateways génériques
   (`SecretDetector`, spec `agent/specs/P1-07-secrets.md`)
 - 🟡 Publication de l'article de benchmark — brouillon `bench/ARTICLE.md`,
@@ -106,7 +107,10 @@ Objectif : qu'un premier design partner l'utilise en production.
 
 Objectif : occuper le coin vide de la carte.
 
-- ⚪ Export AIPD aux normes CNIL (registre de traitement pré-rempli)
+- 🟡 Export AIPD aux normes CNIL (registre de traitement pré-rempli) :
+  agrégat factuel du journal d'audit livré (`AuditExporter.agrege`, seuil
+  « moins de 5 », mentions d'honnêteté). **Matière première, pas un registre** :
+  gabarit de la CNIL non lu, avis d'un DPO non sollicité (`agent/specs/P2-09.md`)
 - ⚪ NER local embarqué (GLiNER/ONNX) pour noms et adresses — confiance
   graduée. Remplace les détecteurs heuristiques v0 de `ecluse_redact`.
 - 🟡 Généralisation géographique (bibliothèque `ecluse_reid` livrée : commune
@@ -119,10 +123,12 @@ Objectif : occuper le coin vide de la carte.
   `ecluse_reid` pour profession/lieu/âge, non branchée dans le pipeline) : indice de risque (élevé/moyen/
   faible) calculé sur l'ensemble du texte, même sans identifiant direct
   (logique k-anonymat rendue visible). Aide à la décision pour le DPO.
-- ⚪ Pseudonymes cohérents et cloisonnés : même entité → même jeton au sein
+- 🟡 Pseudonymes cohérents et cloisonnés (`Dossier` en mémoire, règles N1/N2 ;
+  voir `LIMITES.md` § 5) : même entité → même jeton au sein
   d'un dossier (le LLM garde le fil), jeton différent d'un dossier à l'autre
   (aucun recoupement possible entre dossiers).
-- ⚪ Généralisation multi-dimensions : étendre le principe géographique aux
+- 🟡 Généralisation multi-dimensions (échelle de dates de naissance et âge
+  dérivé livrés dans `ecluse_reid`, non branchés dans le pipeline) : étendre le principe géographique aux
   autres indices (date de naissance → tranche d'âge, âge exact → palier,
   pathologie rare → catégorie). Bibliothèque de généralisation française.
 - ⚪ Routage on-device / cloud selon la sensibilité
@@ -131,7 +137,8 @@ Objectif : occuper le coin vide de la carte.
   les conditions non négociables du périmètre d'entrée ci-dessus. Débloque
   le cas d'usage n°1 identifié en entretien : la retranscription de
   réunions, y compris CA et CSE.
-- ⚪ Mode « aperçu + validation en un clic » : avant l'envoi à l'IA,
+- 🟡 Mode « aperçu + validation en un clic » (composant `Apercu` livré,
+  bibliothèque seulement, sans interface ni test utilisateur) : avant l'envoi à l'IA,
   l'utilisateur voit ce qui a été détecté et sera masqué (« 2 noms,
   1 NIR repérés »), et valide d'un clic.
   **⚠️ C'est une OPTION de confort, PAS le mode par défaut** (arbitrage
