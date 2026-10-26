@@ -44,7 +44,7 @@ void main() {
   test('pas de coût cubique sur une longue ligne de « Nom » répétés', () async {
     // Une première version de l'anticipation (deux `[^\n]*` imbriqués) prenait
     // 126 s pour 2000 répétitions ; la borne est large pour rester stable.
-    for (final motif in ['Nom ', 'Nom : ']) {
+    for (final motif in ['Nom ', 'Nom : ', 'Prénom : ', 'Nom : A\n']) {
       final sw = Stopwatch()..start();
       await Ecluse.redact(motif * 4000);
       expect(sw.elapsed, lessThan(const Duration(seconds: 10)), reason: motif);
