@@ -120,6 +120,35 @@ final class NameDetector implements EntityDetector {
     '$_unite){0,2})',
   );
 
+  /// Patronyme derrière une étiquette de champ (P2-36). Les étiquettes précises
+  /// (« Nom de naissance », « Nom d'usage », « Nom de famille », « Nom
+  /// patronymique », « Nom marital ») désignent toujours une personne. « Nom »
+  /// seul est ambigu (« Nom : Aspirine ») : il n'est retenu que si « Prénom »
+  /// suit sur la même ligne ou la suivante, signe d'une fiche d'identité.
+  static final RegExp _champNom = RegExp(
+    r'\b(?:Nom|NOM)(?:'
+    '$_h+(de$_h+naissance|d[\u0027\u2019]usage|de$_h+famille|patronymique|'
+    r'marital))?'
+    '$_h*:$_h*'
+    '($_unite(?:$_h+(?!(?:Pr[ée]nom|PR[ÉE]NOM)\\b)$_unite)?)',
+  );
+
+  static final RegExp _prenomChamp = RegExp(r'\b(?:Pr[ée]nom|PR[ÉE]NOM)\b');
+
+  /// Fenêtre de recherche de « Prénom » après un « Nom : » seul : fin de la
+  /// ligne suivante, bornée. Un contrôle en code sur une fenêtre bornée plutôt
+  /// qu'une anticipation dans l'expression : deux `[^\n]*` imbriqués y étaient
+  /// cubiques sur une longue ligne de « Nom » répétés (1000 répétitions : 40 s).
+  static const int _fenetrePrenom = 300;
+
+  static bool _fichePrenomSuit(String text, int from) {
+    var end = text.indexOf('\n', from);
+    if (end != -1) end = text.indexOf('\n', end + 1);
+    if (end == -1 || end > from + _fenetrePrenom) end = from + _fenetrePrenom;
+    if (end > text.length) end = text.length;
+    return _prenomChamp.hasMatch(text.substring(from, end));
+  }
+
   static final RegExp _capitalizedWord = RegExp(_cap);
 
   /// Unité de nom suivie uniquement d'espaces jusqu'à la fin de la chaîne
@@ -206,6 +235,27 @@ final class NameDetector implements EntityDetector {
       );
       surnameSources.add(name);
       claimed.add(_Range(match.start, match.end)); // réserve civilité + nom
+    }
+
+    for (final match in _champNom.allMatches(text)) {
+      final name = match.group(2)!;
+      final start = match.end - name.length;
+      // Groupe 1 : étiquette précise ; absent pour « Nom » seul.
+      if (match.group(1) == null && !_fichePrenomSuit(text, match.start)) {
+        continue;
+      }
+      if (claimed.any((r) => r.overlaps(start, match.end))) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.nom,
+          start: start,
+          end: match.end,
+          value: name,
+          confidence: 0.6,
+        ),
+      );
+      surnameSources.add(name);
+      claimed.add(_Range(start, match.end));
     }
 
     for (final match in _capitalizedWord.allMatches(text)) {

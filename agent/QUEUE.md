@@ -99,6 +99,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-33 | code | `ecluse_redact` : masquer en entier un nom contenant des majuscules ou lettres hors du jeu français (Á, Ñ, Œ, Ł, Ş, Ž, vietnamien…) | P2-32 | fusionnée |
 | P2-34 | code | `ecluse_redact` : détecter une date de naissance aux séparateurs espacés (« 12 / 03 / 1950 », « 12 03 1950 ») | P2-33 | fusionnée |
 | P2-35 | code | `ecluse_redact` : reconnaître les civilités abrégées avec point (« Mme. », « Mlle. ») | P2-34 | fusionnée |
+| P2-36 | code | `ecluse_redact` : masquer le patronyme derrière une étiquette de champ (« Nom de naissance : », « Nom : … Prénom : … ») | P2-35 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1182,5 +1183,20 @@ Contexte : sonde de 10 formes de noms (26 octobre 2026) : « Mme. Sophie Mac Don
   restauration identique.
 - `name_detector.dart` : `Mme` et `Mlle` acceptent un point final.
 - Mesure : 3 rouges → verts ; banc inchangé octet pour octet ; 495 tests.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-36 — Patronyme derrière une étiquette de champ (`code`)
+
+Contexte : sonde de P2-35 : « Nom : Dupont ; Prénom : Jean » masquait « Jean » mais laissait « Dupont ».
+
+- Tests d'abord (6 rouges, avant) : étiquettes précises toujours ; « Nom » seul seulement si
+  « Prénom » suit (même ligne ou suivante) ; contre-exemples (« Nom : Aspirine », « Nom du
+  médicament : », « inconnu » en minuscules) intacts ; restauration identique.
+- `name_detector.dart` : `_champNom` + contrôle de fenêtre `_fichePrenomSuit` ; confiance 0,6 ;
+  le patronyme alimente la deuxième passe.
+- Mesure : 6 rouges → verts ; banc inchangé octet pour octet (sans cas couvrant la règle) ;
+  509 tests. Une première version était cubique (126 s pour 2000 « Nom ») : corrigée avant
+  fusion, test de non-régression ajouté.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
