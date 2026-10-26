@@ -38,8 +38,7 @@ void main() {
   for (final texte in intacts) {
     test('aucun NIR : $texte', () async {
       final r = await Ecluse.redact(texte);
-      expect(r.mapping.keys, isNot(contains('[NIR_1]')),
-          reason: r.maskedText);
+      expect(r.mapping.keys, isNot(contains('[NIR_1]')), reason: r.maskedText);
     });
   }
 }
