@@ -93,7 +93,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-27 | code | `ecluse_ingest` : refuser un .docx/.odt dont le contenu ne correspond plus au CRC-32 de l'archive | P2-26 | fusionnée |
 | P2-28 | code | `ecluse_ingest` : refuser un PDF qui a plus d'objets page en clair que de pages atteignables (page perdue sans avertissement) | P2-27 | fusionnée |
 | P2-29 | code | `ecluse_redact` : détecter les identifiants contenant des caractères invisibles ou des tirets et espaces typographiques, sans réécrire le texte | P2-28 | fusionnée |
-| P2-30 | code | `ecluse_redact` : ramener les formes pleine chasse, chiffres arabes orientaux et barres de fraction à l'ASCII dans la vue des détecteurs | P2-29 | PR ouverte |
+| P2-30 | code | `ecluse_redact` : ramener les formes pleine chasse, chiffres arabes orientaux et barres de fraction à l'ASCII dans la vue des détecteurs | P2-29 | fusionnée |
+| P2-31 | code | `ecluse_redact` : restaurer un jeton échappé en Markdown (`\\[NOM\\_1\\]`) sans jamais approcher le numéro | P2-30 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1103,3 +1104,21 @@ P2-29 (téléphone et NIR pleine chasse ; arobase pleine chasse ; barre de fract
 - Mesure : 4 variantes manquées → 0 ; banc (dossiers, flou) inchangé octet pour octet.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` § 5.2 est à jour.
+
+### P2-31 — Restauration d'un jeton échappé en Markdown (`code`)
+
+Contexte : sonde de 17 déformations d'un jeton par un LLM (26 octobre 2026) : 8 restaurées.
+L'échappement Markdown (`\[NOM\_1\]`), fréquent quand le modèle répond en Markdown, laissait
+le jeton tel quel dans la réponse.
+
+- Tests d'abord (5 rouges avant) : cinq formes échappées sont restaurées (crochets et
+  soulignement, crochets seuls, soulignement seul, dans du gras, avec espaces) ; jamais
+  restaurés : chiffre différent, numéro absent de la carte, jeton sans crochets, autres
+  délimiteurs ; les jetons exacts sont restaurés comme avant.
+- `tolerantTokenPattern` tolère une barre oblique inversée facultative devant les crochets
+  et chaque soulignement (échappement exact, sans perte) ; le numéro reste exact.
+- Mesure : 8/17 → 10/17 formes de la sonde (les 5 formes échappées des tests sont restaurées) ; banc dossiers inchangé octet pour octet ; 452 tests.
+- Non fait par choix : délimiteurs de remplacement, jeton sans crochets (risque de
+  restaurer la mauvaise valeur).
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` § 5.3 est à jour.

@@ -30,6 +30,8 @@ String entityTypeLabel(EntityType type) => switch (type) {
 /// la mauvaise valeur.
 RegExp tolerantTokenPattern(String token) {
   final inner = token.substring(1, token.length - 1);
-  final escaped = RegExp.escape(inner).replaceAll('_', '[ _]*');
-  return RegExp('\\[\\s*$escaped\\s*\\]', caseSensitive: false);
+  // Un échappement Markdown (barre oblique inversée devant un crochet ou un
+  // soulignement) est toléré : il est exact et sans perte (P2-31).
+  final escaped = RegExp.escape(inner).replaceAll('_', r'(?:\\?[ _])*');
+  return RegExp('\\\\?\\[\\s*$escaped\\s*\\\\?\\]', caseSensitive: false);
 }

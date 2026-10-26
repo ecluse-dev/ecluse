@@ -447,6 +447,21 @@ et la menace de recoupement entre dossiers (T1) reste une hypothèse non
 confirmée : le cloisonnement retenu (C0) ne rend pas les numérotations
 indistinguables.
 
+**Jeton déformé par le LLM à la restauration (P2-31).** Sonde de 17 déformations d'un jeton
+(`[NOM_1]`) dans une réponse : 8 étaient restaurées avant P2-31 (jeton exact, casse, espaces,
+sans soulignement, gras, point final, possessif, code en ligne). Non restaurées, donc laissées
+telles quelles dans la réponse : l'échappement Markdown (`\[NOM\_1\]`, très courant quand
+le LLM répond en Markdown), les crochets échappés seuls, les jetons sans crochets, entre
+parenthèses, accolades, chevrons ou guillemets, le tiret à la place du soulignement et les
+crochets pleine chasse. Depuis P2-31, l'échappement Markdown (barre oblique inversée devant un
+crochet ou un soulignement) est restauré : 2 formes de plus de la sonde (l'échappement
+complet et les crochets échappés seuls), soit 10 sur 17 (mesuré). Le reste
+n'est **volontairement pas** restauré : changer les délimiteurs ou deviner un jeton sans
+crochets exposerait à restaurer la mauvaise valeur ; un jeton non restauré reste visible dans
+la réponse plutôt que remplacé à tort. Le numéro reste exact : `\[NOM\_10\]` ne restaure
+jamais `[NOM_1]`. Effet de bord assumé : une barre oblique inversée placée juste devant un
+jeton exact est consommée avec lui.
+
 ### 5.4 Portée du rattrapage des mentions partielles
 
 Les mentions partielles sont rattrapées **uniquement via un patronyme établi
