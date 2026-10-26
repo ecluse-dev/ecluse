@@ -515,6 +515,17 @@ contre-exemples testés). Tests d'abord (10 rouges) ; banc inchangé octet pour 
 téléphone (sur-masquage possible, jamais de fuite). **Non couvert** : la clé sur une autre ligne ou dans
 une autre colonne que le numéro.
 
+**Variantes du contexte et de la date de naissance (P2-43).** Sonde de 23 écritures : 12 manquées.
+Sont maintenant détectées : le département entre parenthèses après le lieu (« né(e) à Lyon (69) le … »),
+les abréviations « Date de naiss. », « Date naiss. » et « D.D.N. », un jour de semaine devant la date
+(« né le mardi 12 mars 1950 »), l'année à deux chiffres avec le mois en lettres (« née le 12 mars 50 »),
+et, derrière un contexte anglais (« DOB », « Date of birth », « Birth date », « born on »), les mois
+anglais. Tests d'abord (18 rouges) ; banc inchangé octet pour octet ; 617 tests ; coût linéaire.
+Le contexte de naissance reste obligatoire : « Rendez-vous le mardi 12 mars 1950 », « le 12 mars 50 » et
+« on 12 March 1950 the board met » ne sont pas des dates de naissance (7 contre-exemples testés).
+**Restent non détectées** : « 12-mars-1950 », les mois en chiffres romains (« 12.III.1950 »), une date
+écrite en toutes lettres (« douze mars mille neuf cent cinquante »), et une année seule.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,

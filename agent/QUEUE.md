@@ -106,6 +106,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-40 | code | `ecluse_redact` : masquer le prénom derrière « Prénom : » et reconnaître la fiche « Prénom » avant « Nom » | P2-39 | fusionnée |
 | P2-41 | code | `ecluse_redact` : masquer le nom derrière « Nom du patient : », « Nom de l'assuré : »… | P2-40 | fusionnée |
 | P2-42 | code | `ecluse_redact` : détecter un NIR dont la clé est nommée à part (« 2550814168025 clé 38 ») | P2-41 | fusionnée |
+| P2-43 | code | `ecluse_redact` : reconnaître les variantes de contexte et d'écriture d'une date de naissance (département, abréviations, jour de semaine, mois anglais) | P2-42 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1288,4 +1289,18 @@ Contexte : sonde de variantes de NIR (26 octobre 2026) : « 2550814168025 clé 3
   chiffres ; `ecluse_core` inchangé, la validation de la clé reste celle du détecteur de NIR.
 - Mesure : 10 rouges → verts ; banc inchangé octet pour octet ; 592 tests ; coût linéaire.
 - Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-43 — Variantes du contexte et de la date de naissance (`code`)
+
+Contexte : sonde de 23 écritures (26 octobre 2026) : 12 manquées (« né(e) à Lyon (69) le … », « Date de naiss. »,
+« D.D.N. », jour de semaine, « 12 mars 50 », mois anglais derrière « DOB »).
+
+- Tests d'abord (18 rouges, avant) ; 7 contre-exemples sans contexte de naissance restent intacts ;
+  restauration identique.
+- `date_naissance_detector.dart` : département facultatif après le lieu, contexte élargi
+  (`naiss.`, `D.D.N.`, `date of birth`, `birth date`, `born on`), jour de semaine facultatif, année à
+  deux chiffres avec un mois en lettres, mois anglais.
+- Mesure : 18 rouges → verts ; banc inchangé octet pour octet ; 617 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
