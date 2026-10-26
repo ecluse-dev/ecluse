@@ -441,6 +441,15 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
 - Le mode par défaut est automatique et invisible ; l'aperçu avec validation
   manuelle avant envoi est une option de confort, pas une garantie de
   contrôle a priori sur chaque détection.
+- Aperçu avec validation (`Apercu`, P2-18) : composant de bibliothèque, sans
+  interface ni test avec des utilisateurs. **Refuser une détection envoie la
+  valeur en clair au tiers** : c'est un acte de l'utilisateur, pas une
+  protection d'Écluse. Les refus ne sont pas journalisés. Un secret ne peut ni
+  être refusé ni ajouté à la main ; refuser une entité à validation
+  structurelle exige une option explicite. La proposition n'est liée qu'au
+  texte analysé : si l'état du dossier change entre l'aperçu et l'application,
+  elle n'est pas détectée comme périmée. Le rapport de risque est calculé à
+  l'application, sur le texte réellement masqué.
 
 Voir `ROADMAP.md` pour le calendrier de ces briques.
 
