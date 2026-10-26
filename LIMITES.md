@@ -441,7 +441,13 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   analysé et au dossier qui l'a produite : si le dossier a masqué un autre
   document entre l'aperçu et l'application, elle est refusée comme périmée
   (P2-19). Le rapport de risque est calculé à
-  l'application, sur le texte réellement masqué.
+  l'application, sur le texte réellement masqué. Mesure (26 octobre 2026,
+  3 391 documents synthétiques des corpus dossiers, flou et étendu, 6 163
+  entités) : « tout accepté » donne un texte masqué, une carte et des
+  avertissements identiques à `Ecluse.redact` (0 différence) ; des refus
+  aléatoires (graine 42, hors entités structurelles et secrets) n'ajoutent
+  aucune restauration non identique à celles que `redact` produit déjà (60
+  documents sur 3 391 : harmonisation des re-mentions, point 5 de l'essentiel).
 
 Voir `ROADMAP.md` pour le calendrier de ces briques.
 
