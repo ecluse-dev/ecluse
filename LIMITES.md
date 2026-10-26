@@ -462,6 +462,19 @@ validation (clé NIR, clé IBAN) ou leur forme étroite limite le risque de fusi
 rapport. **Restent non détectés** : l'adresse e-mail coupée après le `@`, une date écrite avec le
 mois en lettres sur deux lignes (« 12 mars⏎1950 »), un identifiant coupé au milieu d'un groupe.
 
+**Date de naissance séparée de son étiquette (P2-39).** Sonde de formats de formulaire : « Date de
+naissance :⏎12/03/1950 » (étiquette sur sa ligne, valeur sur la suivante), « Date de naissance |
+12/03/1950 » (tableau) et « Date de naissance;12/03/1950 » (CSV) n'étaient pas détectées : seules des
+espaces étaient admises entre l'étiquette et la date. Sont maintenant admis des blancs, un `|` ou un
+`;`, ou **un seul** saut de ligne. Tests d'abord (10 rouges) ; banc inchangé octet pour octet ; coût
+linéaire (16 000 répétitions < 1 s). Restent intacts, testés : une ligne vide entre les deux, une ligne
+étrangère entre les deux, une virgule, « La naissance du projet⏎12/03/1950 », une date sans étiquette.
+**Non couverts** : la date d'une colonne dont l'en-tête est sur une autre ligne (CSV à en-tête :
+« Date de naissance;Tél⏎Quenelle;Zorglub;12/03/1950 »), et une étiquette nue sans « : » ni « date de »
+(« Naissance⏎12/03/1950 »). La sonde a aussi confirmé qu'un nom **absent du gazetteer**, sans civilité,
+dans un tableau, un CSV ou un JSON (« Quenelle ; Zorglub ») n'est pas détecté : limite connue des
+noms (§ 5.4), pas traitée ici.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,

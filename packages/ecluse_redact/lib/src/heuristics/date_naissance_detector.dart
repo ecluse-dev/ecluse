@@ -12,7 +12,8 @@ import 'package:ecluse_core/ecluse_core.dart';
 /// 4 chiffres, blancs facultatifs autour des séparateurs : `12 / 03 / 1950`),
 /// blancs seuls (`12 03 1950`, contexte obligatoire), ISO `AAAA-MM-JJ`, et la
 /// forme textuelle française
-/// `12 mars 1985` (dont l'ordinal `1er mars 1985`).
+/// `12 mars 1985` (dont l'ordinal `1er mars 1985`). La date peut suivre son
+/// étiquette après un `|` ou un `;`, ou sur la ligne suivante.
 final class DateNaissanceDetector implements EntityDetector {
   const DateNaissanceDetector();
 
@@ -48,8 +49,14 @@ final class DateNaissanceDetector implements EntityDetector {
       '|DDN$_b*:?'
       '|DOB$_b*:?)';
 
+  /// Séparation entre le contexte et la date (P2-39) : des blancs, un `|` ou un
+  /// `;` (tableau, CSV), ou **un seul** saut de ligne (étiquette seule sur sa
+  /// ligne, valeur sur la suivante). Une ligne vide ou une ligne étrangère
+  /// entre les deux interrompt la détection.
+  static const String _sepContexte = '(?:$_b+|$_b*[|;]$_b*|$_b*\\r?\\n$_b*)';
+
   static final RegExp _pattern = RegExp(
-    '$_contexte$_b+'
+    '$_contexte$_sepContexte'
     '(\\d{1,2}$_b*[\\/\\-.]$_b*\\d{1,2}$_b*[\\/\\-.]$_b*(?:\\d{4}|\\d{2}(?!\\d))'
     '|\\d{1,2}$_b+\\d{1,2}$_b+\\d{4}(?!\\d)'
     '|\\d{4}-\\d{2}-\\d{2}'
