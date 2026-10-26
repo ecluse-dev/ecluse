@@ -7,6 +7,7 @@
 library;
 
 export 'src/audit_chain.dart';
+export 'src/audit_export.dart';
 export 'src/audit_entry.dart';
 export 'src/audit_sink.dart';
 export 'src/audit_verifier.dart';
