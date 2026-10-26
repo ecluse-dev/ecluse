@@ -437,6 +437,14 @@ fenêtre serait masqué à tort (sur-masquage, jamais de fuite). Un premier essa
 anticipation d'expression régulière était **cubique** (1000 « Nom » répétés : 40 s ; 2000 :
 126 s) : remplacé par un contrôle en code sur une fenêtre bornée, avec un test de non-régression.
 
+**Numéro de voie suivi d'une lettre (P2-37).** « 12 B rue des Lilas » laissait « 12 B » en clair
+devant l'adresse masquée : seuls « bis », « ter »… étaient admis après le numéro. Une lettre
+majuscule A à F isolée est maintenant acceptée (« 12 B rue », « 12B rue », « 3 A avenue »). Le type
+de voie reste obligatoire, donc « Annexe 12 B : voir page 3 » n'est pas une adresse (3 tests de
+non-détection). Tests d'abord (4 rouges) ; banc inchangé octet pour octet ; coût linéaire
+(« 1 B rue » × 4000 : ~0,2 s). **Restent non traités** : lettre minuscule (« 12 b rue »), lettres
+au-delà de F, « Lieu-dit », boîte postale, adresse sans code postal.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
