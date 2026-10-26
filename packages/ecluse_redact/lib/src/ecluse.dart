@@ -476,6 +476,22 @@ final class _Etat {
   /// Nombre de documents déjà masqués avec cet état.
   int documents = 0;
 
+  /// Copie profonde, pour simuler un masquage (rapport de risque de l'aperçu)
+  /// sans toucher à l'état réel du dossier.
+  _Etat copie() {
+    final c = _Etat(regle)..documents = documents;
+    c.mapping.addAll(mapping);
+    c.tokenByIdentity.addAll(tokenByIdentity);
+    c.nomIdentities.addAll([
+      for (final n in nomIdentities)
+        _NomIdentity(Set.of(n.segments), n.token, n.gender, n.doc)
+    ]);
+    c.counterByType.addAll(counterByType);
+    c.patronymes.addAll(patronymes);
+    c.attribues.addAll(attribues);
+    return c;
+  }
+
   void efface() {
     mapping.clear();
     tokenByIdentity.clear();

@@ -85,7 +85,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-19 | code | `ecluse_redact` : une proposition d'aperçu périmée (dossier modifié depuis) ou appliquée à un autre dossier est refusée | P2-18 | fusionnée |
 | P2-20 | code | `ecluse_redact` : les blancs en bordure d'un ajout manuel d'aperçu ne sont pas masqués | P2-19 | fusionnée |
 | P2-21 | code | `ecluse_redact` : un ajout manuel d'aperçu dont une borne coupe une paire de substituts UTF-16 est refusé | P2-20 | fusionnée |
-| P2-22 | code | `ecluse_redact` : marquer la provenance « manuelle » des entités ajoutées dans un aperçu (`RedactResult.manuelles`) | P2-21 | PR ouverte |
+| P2-22 | code | `ecluse_redact` : marquer la provenance « manuelle » des entités ajoutées dans un aperçu (`RedactResult.manuelles`) | P2-21 | fusionnée |
+| P2-23 | code | `ecluse_redact` : rapport de risque de l'aperçu avant application (`Apercu.risque`, `Proposition.risque`), sans effet de bord | P2-22 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -960,3 +961,21 @@ dans `RedactResult.entities`.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze` et `test` passent sur `ecluse_redact` et
   `analyze` sur les paquets qui consomment `RedactResult`.
+
+### P2-23 — Rapport de risque de l'aperçu avant application (`code`)
+
+Contexte : `DECISIONS.md`, P2-08, décision 7 (« rapport de risque inclus dans la
+proposition quand l'appelant fournit une référence »), écart signalé dans la PR de
+P2-18 : le rapport n'était calculé qu'à l'application.
+
+- Tests d'abord : le rapport simulé est égal à celui de `Apercu.applique` (tout
+  accepté, avec refus et ajout, dans un dossier déjà alimenté) ; aucun effet de bord
+  sur le dossier ; mêmes refus que `applique` (décision invalide, dossier fermé,
+  proposition périmée) ; `Proposition.risque` absent sans référence.
+- `Apercu.risque(proposition, decision:, riskReference:, dossier:)` simule le
+  masquage sur une copie profonde de l'état (`_Etat.copie`) ; `Apercu.propose`
+  accepte `riskReference` et renseigne `Proposition.risque` (tout accepté).
+- Mesure : sur 2 191 documents synthétiques avec refus aléatoires (graine 42), dans un
+  dossier, 0 différence avec le rapport de l'application.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

@@ -28,7 +28,8 @@ final class EntiteProposee {
 /// Résultat de [Apercu.propose] : ce qu'Écluse masquerait, sans rien avoir
 /// masqué. Liée au texte exact qui l'a produite.
 final class Proposition {
-  Proposition._(this.texte, this._brutes, this._dossier, this._documents)
+  Proposition._(
+      this.texte, this._brutes, this._dossier, this._documents, this.risque)
       : entites = List.unmodifiable([
           for (var i = 0; i < _brutes.length; i++)
             EntiteProposee(
@@ -45,6 +46,12 @@ final class Proposition {
   /// Texte analysé : seul texte que [Apercu.applique] accepte.
   final String texte;
   final List<EntiteProposee> entites;
+
+  /// Rapport de risque du texte tel qu'il serait masqué **si tout était
+  /// accepté**, seulement si l'appelant a fourni `riskReference` à
+  /// [Apercu.propose] ; `null` signifie « fonction inactive », pas « aucun
+  /// risque ». Après un refus ou un ajout, utiliser [Apercu.risque].
+  final RiskReport? risque;
   final List<DetectedEntity> _brutes;
 
   /// Dossier qui a produit la proposition et nombre de documents qu'il avait
@@ -112,26 +119,87 @@ abstract final class Apercu {
     String text, {
     List<Detector>? detectors,
     bool refuseSecrets = false,
+    EcluseReference? riskReference,
     Dossier? dossier,
   }) async {
-    var documents = 0;
-    final List<DetectedEntity> entites;
-    if (dossier == null) {
-      entites = await Ecluse.detect(text, detectors: detectors);
-    } else {
-      // Détection et lecture du compteur dans la même section sérialisée.
-      (entites, documents) = await dossier._serialise(() async {
-        final etat = dossier._etat;
-        if (etat == null) throw const DossierFermeException();
-        return (
-          await Ecluse._detecter(text, etat, detectors),
-          etat.documents,
-        );
-      });
+    Proposition construire(
+        List<DetectedEntity> entites, int documents, _Etat etat) {
+      final secrets = entites.where((e) => e.type == EntityType.secret).length;
+      if (refuseSecrets && secrets > 0) throw SecretsRefusedException(secrets);
+      final base = Proposition._(text, entites, dossier, documents, null);
+      if (riskReference == null) return base;
+      final risque = _simuleRisque(
+          base, const DecisionApercu(), false, riskReference, etat);
+      return Proposition._(text, entites, dossier, documents, risque);
     }
-    final secrets = entites.where((e) => e.type == EntityType.secret).length;
-    if (refuseSecrets && secrets > 0) throw SecretsRefusedException(secrets);
-    return Proposition._(text, entites, dossier, documents);
+
+    if (dossier == null) {
+      final etat = _Etat();
+      return construire(await Ecluse._detecter(text, etat, detectors), 0, etat);
+    }
+    // Détection, lecture du compteur et simulation dans la même section
+    // sérialisée.
+    return dossier._serialise(() async {
+      final etat = dossier._etat;
+      if (etat == null) throw const DossierFermeException();
+      final entites = await Ecluse._detecter(text, etat, detectors);
+      return construire(entites, etat.documents, etat);
+    });
+  }
+
+  /// Rapport de risque de la décision [decision] sur [proposition], tel que
+  /// [applique] le calculerait, **sans rien modifier** (ni jeton, ni dossier :
+  /// le masquage est simulé sur une copie de l'état). Pour afficher le risque
+  /// pendant que l'utilisateur refuse ou ajoute des passages.
+  ///
+  /// Mêmes refus que [applique] : décision invalide, proposition périmée ou
+  /// liée à un autre dossier ([ApercuException]), dossier fermé
+  /// ([DossierFermeException]).
+  static Future<RiskReport> risque(
+    Proposition proposition, {
+    DecisionApercu decision = const DecisionApercu(),
+    required EcluseReference riskReference,
+    bool autoriserRefusStructurel = false,
+    Dossier? dossier,
+  }) {
+    RiskReport calcule(_Etat etat) {
+      _controleLiaison(proposition, dossier, etat);
+      return _simuleRisque(
+          proposition, decision, autoriserRefusStructurel, riskReference, etat);
+    }
+
+    if (dossier == null) return Future.sync(() => calcule(_Etat()));
+    return dossier._serialise(() {
+      final etat = dossier._etat;
+      if (etat == null) throw const DossierFermeException();
+      return Future.value(calcule(etat));
+    });
+  }
+
+  static RiskReport _simuleRisque(
+    Proposition proposition,
+    DecisionApercu decision,
+    bool autoriserRefusStructurel,
+    EcluseReference riskReference,
+    _Etat etat,
+  ) {
+    final (finales, _) = _valide(
+        proposition, decision, proposition.texte, autoriserRefusStructurel);
+    return Ecluse._appliquer(
+            proposition.texte, finales, etat.copie(), false, riskReference)
+        .risque!;
+  }
+
+  static void _controleLiaison(
+      Proposition proposition, Dossier? dossier, _Etat etat) {
+    if (!identical(proposition._dossier, dossier)) {
+      throw const ApercuException(
+          'la proposition ne s\'applique qu\'au dossier qui l\'a produite');
+    }
+    if (proposition._documents != etat.documents) {
+      throw const ApercuException(
+          'le dossier a changé depuis l\'aperçu : refaire l\'aperçu');
+    }
   }
 
   /// Masque [texteAEnvoyer] selon [decision]. Toutes les vérifications ont
@@ -155,14 +223,7 @@ abstract final class Apercu {
     Dossier? dossier,
   }) {
     RedactResult appliquer(_Etat etat) {
-      if (!identical(proposition._dossier, dossier)) {
-        throw const ApercuException(
-            'la proposition ne s\'applique qu\'au dossier qui l\'a produite');
-      }
-      if (proposition._documents != etat.documents) {
-        throw const ApercuException(
-            'le dossier a changé depuis l\'aperçu : refaire l\'aperçu');
-      }
+      _controleLiaison(proposition, dossier, etat);
       final (finales, manuelles) = _valide(
           proposition, decision, texteAEnvoyer, autoriserRefusStructurel);
       final r = Ecluse._appliquer(
