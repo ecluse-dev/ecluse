@@ -416,6 +416,14 @@ date suivie d'un âge sans mot de naissance (« 12/03/1950 (73 ans) »), un âge
 (`Ecluse.redact(riskReference: …)`) repère l'âge en chiffres, mais pas une année de naissance
 seule (rappel limité, § 7).
 
+**Civilités abrégées avec point (P2-35).** « Mme. » et « Mlle. » (avec point) ne déclenchaient
+pas la règle de civilité, seules les formes sans point étaient reconnues : un prénom inconnu ou
+un patronyme de deux mots restait en clair (« Mme. Sophie Mac Donald » laissait « Donald »).
+Tests d'abord (3 rouges), puis correction d'une expression régulière ; banc inchangé octet pour
+octet. **Reste non détecté, sonde du même jour** : un patronyme seul dans un champ étiqueté
+(« Nom : Dupont ; Prénom : Jean » masque « Jean » mais laisse « Dupont »), faute d'indice de
+nom propre autre que l'étiquette ; non traité à ce jour.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
