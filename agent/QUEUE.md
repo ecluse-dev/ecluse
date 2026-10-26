@@ -96,7 +96,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-30 | code | `ecluse_redact` : ramener les formes pleine chasse, chiffres arabes orientaux et barres de fraction à l'ASCII dans la vue des détecteurs | P2-29 | fusionnée |
 | P2-31 | code | `ecluse_redact` : restaurer un jeton échappé en Markdown (`\\[NOM\\_1\\]`) sans jamais approcher le numéro | P2-30 | fusionnée |
 | P2-32 | code | `ecluse_redact` : détecter en entier un nom aux accents décomposés (NFD), sans laisser le reste du nom en clair | P2-31 | fusionnée |
-| P2-33 | code | `ecluse_redact` : masquer en entier un nom contenant des majuscules ou lettres hors du jeu français (Á, Ñ, Œ, Ł, Ş, Ž, vietnamien…) | P2-32 | PR ouverte |
+| P2-33 | code | `ecluse_redact` : masquer en entier un nom contenant des majuscules ou lettres hors du jeu français (Á, Ñ, Œ, Ł, Ş, Ž, vietnamien…) | P2-32 | fusionnée |
+| P2-34 | code | `ecluse_redact` : détecter une date de naissance aux séparateurs espacés (« 12 / 03 / 1950 », « 12 03 1950 ») | P2-33 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1156,3 +1157,17 @@ clair) : la majuscule initiale d'un mot de nom ne couvrait que A-Z et quelques l
   octet ; 471 tests.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` § 5.2 est à jour.
+
+### P2-34 — Dates de naissance aux séparateurs espacés (`code`)
+
+Contexte : sonde de 23 formulations de date de naissance (26 octobre 2026) : 16 détectées ; les formes
+numériques à séparateurs entourés d'espaces (« 12 / 03 / 1950 ») ou à simples espaces (« 12 03 1950 »)
+échappaient.
+
+- Tests d'abord (6 rouges, avant) : formes espacées détectées avec offsets exacts ; restauration
+  identique ; pas de faux positif hors contexte de naissance.
+- `date_naissance_detector.dart` : deux alternatives numériques tolérant des blancs autour du séparateur ;
+  l'année à quatre chiffres reste exigée pour la forme à simples espaces.
+- Mesure : formulations détectées 16/23 → 18/23 ; banc inchangé octet pour octet.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
