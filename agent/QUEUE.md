@@ -70,7 +70,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-05 | spec | Pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers : définition du dossier, état en mémoire, menace du recoupement | — | fusionnée |
 | P2-05a | code | Profil de corpus multi-documents (dossiers, personnes, identités) et son scoreur, avec la mesure de l'état actuel sans dossier | P2-05 | fusionnée |
 | P2-06 | code | État de dossier en mémoire dans `ecluse_redact` : pseudonymes cohérents entre les documents d'un dossier et cloisonnés entre dossiers, selon les décisions de la spec P2-05 (test d'équivalence d'abord, mesure avant/après) | P2-05, P2-05a | fusionnée |
-| P2-07 | spec | Généralisation multi-dimensions (date de naissance vers tranche d'âge, âge vers palier, pathologie rare vers catégorie) : dimensions, table de catégories, honnêteté sur ce qui reste ré-identifiable | P2-03 | bloquée |
+| P2-07 | spec | Généralisation multi-dimensions (date de naissance vers tranche d'âge, âge vers palier, pathologie rare vers catégorie) : dimensions, table de catégories, honnêteté sur ce qui reste ré-identifiable | P2-03 | à faire |
 | P2-08 | spec | Aperçu avec validation en un clic, option et non défaut (entretien #2) : contrat du composant, sans interface autonome | — | bloquée |
 | P2-09 | spec | Export AIPD : champs du registre pré-rempli, données d'`ecluse_audit` qui y entrent et qui n'y entrent pas | — | bloquée |
 | P2-10 | spec | Transcription vocale locale : choix Vosk ou whisper.cpp, preuve qu'aucun son ne sort de l'appareil, limite sur les chiffres, critère GO/STOP propre | — | bloquée |
@@ -655,17 +655,18 @@ génération, quelle que soit la définition retenue du dossier.
 
 ### P2-07 — Généralisation multi-dimensions (`spec`)
 
-**Bloquée** : ne pas prendre tant que les préalables ne sont pas réunis. Passer à
-`à faire` est une décision du mainteneur.
-
-Préalables : la source de la table de catégories de pathologies est choisie
-(aucune n'existe dans le dépôt) ; les décisions de `agent/specs/P2-03.md` § 8
-concernant la généralisation sont écrites dans `DECISIONS.md`.
+**Débloquée par le mainteneur le 26 octobre 2026.** Les décisions de
+`agent/specs/P2-03.md` § 8 sont dans `DECISIONS.md`. **Le choix de la source de la
+table de catégories de pathologies n'est pas fait** (aucune table n'existe dans le
+dépôt) : il fait partie du travail, sans être tranché par l'agent. Si aucune source
+exploitable n'est trouvée, la spec le dit et traite les deux autres dimensions
+(date de naissance, âge) sans table de pathologies.
 
 Travail : écrire `agent/specs/P2-07.md`, **aucune ligne de code**. Lister les
 dimensions généralisables (date de naissance vers tranche d'âge, âge vers palier,
-pathologie rare vers catégorie), la table de catégories et sa source avec sa licence
-lue sur la page, l'effet sur l'estimation de `ecluse_reid`, et **ce qui reste
+pathologie rare vers catégorie), les sources candidates pour la table de catégories
+avec leur licence **lue sur la page** (URL et date de lecture ; ne rien affirmer si
+la page est inaccessible), l'effet sur l'estimation de `ecluse_reid`, et **ce qui reste
 ré-identifiable** après généralisation. La généralisation est irréversible : elle
 ne se déclenche que sur demande de l'appelant (spec P2-03). Ne pas trancher les
 choix produit : les poser au mainteneur en fin de document.
