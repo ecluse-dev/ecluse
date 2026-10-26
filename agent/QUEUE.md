@@ -88,7 +88,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-22 | code | `ecluse_redact` : marquer la provenance « manuelle » des entités ajoutées dans un aperçu (`RedactResult.manuelles`) | P2-21 | fusionnée |
 | P2-23 | code | `ecluse_redact` : rapport de risque de l'aperçu avant application (`Apercu.risque`, `Proposition.risque`), sans effet de bord | P2-22 | fusionnée |
 | P2-24 | code | `ecluse_ingest` : test de composition fichier → aperçu sur le texte extrait (décision 10 de P2-08) | P2-23 | fusionnée |
-| P2-25 | code | `ecluse_redact` : recherche des jetons littéraux sans compiler un motif par jeton et par appel (coût d'un gros dossier) | P2-24 | PR ouverte |
+| P2-25 | code | `ecluse_redact` : recherche des jetons littéraux sans compiler un motif par jeton et par appel (coût d'un gros dossier) | P2-24 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
