@@ -420,9 +420,22 @@ seule (rappel limité, § 7).
 pas la règle de civilité, seules les formes sans point étaient reconnues : un prénom inconnu ou
 un patronyme de deux mots restait en clair (« Mme. Sophie Mac Donald » laissait « Donald »).
 Tests d'abord (3 rouges), puis correction d'une expression régulière ; banc inchangé octet pour
-octet. **Reste non détecté, sonde du même jour** : un patronyme seul dans un champ étiqueté
-(« Nom : Dupont ; Prénom : Jean » masque « Jean » mais laisse « Dupont »), faute d'indice de
-nom propre autre que l'étiquette ; non traité à ce jour.
+octet. Le patronyme seul dans un champ étiqueté, relevé par la même sonde, est traité en P2-36.
+
+**Patronyme derrière une étiquette de champ (P2-36).** « Nom : Dupont ; Prénom : Jean » masquait
+« Jean » (gazetteer) mais laissait « Dupont » : un patronyme n'a pas d'autre indice que
+l'étiquette. Sont maintenant masqués le ou les deux mots capitalisés qui suivent « Nom de
+naissance », « Nom d'usage », « Nom de famille », « Nom patronymique », « Nom marital » (toujours),
+et « Nom » seul **à condition que « Prénom » apparaisse dans les 300 caractères suivants, sur la
+même ligne ou la suivante** (« Nom : Aspirine » reste intact : l'étiquette seule est ambiguë).
+Tests d'abord (6 rouges) ; banc inchangé (aucun corpus ne contient cette étiquette : la mesure
+ne couvre donc pas cette règle, elle repose sur les tests). **Limites** : « NOM DE NAISSANCE »
+tout en majuscules, « Nom et prénom : Jean Dupont » (ordre mixte, déjà couvert par le prénom),
+un patronyme en minuscules (« Nom : dupont ») et une fiche où « Prénom » est plus loin ne sont pas
+reconnus ; un médicament ou un produit nommé dans une fiche qui contient aussi « Prénom » dans la
+fenêtre serait masqué à tort (sur-masquage, jamais de fuite). Un premier essai avec une
+anticipation d'expression régulière était **cubique** (1000 « Nom » répétés : 40 s ; 2000 :
+126 s) : remplacé par un contrôle en code sur une fenêtre bornée, avec un test de non-régression.
 
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
