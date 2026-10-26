@@ -188,10 +188,7 @@ abstract final class Ecluse {
     // Jetons déjà attribués dans le dossier qui figurent en clair dans ce
     // texte : ils seront remplacés à la restauration (relevé avant tout
     // changement d'état).
-    final litteraux = [
-      for (final token in etat.attribues)
-        if (tolerantTokenPattern(token).hasMatch(text)) token
-    ];
+    final litteraux = etat.jetonsLitteraux(text);
     final docId = etat.documents++;
     for (final entity in resolved) {
       if (entity.type != EntityType.nom) continue;
@@ -475,6 +472,30 @@ final class _Etat {
 
   /// Nombre de documents déjà masqués avec cet état.
   int documents = 0;
+
+  /// Motifs de [tolerantTokenPattern] déjà compilés, par jeton : compiler un
+  /// motif par jeton et par appel dominait le coût d'un gros dossier (P2-25).
+  final Map<String, RegExp> _motifs = {};
+
+  static final RegExp _crochets = RegExp(r'\[[^\[\]]*\]');
+
+  /// Jetons déjà attribués qui figurent en clair dans [text] (même résultat
+  /// que `tolerantTokenPattern(jeton).hasMatch(text)` pour chacun, dans l'ordre
+  /// d'attribution). Un motif commence par `[` et finit par `]` sans autre
+  /// crochet à l'intérieur : il ne peut se trouver que dans un segment
+  /// `[...]` sans crochet, donc un texte sans tel segment (le cas courant) ne
+  /// coûte plus rien, et les autres ne sont testés que sur ces segments.
+  List<String> jetonsLitteraux(String text) {
+    if (attribues.isEmpty) return const [];
+    final segments = [for (final m in _crochets.allMatches(text)) m[0]!];
+    if (segments.isEmpty) return const [];
+    final zone = segments.join('\n');
+    return [
+      for (final jeton in attribues)
+        if ((_motifs[jeton] ??= tolerantTokenPattern(jeton)).hasMatch(zone))
+          jeton
+    ];
+  }
 
   /// Copie profonde, pour simuler un masquage (rapport de risque de l'aperçu)
   /// sans toucher à l'état réel du dossier.
