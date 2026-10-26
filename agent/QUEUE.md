@@ -101,6 +101,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-35 | code | `ecluse_redact` : reconnaître les civilités abrégées avec point (« Mme. », « Mlle. ») | P2-34 | fusionnée |
 | P2-36 | code | `ecluse_redact` : masquer le patronyme derrière une étiquette de champ (« Nom de naissance : », « Nom : … Prénom : … ») | P2-35 | fusionnée |
 | P2-37 | code | `ecluse_redact` : masquer en entier une adresse dont le numéro de voie porte une lettre (« 12 B rue des Lilas ») | P2-36 | fusionnée |
+| P2-38 | code | `ecluse_redact` : détecter un identifiant à chiffres (NIR, IBAN, téléphone, date) coupé par une fin de ligne entre deux groupes | P2-37 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1212,4 +1213,20 @@ Contexte : sonde d'adresses (26 octobre 2026) : « 12 B rue des Lilas, 75011 Par
 - `adresse_detector.dart` : `_numero` accepte une lettre majuscule A-F isolée.
 - Mesure : 4 rouges → verts ; banc inchangé octet pour octet ; 517 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-38 — Identifiant coupé par une fin de ligne (`code`)
+
+Contexte : sonde de 14 formes (26 octobre 2026) : tout identifiant à chiffres coupé par une fin de ligne
+entre deux groupes échappait à la détection (limite jusqu'ici documentée, `texte_iban_coupe`).
+
+- Tests d'abord (11 rouges, avant) : téléphone, NIR, IBAN et date coupés (dont `\r\n`, blancs de part
+  et d'autre, coupure après un tiret) ; contre-exemples (« Total : 150⏎Page 12 », « Chambre 12⏎Lit 3 »,
+  tableau d'une colonne de nombres) intacts ; deux numéros sur deux lignes restent deux numéros ;
+  restauration identique.
+- `ecluse.dart` : `_vueDeDetection` neutralise la coupure (`_coupuresDeLigne`, lookbehind chiffre ou
+  `/ . -`, lookahead chiffre) ; le texte n'est jamais réécrit, les offsets sont remappés.
+- Mesure : 11 rouges → verts ; banc inchangé octet pour octet ; 533 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée. Assouplit une limite documentée
+  (`LIMITES.md` § 5.2 conserve la règle pour noms, adresses, établissements).
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
