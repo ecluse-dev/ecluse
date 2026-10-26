@@ -141,6 +141,28 @@ final class NameDetector implements EntityDetector {
     '($_unite(?:$_h+(?!(?:Pr[ée]noms?|PR[ÉE]NOMS?)\\b)$_unite)?)',
   );
 
+  /// Mois et jours : jamais un nom de naissance (« née Lundi »), sous leurs trois
+  /// écritures (minuscules, initiale, majuscules).
+  static final String _moisEtJours = [
+    'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août',
+    'septembre', 'octobre', 'novembre', 'décembre', 'lundi', 'mardi',
+    'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche', //
+  ]
+      .map(
+          (w) => '$w|${w[0].toUpperCase()}${w.substring(1)}|${w.toUpperCase()}')
+      .join('|');
+
+  /// Nom de naissance ou d'épouse (P2-45) : « née Dupont », « épouse Dupont »,
+  /// « ép. », « veuve », « divorcée », « nom de jeune fille (:) Dupont ». Le
+  /// marqueur peut ouvrir une phrase et le nom doit commencer par une majuscule : « née le », « née à Lyon » ne sont pas touchés.
+  static final RegExp _nomDeNaissance = RegExp(
+    r'(?<![\wÀ-ÿ])(?:[Nn]ée|[ÉéEe]pouse|[ÉéEe]p\.|[Vv]euve|[Dd]ivorcée|'
+    '[Nn]om$_h+de$_h+jeune$_h+fille)'
+    '(?:$_h*:)?$_h+'
+    '(?!(?:$_moisEtJours)\\b)'
+    '($_unite(?:$_h+$_unite)?)',
+  );
+
   /// Prénom(s) derrière l'étiquette « Prénom » (P2-40) : toujours une personne
   /// (« Prénom usuel », « Prénom de naissance »…), de 1 à 3 mots, sans jamais
   /// absorber l'étiquette suivante (« Nom », « Prénom »). « Prénom du chat : »
@@ -287,6 +309,24 @@ final class NameDetector implements EntityDetector {
           end: match.end,
           value: name,
           confidence: 0.6,
+        ),
+      );
+      surnameSources.add(name);
+      claimed.add(_Range(start, match.end));
+    }
+
+    // Nom de naissance ou d'épouse (P2-45).
+    for (final match in _nomDeNaissance.allMatches(text)) {
+      final name = match.group(1)!;
+      final start = match.end - name.length;
+      if (claimed.any((r) => r.overlaps(start, match.end))) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.nom,
+          start: start,
+          end: match.end,
+          value: name,
+          confidence: 0.7,
         ),
       );
       surnameSources.add(name);
