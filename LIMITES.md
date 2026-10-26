@@ -491,6 +491,18 @@ sur une longue ligne de « Nom » répétés). Les 32 000 mentions successives d
 Quenelle », « Prénom : Zorglub ») coûtent plusieurs secondes, croissance **déjà présente** pour les
 règles de civilité existantes et non propre à cette règle.
 
+**Étiquettes « Nom du patient », « Nom de l'assuré »… (P2-41).** Sonde d'étiquettes courantes
+(26 octobre 2026) : « Nom du patient : Quenelle » restait en clair. Comme « Nom de naissance » (P2-36),
+ces étiquettes désignent sans ambiguïté une personne : sont ajoutées « Nom du patient / bénéficiaire /
+demandeur / salarié / résident », « Nom de la patiente », « Nom de l'assuré(e) / de l'employé(e) »
+(minuscules ou tout en majuscules), sans exiger « Prénom » à proximité. Tests d'abord (10 rouges) ;
+banc inchangé octet pour octet (aucun corpus ne contient ces étiquettes) ; intacts, testés : « Nom du
+médicament / du fichier / du projet », valeur en minuscules, valeur vide. **Non traité, par choix** :
+les étiquettes génériques (« Contact : », « Destinataire : », « Personne à prévenir : », « Représentant
+légal : », « Patient : ») suivies d'un nom **hors gazetteer sans civilité** (« Hector Quenelle ») ne sont
+pas détectées. C'est la limite connue des noms (§ 5.4) ; l'étendre à ces étiquettes est une décision de
+périmètre (ces mots précèdent aussi des noms de service ou d'organisme) laissée au mainteneur.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
