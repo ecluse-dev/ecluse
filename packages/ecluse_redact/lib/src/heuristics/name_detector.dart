@@ -109,8 +109,9 @@ final class NameDetector implements EntityDetector {
   static const String _unite = '(?:$_particules)*$_cap';
 
   static final RegExp _civility = RegExp(
-    r'\b(?:M\.|Mrs\.?|Mr\.?|Mme\.?|Mlle\.?|Mademoiselle|Monsieur|Madame|Dr\.?|'
-    r'Docteur|Pr\.?|Professeur|Maître|Maitre|Me)'
+    r'\b(?:M\.|Mrs\.?|Mr\.?|Ms\.?|Mme\.?|Mlle\.?|Mademoiselle|Monsieur|Madame|Mgr|'
+    r'[Aa]bbé|Dre\.?|Dr\.?|Docteure|Docteur|Pr\.?|Professeure|Professeur|Maître|'
+    r'Maitre|Me)'
     '$_h+'
     '($_unite'
     '(?:$_h+'
@@ -255,8 +256,9 @@ final class NameDetector implements EntityDetector {
   /// regex — la liste doit rester synchronisée avec l'alternation de
   /// [_civility].
   static const _professionalTitles = {
-    'Dr', 'Dr.', 'Docteur', 'Pr', 'Pr.', 'Professeur', 'Me', 'Maître', //
-    'Maitre', //
+    'Dr', 'Dr.', 'Dre', 'Dre.', 'Docteur', 'Docteure', 'Pr', 'Pr.',
+    'Professeur',
+    'Professeure', 'Me', 'Maître', 'Maitre', //
   };
 
   static bool _isProfessionalTitle(String civility) =>
