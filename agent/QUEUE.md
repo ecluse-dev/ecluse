@@ -105,6 +105,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-39 | code | `ecluse_redact` : détecter une date de naissance séparée de son étiquette (`\|`, `;`, saut de ligne) | P2-38 | fusionnée |
 | P2-40 | code | `ecluse_redact` : masquer le prénom derrière « Prénom : » et reconnaître la fiche « Prénom » avant « Nom » | P2-39 | fusionnée |
 | P2-41 | code | `ecluse_redact` : masquer le nom derrière « Nom du patient : », « Nom de l'assuré : »… | P2-40 | fusionnée |
+| P2-42 | code | `ecluse_redact` : détecter un NIR dont la clé est nommée à part (« 2550814168025 clé 38 ») | P2-41 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1273,4 +1274,18 @@ Contexte : sonde d'étiquettes courantes (26 octobre 2026) : « Nom du patient :
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Non traité : étiquettes génériques (« Contact : »…) + nom hors gazetteer sans civilité (décision de
   périmètre, documentée).
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-42 — Clé du NIR nommée à part (`code`)
+
+Contexte : sonde de variantes de NIR (26 octobre 2026) : « 2550814168025 clé 38 » laissait les 13 chiffres en clair
+(métropole, Corse 2A/2B, DOM, étranger).
+
+- Tests d'abord (10 rouges, avant) : « clé », « Clé : », « CLÉ », « cle », « clef », parenthèses, numéro
+  groupé ou non, 2A, 2B, 971, restauration identique ; contre-exemples (clé fausse, clé à un chiffre,
+  « Chambre 12 clé 38 », nombre quelconque + « clé 99 ») non détectés.
+- `ecluse.dart` : `_vueDeDetection` neutralise le mot « clé » (`_cleNommee`) entre un chiffre et deux
+  chiffres ; `ecluse_core` inchangé, la validation de la clé reste celle du détecteur de NIR.
+- Mesure : 10 rouges → verts ; banc inchangé octet pour octet ; 592 tests ; coût linéaire.
+- Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
