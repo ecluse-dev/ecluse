@@ -369,6 +369,18 @@ corpus du banc (dossiers et flou), qui ne contiennent aucun de ces caractères. 
 un séparateur absent de ces listes, ou un caractère invisible *dans* un mot (nom,
 adresse) qui le coupe pour les détecteurs de noms, n'est pas couvert.
 
+Formes d'autres systèmes d'écriture (P2-30) : sur 17 variantes sondées après P2-29 (courriel,
+date, noms, téléphone), 4 restaient non détectées : chiffres et lettres pleine chasse
+(« ０１ ９９ … »), arobase pleine chasse, barre de fraction dans une date. La vue des
+détecteurs ramène aussi les formes pleine chasse (U+FF01 à U+FF5E), les chiffres arabes
+orientaux et les barres de fraction et de division à leur équivalent ASCII (une unité pour
+une unité : positions et valeur d'origine inchangées). Après : les 4 variantes sont
+détectées, ainsi que 2 de plus (NIR et IBAN pleine chasse, téléphone en chiffres arabes
+orientaux) ; banc inchangé octet pour octet. Non couverts : les autres jeux de chiffres
+(devanagari, etc.), les homoglyphes de lettres (cyrillique, grec) dans un identifiant
+alphanumérique comme l'IBAN, et la normalisation NFKC complète (les ligatures changent la
+longueur).
+
 **Accents décomposés (NFD) (P2-32).** Un nom dont les accents sont écrits en lettre de base
 plus diacritique combinant (« E » + U+0301 pour « É », forme courante des noms de fichiers
 macOS et de certains copier-coller de PDF) était coupé au premier diacritique : « Élodie
@@ -448,6 +460,21 @@ pas du contenu en clair, des quasi-identifiants ni des métadonnées de requête
 et la menace de recoupement entre dossiers (T1) reste une hypothèse non
 confirmée : le cloisonnement retenu (C0) ne rend pas les numérotations
 indistinguables.
+
+**Jeton déformé par le LLM à la restauration (P2-31).** Sonde de 17 déformations d'un jeton
+(`[NOM_1]`) dans une réponse : 8 étaient restaurées avant P2-31 (jeton exact, casse, espaces,
+sans soulignement, gras, point final, possessif, code en ligne). Non restaurées, donc laissées
+telles quelles dans la réponse : l'échappement Markdown (`\[NOM\_1\]`, très courant quand
+le LLM répond en Markdown), les crochets échappés seuls, les jetons sans crochets, entre
+parenthèses, accolades, chevrons ou guillemets, le tiret à la place du soulignement et les
+crochets pleine chasse. Depuis P2-31, l'échappement Markdown (barre oblique inversée devant un
+crochet ou un soulignement) est restauré : 2 formes de plus de la sonde (l'échappement
+complet et les crochets échappés seuls), soit 10 sur 17 (mesuré). Le reste
+n'est **volontairement pas** restauré : changer les délimiteurs ou deviner un jeton sans
+crochets exposerait à restaurer la mauvaise valeur ; un jeton non restauré reste visible dans
+la réponse plutôt que remplacé à tort. Le numéro reste exact : `\[NOM\_10\]` ne restaure
+jamais `[NOM_1]`. Effet de bord assumé : une barre oblique inversée placée juste devant un
+jeton exact est consommée avec lui.
 
 ### 5.4 Portée du rattrapage des mentions partielles
 

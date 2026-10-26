@@ -318,6 +318,21 @@ final RegExp _espacesUnicode =
 /// Tirets typographiques que le traitement de texte substitue au trait d'union.
 final RegExp _tiretsUnicode = RegExp('[\u2010-\u2013\u2212\uFE63\uFF0D]');
 
+/// Formes pleine chasse (U+FF01 à U+FF5E), chiffres arabes orientaux, barres de
+/// fraction et de division : équivalents ASCII d'un chiffre, d'une lettre ou d'un
+/// signe d'identifiant.
+final RegExp _autresFormes =
+    RegExp('[\\uFF01-\\uFF5E\\u0660-\\u0669\\u06F0-\\u06F9\\u2044\\u2215]');
+
+/// Équivalent ASCII de [c] (même longueur : une unité UTF-16 pour une unité).
+int _versAscii(int c) {
+  if (c >= 0xFF01 && c <= 0xFF5E) return c - 0xFEE0;
+  if (c >= 0x0660 && c <= 0x0669) return 0x30 + (c - 0x0660);
+  if (c >= 0x06F0 && c <= 0x06F9) return 0x30 + (c - 0x06F0);
+  if (c == 0x2044 || c == 0x2215) return 0x2F; // '/'
+  return c;
+}
+
 /// Texte sur lequel tournent les détecteurs (P2-29) : espaces Unicode ramenés à
 /// U+0020 et tirets typographiques à `-` (même longueur), caractères invisibles
 /// retirés. Renvoie aussi, si des caractères ont été retirés, la position
@@ -330,6 +345,9 @@ final RegExp _tiretsUnicode = RegExp('[\u2010-\u2013\u2212\uFE63\uFF0D]');
   }
   if (_tiretsUnicode.hasMatch(vue)) {
     vue = vue.replaceAll(_tiretsUnicode, '-');
+  }
+  if (_autresFormes.hasMatch(vue)) {
+    vue = String.fromCharCodes([for (final c in vue.codeUnits) _versAscii(c)]);
   }
   if (!_invisibles.hasMatch(vue)) {
     return (vue, null);
