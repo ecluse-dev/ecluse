@@ -113,13 +113,34 @@ abstract final class Ecluse {
     });
   }
 
-  static Future<RedactResult> _redact(
+  /// Détecte les entités de [text] **sans rien masquer** (P2-16, préalable de
+  /// l'aperçu de `agent/specs/P2-08.md`). Renvoie exactement les entités que
+  /// [redact] masquerait : triées par position, sans chevauchement.
+  ///
+  /// **Aucun effet de bord** : pas de jeton attribué, pas de numéro consommé,
+  /// pas de patronyme établi, [dossier] inchangé. Avec un [dossier], la
+  /// détection est sérialisée après ses appels précédents et profite des
+  /// patronymes qu'ils ont établis (P2-14) ; un dossier fermé lève
+  /// [DossierFermeException]. [detectors] remplace les détecteurs par défaut,
+  /// sans être modifié.
+  static Future<List<DetectedEntity>> detect(
+    String text, {
+    List<Detector>? detectors,
+    Dossier? dossier,
+  }) {
+    if (dossier == null) return _detecter(text, _Etat(), detectors);
+    return dossier._serialise(() {
+      final etat = dossier._etat;
+      if (etat == null) throw const DossierFermeException();
+      return _detecter(text, etat, detectors);
+    });
+  }
+
+  /// Détection pure : lit [etat] (patronymes établis) sans jamais le modifier.
+  static Future<List<DetectedEntity>> _detecter(
     String text,
     _Etat etat,
     List<Detector>? detectors,
-    bool restoreSecrets,
-    bool refuseSecrets,
-    EcluseReference? riskReference,
   ) async {
     // Dans un dossier, les patronymes établis par les documents précédents
     // amorcent la détection de noms (P2-14) ; des détecteurs fournis par
@@ -128,8 +149,18 @@ abstract final class Ecluse {
         (etat.patronymes.isEmpty
             ? defaultDetectors
             : _detecteursAvecPatronymes(etat.patronymes)));
-    final detection = await engine.run(text);
-    final resolved = detection.entities;
+    return (await engine.run(text)).entities;
+  }
+
+  static Future<RedactResult> _redact(
+    String text,
+    _Etat etat,
+    List<Detector>? detectors,
+    bool restoreSecrets,
+    bool refuseSecrets,
+    EcluseReference? riskReference,
+  ) async {
+    final resolved = await _detecter(text, etat, detectors);
 
     final secretCount =
         resolved.where((e) => e.type == EntityType.secret).length;
