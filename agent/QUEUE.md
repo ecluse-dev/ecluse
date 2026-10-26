@@ -92,6 +92,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-26 | code | `ecluse_audit` : l'export ne laisse plus retrouver un compte masqué par soustraction ni par le nombre d'entrées de la chaîne | P2-25 | fusionnée |
 | P2-27 | code | `ecluse_ingest` : refuser un .docx/.odt dont le contenu ne correspond plus au CRC-32 de l'archive | P2-26 | fusionnée |
 | P2-28 | code | `ecluse_ingest` : refuser un PDF qui a plus d'objets page en clair que de pages atteignables (page perdue sans avertissement) | P2-27 | fusionnée |
+| P2-29 | code | `ecluse_redact` : détecter les identifiants contenant des caractères invisibles ou des tirets et espaces typographiques, sans réécrire le texte | P2-28 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1069,3 +1070,21 @@ avertissement. La spec P1-09 § 3 n'accepte un PDF que si tout son contenu est l
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent sur `ecluse_ingest` et `LIMITES.md`
   § 4 est à jour.
+
+### P2-29 — Identifiants avec caractères invisibles ou séparateurs typographiques (`code`)
+
+Contexte : sondage de recall (26 octobre 2026) : un NIR, un IBAN ou un téléphone contenant
+un espace sans chasse (U+200B), un trait d'union conditionnel, un tiret demi-cadratin ou
+insécable n'est pas détecté, donc pas masqué (22 cas sur 33 détectés en entier). Vecteur
+d'évasion facile et accident de copier-coller courant.
+
+- Tests d'abord (25 rouges sur 30 avant) : 9 séparateurs × NIR/téléphone/IBAN (détection
+  complète, valeur d'origine conservée, masquage, restauration), invisible en bordure,
+  séquence d'émojis ZWJ inchangée, propriété (graine 42, 400 textes).
+- `Ecluse._detecter` fait tourner les détecteurs sur une vue du texte (espaces Unicode →
+  espace, tirets typographiques → `-`, caractères invisibles retirés), puis ramène positions
+  et valeur au texte d'origine (jamais réécrit). Sans caractère concerné : détection identique.
+- Mesure : 22/33 → 32/33 ; 47/48 avec cinq séparateurs de plus ; prédictions du banc
+  (dossiers, flou) inchangées octet pour octet.
+- `ecluse_core` inchangé (règle 6). Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` § 5.2 est à jour.

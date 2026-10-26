@@ -150,7 +150,26 @@ abstract final class Ecluse {
         (etat.patronymes.isEmpty
             ? defaultDetectors
             : _detecteursAvecPatronymes(etat.patronymes)));
-    return (await engine.run(text)).entities;
+    final (vue, positions) = _vueDeDetection(text);
+    final entites = (await engine.run(vue)).entities;
+    if (identical(vue, text)) return entites;
+    // Les positions et la valeur sont ramenées au texte d'origine : le texte
+    // n'est jamais réécrit, la table garde la valeur exacte (invariant 3).
+    return [
+      for (final e in entites)
+        () {
+          final debut = positions == null ? e.start : positions[e.start];
+          final fin = positions == null ? e.end : positions[e.end - 1] + 1;
+          return DetectedEntity(
+            type: e.type,
+            start: debut,
+            end: fin,
+            value: text.substring(debut, fin),
+            confidence: e.confidence,
+            tier: e.tier,
+          );
+        }()
+    ];
   }
 
   static Future<RedactResult> _redact(
@@ -259,6 +278,56 @@ abstract final class Ecluse {
     }
     return result;
   }
+}
+
+/// Caractères sans largeur ou de contrôle bidirectionnel qu'un copier-coller
+/// glisse dans un identifiant (U+200B espace sans chasse, U+200C/D, U+2060,
+/// U+FEFF, trait d'union conditionnel, marques de direction).
+final RegExp _invisibles = RegExp(
+    '[\u00AD\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]');
+
+bool _estInvisible(int c) =>
+    c == 0x00AD ||
+    c == 0x180E ||
+    (c >= 0x200B && c <= 0x200F) ||
+    (c >= 0x202A && c <= 0x202E) ||
+    (c >= 0x2060 && c <= 0x2064) ||
+    (c >= 0x2066 && c <= 0x2069) ||
+    c == 0xFEFF;
+
+/// Espaces Unicode autres que U+0020 et U+00A0 (déjà acceptés par les
+/// détecteurs).
+final RegExp _espacesUnicode =
+    RegExp('[\u1680\u2000-\u200A\u202F\u205F\u3000]');
+
+/// Tirets typographiques que le traitement de texte substitue au trait d'union.
+final RegExp _tiretsUnicode = RegExp('[\u2010-\u2013\u2212\uFE63\uFF0D]');
+
+/// Texte sur lequel tournent les détecteurs (P2-29) : espaces Unicode ramenés à
+/// U+0020 et tirets typographiques à `-` (même longueur), caractères invisibles
+/// retirés. Renvoie aussi, si des caractères ont été retirés, la position
+/// d'origine de chaque caractère conservé. Sans caractère concerné, le texte
+/// d'origine lui-même (`identical`) : la détection est alors celle d'avant.
+(String, List<int>?) _vueDeDetection(String text) {
+  var vue = text;
+  if (_espacesUnicode.hasMatch(vue)) {
+    vue = vue.replaceAll(_espacesUnicode, ' ');
+  }
+  if (_tiretsUnicode.hasMatch(vue)) {
+    vue = vue.replaceAll(_tiretsUnicode, '-');
+  }
+  if (!_invisibles.hasMatch(vue)) {
+    return (vue, null);
+  }
+  final sb = StringBuffer();
+  final positions = <int>[];
+  for (var i = 0; i < vue.length; i++) {
+    final c = vue.codeUnitAt(i);
+    if (_estInvisible(c)) continue;
+    sb.writeCharCode(c);
+    positions.add(i);
+  }
+  return (sb.toString(), positions);
 }
 
 /// Les détecteurs par défaut, avec un [NameDetector] amorcé par [patronymes].
