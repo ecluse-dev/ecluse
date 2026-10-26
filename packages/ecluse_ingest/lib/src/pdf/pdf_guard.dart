@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import '../ingest_result.dart';
@@ -104,6 +105,16 @@ IngestResult ingestPdf(
       pdfRefusalNoText,
       'PDF sans page : rien n\'a pu être lu, document refusé.',
     );
+  }
+  // Recoupement (P2-28) : un PDF abîmé peut perdre des pages dans l'arbre des
+  // pages sans qu'aucune erreur ne se déclare. Si le fichier contient plus
+  // d'objets « page » en clair que de pages atteignables, on ne peut pas
+  // affirmer que tout le contenu est lu : refus. Limite : un PDF mis à jour par
+  // ajout (versions successives d'une même page) peut aussi donner un écart ;
+  // c'est un refus explicite, pas une perte silencieuse.
+  final declared = _pageObjectCount(data);
+  if (declared > pageCount) {
+    return _malformed();
   }
 
   final texts = <String>[];
@@ -296,3 +307,11 @@ bool _textQuality(String text, PdfLimits limits) {
   return stray / nonBlank <= limits.maxStrayRatio &&
       letterDigit / nonBlank >= limits.minLetterDigitRatio;
 }
+
+final RegExp _pageObject = RegExp(r'/Type\s*/Page(?![A-Za-z])');
+
+/// Nombre d'objets `/Type /Page` visibles en clair dans le fichier (ceux qui
+/// sont dans un flux compressé n'y figurent pas : l'écart ne joue que dans un
+/// sens, « plus d'objets que de pages lues »).
+int _pageObjectCount(Uint8List data) =>
+    _pageObject.allMatches(latin1.decode(data)).length;
