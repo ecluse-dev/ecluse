@@ -16,7 +16,7 @@ Nous ne prétendons pas rendre la ré-identification impossible — personne ne 
 
 ## Le sas, concrètement
 
-Vos prompts entrent. Les portes se ferment. Les entités sensibles sont retenues dans la chambre, les indices trop précis sont généralisés. Le reste passe au modèle. La réponse revient, les éléments réversibles sont réinjectés localement, et seulement là les portes de sortie s'ouvrent. Le journal d'audit est signé, horodaté, prêt pour votre AIPD.
+Vos prompts entrent. Les portes se ferment. Les entités sensibles sont retenues dans la chambre, les indices trop précis sont généralisés. Le reste passe au modèle. La réponse revient, les éléments réversibles sont réinjectés localement, et seulement là les portes de sortie s'ouvrent. Le journal d'audit est chaîné et horodaté, et fournit la matière première de votre AIPD.
 
 Un canal, deux portes, un niveau d'eau maîtrisé.
 
