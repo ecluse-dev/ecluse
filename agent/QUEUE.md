@@ -78,6 +78,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-12 | code | Script reproductible du décompte de la fuite des noms hors civilité, versionné dans `bench/` | P2-02 | fusionnée |
 | P2-13 | code | `Dossier` : règle de noms entre documents activable (N3) : N1 par défaut, fusion par inclusion (N2) à la demande de l'application | P2-06 | fusionnée |
 | P2-14 | code | Patronyme seul : mesurer ce qu'un rattrapage sans liste externe ni NER peut détecter, et ne l'implémenter que si le budget de faux positifs est tenu | P2-05a | fusionnée |
+| P2-15 | code | `ecluse_audit` : agrégat d'export pour le registre et l'AIPD (période, comptes par type avec seuil, refus par code, versions, état de la chaîne), en lecture seule | P2-09 | à faire |
+| P2-16 | code | `ecluse_redact` : scinder détection et application de `Ecluse.redact` (test d'équivalence d'abord), préalable de l'aperçu | P2-08 | à faire |
+| P2-17 | code | `ecluse_reid` : échelle de dates de naissance et dérivation d'âge avec date de référence injectée, palier 85+, en ajout | P2-07 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -809,3 +812,63 @@ touche pas au NER.
   NER.
 - **Fini quand** : la mesure par cas est dans la PR, la règle éventuelle est
   implémentée ou l'impossibilité sans NER est établie par les chiffres.
+
+### P2-15 — Agrégat d'export pour le registre et l'AIPD (`code`)
+
+Contexte : `agent/specs/P2-09.md` § 4 et `DECISIONS.md` (« Préconisations des specs
+P2-07, P2-08 et P2-09 »). Aucune agrégation ni export n'existe dans `ecluse_audit`.
+
+- Écrire une fonction **pure** qui prend une liste d'entrées (`AuditEntry`) et produit
+  un agrégat : période (première et dernière entrée), nombre d'opérations `redact` et
+  `ingest_refused`, entités détectées par type, refus par code de motif, versions de
+  moteur rencontrées, résultat de `AuditVerifier` (intacte ou rompue, rang de la
+  première rupture).
+- **Seuil de faible effectif** : tout compte par type inférieur à 5 devient « moins
+  de 5 » ; si le nombre d'opérations est inférieur à 5, la période est donnée au
+  jour. Seuil paramétrable, défaut 5.
+- Rendu en JSON canonique et en texte lisible. Les **mentions d'honnêteté** de la
+  § 6 de la spec figurent dans la sortie elle-même, toujours, y compris pour un
+  journal vide.
+- Aucune écriture, aucune valeur, aucun jeton, aucune position : un test vérifie que
+  la sortie ne contient aucune clé hors liste fermée.
+- Tests : journal vide, une seule entrée, chaîne rompue, seuil, reproductibilité.
+  `format`, `analyze` et `test` dans `ecluse_audit`. Aucune dépendance ajoutée.
+- Ne rien affirmer sur la nature juridique du journal ni sur la conformité.
+- **Fini quand** : tests passent, la PR liste ce que le mainteneur doit vérifier.
+
+### P2-16 — Scinder détection et application dans `Ecluse.redact` (`code`)
+
+Contexte : `agent/specs/P2-08.md` §§ 2 et 4. `Ecluse.redact` est monolithique : un
+aperçu ne peut ni proposer sans masquer, ni appliquer une décision.
+
+- **Test d'équivalence d'abord** : la sortie d'`Ecluse.redact` (texte masqué, carte,
+  avertissements, ordre des clés) est inchangée, avec et sans `Dossier`, sur les
+  corpus de `bench/` (flou, QI, dossiers).
+- Séparer la détection (entités résolues, aucun effet de bord, aucun numéro de jeton
+  consommé, `Dossier` intact) de l'application (jetons, carte, texte masqué, état du
+  `Dossier`). `Ecluse.redact` devient leur composition ; rien ne change pour les
+  appelants.
+- Mesurer la non-régression : fuite 7,5 % / 16,8 %, 59 restaurations non identiques ;
+  performance comparable.
+- Hors périmètre : le composant d'aperçu lui-même (types de la proposition, décision,
+  refus, ajouts), à traiter ensuite.
+- `ecluse_core` inchangé (règle 6). Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze` et `test` passent, les mesures sont dans la PR.
+
+### P2-17 — Échelle de dates de naissance et dérivation d'âge (`code`)
+
+Contexte : `agent/specs/P2-07.md` §§ 2.1 et 2.2 et `DECISIONS.md`. `ecluse_reid`
+généralise l'âge (exact, 5 ans, 10 ans, senior, retrait) mais pas la date de naissance,
+et n'a pas de palier pour les grands âges.
+
+- Ajouter, **en ajout** (aucune modification de `estimate`) : une échelle de dates
+  (mois/année, année, décennie, retrait) ; la dérivation d'un âge à partir d'une date
+  avec une **date de référence fournie par l'appelant** (aucune horloge système) ; un
+  palier « 85+ ».
+- Ne pas modifier le masquage de la date de naissance par `Ecluse.redact` : ce travail
+  est de la bibliothèque `ecluse_reid` seulement.
+- Tests : cas limites de calendrier (29 février, anniversaire le jour de référence),
+  reproductibilité (date de référence explicite), âges hors pyramide.
+- `ecluse_reid` : `format`, `analyze`, `test`. Aucune dépendance ajoutée.
+- **Fini quand** : tests passent et la PR dit ce que les nouveaux paliers changent à
+  l'estimation (rien, tant qu'`estimate` n'est pas étendu).
