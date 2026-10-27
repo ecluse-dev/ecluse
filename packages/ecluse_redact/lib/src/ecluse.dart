@@ -532,7 +532,11 @@ String _resolveNomToken(
   bool compatible(_NomIdentity identity) =>
       !(gender != null && identity.gender != null && gender != identity.gender);
 
-  final matches = etat.nomIdentities
+  // Seules les identités qui partagent au moins un segment avec la mention
+  // peuvent correspondre (les deux sens de l'inclusion l'exigent) : l'index
+  // évite de comparer chaque mention à toutes les identités du dossier (P2-64).
+  final matches = etat
+      .candidats(segments)
       .where(
         (identity) =>
             (etat.regle == RegleNoms.inclusion || identity.doc == docId) &&
@@ -552,6 +556,7 @@ String _resolveNomToken(
       // mention), comme le promet `LIMITES.md` §5.3 — sans cela, les
       // mentions complètes perdaient prénom et titre à la restauration.
       identity.segments = segments;
+      etat.indexe(identity);
       etat.mapping[identity.token] = entity.value;
     }
     return identity.token;
@@ -563,7 +568,8 @@ String _resolveNomToken(
   if (matches.isEmpty &&
       etat.regle == RegleNoms.identiteComplete &&
       segments.length >= 2) {
-    final anterieures = etat.nomIdentities
+    final anterieures = etat
+        .candidats({segments.first})
         .where((identity) =>
             identity.doc != docId &&
             compatible(identity) &&
@@ -581,7 +587,7 @@ String _resolveNomToken(
   final token = _freshToken(EntityType.nom, etat.counterByType, text);
   etat.attribues.add(token);
   etat.mapping[token] = entity.value;
-  etat.nomIdentities.add(_NomIdentity(segments, token, gender, docId));
+  etat.ajouteIdentite(_NomIdentity(segments, token, gender, docId));
   return token;
 }
 
@@ -630,7 +636,45 @@ final class _Etat {
   final Map<String, String> mapping = {};
   final Map<String, String> tokenByIdentity = {};
   final List<_NomIdentity> nomIdentities = [];
+
+  /// Index des identités par segment (P2-64). Une identité y figure sous tous les
+  /// segments qu'elle a eus (les segments ne font que croître) ; `_sansSegment`
+  /// garde celles qui n'en ont aucun, qui correspondent à toute mention.
+  final Map<String, Set<_NomIdentity>> _parSegment = {};
+  final Set<_NomIdentity> _sansSegment = {};
   final Map<EntityType, int> counterByType = {};
+
+  void ajouteIdentite(_NomIdentity identite) {
+    nomIdentities.add(identite);
+    indexe(identite);
+  }
+
+  void indexe(_NomIdentity identite) {
+    if (identite.segments.isEmpty) {
+      _sansSegment.add(identite);
+      return;
+    }
+    for (final segment in identite.segments) {
+      (_parSegment[segment] ??= {}).add(identite);
+    }
+  }
+
+  /// Identités susceptibles de correspondre à une mention de [segments] : celles
+  /// qui partagent au moins un segment avec elle, plus celles sans segment. Une
+  /// mention sans segment peut correspondre à toutes les identités.
+  Iterable<_NomIdentity> candidats(Set<String> segments) {
+    if (segments.isEmpty) return nomIdentities;
+    final vues = <_NomIdentity>{..._sansSegment};
+    final candidates = [..._sansSegment];
+    for (final segment in segments) {
+      final liste = _parSegment[segment];
+      if (liste == null) continue;
+      for (final identite in liste) {
+        if (vues.add(identite)) candidates.add(identite);
+      }
+    }
+    return candidates;
+  }
 
   /// Patronymes (minuscules) établis par une mention certaine d'un document
   /// du dossier : amorcent la détection des documents suivants.
@@ -673,10 +717,10 @@ final class _Etat {
     final c = _Etat(regle)..documents = documents;
     c.mapping.addAll(mapping);
     c.tokenByIdentity.addAll(tokenByIdentity);
-    c.nomIdentities.addAll([
-      for (final n in nomIdentities)
-        _NomIdentity(Set.of(n.segments), n.token, n.gender, n.doc)
-    ]);
+    for (final n in nomIdentities) {
+      c.ajouteIdentite(
+          _NomIdentity(Set.of(n.segments), n.token, n.gender, n.doc));
+    }
     c.counterByType.addAll(counterByType);
     c.patronymes.addAll(patronymes);
     c.attribues.addAll(attribues);
@@ -687,6 +731,8 @@ final class _Etat {
     mapping.clear();
     tokenByIdentity.clear();
     nomIdentities.clear();
+    _parSegment.clear();
+    _sansSegment.clear();
     counterByType.clear();
     patronymes.clear();
     attribues.clear();
