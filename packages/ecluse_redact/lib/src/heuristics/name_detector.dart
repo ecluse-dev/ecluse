@@ -195,7 +195,9 @@ final class NameDetector implements EntityDetector {
   );
 
   static final RegExp _aEcrit = RegExp(
-    '(?<![\\wÀ-ÿ])($_unite(?:$_h+$_unite){0,2})$_h*<[^<>\\s]+@[^<>\\s]+>:?$_h*'
+    // Début de mot strict (tiret et apostrophe compris) : sinon le motif
+    // repart de chaque segment d'un mot composé très long, en temps cubique.
+    "(?<![\\wÀ-ÿ'’-])($_unite(?:$_h+$_unite){0,2})$_h*<[^<>\\s]+@[^<>\\s]+>:?$_h*"
     r'(?:a[ \t]+[ée]crit|wrote|ha[ \t]+scritto|schrieb)',
   );
 

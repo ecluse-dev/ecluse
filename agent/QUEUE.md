@@ -120,6 +120,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-54 | code | `ecluse_redact` : détecter le nom de signature sous une formule de clôture (`Cordialement,`) | P2-53 | fusionnée |
 | P2-55 | code | `ecluse_redact` : détecter le nom derrière une étiquette de rôle (`Patient :`, `Résident :`, `Médecin traitant :`…) | P2-54 | fusionnée |
 | P2-56 | code | `ecluse_redact` : détecter une adresse sans code postal (`12 rue des Lilas`) | P2-55 | fusionnée |
+| P2-58 | code | `ecluse_redact` : coût cubique d'un mot composé très long (régression de P2-53) | P2-56 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1494,4 +1495,15 @@ Contexte : sonde d'adresses (27 octobre 2026) : « 12 rue des Lilas », « 27 bo
 - Mesure : 11 rouges → verts ; banc inchangé octet pour octet ; 861 tests.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Non traité : nom de voie en minuscules, ville seule, lieu-dit sans numéro.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-58 — Coût cubique d'un mot composé très long (`code`)
+
+Contexte : en mesurant P2-57, « AB-123- » répété (140 Ko) prenait 47 s. Bissection : régression de P2-53 (`_aEcrit`),
+5 ms avant ; le motif repartait de chaque segment d'un mot composé.
+
+- Test d'abord (2 rouges sur 3 formes, 16 s et 9,9 s) puis correctif ; cas fonctionnel « a écrit » après un nom composé conservé.
+- `name_detector.dart` : lookbehind de `_aEcrit` étendu au tiret et à l'apostrophe (début de mot strict).
+- Mesure : 36 Ko en 16 s → < 5 s ; ~1 Mo de mots composés en 1,3 à 5,7 s ; banc inchangé octet pour octet ; 865 tests.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
