@@ -5,8 +5,21 @@ import 'package:test/test.dart';
 /// Identifiants étiquetés (P2-57) : numéro de dossier, de patient, d'adhérent,
 /// IPP, passeport, CNI, plaque d'immatriculation, adresse IP. Ils restaient en
 /// clair : ni structure vérifiable, ni type d'entité. Nouveau type
-/// `identifiant` (jeton `[IDENTIFIANT_n]`). L'étiquette est obligatoire, sauf
+/// `identifiant` (jeton `[IDENTIFIANT_n]`), scindé en quatre catégories (P2-59) :
+/// `identifiant` (dossier, patient, adhérent…), `pieceIdentite` (passeport, CNI,
+/// permis), `vehicule` (plaque), `reseau` (adresse IP). L'étiquette est obligatoire, sauf
 /// pour la plaque au format SIV (`AB-123-CD`), assez spécifique seule.
+/// Catégorie attendue du jeton (P2-59) : un type par catégorie d'identifiant.
+String categorie(String texte) {
+  const pieces = ['Passeport', 'CNI', "Carte d'identité", 'Permis'];
+  if (pieces.any(texte.contains)) return 'PIECE_IDENTITE';
+  if (RegExp(r'Plaque|Immatriculation|circule').hasMatch(texte)) {
+    return 'VEHICULE';
+  }
+  if (RegExp(r'\bIP\b').hasMatch(texte)) return 'RESEAU';
+  return 'IDENTIFIANT';
+}
+
 void main() {
   const masques = {
     'IPP : 12345678': '12345678',
@@ -36,7 +49,8 @@ void main() {
     test('masqué : $texte', () async {
       final r = await Ecluse.redact(texte);
       expect(r.maskedText, isNot(contains(reste)), reason: r.maskedText);
-      expect(r.maskedText, contains('[IDENTIFIANT_'), reason: r.maskedText);
+      expect(r.maskedText, contains('[${categorie(texte)}_'),
+          reason: r.maskedText);
       expect(Ecluse.restore(r.maskedText, r.mapping), texte);
     });
   }
@@ -61,7 +75,10 @@ void main() {
     test('intact : $texte', () async {
       final r = await Ecluse.redact(texte);
       expect(r.maskedText, contains(reste), reason: r.maskedText);
-      expect(r.maskedText, isNot(contains('[IDENTIFIANT_')),
+      expect(
+          r.maskedText,
+          isNot(matches(
+              RegExp(r'\[(IDENTIFIANT|PIECE_IDENTITE|VEHICULE|RESEAU)_'))),
           reason: r.maskedText);
       expect(Ecluse.restore(r.maskedText, r.mapping), texte);
     });
@@ -70,6 +87,9 @@ void main() {
   test('le type est exposé à l\'appelant', () async {
     final r = await Ecluse.redact('IPP : 12345678');
     expect(r.mapping.keys.single, '[IDENTIFIANT_1]');
-    expect(EntityType.values.map((t) => t.name), contains('identifiant'));
+    expect(
+      EntityType.values.map((t) => t.name),
+      containsAll(['identifiant', 'pieceIdentite', 'vehicule', 'reseau']),
+    );
   });
 }
