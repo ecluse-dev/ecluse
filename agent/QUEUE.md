@@ -115,6 +115,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-49 | code | `ecluse_redact` : reconnaître les types de voie « sentier », « ruelle », « clos »… et les abréviations « R. », « pl. », « ch. » | P2-48 | fusionnée |
 | P2-50 | code | `ecluse_redact` : borner la recherche de la fiche « Prénom » pour supprimer un coût quadratique sur « Nom : » répété | P2-49 | fusionnée |
 | P2-51 | code | `ecluse_redact` : détecter les valeurs derrière des étiquettes décorées en Markdown ou HTML (« **Nom :** », « <b>Né le</b> ») | P2-50 | fusionnée |
+| P2-52 | code | `ecluse_redact` : détecter une date de naissance derrière une clé de données (`date_naissance`, `dateNaissance`, `dob`, `ddn`…) | P2-51 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1421,4 +1422,19 @@ Contexte : sonde de 16 présentations (27 octobre 2026) : « **Date de naissance
 - Mesure : 17 rouges → verts ; banc inchangé octet pour octet ; 747 tests ; 1 Mo d'étoiles en 1,6 s ;
   aller-retour exact sur 3 000 textes aléatoires sans nom.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-52 — Date de naissance derrière une clé de données (`code`)
+
+Contexte : sonde d'exports structurés (27 octobre 2026) : `{"date_naissance": "12/03/1950"}`, `dateNaissance = …`,
+`<dateNaissance>…</dateNaissance>` laissaient la date en clair.
+
+- Tests d'abord (18 rouges, avant) : JSON, YAML, XML, paramètres d'URL, clés `date_naissance`, `date-naissance`,
+  `dateNaissance`, `birth_date`, `date_of_birth`, `dob`, `ddn`, `naissance` ; 9 contre-exemples (`date_creation`,
+  `date_naissance_projet`, `dobby`, `ddns`, valeur non numérique…) intacts ; restauration identique.
+- `date_naissance_detector.dart` : séparateur de mots `[ _-]` dans le contexte, `naissance` suivi de `:`/`=`/`>`,
+  séparation tolérant guillemets, `=`, `:` et `>`.
+- Mesure : 18 rouges → verts ; banc inchangé octet pour octet ; 774 tests ; coût identique à la base.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Non traité : nom et prénom en clé de données (clé ambiguë), colonnes d'un CSV à en-tête.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

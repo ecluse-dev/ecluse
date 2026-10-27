@@ -13,7 +13,8 @@ import 'package:ecluse_core/ecluse_core.dart';
 /// blancs seuls (`12 03 1950`, contexte obligatoire), ISO `AAAA-MM-JJ`, et la
 /// forme textuelle française
 /// `12 mars 1985` (dont l'ordinal `1er mars 1985`). La date peut suivre son
-/// étiquette après un `|` ou un `;`, ou sur la ligne suivante.
+/// étiquette après un `|` ou un `;`, ou sur la ligne suivante, ou derrière une
+/// clé de données (`"date_naissance": "…"`, `<naissance>…</naissance>`, `ddn=…`).
 final class DateNaissanceDetector implements EntityDetector {
   const DateNaissanceDetector();
 
@@ -38,6 +39,10 @@ final class DateNaissanceDetector implements EntityDetector {
   // fréquents dans les exports de traitement de texte.
   static const String _b = '[ \\t\\u00A0\\u202F]';
 
+  /// Séparateur de mots d'une clé de données (P2-52) : blanc, `_` ou `-`
+  /// (`date_naissance`, `date-naissance`, `date naissance`).
+  static const String _s = '[ _\\-\\t\\u00A0\\u202F]';
+
   /// Lieu de naissance facultatif entre « né(e) » et « le » (« né à Paris
   /// le … ») : 1 à 3 mots, pour ne pas ouvrir la porte à une phrase entière.
   static const String _lieu =
@@ -49,19 +54,20 @@ final class DateNaissanceDetector implements EntityDetector {
   /// du projet »), « DDN [:] », « DOB [:] ».
   static final String _contexte =
       '(?<![\\wÀ-ÿ])(?:né(?:e)?(?:\\(e\\))?$_lieu$_b+le$_b*:?'
-      '|date$_b+(?:de$_b+)?naiss(?:ance|\\.)?$_b*:?'
-      '|naissance$_b*:'
+      '|date$_s*(?:de$_s+)?naiss(?:ance|\\.)?$_b*:?'
+      '|naissance(?=["\']?$_b*[:=>])'
       '|D\\.?D\\.?N\\.?$_b*:?'
       '|DOB$_b*:?'
-      '|date$_b+of$_b+birth$_b*:?'
-      '|birth$_b*date$_b*:?'
+      '|date$_s*of$_s*birth$_b*:?'
+      '|birth$_s*date$_b*:?'
       '|born$_b+on$_b*:?)';
 
   /// Séparation entre le contexte et la date (P2-39) : des blancs, un `|` ou un
   /// `;` (tableau, CSV), ou **un seul** saut de ligne (étiquette seule sur sa
   /// ligne, valeur sur la suivante). Une ligne vide ou une ligne étrangère
   /// entre les deux interrompt la détection.
-  static const String _sepContexte = '(?:$_b+|$_b*[|;]$_b*|$_b*\\r?\\n$_b*)';
+  static const String _sepContexte =
+      '(?:[ \\t\\u00A0\\u202F"\'>=:]+|$_b*[|;]$_b*|$_b*\\r?\\n$_b*)';
 
   static const String _jours =
       '(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)$_b+';
