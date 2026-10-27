@@ -1568,7 +1568,7 @@ Contexte : arbitrage du 27 octobre (question 1) : `identifiant` scindé en caté
 
 Contexte : arbitrage du 27 octobre (question 7) : clés explicites et CSV à en-tête, avec refus explicite si le CSV est ambigu ; la clé nue « nom » reste exclue.
 
-- Tests d'abord (21 + 23 rouges) ; 17 contre-exemples de clés et 7 non-tableaux intacts ; 4 refus explicites ; restauration identique.
+- Tests d'abord (36 rouges : 21 clés, 15 CSV) ; 16 contre-exemples de clés et 7 non-tableaux intacts ; 4 refus explicites ; restauration identique.
 - `name_detector.dart` : `_cleDonneeLax` (JSON, XML, paramètres : casse libre, 1 à 4 mots) et `_cleDonneePlain` (`cle: Valeur`, majuscule initiale) ; valeurs vides ou booléennes exclues.
 - `tableau_csv.dart` : `cellulesDeNoms` (en-tête reconnu, cellules des colonnes de noms) et `TableauAmbiguException` (ligne et motif, jamais le contenu).
 - Mesure : tests rouges → verts ; banc inchangé octet pour octet ; 962 tests ; coût linéaire hors résolution des pseudonymes (100 000 cellules de noms : 29 s, voir P2-64).

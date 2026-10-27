@@ -767,7 +767,7 @@ est un tableau : les cellules de ces colonnes sont masquées, quelle que soit le
 (virgule non protégée, colonne manquante) ou un guillemet non fermé (cellule sur plusieurs lignes, non prise en charge)
 lève `TableauAmbiguException` (ligne et motif, jamais le contenu) au lieu de laisser des noms en clair ; une ligne sans
 séparateur ou une ligne vide met fin au tableau (texte qui suit). Un en-tête sans ligne de données conforme n'est pas un
-tableau (« Nom, prénom et adresse seront demandés »). Tests d'abord (44 rouges) ; 24 contre-exemples intacts ; banc inchangé
+tableau (« Nom, prénom et adresse seront demandés »). Tests d'abord (36 rouges : 21 clés, 15 CSV) ; 23 contre-exemples intacts (16 clés, 7 non-tableaux) ; banc inchangé
 octet pour octet ; 962 tests. **Conséquence à connaître** : `Ecluse.redact` et ses dérivés peuvent maintenant lever
 `TableauAmbiguException` ; un appelant qui ne la gère pas verra l'envoi refusé (comportement voulu : pas d'échec
 silencieux). **Non traité** : cellules sur plusieurs lignes entre guillemets, colonnes dont l'en-tête est une autre langue ou
