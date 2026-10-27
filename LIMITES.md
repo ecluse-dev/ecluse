@@ -754,6 +754,21 @@ inchangé octet pour octet ; 902 tests (`ecluse_redact`), tous les paquets verts
 passeport étiqueté et un n° de dossier identique en chiffres restent deux jetons, de types différents. **Non traité** :
 la pondération du risque ou le refus à l'aperçu par catégorie — la scission le permet, aucune règle n'est définie.
 
+**IBAN de l'espace SEPA (P2-62).** Arbitrage du 27 octobre (question 8). Seul l'IBAN français était détecté : un IBAN
+belge, suisse, allemand ou espagnol (RIB d'un résident frontalier) restait en clair. `IbanDetector` (`ecluse_core`)
+couvre 38 pays — AD, AT, BE, BG, CH, CY, CZ, DE, DK, EE, ES, FI, FO, FR, GB, GI, GR, HR, HU, IE, IS, IT, LI, LT, LU,
+LV, MC, MT, NL, NO, PL, PT, RO, SE, SI, SK, SM, VA — avec la **longueur propre au pays** et la même clé ISO 7064 mod
+97-10 que le détecteur français (confiance 1.0, séparateurs espace, tiret, point, barre oblique, minuscules admis).
+`Ecluse.defaultDetectors` l'utilise à la place de `IbanFrDetector`, qui reste exporté et inchangé. Tests d'abord (IBAN
+**générés**, jamais copiés : 38 pays en forme compacte et groupée, 5 rejets, 6 rouges d'intégration) ; banc inchangé octet
+pour octet ; core 212 et redact 945 tests, tous les paquets verts ; coût équivalent à la base (≤ +25 %, 6 entrées d'~1 Mo).
+**Vérification des longueurs** : 23 des 38 ont été recoupées avec des documents bancaires publics (liste consultée par
+recherche, 27 octobre 2026) ; CH, ES, SE, FO, GI, LI, LT, LV, MC, MT, RO, SI, SK, SM, VA n'ont pas pu l'être, le registre
+SWIFT (ISO 13616) n'étant pas joignable depuis l'environnement d'exécution ; elles sont reprises du registre de mémoire. Une
+longueur fausse entraînerait un IBAN **manqué**, jamais un faux positif (la clé reste exigée) : à confirmer par le
+mainteneur contre le registre. Luxembourg : 20 (trois sources) contre 19 dans une quatrième. **Non traité** : BIC/SWIFT,
+IBAN hors espace SEPA (Maroc, Algérie, Tunisie, Royaume-Uni hors SEPA…), IBAN coupé par un saut de ligne au milieu d'un groupe.
+
 **Noms en clés de données explicites et tableaux CSV à en-tête (P2-61).** Arbitrage du 27 octobre (question 7).
 *Clés* : `nom_patient`, `nom_famille`, `nom_naissance`, `nom_usage`, `nom_de_naissance`, `lastname`, `family_name`,
 `surname`, `firstname`, `given_name`, `prenom(s)` (snake_case, kebab-case ou camelCase) sont reconnues en JSON
