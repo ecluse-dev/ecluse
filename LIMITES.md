@@ -631,6 +631,21 @@ règle) concernent exclusivement des textes contenant un nom, dont les mentions 
 leur première écriture (fusion d'alias, voulue). **Non couvert** : un titre Markdown (« ## **Nom**… »), une
 étiquette entre crochets ou en tableau HTML, un lien (« [Nom](url) »).
 
+**Date de naissance derrière une clé de données (P2-52).** Sonde d'exports structurés : `{"date_naissance":
+"12/03/1950"}`, `dateNaissance = …`, `<dateNaissance>…</dateNaissance>`, `birth_date`, `dob`, `ddn` laissaient la
+date **en clair**, alors que `telephone`, `nir`, `iban` et `adresse` sont masqués par leur structure même.
+Le contexte de naissance accepte maintenant les clés `date_naissance`, `date-naissance`, `dateNaissance`,
+`date_de_naissance`, `birth_date`, `birthDate`, `date_of_birth`, `dob`, `ddn` et `naissance` (suivie de `:`, `=`
+ou `>`), avec des guillemets, des `=`, des `:` ou des `>` entre la clé et la valeur (JSON, YAML, XML, paramètres
+d'URL). Tests d'abord (18 rouges) ; banc inchangé octet pour octet ; 774 tests ; coût linéaire et identique à la
+base (≈ 4 µs par caractère pour une suite de « date_ »). Le contexte reste obligatoire et testé : `date_creation`,
+`date_naissance_projet`, `naissance_projet`, `dobby`, `update`, `date`, `ddns`, « la naissance du projet: … » et
+`"date_naissance": "inconnue"` ne sont pas des dates de naissance (9 contre-exemples). **Non traité (nom et
+prénom en clé de données)** : `{"nom": "Quenelle", "prenom": "Zorglub"}`, `nom: …`, `<nom>…</nom>`,
+`nom=…&prenom=…` ne sont pas détectés — un nom n'a pas de structure vérifiable et la clé « nom » est ambiguë
+(`"nom": "Aspirine"`) ; la règle P2-36 (« Nom : » + « Prénom » proche) ne couvre que la prose. Les en-têtes d'un
+CSV (« Nom;Prénom;Date de naissance⏎Quenelle;Zorglub;12/03/1950 ») ne sont pas non plus associés à leurs colonnes.
+
 
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
