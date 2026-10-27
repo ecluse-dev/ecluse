@@ -120,6 +120,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-54 | code | `ecluse_redact` : détecter le nom de signature sous une formule de clôture (`Cordialement,`) | P2-53 | fusionnée |
 | P2-55 | code | `ecluse_redact` : détecter le nom derrière une étiquette de rôle (`Patient :`, `Résident :`, `Médecin traitant :`…) | P2-54 | fusionnée |
 | P2-56 | code | `ecluse_redact` : détecter une adresse sans code postal (`12 rue des Lilas`) | P2-55 | fusionnée |
+| P2-57 | code | `ecluse_core`/`ecluse_redact` : type `identifiant` (dossier, IPP, passeport, CNI, plaque, IP) | P2-56 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1494,4 +1495,20 @@ Contexte : sonde d'adresses (27 octobre 2026) : « 12 rue des Lilas », « 27 bo
 - Mesure : 11 rouges → verts ; banc inchangé octet pour octet ; 861 tests.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Non traité : nom de voie en minuscules, ville seule, lieu-dit sans numéro.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-57 — Identifiants étiquetés : type `identifiant` (`code`)
+
+Contexte : sonde d'identifiants (27 octobre 2026) : IPP, n° de dossier, de patient, d'adhérent, passeport, CNI, plaque, adresse IP
+restaient en clair (17 sur 20), sans type d'entité pour les accueillir.
+
+- Tests d'abord (22 rouges, avant) ; 14 contre-exemples intacts ; restauration identique ; type exposé (`EntityType.identifiant`).
+- `ecluse_core` : valeur `identifiant` ajoutée à `EntityType` (seul changement du paquet, aucun détecteur).
+- `ecluse_redact` : `IdentifiantDetector` (étiquette obligatoire + valeur ressemblant à un identifiant ; plaque SIV sans étiquette),
+  jeton `IDENTIFIANT`, enregistré dans `defaultDetectors`.
+- Mesure : 22 rouges → verts ; banc inchangé octet pour octet ; core 168, redact 898, audit 34, ingest 121, reid 134,
+  reference 29, demo 37 tests verts ; coût linéaire (10 entrées pathologiques d'1 Mo).
+- Défaut préexistant, hors de cette tâche : « AB-123- » répété met ~47 s dès 140 Ko, avec ou sans cette règle (à instruire).
+- Aucune dépendance ajoutée.
+- Révocable : retirer `IdentifiantDetector` de `Ecluse.defaultDetectors`.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

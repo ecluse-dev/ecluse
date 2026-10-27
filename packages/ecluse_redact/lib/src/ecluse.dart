@@ -7,6 +7,7 @@ import 'heuristics/adresse_detector.dart';
 import 'heuristics/date_naissance_detector.dart';
 import 'heuristics/email_detector.dart';
 import 'heuristics/etablissement_detector.dart';
+import 'heuristics/identifiant_detector.dart';
 import 'heuristics/name_detector.dart';
 import 'heuristics/telephone_detector.dart';
 import 'redact_result.dart';
@@ -64,6 +65,8 @@ abstract final class Ecluse {
     LegacyDetectorAdapter(EmailDetector(), DetectorTier.pattern, name: 'email'),
     LegacyDetectorAdapter(EtablissementDetector(), DetectorTier.pattern,
         name: 'etablissement'),
+    LegacyDetectorAdapter(IdentifiantDetector(), DetectorTier.pattern,
+        name: 'identifiant'),
     SecretDetector(),
   ];
 
