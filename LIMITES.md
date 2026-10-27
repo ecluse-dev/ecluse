@@ -743,6 +743,17 @@ suivi d'un espace et de chiffres (« +32 475 12 34 56 78 ») est masqué sur sa 
 (choix prudent : masquer la partie reconnue plutôt que rien). Les longueurs par pays sont des plages usuelles, non
 une validation d'un plan de numérotation : un numéro réel hors plage serait manqué.
 
+**Un type par catégorie d'identifiant (P2-59).** Arbitrage du 27 octobre (question 1) : `identifiant` est scindé en
+quatre types, avec des jetons distincts — `identifiant` (`[IDENTIFIANT_n]` : dossier, patient, adhérent, allocataire,
+contrat, IPP/IEP), `pieceIdentite` (`[PIECE_IDENTITE_n]` : passeport, CNI, permis de conduire), `vehicule`
+(`[VEHICULE_n]` : plaque) et `reseau` (`[RESEAU_n]` : adresse IP). Le type `identifiant` est **conservé** pour la
+catégorie administrative : il existe depuis P2-57 et `ecluse_audit` refuse les types inconnus de son énumération,
+donc un journal déjà écrit avec ce nom reste lisible. Ajout de trois valeurs à `EntityType` (`ecluse_core`) : changement
+d'API publique, pas de retrait. Test d'abord (11 rouges), détections identiques à P2-57 (mêmes 22 + 14 cas) ; banc
+inchangé octet pour octet ; 902 tests (`ecluse_redact`), tous les paquets verts. Un même numéro n'a qu'un type : un
+passeport étiqueté et un n° de dossier identique en chiffres restent deux jetons, de types différents. **Non traité** :
+la pondération du risque ou le refus à l'aperçu par catégorie — la scission le permet, aucune règle n'est définie.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
