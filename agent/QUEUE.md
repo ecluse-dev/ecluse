@@ -119,6 +119,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-53 | code | `ecluse_redact` : détecter le nom d'un correspondant dans un en-tête de courriel (`De :`, `From:`, `… a écrit`) | P2-52 | fusionnée |
 | P2-54 | code | `ecluse_redact` : détecter le nom de signature sous une formule de clôture (`Cordialement,`) | P2-53 | fusionnée |
 | P2-55 | code | `ecluse_redact` : détecter le nom derrière une étiquette de rôle (`Patient :`, `Résident :`, `Médecin traitant :`…) | P2-54 | fusionnée |
+| P2-56 | code | `ecluse_redact` : détecter une adresse sans code postal (`12 rue des Lilas`) | P2-55 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1479,4 +1480,18 @@ laissaient le nom en clair quand le prénom n'est pas au gazetteer. Reprend sous
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Non traité : un seul mot après l'étiquette ; « Contact », « Tuteur », « Représentant légal », « Destinataire ».
 - Révocable : retirer `_etiquetteRole` de la boucle de `detect`.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-56 — Adresse sans code postal (`code`)
+
+Contexte : sonde d'adresses (27 octobre 2026) : « 12 rue des Lilas », « 27 boulevard Haussmann » restaient en clair
+(limite « adresse sans code postal » connue de `adresse_detector.dart`).
+
+- Tests d'abord (11 rouges, avant) ; 9 contre-exemples intacts ; restauration identique.
+- `adresse_detector.dart` : `_patternSansCodePostal` (numéro + type de voie + nom de 1 à 5 mots), en dernier, sans chevauchement
+  des adresses déjà retenues (recherche dichotomique, pas de balayage quadratique).
+- Test modifié : `adresse_multiligne` cas 4 attend maintenant deux adresses (voie, commune) au lieu d'une.
+- Mesure : 11 rouges → verts ; banc inchangé octet pour octet ; 861 tests.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Non traité : nom de voie en minuscules, ville seule, lieu-dit sans numéro.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

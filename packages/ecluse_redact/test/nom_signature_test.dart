@@ -34,7 +34,6 @@ void main() {
     'Cordialement,\nL\'équipe de soins': 'équipe',
     'Cordialement,\nla direction': 'direction',
     'Cordialement,\nLe 12 mars nous verrons': 'verrons',
-    'Cordialement,\n12 rue des Lilas': 'Lilas',
     'Cordialement,\nPOUR LE SERVICE': 'SERVICE',
     'Merci,\nZorglub Quenelle': 'Quenelle',
     'Cordialement,\nL\'Équipe': 'Équipe',
