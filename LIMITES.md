@@ -647,6 +647,18 @@ prénom en clé de données)** : `{"nom": "Quenelle", "prenom": "Zorglub"}`, `no
 CSV (« Nom;Prénom;Date de naissance⏎Quenelle;Zorglub;12/03/1950 ») ne sont pas non plus associés à leurs colonnes.
 
 
+**Nom d'un correspondant dans un en-tête de courriel (P2-53).** Sonde : « From: Zorglub Quenelle <z@exemple.fr> »,
+« De : Quenelle, Zorglub <…> », « Le 12 mars, Zorglub Quenelle <…> a écrit : » ne masquaient que l'adresse quand
+le prénom n'est pas au gazetteer (11 cas rouges). Deux structures sont maintenant reconnues : une étiquette
+d'en-tête en début de ligne (`De`, `From`, `À`, `To`, `Cc`, `Cci`, `Bcc`, `Expéditeur`, `Destinataire`, `Reply-To`,
+citée ou non par `>`) suivie d'un nom de 1 à 3 mots puis de `<` (« Nom, Prénom » et guillemets tolérés) ; ou un nom
+devant `<adresse>` suivi de « a écrit », « wrote », « ha scritto » ou « schrieb ». Banc inchangé octet pour octet ;
+coût identique à la base sur 7 entrées pathologiques de 0,5 à 1 Mo. Contre-exemples intacts (5) : « Service
+Qualité <…> » (mot-clé d'établissement), « De : <…> », « Voir la note <…> » (pas d'étiquette), minuscules.
+**Non traité** : nom seul sur une ligne de signature (« Cordialement,⏎Zorglub Quenelle »), second destinataire d'une
+liste (« À : A <a@…>, B <b@…> » : seul le premier est reconnu), nom d'affichage sans chevrons (« De : Zorglub
+Quenelle ») ; un nom de service hors liste des mots-clés devant `<…>` après « De : » est masqué à tort.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,

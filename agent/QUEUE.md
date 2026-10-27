@@ -116,6 +116,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-50 | code | `ecluse_redact` : borner la recherche de la fiche « Prénom » pour supprimer un coût quadratique sur « Nom : » répété | P2-49 | fusionnée |
 | P2-51 | code | `ecluse_redact` : détecter les valeurs derrière des étiquettes décorées en Markdown ou HTML (« **Nom :** », « <b>Né le</b> ») | P2-50 | fusionnée |
 | P2-52 | code | `ecluse_redact` : détecter une date de naissance derrière une clé de données (`date_naissance`, `dateNaissance`, `dob`, `ddn`…) | P2-51 | fusionnée |
+| P2-53 | code | `ecluse_redact` : détecter le nom d'un correspondant dans un en-tête de courriel (`De :`, `From:`, `… a écrit`) | P2-52 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1437,4 +1438,17 @@ Contexte : sonde d'exports structurés (27 octobre 2026) : `{"date_naissance": "
 - Mesure : 18 rouges → verts ; banc inchangé octet pour octet ; 774 tests ; coût identique à la base.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Non traité : nom et prénom en clé de données (clé ambiguë), colonnes d'un CSV à en-tête.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-53 — Nom d'un correspondant dans un en-tête de courriel (`code`)
+
+Contexte : sonde d'en-têtes et de signatures (27 octobre 2026) : « From: Zorglub Quenelle <z@exemple.fr> » ne masquait
+que l'adresse quand le prénom n'est pas au gazetteer.
+
+- Tests d'abord (11 rouges, avant) ; 5 contre-exemples intacts ; restauration identique.
+- `name_detector.dart` : `_enteteMail` (étiquette d'en-tête en début de ligne + nom + `<`) et `_aEcrit` (nom + `<adresse>`
+  + « a écrit »/« wrote »), mots-clés d'établissement exclus.
+- Mesure : 11 rouges → verts ; banc inchangé octet pour octet ; 790 tests ; coût identique à la base.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Non traité : signatures, destinataires suivants d'une liste, nom d'affichage sans chevrons.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
