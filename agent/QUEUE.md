@@ -123,8 +123,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-57 | code | `ecluse_core`/`ecluse_redact` : type `identifiant` (dossier, IPP, passeport, CNI, plaque, IP) | P2-56 | fusionnée |
 | P2-58 | code | `ecluse_redact` : coût cubique d'un mot composé très long (régression de P2-53) | P2-56 | fusionnée |
 | P2-59 | code | `ecluse_core`/`ecluse_redact` : scinder le type `identifiant` par catégorie (dossier, document d'identité, véhicule, réseau) | P2-58 | fusionnée |
-| P2-60 | code | `ecluse_redact` : téléphones étrangers (pays voisins et Maghreb) | P2-59 | PR ouverte |
-| P2-61 | code | `ecluse_redact` : noms en clés de données explicites et CSV à en-tête | P2-60 | à faire |
+| P2-60 | code | `ecluse_redact` : téléphones étrangers (pays voisins et Maghreb) | P2-59 | fusionnée |
+| P2-61 | code | `ecluse_redact` : noms en clés de données explicites et CSV à en-tête | P2-60 | PR ouverte |
 | P2-62 | code | `ecluse_core` : IBAN de l'espace SEPA avec clé mod 97 | P2-61 | à faire |
 | P2-63 | code | `ecluse_redact` : tableaux HTML et titres Markdown dans la vue de détection | P2-62 | à faire |
 | P2-64 | code | `ecluse_redact` : coût linéaire de la résolution des pseudonymes au-delà de 50 000 mentions | P2-63 | à faire |
@@ -1562,4 +1562,15 @@ Contexte : arbitrage du 27 octobre (question 1) : `identifiant` scindé en caté
 - `ecluse_redact` : `IdentifiantDetector` choisit le type d'après l'étiquette ; jetons dans `tokenizer.dart`.
 - Mesure : 11 rouges → verts ; banc inchangé octet pour octet ; core 168, redact 902, audit 34, ingest 121, reid 134, reference 29, demo 37 tests verts.
 - Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-61 — Noms en clés de données explicites et tableaux CSV à en-tête (`code`)
+
+Contexte : arbitrage du 27 octobre (question 7) : clés explicites et CSV à en-tête, avec refus explicite si le CSV est ambigu ; la clé nue « nom » reste exclue.
+
+- Tests d'abord (21 + 23 rouges) ; 17 contre-exemples de clés et 7 non-tableaux intacts ; 4 refus explicites ; restauration identique.
+- `name_detector.dart` : `_cleDonneeLax` (JSON, XML, paramètres : casse libre, 1 à 4 mots) et `_cleDonneePlain` (`cle: Valeur`, majuscule initiale) ; valeurs vides ou booléennes exclues.
+- `tableau_csv.dart` : `cellulesDeNoms` (en-tête reconnu, cellules des colonnes de noms) et `TableauAmbiguException` (ligne et motif, jamais le contenu).
+- Mesure : tests rouges → verts ; banc inchangé octet pour octet ; 962 tests ; coût linéaire hors résolution des pseudonymes (100 000 cellules de noms : 29 s, voir P2-64).
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
