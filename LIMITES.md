@@ -728,6 +728,21 @@ P2-53 : 5 ms (le défaut venait bien de cette règle). Banc inchangé octet pour
 de P2-53, P2-54 et P2-55 ont été mesurés sur les mêmes entrées : linéaires. Leçon de méthode : la batterie de coût
 de P2-53 ne contenait aucun mot composé ; elle en contient maintenant.
 
+**Téléphones étrangers : voisins et Maghreb (P2-60).** Arbitrage du 27 octobre (question 5). Un correspondant à
+l'étranger (`+32 475 12 34 56`, `0032…`, `+41 (0)79 123 45 67`) restait en clair. Sont maintenant masqués les numéros de
+Belgique (+32), Suisse (+41), Luxembourg (+352), Allemagne (+49), Espagne (+34), Italie (+39), Royaume-Uni (+44),
+Maroc (+212), Algérie (+213) et Tunisie (+216), avec l'indicatif **obligatoire** (`+cc`, `(+cc)` ou `00cc`), le `(0)`
+facultatif, tous les séparateurs déjà admis, et un **nombre de chiffres propre au pays** (par exemple 9 pour la
+Suisse, 8 pour la Tunisie, 8 à 13 pour l'Allemagne). Tests d'abord (25 rouges) ; 10 contre-exemples intacts (numéro
+trop court ou trop long, pays non couvert, `+1 202 555 0143`, indicatif sans `+`). Un test existant a changé
+d'attendu : « 0044 20 7946 0958 » était rejeté comme « préfixe 00 non FR » ; il est maintenant détecté, et le
+rejet porte sur « 001 202 555 0143 » (États-Unis). Banc inchangé octet pour octet ; 937 tests ; coût linéaire sur
+7 entrées pathologiques de 0,8 à 0,9 Mo (2,2 à 6,1 s). **Non traité** : les autres pays (États-Unis, Canada, reste de
+l'Afrique, Asie, Europe de l'Est…), les numéros sans indicatif écrits à la locale du pays, les extensions. Un numéro
+suivi d'un espace et de chiffres (« +32 475 12 34 56 78 ») est masqué sur sa partie valide, le reste restant en clair
+(choix prudent : masquer la partie reconnue plutôt que rien). Les longueurs par pays sont des plages usuelles, non
+une validation d'un plan de numérotation : un numéro réel hors plage serait manqué.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
