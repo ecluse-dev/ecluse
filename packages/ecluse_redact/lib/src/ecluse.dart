@@ -50,7 +50,7 @@ abstract final class Ecluse {
     LegacyDetectorAdapter(NirDetector(), DetectorTier.structural, name: 'nir'),
     LegacyDetectorAdapter(RppsDetector(), DetectorTier.structural,
         name: 'rpps'),
-    LegacyDetectorAdapter(IbanFrDetector(), DetectorTier.structural,
+    LegacyDetectorAdapter(IbanDetector(), DetectorTier.structural,
         name: 'iban'),
     LegacyDetectorAdapter(InsDetector(), DetectorTier.structural, name: 'ins'),
     FinessDetector(),
