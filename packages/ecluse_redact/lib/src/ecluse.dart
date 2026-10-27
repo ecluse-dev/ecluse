@@ -351,7 +351,11 @@ int _versAscii(int c) {
   }
   final coupures = _coupuresDeLigne.allMatches(vue).toList();
   final cles = _cleNommee.allMatches(vue).toList();
-  if (coupures.isEmpty && cles.isEmpty && !_invisibles.hasMatch(vue)) {
+  final decorations = _decorations.allMatches(vue).toList();
+  if (coupures.isEmpty &&
+      cles.isEmpty &&
+      decorations.isEmpty &&
+      !_invisibles.hasMatch(vue)) {
     return (vue, null);
   }
   // Les caractères d'une coupure sont retirés comme les invisibles, sauf un
@@ -380,6 +384,12 @@ int _versAscii(int c) {
       retires.add(i);
     }
   }
+  // Marques de gras, d'italique et de code (P2-51) : retirées de la vue.
+  for (final m in decorations) {
+    for (var i = m.start; i < m.end; i++) {
+      retires.add(i);
+    }
+  }
   final sb = StringBuffer();
   final positions = <int>[];
   for (var i = 0; i < unites.length; i++) {
@@ -397,6 +407,19 @@ int _versAscii(int c) {
 /// n'est pas touché, donc aucun span de texte ne traverse une ligne.
 final RegExp _coupuresDeLigne =
     RegExp(r'(?<=[0-9/.\-])[ \t]*\r?\n[ \t]*(?=[0-9])');
+
+/// Marques de mise en forme Markdown ou HTML autour d'une étiquette (P2-51) :
+/// `**Nom :** Quenelle`, `*Nom* : Quenelle`, `` `Nom` : …``, `<b>Nom :</b>`.
+/// Une suite de marques (`*`, `_`, `` ` ``, p. ex. `**` ou `__`) d'ouverture n'est
+/// retirée que devant un mot et hors d'un mot ; une suite de fermeture seulement
+/// après un mot ou une ponctuation et hors d'un mot. Un soulignement ou une étoile
+/// **à l'intérieur** d'un mot (`jean_dupont`, `[NOM_1]`) et une opération
+/// (`3 * 4`) ne sont jamais touchés. Classe de caractères plutôt que des
+/// alternatives `\*\*|\*` répétées : ces dernières se recouvrent et donnaient un
+/// retour arrière exponentiel (50 000 étoiles : 51 s).
+final RegExp _decorations = RegExp(r'(?<![\wÀ-ÿ*_`])[*_`]+(?=[\wÀ-ÿ])'
+    r'|(?<=[\wÀ-ÿ.,;:!?)\]])[*_`]+(?![\wÀ-ÿ*_`])'
+    r'|</?(?:b|i|u|em|strong)>');
 
 /// Clé de contrôle nommée à part (P2-42) : après un chiffre, « clé », « cle » ou
 /// « clef » (avec `(` et `:` facultatifs) puis deux chiffres. Neutralisée dans la

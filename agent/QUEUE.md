@@ -114,6 +114,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-48 | code | `ecluse_redact` : supprimer le coût quadratique de la détection de noms sur un texte à milliers de mentions | P2-47 | fusionnée |
 | P2-49 | code | `ecluse_redact` : reconnaître les types de voie « sentier », « ruelle », « clos »… et les abréviations « R. », « pl. », « ch. » | P2-48 | fusionnée |
 | P2-50 | code | `ecluse_redact` : borner la recherche de la fiche « Prénom » pour supprimer un coût quadratique sur « Nom : » répété | P2-49 | fusionnée |
+| P2-51 | code | `ecluse_redact` : détecter les valeurs derrière des étiquettes décorées en Markdown ou HTML (« **Nom :** », « <b>Né le</b> ») | P2-50 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1404,5 +1405,20 @@ ligne prenait 43,6 s ; le détecteur de noms seul en prenait la presque totalit�
   sauts de ligne (au lieu de `indexOf` sur tout le reste du texte).
 - Mesure : 43,6 s → 1,8 s ; fuzz différentiel de 2 000 textes identique avant/après ; banc inchangé octet
   pour octet ; 718 tests.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-51 — Étiquettes décorées en Markdown ou en HTML (`code`)
+
+Contexte : sonde de 16 présentations (27 octobre 2026) : « **Date de naissance :** 12/03/1950 », « **Nom :** Quenelle »,
+« **Né le** 12/03/1950 » laissaient la valeur en clair.
+
+- Tests d'abord (17 rouges, avant) ; 5 contre-exemples (`jean_dupont`, `3 * 4`, `__init__`, gras ordinaire, jetons
+  `[NOM_1]`) intacts ; restauration identique ; 6 tests de coût (200 000 marques en moins de 10 s).
+- `ecluse.dart` : `_vueDeDetection` retire les marques d'emphase (`_decorations`) ; classe de caractères sans
+  alternatives qui se recouvrent (une première version avait un retour arrière exponentiel : 50 000 étoiles,
+  51 s).
+- Mesure : 17 rouges → verts ; banc inchangé octet pour octet ; 747 tests ; 1 Mo d'étoiles en 1,6 s ;
+  aller-retour exact sur 3 000 textes aléatoires sans nom.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
