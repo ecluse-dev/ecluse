@@ -587,6 +587,18 @@ caractères n'est plus reconnu en entier derrière un prénom ; un coût superli
 de ~10 000 mentions identiques d'un même texte (hors du détecteur de noms : la résolution des jetons), à
 traiter si un cas réel l'exige.
 
+**Types de voie et abréviations (P2-49).** Sonde de 26 adresses : « 25 R. de la Paix, 75002 Paris »,
+« 3 pl. de la Bastille, 75004 Paris » et « 14 sentier des Roses, 44000 Nantes » ne masquaient que « code postal
++ commune » et laissaient le **numéro et le nom de rue en clair** (les types « r », « pl », « sentier » n'étaient
+pas reconnus). Sont ajoutés : « sentier », « ruelle », « traverse », « venelle », « parvis », « promenade »,
+« montée », « clos » et les abréviations « r », « pl », « ch », « imp », « all », « sq », « crs » (point facultatif).
+Tests d'abord (17 rouges) ; banc inchangé octet pour octet ; 715 tests ; coût linéaire. Le code postal + commune
+reste obligatoire en fin de motif : « Le 25 R de la table », « Chapitre 3 pl. de la liste », « Il a fait 6 clos de la
+saison », « Page 6 ch. 3 » restent intacts (5 contre-exemples testés). **Restent non couverts** : « Rond-point »,
+« Cour », « Mail », « Domaine », « Résidence » (complément d'adresse), « Cedex 03 » (le suffixe reste en clair, sans
+valeur identifiante), une adresse sans code postal (« 12 rue des Lilas »), « Paris 11e ». Les abréviations d'une
+lettre (« R ») ne sont reconnues que suivies d'un nom puis d'un code postal et d'une commune.
+
 
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 

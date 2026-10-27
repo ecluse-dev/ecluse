@@ -55,6 +55,23 @@ final class AdresseDetector implements EntityDetector {
     'bvd',
     'rte',
     'fbg',
+    'r',
+    'pl',
+    'ch',
+    'imp',
+    'all',
+    'sq',
+    'crs',
+    // Autres types de voie (P2-49).
+    'sentier',
+    'ruelle',
+    'traverse',
+    'venelle',
+    'parvis',
+    'promenade',
+    'montée',
+    'montee',
+    'clos',
   ];
 
   /// `code postal (5 chiffres) + commune`, réutilisé tel quel comme fin du
