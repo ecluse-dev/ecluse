@@ -762,8 +762,8 @@ LV, MC, MT, NL, NO, PL, PT, RO, SE, SI, SK, SM, VA — avec la **longueur propre
 `Ecluse.defaultDetectors` l'utilise à la place de `IbanFrDetector`, qui reste exporté et inchangé. Tests d'abord (IBAN
 **générés**, jamais copiés : 38 pays en forme compacte et groupée, 5 rejets, 6 rouges d'intégration) ; banc inchangé octet
 pour octet ; core 212 et redact 945 tests, tous les paquets verts ; coût équivalent à la base (≤ +25 %, 6 entrées d'~1 Mo).
-**Vérification des longueurs** : 24 des 38 ont été recoupées avec des documents bancaires publics (liste consultée par
-recherche, 27 octobre 2026) ; CH, ES et SE, FO, GI, LI, LT, LV, MC, MT, RO, SI, SK, SM, VA n'ont pas pu l'être, le registre
+**Vérification des longueurs** : 23 des 38 ont été recoupées avec des documents bancaires publics (liste consultée par
+recherche, 27 octobre 2026) ; CH, ES, SE, FO, GI, LI, LT, LV, MC, MT, RO, SI, SK, SM, VA n'ont pas pu l'être, le registre
 SWIFT (ISO 13616) n'étant pas joignable depuis l'environnement d'exécution ; elles sont reprises du registre de mémoire. Une
 longueur fausse entraînerait un IBAN **manqué**, jamais un faux positif (la clé reste exigée) : à confirmer par le
 mainteneur contre le registre. Luxembourg : 20 (trois sources) contre 19 dans une quatrième. **Non traité** : BIC/SWIFT,

@@ -102,7 +102,7 @@ final class IbanFrDetector implements EntityDetector {
 /// table (États-Unis, Maroc…) n'est jamais détecté ; le BIC n'est pas traité
 /// (pas de clé, trop de faux positifs).
 ///
-/// Les longueurs sont celles du registre IBAN (ISO 13616) ; 24 sur 38 ont été
+/// Les longueurs sont celles du registre IBAN (ISO 13616) ; 23 sur 38 ont été
 /// recoupées avec des documents bancaires publics, les autres sont reprises du
 /// registre (voir `LIMITES.md`). Une longueur fausse entraînerait un IBAN
 /// manqué, jamais un faux positif : la clé de contrôle reste exigée.
