@@ -126,7 +126,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-60 | code | `ecluse_redact` : téléphones étrangers (pays voisins et Maghreb) | P2-59 | fusionnée |
 | P2-61 | code | `ecluse_redact` : noms en clés de données explicites et CSV à en-tête | P2-60 | fusionnée |
 | P2-62 | code | `ecluse_core` : IBAN de l'espace SEPA avec clé mod 97 | P2-61 | fusionnée |
-| P2-63 | code | `ecluse_redact` : tableaux HTML et titres Markdown dans la vue de détection | P2-62 | PR ouverte |
+| P2-63 | code | `ecluse_redact` : tableaux HTML et titres Markdown dans la vue de détection | P2-62 | fusionnée |
 | P2-64 | code | `ecluse_redact` : coût linéaire de la résolution des pseudonymes au-delà de 50 000 mentions | P2-63 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
@@ -1600,3 +1600,14 @@ Contexte : arbitrage du 27 octobre (question 9) : tableaux HTML et titres Markdo
 - Mesure : 9 rouges → verts ; banc inchangé octet pour octet ; 1022 tests ; 10 entrées d'~1 Mo en 0,3 à 1,9 s.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-64 — état des lieux (travail inachevé, branche `claude/p2-64-resolution-lineaire`, sans PR)
+
+- Mesure : 10 000 noms **distincts** (110 Ko) = 43 s ; 10 000 mentions d'un **même** nom = 0,6 s ; 5 000 « Marie X » = 13,5 s. Le coût dépend du nombre
+  d'identités distinctes, non du nombre de mentions. La détection ne coûte que 0,5 s : tout est dans la résolution.
+- Tentative 1 (faite, insuffisante) : index des identités par segment (`candidats`), au lieu de comparer chaque mention à toutes les identités ;
+  10 000 noms distincts : 43 s → 36 s. Ce n'est donc **pas** la cause principale.
+- Suspect suivant, non encore mesuré : `_freshToken` compile et applique `tolerantTokenPattern(jeton)` sur **tout le texte** pour chaque nouveau jeton
+  (10 000 jetons × 110 Ko). Piste : relever une fois les segments `[...]` du texte (comme `jetonsLitteraux`) et ne tester que ceux-ci.
+- Méthode à reprendre : profiler d'abord (une phase à la fois), puis correction, puis fuzz différentiel (script `fuzz` : 300 graines × 2 règles × 3
+  documents, sortie de référence calculée sur `main`), puis test de coût (`cout_noms_distincts_test.dart`, déjà écrit, rouge).
