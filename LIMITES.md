@@ -605,8 +605,10 @@ en chronométrant le détecteur seul (0 entité détectée, coût quadratique) :
 ligne avec `indexOf('\n', …)` dans **tout le reste du texte** à chaque occurrence. La recherche se fait maintenant
 dans une fenêtre de 300 caractères extraite d'abord. Mesure après : 1,8 s (24 fois plus vite). Équivalence vérifiée :
 2 000 textes aléatoires (graine 99, étiquettes Nom/Prénom, sauts de ligne, ponctuation) donnent exactement les mêmes
-sorties avant et après ; banc inchangé octet pour octet ; 718 tests. Tests de non-régression ajoutés (60 000
-répétitions de trois étiquettes, moins de 4 s). **Reste mesuré, non traité** : le coût superlinéaire de la résolution
+sorties avant et après ; banc inchangé octet pour octet ; 718 tests. Tests de non-régression ajoutés (160 000 « Nom : »
+et 64 000 « Nom : Aspirine », moins de 15 s : 43 s et plus avant la correction ; une première borne de 4 s,
+posée sur 60 000 répétitions, était trop serrée pour l'exécuteur d'intégration continue — 4,09 s — et a été
+remplacée). **Reste mesuré, non traité** : le coût superlinéaire de la résolution
 des jetons au-delà de ~50 000 mentions de noms dans un même texte (« née Dupont » ×90 000 : 18 s pour 990 Ko ;
 « Prénom : » ×110 000 : 9 s), hors de la détection ; irréaliste pour un document ordinaire, noté pour mémoire.
 

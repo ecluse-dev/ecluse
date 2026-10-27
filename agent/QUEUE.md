@@ -1398,8 +1398,8 @@ rue en clair (seul « code postal + commune » était masqué).
 Contexte : sonde de robustesse sur 16 textes d'environ 1 Mo (27 octobre 2026) : « Nom : » répété 160 000 fois sans saut de
 ligne prenait 43,6 s ; le détecteur de noms seul en prenait la presque totalité pour 0 entité.
 
-- Tests d'abord (2 rouges, avant) : 60 000 répétitions de « Nom : », « Nom : Aspirine » et « Nom de naissance : »
-  en moins de 4 s.
+- Tests d'abord (2 rouges, avant) : 160 000 « Nom : » et 64 000 « Nom : Aspirine » en moins de 15 s (borne
+  large pour l'intégration continue ; 43 s et plus avant la correction).
 - `name_detector.dart` : `_fichePrenomSuit` extrait d'abord la fenêtre de 300 caractères puis y cherche les
   sauts de ligne (au lieu de `indexOf` sur tout le reste du texte).
 - Mesure : 43,6 s → 1,8 s ; fuzz différentiel de 2 000 textes identique avant/après ; banc inchangé octet
