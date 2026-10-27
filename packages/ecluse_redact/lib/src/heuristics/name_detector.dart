@@ -199,6 +199,36 @@ final class NameDetector implements EntityDetector {
     r'(?:a[ \t]+[ée]crit|wrote|ha[ \t]+scritto|schrieb)',
   );
 
+  /// Formules de clôture d'un courrier (P2-54). Le nom de signature est la
+  /// ligne qui suit : la structure, non le prénom, désigne la personne.
+  static const List<String> _formulesCloture = [
+    'cordialement', 'bien cordialement', 'très cordialement',
+    'cordialement vôtre', 'bien à vous', 'bien à toi', 'bonne journée',
+    'bonne soirée', 'bonne continuation', 'respectueusement',
+    'respectueuses salutations', 'salutations distinguées',
+    'sincères salutations', 'amicalement', 'bien amicalement', 'cdt',
+    'best regards', 'kind regards', 'regards', 'sincerely', //
+  ];
+
+  /// Début de ligne de signature qui désigne une structure, non une personne.
+  static const List<String> _motsStructure = [
+    'Service', 'SERVICE', 'Pôle', 'Direction', 'DIRECTION', 'Équipe',
+    'Équipes', 'Secrétariat', 'Cabinet', 'Unité', 'Département', 'Association',
+    'Société', 'Mairie', 'Pour', 'POUR', 'Mon', 'Ma', //
+  ];
+
+  /// Nom seul sur la ligne qui suit une formule de clôture (1 à 3 mots en
+  /// majuscule initiale, jamais un article élidé ni un mot-clé
+  /// d'établissement), une ligne vide tolérée entre les deux.
+  static final RegExp _signature = RegExp(
+    '^[ \\t>]*(?:${_formulesCloture.map((f) => '[${f[0].toUpperCase()}${f[0]}]${f.substring(1)}').join('|')})'
+    '$_h*[,.!]?$_h*\\r?\\n(?:$_h*\\r?\\n)?$_h*'
+    "(?![Ll]['\u2019])"
+    '(?!(?:${[...etablissementKeywords, ..._motsStructure].join('|')})\\b)'
+    '($_unite(?:$_h+$_unite){0,2})$_h*\\r?\$',
+    multiLine: true,
+  );
+
   static final RegExp _prenomChamp = RegExp(r'\b(?:Pr[ée]nom|PR[ÉE]NOM)\b');
 
   /// Fenêtre de recherche de « Prénom » après un « Nom : » seul : fin de la
@@ -365,9 +395,20 @@ final class NameDetector implements EntityDetector {
     }
 
     // Nom d'un correspondant dans un en-tête de courriel (P2-53).
-    for (final (re, enTete) in [(_enteteMail, true), (_aEcrit, false)]) {
+    for (final (re, enTete) in [
+      (_enteteMail, true),
+      (_aEcrit, false),
+      (_signature, true)
+    ]) {
       for (final match in re.allMatches(text)) {
         final name = match.group(1)!;
+        // Signature : trois mots tout en majuscules (« POUR LE SERVICE »)
+        // sont une mention, non un nom.
+        if (identical(re, _signature) &&
+            name == name.toUpperCase() &&
+            name.split(RegExp(r'\s+')).length > 2) {
+          continue;
+        }
         // L'étiquette précède le nom (dernière occurrence : « De : D ») ; la
         // forme « a écrit » commence par le nom.
         final start = enTete
