@@ -171,6 +171,35 @@ final class AdresseDetector implements EntityDetector {
 
   static final RegExp _codePostalCommuneOnly = RegExp(_codePostalCommune);
 
+  /// Types de voie reconnus **sans code postal** (P2-56) : en toutes lettres
+  /// ou abréviations d'au moins deux lettres sans autre sens courant. « r »,
+  /// « pl », « ch », « all », « sq », « crs », « imp » en sont exclus : après un
+  /// nombre, ils désignent des chambres, des places ou des chapitres.
+  static const _voiesSansCodePostal = [
+    'rue', 'avenue', 'boulevard', 'chemin', 'impasse', 'allée', 'allee',
+    'place', 'route', 'quai', 'square', 'passage', 'cours', 'lotissement',
+    'chaussée', 'chaussee', 'faubourg', 'esplanade', 'villa', 'hameau', //
+    'cité', 'cite', 'av', 'bd', 'bvd', 'rte', 'fbg', 'sentier', 'ruelle',
+    'traverse', 'venelle', 'parvis', 'promenade', 'montée', 'montee', 'clos',
+  ];
+
+  /// Mot d'un nom de voie : majuscule initiale ou nombre (« rue du 8 Mai »).
+  static const String _motVoie = "(?:[A-ZÀ-ÖØ-Þ][\\wÀ-ÿ'’-]*|\\d{1,4})";
+
+  static const String _particuleVoie =
+      "(?:(?:de|du|des|la|le|les|aux|sur|en|von|van)[ \\t]+|[dl]['’])";
+
+  /// Adresse sans code postal : numéro + type de voie + nom de voie de 1 à 5
+  /// mots en majuscule initiale (particules en minuscules tolérées). Le nom en
+  /// minuscules (« 12 place disponible », « 3 chemin de fer ») n'est jamais une
+  /// adresse. Confiance 0.55 : aucune validation possible.
+  static final RegExp _patternSansCodePostal = RegExp(
+    '(?<![\\wÀ-ÿ])$_numero$_h*,?$_h*'
+    '(?:${_voiesSansCodePostal.map(_ci).join('|')})\\.?$_h+'
+    '(?:$_particuleVoie)*$_motVoie'
+    '(?:[ \\t-]+(?:$_particuleVoie)*$_motVoie){0,4}',
+  );
+
   /// Unités de mesure courantes (SI et posologie clinique) — un nombre à 5
   /// chiffres suivi d'une unité (« 10000 UI », « 20000 ML ») a exactement
   /// la même forme syntaxique qu'un code postal suivi d'une commune, mais
@@ -201,6 +230,22 @@ final class AdresseDetector implements EntityDetector {
   static bool _communeStartsWithUppercase(RegExpMatch match) {
     final commune = match.namedGroup('commune');
     return commune != null && _uppercaseFirstLetter.hasMatch(commune);
+  }
+
+  static bool _chevauche(List<_Range> tries, int start, int end) {
+    var lo = 0;
+    var hi = tries.length;
+    while (lo < hi) {
+      final mid = (lo + hi) >> 1;
+      if (tries[mid].start < end) {
+        lo = mid + 1;
+      } else {
+        hi = mid;
+      }
+    }
+    // `lo` : premier intervalle commençant à `end` ou après ; les précédents
+    // sont disjoints et triés, seul le dernier peut déborder sur `start`.
+    return lo > 0 && tries[lo - 1].end > start;
   }
 
   @override
@@ -243,6 +288,24 @@ final class AdresseDetector implements EntityDetector {
         ),
       );
       claimed.add(_Range(start, end));
+    }
+
+    // Adresse sans code postal (P2-56), en dernier : une adresse complète déjà
+    // reconnue la contient. Intervalles déjà retenus triés (disjoints par
+    // construction), recherche dichotomique plutôt que balayage.
+    final retenus = [...claimed]..sort((a, b) => a.start - b.start);
+    for (final match in _patternSansCodePostal.allMatches(text)) {
+      if (_chevauche(retenus, match.start, match.end)) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.adresse,
+          start: match.start,
+          end: match.end,
+          value: match.group(0)!,
+          confidence: 0.55,
+        ),
+      );
+      claimed.add(_Range(match.start, match.end));
     }
 
     for (final match in _codePostalCommuneOnly.allMatches(text)) {
