@@ -125,8 +125,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-59 | code | `ecluse_core`/`ecluse_redact` : scinder le type `identifiant` par catégorie (dossier, document d'identité, véhicule, réseau) | P2-58 | fusionnée |
 | P2-60 | code | `ecluse_redact` : téléphones étrangers (pays voisins et Maghreb) | P2-59 | fusionnée |
 | P2-61 | code | `ecluse_redact` : noms en clés de données explicites et CSV à en-tête | P2-60 | fusionnée |
-| P2-62 | code | `ecluse_core` : IBAN de l'espace SEPA avec clé mod 97 | P2-61 | PR ouverte |
-| P2-63 | code | `ecluse_redact` : tableaux HTML et titres Markdown dans la vue de détection | P2-62 | à faire |
+| P2-62 | code | `ecluse_core` : IBAN de l'espace SEPA avec clé mod 97 | P2-61 | fusionnée |
+| P2-63 | code | `ecluse_redact` : tableaux HTML et titres Markdown dans la vue de détection | P2-62 | PR ouverte |
 | P2-64 | code | `ecluse_redact` : coût linéaire de la résolution des pseudonymes au-delà de 50 000 mentions | P2-63 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
@@ -1583,5 +1583,20 @@ Contexte : arbitrage du 27 octobre (question 7) : clés explicites et CSV à en-
 - `name_detector.dart` : `_cleDonneeLax` (JSON, XML, paramètres : casse libre, 1 à 4 mots) et `_cleDonneePlain` (`cle: Valeur`, majuscule initiale) ; valeurs vides ou booléennes exclues.
 - `tableau_csv.dart` : `cellulesDeNoms` (en-tête reconnu, cellules des colonnes de noms) et `TableauAmbiguException` (ligne et motif, jamais le contenu).
 - Mesure : tests rouges → verts ; banc inchangé octet pour octet ; 962 tests ; coût linéaire hors résolution des pseudonymes (100 000 cellules de noms : 29 s, voir P2-64).
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-63 — Tableaux HTML et titres Markdown dans la vue de détection (`code`)
+
+Contexte : arbitrage du 27 octobre (question 9) : tableaux HTML et titres Markdown.
+
+- Mesure d'abord : sur 16 présentations, les titres Markdown (`## Date de naissance⏎12/03/1950`, `### Né le …`) étaient **déjà** traités ;
+  `## Nom : Quenelle` reste en clair à cause de la règle « Nom » seul (fiche d'identité requise), non du titre. Les fuites réelles
+  sont les balises HTML entre l'étiquette et la valeur et `&nbsp;`.
+- Tests d'abord (9 rouges sur 21) ; 6 contre-exemples intacts ; restauration identique.
+- `ecluse.dart` : `_vueDeDetection` retire les balises de structure sans attribut libre et pose un séparateur ; `_champNom`, `_champPrenom`,
+  date et identifiants lisent U+001F comme `:` ; `tableau_csv.dart` lit U+001E/U+001F comme séparateur de colonnes.
+- Vérification de mes propres affirmations : deux défauts trouvés et corrigés (sauts de ligne réels entre `<tr>` qui coupaient le tableau ; première ligne à cellule fusionnée silencieusement non lue, désormais refus explicite).
+- Mesure : 9 rouges → verts ; banc inchangé octet pour octet ; 1022 tests ; 10 entrées d'~1 Mo en 0,3 à 1,9 s.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
