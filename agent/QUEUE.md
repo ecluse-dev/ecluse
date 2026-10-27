@@ -112,6 +112,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-46 | code | `ecluse_redact` : reconnaître « Professeure », « Docteure », « Dre », « Ms », « Mgr », « Abbé » comme civilités | P2-45 | fusionnée |
 | P2-47 | code | `ecluse_redact` : reconnaître les particules da, dos, di, del, ben, bin, bint, ibn, ter, ten, zu, af dans un nom | P2-46 | fusionnée |
 | P2-48 | code | `ecluse_redact` : supprimer le coût quadratique de la détection de noms sur un texte à milliers de mentions | P2-47 | fusionnée |
+| P2-49 | code | `ecluse_redact` : reconnaître les types de voie « sentier », « ruelle », « clos »… et les abréviations « R. », « pl. », « ch. » | P2-48 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1375,5 +1376,18 @@ détecteur de noms seul en prenait 6.
 - Mesure : 4 000 mentions 11 s → 0,5 s ; 32 000 : 39 s → 13 s ; fuzz différentiel de 1 500 textes
   identique avant/après ; banc inchangé octet pour octet ; 674 tests.
 
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-49 — Types de voie et abréviations (`code`)
+
+Contexte : sonde de 26 adresses (27 octobre 2026) : « 25 R. de la Paix, 75002 Paris » laissait le numéro et le nom de
+rue en clair (seul « code postal + commune » était masqué).
+
+- Tests d'abord (17 rouges, avant) ; 5 contre-exemples sans code postal ou hors adresse intacts ;
+  restauration identique.
+- `adresse_detector.dart` : `_voies` étendue (sentier, ruelle, traverse, venelle, parvis, promenade, montée,
+  clos ; abréviations r, pl, ch, imp, all, sq, crs).
+- Mesure : 17 rouges → verts ; banc inchangé octet pour octet ; 715 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
