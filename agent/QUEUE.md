@@ -113,6 +113,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-47 | code | `ecluse_redact` : reconnaître les particules da, dos, di, del, ben, bin, bint, ibn, ter, ten, zu, af dans un nom | P2-46 | fusionnée |
 | P2-48 | code | `ecluse_redact` : supprimer le coût quadratique de la détection de noms sur un texte à milliers de mentions | P2-47 | fusionnée |
 | P2-49 | code | `ecluse_redact` : reconnaître les types de voie « sentier », « ruelle », « clos »… et les abréviations « R. », « pl. », « ch. » | P2-48 | fusionnée |
+| P2-50 | code | `ecluse_redact` : borner la recherche de la fiche « Prénom » pour supprimer un coût quadratique sur « Nom : » répété | P2-49 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1389,5 +1390,19 @@ rue en clair (seul « code postal + commune » était masqué).
 - `adresse_detector.dart` : `_voies` étendue (sentier, ruelle, traverse, venelle, parvis, promenade, montée,
   clos ; abréviations r, pl, ch, imp, all, sq, crs).
 - Mesure : 17 rouges → verts ; banc inchangé octet pour octet ; 715 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-50 — Recherche de la fiche « Prénom » bornée (`code`)
+
+Contexte : sonde de robustesse sur 16 textes d'environ 1 Mo (27 octobre 2026) : « Nom : » répété 160 000 fois sans saut de
+ligne prenait 43,6 s ; le détecteur de noms seul en prenait la presque totalité pour 0 entité.
+
+- Tests d'abord (2 rouges, avant) : 160 000 « Nom : » et 64 000 « Nom : Aspirine » en moins de 15 s (borne
+  large pour l'intégration continue ; 43 s et plus avant la correction).
+- `name_detector.dart` : `_fichePrenomSuit` extrait d'abord la fenêtre de 300 caractères puis y cherche les
+  sauts de ligne (au lieu de `indexOf` sur tout le reste du texte).
+- Mesure : 43,6 s → 1,8 s ; fuzz différentiel de 2 000 textes identique avant/après ; banc inchangé octet
+  pour octet ; 718 tests.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
