@@ -599,6 +599,17 @@ saison », « Page 6 ch. 3 » restent intacts (5 contre-exemples testés). **Res
 valeur identifiante), une adresse sans code postal (« 12 rue des Lilas »), « Paris 11e ». Les abréviations d'une
 lettre (« R ») ne sont reconnues que suivies d'un nom puis d'un code postal et d'une commune.
 
+**Recherche de la fiche « Prénom » bornée (P2-50).** Sonde de robustesse sur 16 textes pathologiques d'environ
+1 Mo : un seul sortait nettement du lot, **« Nom : » répété 160 000 fois sans saut de ligne : 43,6 s**. Cause trouvée
+en chronométrant le détecteur seul (0 entité détectée, coût quadratique) : le contrôle de P2-36 cherchait la fin de
+ligne avec `indexOf('\n', …)` dans **tout le reste du texte** à chaque occurrence. La recherche se fait maintenant
+dans une fenêtre de 300 caractères extraite d'abord. Mesure après : 1,8 s (24 fois plus vite). Équivalence vérifiée :
+2 000 textes aléatoires (graine 99, étiquettes Nom/Prénom, sauts de ligne, ponctuation) donnent exactement les mêmes
+sorties avant et après ; banc inchangé octet pour octet ; 718 tests. Tests de non-régression ajoutés (60 000
+répétitions de trois étiquettes, moins de 4 s). **Reste mesuré, non traité** : le coût superlinéaire de la résolution
+des jetons au-delà de ~50 000 mentions de noms dans un même texte (« née Dupont » ×90 000 : 18 s pour 990 Ko ;
+« Prénom : » ×110 000 : 9 s), hors de la détection ; irréaliste pour un document ordinaire, noté pour mémoire.
+
 
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 

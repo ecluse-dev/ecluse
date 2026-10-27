@@ -18,4 +18,15 @@ void main() {
       expect(sw.elapsed, lessThan(const Duration(seconds: 4)));
     });
   }
+
+  // P2-50 : un « Nom : » sans « Prénom » proche cherchait la fin de ligne dans
+  // tout le reste du texte ; sans saut de ligne, chaque occurrence le parcourait
+  // en entier (1 Mo de « Nom : » : 43 s). La recherche est bornée à la fenêtre.
+  for (final motif in ['Nom : ', 'Nom : Aspirine ', 'Nom de naissance : ']) {
+    test('60000 « $motif » sans saut de ligne en moins de 4 s', () async {
+      final sw = Stopwatch()..start();
+      await Ecluse.redact(motif * 60000);
+      expect(sw.elapsed, lessThan(const Duration(seconds: 4)), reason: motif);
+    });
+  }
 }
