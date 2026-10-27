@@ -3,8 +3,8 @@ import 'dart:typed_data';
 import 'package:ecluse_core/ecluse_core.dart';
 
 import 'etablissement_keywords.dart';
-
 import 'french_first_names.dart';
+import 'tableau_csv.dart';
 
 /// Détecteur heuristique de noms de personnes — **v0 de démonstration**.
 ///
@@ -255,6 +255,48 @@ final class NameDetector implements EntityDetector {
     '($_unite$_h+$_unite(?:$_h+$_unite)?)',
   );
 
+  /// Clés de données explicites qui désignent une personne (P2-61), en
+  /// snake_case, kebab-case ou camelCase : `nom_patient`, `nom_famille`,
+  /// `nom_naissance`, `nom_usage`, `lastname`, `family_name`, `surname`,
+  /// `firstname`, `given_name`, `prenom(s)`. La clé nue « nom » est exclue : elle
+  /// désigne aussi un fichier, un projet, un médicament (arbitrage du 27 octobre).
+  static const String _cleNom = '(?:nom[_-]?(?:de[_-]?|d[_-]?)?'
+      '(?:patient|patiente|famille|naissance|usage|jeune[_-]?fille)'
+      '|(?:last|family|sur)[_-]?name|first[_-]?name|given[_-]?name'
+      '|pr[ée]noms?)';
+
+  /// Valeurs qui ne sont pas un nom : absence de valeur ou booléen.
+  static final String _valeurVide = '(?!(?:${[
+    'null', 'none', 'nan', 'undefined', 'unknown', 'inconnue?', 'vide', //
+    'true', 'false', 'oui', 'non', 'n/?a', 'nc', 'nr', //
+  ].map((m) => '[${m[0].toUpperCase()}${m[0]}]${m.substring(1)}|${m.toUpperCase()}').join('|')})(?![A-Za-zÀ-ÿ0-9_]))';
+
+  static const String _motLax = "[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'’.-]*";
+
+  /// Valeur d'une clé en JSON, XML ou paramètre (`"cle": "v"`, `<cle>v</cle>`,
+  /// `cle=v`) : 1 à 4 mots, casse libre, la clé étant l'indice.
+  static final RegExp _cleDonneeLax = RegExp(
+    '(?:["\u0027]$_cleNom["\u0027]$_h*:$_h*["\u0027]?'
+    '|<$_cleNom(?:$_h[^>]*)?>$_h*'
+    '|(?<![\\w"\u0027.-])$_cleNom$_h*=$_h*["\u0027]?)'
+    '$_valeurVide($_motLax(?:$_h+$_motLax){0,3})(?![A-Za-zÀ-ÿ0-9_])',
+    caseSensitive: false,
+  );
+
+  /// Même clé, sensible à la casse du mot de valeur : seule la première lettre de
+  /// chaque mot de la clé varie (`nom_patient`, `Nom_patient`, `lastName`).
+  static const String _cleNomCs = '(?:[Nn]om[_-]?(?:[Dd]e[_-]?|[Dd][_-]?)?'
+      '(?:[Pp]atiente?|[Ff]amille|[Nn]aissance|[Uu]sage|[Jj]eune[_-]?[Ff]ille)'
+      '|(?:[Ll]ast|[Ff]amily|[Ss]ur)[_-]?[Nn]ame|[Ff]irst[_-]?[Nn]ame'
+      '|[Gg]iven[_-]?[Nn]ame|[Pp]r[ée]noms?)';
+
+  /// Forme `cle: Valeur` (YAML, texte brut) : valeur en majuscule initiale,
+  /// 1 à 3 unités, pour ne pas absorber la fin d'une phrase.
+  static final RegExp _cleDonneePlain = RegExp(
+    '(?<![\\w"\u0027.-])$_cleNomCs$_h*:$_h*$_valeurVide'
+    '($_unite(?:$_h+$_unite){0,2})',
+  );
+
   static final RegExp _prenomChamp = RegExp(r'\b(?:Pr[ée]nom|PR[ÉE]NOM)\b');
 
   /// Fenêtre de recherche de « Prénom » après un « Nom : » seul : fin de la
@@ -425,7 +467,9 @@ final class NameDetector implements EntityDetector {
       (_enteteMail, true),
       (_aEcrit, false),
       (_signature, true),
-      (_etiquetteRole, true)
+      (_etiquetteRole, true),
+      (_cleDonneeLax, true),
+      (_cleDonneePlain, true)
     ]) {
       for (final match in re.allMatches(text)) {
         final name = match.group(1)!;
@@ -455,6 +499,23 @@ final class NameDetector implements EntityDetector {
         surnameSources.add(name);
         claimed.add(start, end);
       }
+    }
+
+    // Cellules de noms d'un tableau CSV à en-tête (P2-61).
+    for (final c in cellulesDeNoms(text)) {
+      if (claimed.overlaps(c.start, c.end)) continue;
+      final name = text.substring(c.start, c.end);
+      results.add(
+        DetectedEntity(
+          type: EntityType.nom,
+          start: c.start,
+          end: c.end,
+          value: name,
+          confidence: 0.7,
+        ),
+      );
+      surnameSources.add(name);
+      claimed.add(c.start, c.end);
     }
 
     // Prénom(s) derrière l'étiquette « Prénom » (P2-40), connus ou non du

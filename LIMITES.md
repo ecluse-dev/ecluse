@@ -769,6 +769,26 @@ longueur fausse entraînerait un IBAN **manqué**, jamais un faux positif (la cl
 mainteneur contre le registre. Luxembourg : 20 (trois sources) contre 19 dans une quatrième. **Non traité** : BIC/SWIFT,
 IBAN hors espace SEPA (Maroc, Algérie, Tunisie, Royaume-Uni hors SEPA…), IBAN coupé par un saut de ligne au milieu d'un groupe.
 
+**Noms en clés de données explicites et tableaux CSV à en-tête (P2-61).** Arbitrage du 27 octobre (question 7).
+*Clés* : `nom_patient`, `nom_famille`, `nom_naissance`, `nom_usage`, `nom_de_naissance`, `lastname`, `family_name`,
+`surname`, `firstname`, `given_name`, `prenom(s)` (snake_case, kebab-case ou camelCase) sont reconnues en JSON
+(`"cle": "v"`), XML (`<cle>v</cle>`), paramètres (`cle=v`) et texte brut ou YAML (`cle: Valeur`, majuscule initiale). La
+valeur peut être en minuscules hors du texte brut (la clé est l'indice) ; `null`, `inconnu`, `vide`, `oui`, `non`, `n/a`, un
+nombre, une valeur absente ne sont jamais des noms. **La clé nue « nom » reste exclue** (`"nom": "Aspirine"`,
+`nom_fichier`, `nom_projet`). *CSV* : une ligne d'au moins 2 champs courts dont l'un est une colonne de personne (« Nom »,
+« Prénom », « Nom de naissance », « Nom d'usage », `LastName`, `FirstName`…), suivie d'une ligne de données de même largeur,
+est un tableau : les cellules de ces colonnes sont masquées, quelle que soit leur casse. Séparateurs `;`, tabulation, `|`,
+`,` ; guillemets doublés admis. **Refus explicite** : une ligne de données qui n'a pas le nombre de colonnes de l'en-tête
+(virgule non protégée, colonne manquante) ou un guillemet non fermé (cellule sur plusieurs lignes, non prise en charge)
+lève `TableauAmbiguException` (ligne et motif, jamais le contenu) au lieu de laisser des noms en clair ; une ligne sans
+séparateur ou une ligne vide met fin au tableau (texte qui suit). Un en-tête sans ligne de données conforme n'est pas un
+tableau (« Nom, prénom et adresse seront demandés »). Tests d'abord (36 rouges : 21 clés, 15 CSV) ; 23 contre-exemples intacts (16 clés, 7 non-tableaux) ; banc inchangé
+octet pour octet ; 962 tests. **Conséquence à connaître** : `Ecluse.redact` et ses dérivés peuvent maintenant lever
+`TableauAmbiguException` ; un appelant qui ne la gère pas verra l'envoi refusé (comportement voulu : pas d'échec
+silencieux). **Non traité** : cellules sur plusieurs lignes entre guillemets, colonnes dont l'en-tête est une autre langue ou
+une abréviation (`NOM_USUEL`, `patient`), tableaux sans en-tête, colonnes combinées « Nom Prénom » dans la clé nue.
+Un tableau à virgule suivi directement d'une phrase qui contient une virgule est refusé : séparer par une ligne vide.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
