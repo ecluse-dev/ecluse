@@ -1,6 +1,6 @@
 import 'package:ecluse_core/ecluse_core.dart';
 
-/// Détecteur d'identifiants étiquetés (P2-57) : numéro de dossier, de patient,
+/// Détecteur d'identifiants étiquetés (P2-57), un type par catégorie (P2-59) : numéro de dossier, de patient,
 /// d'adhérent, d'allocataire ou de contrat, IPP/IEP, passeport, CNI, permis de
 /// conduire, plaque d'immatriculation, adresse IP.
 ///
@@ -54,6 +54,20 @@ final class IdentifiantDetector implements EntityDetector {
     caseSensitive: false,
   );
 
+  /// Catégorie de l'identifiant d'après son étiquette (P2-59).
+  static final RegExp _etiquettePiece = RegExp(
+    'passeport|CNI|permis|identité',
+    caseSensitive: false,
+  );
+  static final RegExp _etiquetteVehicule =
+      RegExp('immatriculation|plaque', caseSensitive: false);
+
+  static EntityType _categorie(String etiquette) {
+    if (_etiquettePiece.hasMatch(etiquette)) return EntityType.pieceIdentite;
+    if (_etiquetteVehicule.hasMatch(etiquette)) return EntityType.vehicule;
+    return EntityType.identifiant;
+  }
+
   static bool _ressembleAUnIdentifiant(String valeur) {
     final chiffres = RegExp('[0-9]').allMatches(valeur).length;
     final lettres = RegExp('[A-Za-z]').allMatches(valeur).length;
@@ -71,7 +85,7 @@ final class IdentifiantDetector implements EntityDetector {
       if (!_ressembleAUnIdentifiant(valeur)) continue;
       final debut = match.start + match.group(0)!.lastIndexOf(match.group(1)!);
       trouves.add(DetectedEntity(
-        type: EntityType.identifiant,
+        type: _categorie(text.substring(match.start, debut)),
         start: debut,
         end: debut + valeur.length,
         value: valeur,
@@ -83,7 +97,7 @@ final class IdentifiantDetector implements EntityDetector {
       if (valeur.split('.').any((o) => int.parse(o) > 255)) continue;
       final debut = match.start + match.group(0)!.lastIndexOf(valeur);
       trouves.add(DetectedEntity(
-        type: EntityType.identifiant,
+        type: EntityType.reseau,
         start: debut,
         end: debut + valeur.length,
         value: valeur,
@@ -92,7 +106,7 @@ final class IdentifiantDetector implements EntityDetector {
     }
     for (final match in _plaque.allMatches(text)) {
       trouves.add(DetectedEntity(
-        type: EntityType.identifiant,
+        type: EntityType.vehicule,
         start: match.start,
         end: match.end,
         value: match.group(0)!,
