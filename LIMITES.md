@@ -718,6 +718,16 @@ octets ≤ 255. Tests d'abord (22 rouges) ; 14 contre-exemples intacts ; banc in
 sans « n° ». **À arbitrer par le mainteneur** : le choix d'un type dédié (plutôt que des types par catégorie) et le
 libellé du jeton ; retour arrière : retirer `IdentifiantDetector` de `Ecluse.defaultDetectors`.
 
+**Coût d'un mot composé très long (P2-58).** Défaut **introduit par P2-53** (« nom devant `<adresse>` a écrit »),
+trouvé en mesurant P2-57 : un mot en majuscule initiale fait de segments reliés par des tirets (« Aa-Aa-Aa-… »,
+« AB-123-AB-123-… ») était traité en temps cubique, le motif repartant de chaque segment du mot : 12 000 segments
+(36 Ko) prenaient 16 s, 140 Ko plus de 45 s, et le coût croît encore plus vite au-delà. Le motif exige maintenant un
+début de mot strict (le tiret et l'apostrophe ne comptent pas comme une frontière). Mesuré : 36 Ko en 16 s → moins
+de 5 s (test de coût, trois formes de mots composés) ; 0,9 à 1,05 Mo de mots composés en 1,3 à 5,7 s ; version avant
+P2-53 : 5 ms (le défaut venait bien de cette règle). Banc inchangé octet pour octet ; 865 tests. Les autres motifs
+de P2-53, P2-54 et P2-55 ont été mesurés sur les mêmes entrées : linéaires. Leçon de méthode : la batterie de coût
+de P2-53 ne contenait aucun mot composé ; elle en contient maintenant.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
