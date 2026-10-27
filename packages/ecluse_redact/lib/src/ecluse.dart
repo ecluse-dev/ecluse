@@ -355,9 +355,13 @@ int _versAscii(int c) {
   final coupures = _coupuresDeLigne.allMatches(vue).toList();
   final cles = _cleNommee.allMatches(vue).toList();
   final decorations = _decorations.allMatches(vue).toList();
+  final balises = vue.contains('<') || vue.contains('&nbsp;')
+      ? _balisesStructure.allMatches(vue).toList()
+      : <RegExpMatch>[];
   if (coupures.isEmpty &&
       cles.isEmpty &&
       decorations.isEmpty &&
+      balises.isEmpty &&
       !_invisibles.hasMatch(vue)) {
     return (vue, null);
   }
@@ -393,6 +397,48 @@ int _versAscii(int c) {
       retires.add(i);
     }
   }
+  // Balises de tableau et de bloc HTML (P2-63) : retirées, un séparateur subsiste.
+  // Entre deux cellules : U+001F (séparateur d'unités), lu comme `:` par les
+  // étiquettes et comme séparateur de colonnes par le CSV ; U+001E entre deux
+  // cellules d'en-tête (`<th>`), séparateur de colonnes seulement, pour qu'un
+  // en-tête « Nom, Prénom, Service » ne se lise jamais « Prénom : Service ».
+  // Saut de ligne entre deux blocs, espace pour `&nbsp;`. Des balises de bloc
+  // consécutives ne donnent qu'un saut de ligne.
+  var finPrecedente = -1;
+  var precedenteLigne = false;
+  for (final m in balises) {
+    final balise = m.group(0)!.toLowerCase();
+    int separateur;
+    if (balise == '&nbsp;') {
+      separateur = 0x20;
+    } else if (m.group(1) != null) {
+      separateur = _finitParDeuxPoints(vue, m.start)
+          ? 0x20
+          : (balise == '</th>' && m.group(1) == 'th' ? 0x1E : 0x1F);
+    } else if (balise.startsWith('</t') && balise.length == 5) {
+      separateur = 0x20; // dernière cellule d'une ligne
+    } else if (RegExp(r'^<t[dh][\s>]').hasMatch(balise)) {
+      for (var i = m.start; i < m.end; i++) {
+        retires.add(i);
+      }
+      continue; // ouverture de cellule : disparaît
+    } else {
+      separateur = 0x0A; // bloc, ligne de tableau, saut de ligne
+    }
+    final contigu = finPrecedente == m.start;
+    if (separateur == 0x0A && precedenteLigne && contigu) {
+      for (var i = m.start; i < m.end; i++) {
+        retires.add(i);
+      }
+    } else {
+      unites[m.start] = separateur;
+      for (var i = m.start + 1; i < m.end; i++) {
+        retires.add(i);
+      }
+    }
+    finPrecedente = m.end;
+    precedenteLigne = separateur == 0x0A;
+  }
   final sb = StringBuffer();
   final positions = <int>[];
   for (var i = 0; i < unites.length; i++) {
@@ -402,6 +448,30 @@ int _versAscii(int c) {
     positions.add(i);
   }
   return (sb.toString(), positions);
+}
+
+/// Balises HTML de structure (P2-63) : cellules et lignes de tableau, blocs,
+/// listes, titres, sauts de ligne, et `&nbsp;`. Seules les balises sans attribut,
+/// ou dont les attributs sont de pure mise en forme (`class`, `style`, `colspan`,
+/// `width`…), sont concernées : un attribut libre (`title`, `href`, `alt`) peut
+/// porter une donnée personnelle et rester visible aux détecteurs. Le premier
+/// groupe capture la cellule qui suit une fin de cellule (`</td>` puis `<td>`).
+final RegExp _balisesStructure = RegExp(
+  r'</t[dh]>(?=[ \t\r\n]*<(t[dh])[\s>])'
+  r'|</?(?:t[dh]|tr|table|thead|tbody|tfoot|p|div|li|ul|ol|h[1-6])'
+  r'(?:\s+(?:class|style|colspan|rowspan|width|height|align|valign|bgcolor|id|'
+  r'border)\s*=\s*(?:"[^"<>]*"|\u0027[^\u0027<>]*\u0027|[^\s<>"\u0027]*))*\s*/?>'
+  r'|<br\s*/?>'
+  r'|&nbsp;',
+  caseSensitive: false,
+);
+
+bool _finitParDeuxPoints(String vue, int fin) {
+  var i = fin - 1;
+  while (i >= 0 && (vue[i] == ' ' || vue[i] == '\t')) {
+    i--;
+  }
+  return i >= 0 && vue[i] == ':';
 }
 
 /// Fin de ligne entre deux groupes d'un identifiant (P2-38) : après un chiffre

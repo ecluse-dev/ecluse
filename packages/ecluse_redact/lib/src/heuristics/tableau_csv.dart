@@ -27,7 +27,9 @@ final class TableauAmbiguException implements Exception {
 /// Intervalle `[start, end)` d'une cellule de nom dans le texte d'origine.
 typedef CelluleNom = ({int start, int end});
 
-const _separateurs = [';', '\t', '|', ','];
+/// Séparateurs essayés ; la chaîne `\u001E\u001F` regroupe les deux séparateurs de
+/// cellules d'un tableau HTML (P2-63).
+const _separateurs = [';', '\t', '|', ',', '\u001E\u001F'];
 
 const _colonnesDeNoms = {
   'nom', 'prenom', 'prenoms', 'nomdenaissance', 'nomdusage', 'nomdefamille',
@@ -64,7 +66,7 @@ List<CelluleNom>? _cellules(String text, int debut, int fin, String sep) {
     final c = text[i];
     if (c == '"') {
       entre = !entre;
-    } else if (!entre && c == sep) {
+    } else if (!entre && sep.contains(c)) {
       cellules.add((start: depart, end: i));
       depart = i + 1;
     }
@@ -163,7 +165,8 @@ List<CelluleNom> cellulesDeNoms(String text) {
 (String, List<int>, int)? _entete(String text, CelluleNom ligne) {
   if (ligne.end - ligne.start > 400) return null;
   for (final sep in _separateurs) {
-    if (!text.substring(ligne.start, ligne.end).contains(sep)) continue;
+    final brute = text.substring(ligne.start, ligne.end);
+    if (!sep.split('').any(brute.contains)) continue;
     final cells = _cellules(text, ligne.start, ligne.end, sep);
     if (cells == null || cells.length < 2) continue;
     final colonnes = <int>[];
