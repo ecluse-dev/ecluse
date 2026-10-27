@@ -51,6 +51,11 @@ enum EntityType {
   /// (1.2.250.1.213.1.4.*) et marqueurs textuels (INS-NIR, matricule INS...).
   /// Voir InsDetector.
   ins,
+
+  /// Identifiant administratif ou matériel étiqueté : numéro de dossier, de
+  /// patient, d'adhérent, IPP, passeport, CNI, plaque d'immatriculation,
+  /// adresse IP (détection heuristique, voir `ecluse_redact`).
+  identifiant,
 }
 
 /// Une entité personnelle détectée dans un texte.

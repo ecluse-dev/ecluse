@@ -18,6 +18,7 @@ String entityTypeLabel(EntityType type) => switch (type) {
       EntityType.email => 'EMAIL',
       EntityType.etablissement => 'ETABLISSEMENT',
       EntityType.ins => 'INS',
+      EntityType.identifiant => 'IDENTIFIANT',
     };
 
 /// Construit une regex tolérante pour retrouver un jeton comme `[NOM_1]`

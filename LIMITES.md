@@ -701,6 +701,23 @@ superlinéaire sur « 12 rue » répété : 8 s pour 1 Mo, avant comme après). 
 (« 12 rue des lilas »), ville seule (« Paris 11e »), numéro en toutes lettres, lieu-dit sans numéro, type de voie
 tronqué ; un nom d'œuvre ou de produit « 12 Place Value » sera masqué à tort.
 
+**Identifiants étiquetés (P2-57).** Sonde de 20 identifiants (27 octobre 2026) : 17 restaient **en clair** — IPP,
+numéro de dossier, de patient, d'adhérent, d'allocataire, de contrat, passeport, CNI, permis de conduire, plaque
+d'immatriculation, adresse IP, dossier MDPH. Ils n'ont aucune clé de contrôle ni type d'entité. **Nouveau type
+`identifiant`** (jeton `[IDENTIFIANT_n]`), qui ajoute une valeur à `EntityType` dans `ecluse_core` (changement
+d'API publique : `ecluse_audit` liste les types connus depuis l'énumération, donc sans autre modification). Le
+détecteur `IdentifiantDetector` (`ecluse_redact`, niveau « motif », confiance 0.7) exige une **étiquette** (`IPP`, `IEP`,
+« N° de dossier / patient / adhérent / allocataire / contrat / police / client », « Dossier MDPH n° », `Passeport`,
+`CNI`, « Carte (nationale) d'identité », « Permis de conduire », `Immatriculation`, `Plaque`, `IP`, « adresse IP ») **et**
+une valeur qui ressemble à un identifiant (au moins 5 chiffres, ou 3 chiffres + une lettre sur 6 caractères au
+moins) : « Dossier n° 12 », « Passeport 2024 », « IPP : à renseigner » restent intacts. Seule la plaque au format SIV
+(`AB-123-CD`, sans les lettres I, O, U) est masquée sans étiquette ; une adresse IPv4 exige l'étiquette `IP` et des
+octets ≤ 255. Tests d'abord (22 rouges) ; 14 contre-exemples intacts ; banc inchangé octet pour octet ; 898 tests
+(`ecluse_redact`), tous les paquets verts. **Non traité** : ancienne plaque (`1234 AB 56`), IPv6, identifiants sans
+étiquette (une suite de chiffres isolée), SIREN/SIRET (entreprise, hors personne), numéro d'étiquette en minuscules
+sans « n° ». **À arbitrer par le mainteneur** : le choix d'un type dédié (plutôt que des types par catégorie) et le
+libellé du jeton ; retour arrière : retirer `IdentifiantDetector` de `Ecluse.defaultDetectors`.
+
 **Coût d'un mot composé très long (P2-58).** Défaut **introduit par P2-53** (« nom devant `<adresse>` a écrit »),
 trouvé en mesurant P2-57 : un mot en majuscule initiale fait de segments reliés par des tirets (« Aa-Aa-Aa-… »,
 « AB-123-AB-123-… ») était traité en temps cubique, le motif repartant de chaque segment du mot : 12 000 segments
