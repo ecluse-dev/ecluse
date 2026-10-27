@@ -426,7 +426,10 @@ int _versAscii(int c) {
       separateur = 0x0A; // bloc, ligne de tableau, saut de ligne
     }
     final contigu = finPrecedente == m.start;
-    if (separateur == 0x0A && precedenteLigne && contigu) {
+    if (separateur == 0x0A &&
+        ((precedenteLigne && contigu) ||
+            _saut(vue, m.start - 1, -1) ||
+            _saut(vue, m.end, 1))) {
       for (var i = m.start; i < m.end; i++) {
         retires.add(i);
       }
@@ -465,6 +468,17 @@ final RegExp _balisesStructure = RegExp(
   r'|&nbsp;',
   caseSensitive: false,
 );
+
+/// Vrai si, en partant de [i] et en allant dans le sens [pas], le premier
+/// caractère qui n'est ni une espace ni une tabulation est un saut de ligne réel :
+/// une balise de bloc voisine d'un vrai saut de ligne n'en ajoute pas un second
+/// (une ligne vide mettrait fin à un tableau).
+bool _saut(String vue, int i, int pas) {
+  while (i >= 0 && i < vue.length && (vue[i] == ' ' || vue[i] == '\t')) {
+    i += pas;
+  }
+  return i >= 0 && i < vue.length && (vue[i] == '\n' || vue[i] == '\r');
+}
 
 bool _finitParDeuxPoints(String vue, int fin) {
   var i = fin - 1;

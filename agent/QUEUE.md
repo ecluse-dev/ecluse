@@ -1585,6 +1585,7 @@ Contexte : arbitrage du 27 octobre (question 9) : tableaux HTML et titres Markdo
 - Tests d'abord (9 rouges sur 21) ; 6 contre-exemples intacts ; restauration identique.
 - `ecluse.dart` : `_vueDeDetection` retire les balises de structure sans attribut libre et pose un séparateur ; `_champNom`, `_champPrenom`,
   date et identifiants lisent U+001F comme `:` ; `tableau_csv.dart` lit U+001E/U+001F comme séparateur de colonnes.
-- Mesure : 9 rouges → verts ; banc inchangé octet pour octet ; 1019 tests ; 10 entrées d'~1 Mo en 0,3 à 1,9 s.
+- Vérification de mes propres affirmations : deux défauts trouvés et corrigés (sauts de ligne réels entre `<tr>` qui coupaient le tableau ; première ligne à cellule fusionnée silencieusement non lue, désormais refus explicite).
+- Mesure : 9 rouges → verts ; banc inchangé octet pour octet ; 1022 tests ; 10 entrées d'~1 Mo en 0,3 à 1,9 s.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

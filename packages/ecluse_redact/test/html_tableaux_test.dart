@@ -59,4 +59,36 @@ void main() {
       expect(Ecluse.restore(r.maskedText, r.mapping), texte);
     });
   }
+
+  test('lignes séparées par de vrais sauts de ligne', () async {
+    const texte = '<table>\n<tr><th>Nom</th><th>Prénom</th></tr>\n'
+        '<tr><td>Quenelle</td><td>Zorglub</td></tr>\n'
+        '<tr><td>Dupont</td><td>Hector</td></tr>\n</table>';
+    final r = await Ecluse.redact(texte);
+    for (final nom in ['Quenelle', 'Zorglub', 'Dupont', 'Hector']) {
+      expect(r.maskedText, isNot(contains(nom)), reason: r.maskedText);
+    }
+    expect(Ecluse.restore(r.maskedText, r.mapping), texte);
+  });
+
+  test('refus explicite : cellule fusionnée dans un tableau à en-tête',
+      () async {
+    const fusion = '<tr><th>Nom</th><th>Prénom</th><th>Service</th></tr>'
+        '<tr><td>Quenelle</td><td colspan="2">Zorglub</td></tr>';
+    await expectLater(
+      Ecluse.redact(fusion),
+      throwsA(isA<TableauAmbiguException>()),
+    );
+  });
+
+  test('une ligne à une seule cellule met fin au tableau, sans refus',
+      () async {
+    const texte = '<tr><th>Nom</th><th>Prénom</th></tr>'
+        '<tr><td>Quenelle</td><td>Zorglub</td></tr>'
+        '<tr><td colspan="2">Total</td></tr>';
+    final r = await Ecluse.redact(texte);
+    expect(r.maskedText, isNot(contains('Quenelle')), reason: r.maskedText);
+    expect(r.maskedText, isNot(contains('Zorglub')), reason: r.maskedText);
+    expect(r.maskedText, contains('Total'));
+  });
 }

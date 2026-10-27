@@ -121,6 +121,16 @@ List<CelluleNom> cellulesDeNoms(String text) {
     final premiere =
         _cellules(text, lignes[i + 1].start, lignes[i + 1].end, sep);
     if (premiere == null || premiere.length != nbColonnes) {
+      // Tableau HTML (séparateurs U+001E/U+001F posés par la vue de détection) :
+      // la structure est certaine, une ligne de largeur différente (cellule
+      // fusionnée, colonne manquante) est un refus, non un texte ordinaire.
+      final html = sep.contains('\u001F');
+      if (html && premiere != null && premiere.length > 1) {
+        throw TableauAmbiguException(
+          i + 2,
+          '${premiere.length} colonnes au lieu de $nbColonnes',
+        );
+      }
       i++;
       continue;
     }

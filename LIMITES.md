@@ -787,10 +787,12 @@ ligne entre deux blocs (jamais deux de suite), espace pour `&nbsp;`. Les attribu
 mise en forme (`class`, `style`, `colspan`, `rowspan`, `width`, `height`, `align`, `valign`, `bgcolor`, `id`, `border`) :
 `title`, `href`, `alt` restent visibles des détecteurs, donc une donnée personnelle dans un attribut est toujours
 détectée (`<a href="mailto:…">`, `<td title="Mme Dupont">`). Un tableau à en-tête `<th>` est lu comme un CSV (colonnes de noms
-masquées). Tests d'abord (9 rouges sur 21) ; 6 contre-exemples intacts ; banc inchangé octet pour octet ; 1019 tests ; 10
+masquées) ; les sauts de ligne réels entre les lignes `<tr>` sont admis. **Refus explicite** : dans un tableau HTML à
+en-tête, une première ligne de données dont le nombre de cellules diffère de l'en-tête (cellule fusionnée `colspan`, colonne
+manquante) lève `TableauAmbiguException`, la structure HTML étant certaine ; une ligne à une seule cellule (« Total »)
+met fin au tableau sans refus, et les lignes qui la suivent ne sont plus lues. Tests d'abord (9 rouges sur 21, puis 2 cas ajoutés en vérifiant : sauts de ligne réels, cellule fusionnée) ; 6 contre-exemples intacts ; banc inchangé octet pour octet ; 1022 tests ; 10
 entrées pathologiques d'~1 Mo en 0,3 à 1,9 s. **Non traité** : balises avec un attribut libre (`<td data-x="…">`), tableaux
-imbriqués, cellules fusionnées (`colspan` décale les colonnes d'un tableau à en-tête : le CSV refuse alors le tableau, ligne et
-motif à l'appelant), listes de définitions (`dl`, `dt`, `dd`), liens Markdown (texte et URL) et listes à puces, que l'arbitrage n'a
+imbriqués, listes de définitions (`dl`, `dt`, `dd`), liens Markdown (texte et URL) et listes à puces, que l'arbitrage n'a
 pas retenus. Un en-tête écrit avec `<td>` plutôt que `<th>` (`Nom`, `Prénom` en `td`) peut faire lire « Nom : Prénom » comme un
 nom : la valeur « Prénom » ou « Nom » est écartée, mais pas un autre libellé de colonne.
 
