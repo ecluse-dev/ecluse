@@ -70,8 +70,8 @@ final class IbanFrDetector implements EntityDetector {
 
   /// Valide un IBAN normalisé (27 caractères, majuscules, sans séparateurs)
   /// selon ISO 7064 (mod 97-10).
-  static bool _isValidIban(String iban) {
-    if (iban.length != 27) return false;
+  static bool _isValidIban(String iban, [int longueur = 27]) {
+    if (iban.length != longueur) return false;
 
     // Réarrangement : BBAN + code pays + clé.
     final rearranged = iban.substring(4) + iban.substring(0, 4);
@@ -92,5 +92,72 @@ final class IbanFrDetector implements EntityDetector {
       }
     }
     return remainder == 1;
+  }
+}
+
+/// Détecteur d'IBAN de l'espace SEPA (P2-62) : les 38 pays de la table
+/// [longueurs], dont la France. Même validation que [IbanFrDetector] — clé
+/// ISO 7064 mod 97-10, confiance 1.0 — avec, en plus, la **longueur propre au
+/// pays** : un IBAN belge fait 16 caractères, un maltais 31. Un code pays hors
+/// table (États-Unis, Maroc…) n'est jamais détecté ; le BIC n'est pas traité
+/// (pas de clé, trop de faux positifs).
+///
+/// Les longueurs sont celles du registre IBAN (ISO 13616) ; 24 sur 38 ont été
+/// recoupées avec des documents bancaires publics, les autres sont reprises du
+/// registre (voir `LIMITES.md`). Une longueur fausse entraînerait un IBAN
+/// manqué, jamais un faux positif : la clé de contrôle reste exigée.
+final class IbanDetector implements EntityDetector {
+  const IbanDetector();
+
+  @override
+  EntityType get type => EntityType.iban;
+
+  /// Longueur totale d'un IBAN, par code pays.
+  static const Map<String, int> longueurs = {
+    'AD': 24, 'AT': 20, 'BE': 16, 'BG': 22, 'CH': 21, 'CY': 28, 'CZ': 24,
+    'DE': 22, 'DK': 18, 'EE': 20, 'ES': 24, 'FI': 18, 'FO': 18, 'FR': 27,
+    'GB': 22, 'GI': 23, 'GR': 27, 'HR': 21, 'HU': 28, 'IE': 22, 'IS': 26,
+    'IT': 27, 'LI': 21, 'LT': 20, 'LU': 20, 'LV': 21, 'MC': 27, 'MT': 31,
+    'NL': 18, 'NO': 15, 'PL': 28, 'PT': 25, 'RO': 24, 'SE': 24, 'SI': 19,
+    'SK': 24, 'SM': 27, 'VA': 22, //
+  };
+
+  /// Une branche par pays : code pays, 2 chiffres, puis exactement
+  /// `longueur - 4` alphanumériques (séparateur unique toléré entre eux), non
+  /// enchâssé dans une séquence alphanumérique plus longue.
+  static final RegExp _candidate = RegExp(
+    '(?<![A-Za-z0-9])(?:${longueurs.entries.map(_branche).join('|')})'
+    '(?![0-9A-Za-z])',
+  );
+
+  static String _branche(MapEntry<String, int> pays) {
+    final lettres =
+        pays.key.split('').map((c) => '[$c${c.toLowerCase()}]').join();
+    return '$lettres[0-9]{2}(?:[ \\-./]?[0-9A-Za-z]){${pays.value - 4}}';
+  }
+
+  static final RegExp _separators = RegExp(r'[ \-./]');
+
+  @override
+  List<DetectedEntity> detect(String text) {
+    final compaction = DigitCompaction(text);
+    final results = <DetectedEntity>[];
+    for (final match in compaction.candidates(_candidate)) {
+      final normalized = match.text.replaceAll(_separators, '').toUpperCase();
+      if (!IbanFrDetector._isValidIban(
+          normalized, longueurs[normalized.substring(0, 2)]!)) {
+        continue;
+      }
+      results.add(
+        DetectedEntity(
+          type: EntityType.iban,
+          start: match.start,
+          end: match.end,
+          value: text.substring(match.start, match.end),
+          confidence: 1.0,
+        ),
+      );
+    }
+    return results;
   }
 }

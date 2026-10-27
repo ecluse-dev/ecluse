@@ -125,7 +125,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-59 | code | `ecluse_core`/`ecluse_redact` : scinder le type `identifiant` par catégorie (dossier, document d'identité, véhicule, réseau) | P2-58 | fusionnée |
 | P2-60 | code | `ecluse_redact` : téléphones étrangers (pays voisins et Maghreb) | P2-59 | PR ouverte |
 | P2-61 | code | `ecluse_redact` : noms en clés de données explicites et CSV à en-tête | P2-60 | à faire |
-| P2-62 | code | `ecluse_core` : IBAN de l'espace SEPA avec clé mod 97 | P2-61 | à faire |
+| P2-62 | code | `ecluse_core` : IBAN de l'espace SEPA avec clé mod 97 | P2-61 | PR ouverte |
 | P2-63 | code | `ecluse_redact` : tableaux HTML et titres Markdown dans la vue de détection | P2-62 | à faire |
 | P2-64 | code | `ecluse_redact` : coût linéaire de la résolution des pseudonymes au-delà de 50 000 mentions | P2-63 | à faire |
 
@@ -1561,5 +1561,18 @@ Contexte : arbitrage du 27 octobre (question 1) : `identifiant` scindé en caté
 - `ecluse_core` : trois valeurs ajoutées à `EntityType` (`pieceIdentite`, `vehicule`, `reseau`) ; `identifiant` conservé pour ne pas casser `ecluse_audit`.
 - `ecluse_redact` : `IdentifiantDetector` choisit le type d'après l'étiquette ; jetons dans `tokenizer.dart`.
 - Mesure : 11 rouges → verts ; banc inchangé octet pour octet ; core 168, redact 902, audit 34, ingest 121, reid 134, reference 29, demo 37 tests verts.
+- Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-62 — IBAN de l'espace SEPA avec clé mod 97 (`code`)
+
+Contexte : arbitrage du 27 octobre (question 8) : étendre l'IBAN au-delà de la France, BIC non traité.
+
+- Tests d'abord : 38 pays générés (BBAN de graine fixe, clé calculée, jamais copiés) en forme compacte et groupée ; rejets (clé fausse, longueur
+  fausse, pays hors espace, enchâssement) ; 6 rouges d'intégration dans `Ecluse.redact`.
+- `ecluse_core` : `IbanDetector` (table de longueurs par pays, clé ISO 7064) ; `IbanFrDetector` conservé tel quel (API publique).
+- `ecluse_redact` : `Ecluse.defaultDetectors` utilise `IbanDetector`.
+- Mesure : banc inchangé octet pour octet ; core 212, redact 945, audit 34, ingest 121, reid 134, reference 29, demo 37 tests verts ; coût
+  équivalent à la base (≤ +25 % sur 6 entrées d'~1 Mo).
 - Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
