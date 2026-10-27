@@ -671,6 +671,21 @@ majuscules (« POUR LE SERVICE »). Banc inchangé octet pour octet ; 810 tests 
 (« Zorglub Quenelle, infirmier »), formule hors liste ; une structure hors liste sur la ligne suivante (« Cabinet
 Médical Dupont » est exclu, « Maison Bleue » ne l'est pas) est masquée à tort.
 
+**Nom derrière une étiquette de rôle sans ambiguïté (P2-55).** Sonde : « Patient : Zorglub Quenelle », « Résident : … »,
+« Bénéficiaire : … », « Usager : … », « Personne de confiance : … », « Médecin traitant : … » laissaient le nom en
+clair quand le prénom n'est pas au gazetteer (15 cas rouges). Ce point était laissé au mainteneur en P2-41 (« par choix ») ;
+il est repris sous une forme **bornée et révocable** : seules les étiquettes qui désignent une personne
+(`Patient(e)`, `Résident(e)`, `Bénéficiaire`, `Usager(ère)`, `Personne accompagnée / de confiance / à prévenir`,
+`Médecin traitant`, en minuscules, capitale ou majuscules) sont retenues, et la valeur doit compter **2 à 3 mots** en
+majuscule initiale (une valeur d'un seul mot, « Patient : Oui », est trop souvent un état). Exclus : mots-clés
+d'établissement (ces valeurs restent des `ETABLISSEMENT`, jamais des `NOM`), `Cabinet`, `Association`, `Service`,
+`Pôle`, `Direction`, `Équipe`…, `Non`, `Oui`, `Aucun`, `Sans`, `Inconnu`, `Voir`, articles élidés. Les étiquettes
+qui précèdent aussi des organismes (« Contact », « Tuteur », « Représentant légal », « Destinataire ») restent
+**hors périmètre**. Banc inchangé octet pour octet ; 838 tests ; un seul mot après l'étiquette (« Patient :
+Quenelle ») n'est toujours pas détecté ; 100 000 étiquettes consécutives : 28 s (coût de résolution des pseudonymes
+déjà documenté au-delà de ~50 000 mentions ; 2 s sans cette règle). Pour revenir en arrière : retirer
+`_etiquetteRole` de la boucle de `detect`.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
