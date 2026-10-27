@@ -52,10 +52,20 @@ enum EntityType {
   /// Voir InsDetector.
   ins,
 
-  /// Identifiant administratif ou matériel étiqueté : numéro de dossier, de
-  /// patient, d'adhérent, IPP, passeport, CNI, plaque d'immatriculation,
-  /// adresse IP (détection heuristique, voir `ecluse_redact`).
+  /// Identifiant administratif étiqueté : numéro de dossier, de patient,
+  /// d'adhérent, d'allocataire, de contrat, IPP/IEP (détection heuristique,
+  /// voir `ecluse_redact`).
   identifiant,
+
+  /// Numéro d'une pièce d'identité étiquetée : passeport, CNI, permis de
+  /// conduire (détection heuristique, voir `ecluse_redact`).
+  pieceIdentite,
+
+  /// Plaque d'immatriculation (détection heuristique, voir `ecluse_redact`).
+  vehicule,
+
+  /// Adresse IP étiquetée (détection heuristique, voir `ecluse_redact`).
+  reseau,
 }
 
 /// Une entité personnelle détectée dans un texte.
