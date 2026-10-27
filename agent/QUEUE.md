@@ -112,7 +112,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-46 | code | `ecluse_redact` : reconnaître « Professeure », « Docteure », « Dre », « Ms », « Mgr », « Abbé » comme civilités | P2-45 | fusionnée |
 | P2-47 | code | `ecluse_redact` : reconnaître les particules da, dos, di, del, ben, bin, bint, ibn, ter, ten, zu, af dans un nom | P2-46 | fusionnée |
 | P2-48 | code | `ecluse_redact` : supprimer le coût quadratique de la détection de noms sur un texte à milliers de mentions | P2-47 | fusionnée |
-| P2-49 | code | `ecluse_redact` : reconnaître les types de voie « sentier », « ruelle », « clos »… et les abréviations « R. », « pl. », « ch. » | P2-48 | PR ouverte |
+| P2-49 | code | `ecluse_redact` : reconnaître les types de voie « sentier », « ruelle », « clos »… et les abréviations « R. », « pl. », « ch. » | P2-48 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
