@@ -69,7 +69,8 @@ void main() {
       'date ISO': 'Édité le 2024-03-12.',
       'montant': 'Total : 1 234 567,89 €.',
       'code postal': 'Nantes 44000 Cedex.',
-      'préfixe 00 non FR': '0044 20 7946 0958',
+      // Depuis P2-60 le 0044 (Royaume-Uni) est détecté ; les États-Unis ne le sont pas.
+      'préfixe 00 d\'un pays non couvert': '001 202 555 0143',
       'indicatif +33 suivi de 0 sans parenthèses': '+33 0 12 34 56 78',
       'trop long (11 chiffres)': '012345678901',
     };

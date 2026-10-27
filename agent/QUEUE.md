@@ -122,8 +122,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-56 | code | `ecluse_redact` : détecter une adresse sans code postal (`12 rue des Lilas`) | P2-55 | fusionnée |
 | P2-57 | code | `ecluse_core`/`ecluse_redact` : type `identifiant` (dossier, IPP, passeport, CNI, plaque, IP) | P2-56 | fusionnée |
 | P2-58 | code | `ecluse_redact` : coût cubique d'un mot composé très long (régression de P2-53) | P2-56 | fusionnée |
-| P2-59 | code | `ecluse_core`/`ecluse_redact` : scinder le type `identifiant` par catégorie (dossier, document d'identité, véhicule, réseau) | P2-58 | PR ouverte |
-| P2-60 | code | `ecluse_redact` : téléphones étrangers (pays voisins et Maghreb) | P2-59 | à faire |
+| P2-59 | code | `ecluse_core`/`ecluse_redact` : scinder le type `identifiant` par catégorie (dossier, document d'identité, véhicule, réseau) | P2-58 | fusionnée |
+| P2-60 | code | `ecluse_redact` : téléphones étrangers (pays voisins et Maghreb) | P2-59 | PR ouverte |
 | P2-61 | code | `ecluse_redact` : noms en clés de données explicites et CSV à en-tête | P2-60 | à faire |
 | P2-62 | code | `ecluse_core` : IBAN de l'espace SEPA avec clé mod 97 | P2-61 | à faire |
 | P2-63 | code | `ecluse_redact` : tableaux HTML et titres Markdown dans la vue de détection | P2-62 | à faire |
@@ -1542,6 +1542,17 @@ de coût, `LIMITES.md` à jour. Une tâche par PR. Les fiches détaillées sont 
 - **P2-63** : `<td>`, `<th>`, `<tr>` et marques de titre `#` neutralisés dans la vue de détection ; texte jamais réécrit.
 - **P2-64** : index des mentions à la place du parcours ; test différentiel complet avant/après sur la restauration.
 
+### P2-60 — Téléphones étrangers : voisins et Maghreb (`code`)
+
+Contexte : arbitrage du 27 octobre (question 5) : détecter +32, +41, +352, +49, +34, +39, +44, +212, +213, +216.
+
+- Tests d'abord (25 rouges, avant) ; 10 contre-exemples intacts ; restauration identique.
+- `telephone_detector.dart` : table `_pays` (indicatif, longueur minimale et maximale), indicatif obligatoire, `(0)` facultatif,
+  zéro initial admis pour l'Italie.
+- Test modifié : `telephone_detector_test` « préfixe 00 non FR » (0044) devient « pays non couvert » (001 202 555 0143).
+- Mesure : 25 rouges → verts ; banc inchangé octet pour octet ; 937 tests ; coût linéaire (7 entrées de ~0,9 Mo).
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Non traité : autres pays, extensions, numéros sans indicatif.
 ### P2-59 — Un type par catégorie d'identifiant (`code`)
 
 Contexte : arbitrage du 27 octobre (question 1) : `identifiant` scindé en catégories (voir `DECISIONS.md`).
