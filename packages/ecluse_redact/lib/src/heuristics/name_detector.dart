@@ -179,6 +179,26 @@ final class NameDetector implements EntityDetector {
     '($_unite(?:$_h+(?!(?:Nom|NOM|Pr[ée]noms?|PR[ÉE]NOMS?)\\b)$_unite){0,2})',
   );
 
+  /// Nom d'un correspondant dans un en-tête de courriel (P2-53), prénom connu
+  /// ou non du gazetteer. Deux structures : une étiquette d'en-tête en début de
+  /// ligne (« De : », « From: », « À : », « Cc : »…, éventuellement citée par
+  /// `>`) suivie du nom puis de `<adresse`, avec « Nom, Prénom » et guillemets
+  /// tolérés ; ou un nom devant `<adresse>` suivi de « a écrit » / « wrote ».
+  /// Un mot-clé d'établissement n'est jamais un patronyme.
+  static final String _nomMail = '(?!(?:${etablissementKeywords.join('|')})\\b)'
+      '($_unite(?:,?$_h+$_unite){0,2})';
+
+  static final RegExp _enteteMail = RegExp(
+    '^[ \\t>]*(?:De|DE|From|FROM|[ÀA]|To|TO|Cc|CC|Cci|Bcc|BCC|Exp[ée]diteur|'
+    'Destinataire|Reply-To)$_h*:$_h*["\u0027\u201C]?$_nomMail["\u0027\u201D]?$_h*<',
+    multiLine: true,
+  );
+
+  static final RegExp _aEcrit = RegExp(
+    '(?<![\\wÀ-ÿ])($_unite(?:$_h+$_unite){0,2})$_h*<[^<>\\s]+@[^<>\\s]+>:?$_h*'
+    r'(?:a[ \t]+[ée]crit|wrote|ha[ \t]+scritto|schrieb)',
+  );
+
   static final RegExp _prenomChamp = RegExp(r'\b(?:Pr[ée]nom|PR[ÉE]NOM)\b');
 
   /// Fenêtre de recherche de « Prénom » après un « Nom : » seul : fin de la
@@ -342,6 +362,31 @@ final class NameDetector implements EntityDetector {
       );
       surnameSources.add(name);
       claimed.add(start, match.end);
+    }
+
+    // Nom d'un correspondant dans un en-tête de courriel (P2-53).
+    for (final (re, enTete) in [(_enteteMail, true), (_aEcrit, false)]) {
+      for (final match in re.allMatches(text)) {
+        final name = match.group(1)!;
+        // L'étiquette précède le nom (dernière occurrence : « De : D ») ; la
+        // forme « a écrit » commence par le nom.
+        final start = enTete
+            ? match.start + match.group(0)!.lastIndexOf(name)
+            : match.start;
+        final end = start + name.length;
+        if (claimed.overlaps(start, end)) continue;
+        results.add(
+          DetectedEntity(
+            type: EntityType.nom,
+            start: start,
+            end: end,
+            value: name,
+            confidence: 0.6,
+          ),
+        );
+        surnameSources.add(name);
+        claimed.add(start, end);
+      }
     }
 
     // Prénom(s) derrière l'étiquette « Prénom » (P2-40), connus ou non du
