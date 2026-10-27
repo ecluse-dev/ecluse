@@ -122,6 +122,12 @@ tâches copiées ici sont prises par l'agent.
 | P2-56 | code | `ecluse_redact` : détecter une adresse sans code postal (`12 rue des Lilas`) | P2-55 | fusionnée |
 | P2-57 | code | `ecluse_core`/`ecluse_redact` : type `identifiant` (dossier, IPP, passeport, CNI, plaque, IP) | P2-56 | fusionnée |
 | P2-58 | code | `ecluse_redact` : coût cubique d'un mot composé très long (régression de P2-53) | P2-56 | fusionnée |
+| P2-59 | code | `ecluse_core`/`ecluse_redact` : scinder le type `identifiant` par catégorie (dossier, document d'identité, véhicule, réseau) | P2-58 | à faire |
+| P2-60 | code | `ecluse_redact` : téléphones étrangers (pays voisins et Maghreb) | P2-59 | à faire |
+| P2-61 | code | `ecluse_redact` : noms en clés de données explicites et CSV à en-tête | P2-60 | à faire |
+| P2-62 | code | `ecluse_core` : IBAN de l'espace SEPA avec clé mod 97 | P2-61 | à faire |
+| P2-63 | code | `ecluse_redact` : tableaux HTML et titres Markdown dans la vue de détection | P2-62 | à faire |
+| P2-64 | code | `ecluse_redact` : coût linéaire de la résolution des pseudonymes au-delà de 50 000 mentions | P2-63 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1522,3 +1528,16 @@ Contexte : en mesurant P2-57, « AB-123- » répété (140 Ko) prenait 47 s. Bis
 - Mesure : 36 Ko en 16 s → < 5 s ; ~1 Mo de mots composés en 1,3 à 5,7 s ; banc inchangé octet pour octet ; 865 tests.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-59 à P2-64 — Arbitrages du 27 octobre (`code`)
+
+Fiches courtes ; le détail de chaque choix est dans `DECISIONS.md` (section « Arbitrages du mainteneur du 27 octobre »).
+Chaque tâche suit la méthode du dépôt : test qui montre le défaut, correction, mesure avant/après, banc inchangé, tests
+de coût, `LIMITES.md` à jour. Une tâche par PR. Les fiches détaillées sont ajoutées par la PR de chaque tâche.
+
+- **P2-59** : `identifiant` devient quatre types (dossier, document d'identité, véhicule, réseau), jetons distincts.
+- **P2-60** : +32, +41, +352, +49, +34, +39, +44, +212, +213, +216, avec leurs groupements usuels.
+- **P2-61** : clés `nom_patient`, `nom_famille`, `prenom`, `nom_naissance`, `lastname`, `firstname` (JSON, XML, URL) ; en-têtes CSV associés à leurs colonnes ; refus explicite si ambigu.
+- **P2-62** : code pays + clé mod 97 + longueur par pays ; BIC non traité.
+- **P2-63** : `<td>`, `<th>`, `<tr>` et marques de titre `#` neutralisés dans la vue de détection ; texte jamais réécrit.
+- **P2-64** : index des mentions à la place du parcours ; test différentiel complet avant/après sur la restauration.
