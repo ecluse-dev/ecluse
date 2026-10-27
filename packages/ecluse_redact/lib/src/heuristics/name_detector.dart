@@ -188,11 +188,17 @@ final class NameDetector implements EntityDetector {
   static const int _fenetrePrenom = 300;
 
   static bool _fichePrenomSuit(String text, int from) {
-    var end = text.indexOf('\n', from);
-    if (end != -1) end = text.indexOf('\n', end + 1);
-    if (end == -1 || end > from + _fenetrePrenom) end = from + _fenetrePrenom;
-    if (end > text.length) end = text.length;
-    return _prenomChamp.hasMatch(text.substring(from, end));
+    // Fenêtre bornée d'abord (P2-50) : chercher le saut de ligne dans tout le
+    // reste du texte parcourait un texte sans saut de ligne en entier à chaque
+    // occurrence (1 Mo de « Nom : » : 43 s).
+    final fin = from + _fenetrePrenom < text.length
+        ? from + _fenetrePrenom
+        : text.length;
+    final fenetre = text.substring(from, fin);
+    var coupe = fenetre.indexOf('\n');
+    if (coupe != -1) coupe = fenetre.indexOf('\n', coupe + 1);
+    return _prenomChamp
+        .hasMatch(coupe == -1 ? fenetre : fenetre.substring(0, coupe));
   }
 
   /// « Prénom » dans la ligne courante ou la précédente, avant [to], dans la
