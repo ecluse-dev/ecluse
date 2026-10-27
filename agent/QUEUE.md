@@ -118,6 +118,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-52 | code | `ecluse_redact` : détecter une date de naissance derrière une clé de données (`date_naissance`, `dateNaissance`, `dob`, `ddn`…) | P2-51 | fusionnée |
 | P2-53 | code | `ecluse_redact` : détecter le nom d'un correspondant dans un en-tête de courriel (`De :`, `From:`, `… a écrit`) | P2-52 | fusionnée |
 | P2-54 | code | `ecluse_redact` : détecter le nom de signature sous une formule de clôture (`Cordialement,`) | P2-53 | fusionnée |
+| P2-55 | code | `ecluse_redact` : détecter le nom derrière une étiquette de rôle (`Patient :`, `Résident :`, `Médecin traitant :`…) | P2-54 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1465,4 +1466,17 @@ prénom n'est pas au gazetteer (non traité de P2-53).
 - Mesure : 10 rouges → verts ; banc inchangé octet pour octet ; 810 tests.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Non traité : signature sans formule, nom suivi d'une fonction sur la même ligne.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-55 — Nom derrière une étiquette de rôle sans ambiguïté (`code`)
+
+Contexte : sonde d'étiquettes (27 octobre 2026) : « Patient : Zorglub Quenelle », « Résident : … », « Médecin traitant : … »
+laissaient le nom en clair quand le prénom n'est pas au gazetteer. Reprend sous forme bornée le point laissé au mainteneur en P2-41.
+
+- Tests d'abord (15 rouges, avant) ; 10 contre-exemples intacts + 3 établissements (jamais `NOM`) ; restauration identique.
+- `name_detector.dart` : `_etiquetteRole` (étiquettes de rôle + 2 à 3 mots en majuscule initiale), `_nonNoms`, établissements exclus.
+- Mesure : 15 rouges → verts ; banc inchangé octet pour octet ; 838 tests.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Non traité : un seul mot après l'étiquette ; « Contact », « Tuteur », « Représentant légal », « Destinataire ».
+- Révocable : retirer `_etiquetteRole` de la boucle de `detect`.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

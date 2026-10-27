@@ -229,6 +229,30 @@ final class NameDetector implements EntityDetector {
     multiLine: true,
   );
 
+  /// Étiquettes de rôle qui désignent sans ambiguïté une personne (P2-55). Les
+  /// étiquettes qui précèdent aussi des organismes (« Contact », « Tuteur »,
+  /// « Représentant légal », « Destinataire ») en sont volontairement absentes.
+  static const String _etiquettesRole =
+      r'(?:[Pp]atient(?:e|\(e\))?|PATIENT(?:E)?|[Rr]ésident(?:e|\(e\))?|RÉSIDENT(?:E)?|'
+      r'[Bb]énéficiaire|BÉNÉFICIAIRE|[Uu]sager|[Uu]sagère|USAGER|'
+      r'[Pp]ersonne[ \t]+accompagnée|[Pp]ersonne[ \t]+de[ \t]+confiance|'
+      r'[Pp]ersonne[ \t]+à[ \t]+prévenir|[Mm]édecin[ \t]+traitant)';
+
+  /// Valeurs qui ne sont pas un nom (états, structures) en tête de valeur.
+  static const List<String> _nonNoms = [
+    'Non', 'NON', 'Oui', 'OUI', 'Aucun', 'Aucune', 'AUCUN', 'AUCUNE', 'Sans',
+    'SANS', 'Pas', 'PAS', 'Inconnu', 'Inconnue', 'INCONNU', 'INCONNUE', 'Voir',
+    'VOIR', 'Cabinet', 'Association', 'Service', 'Pôle', 'Direction', 'Unité',
+    'Département', 'Société', 'Mairie', 'Équipe', //
+  ];
+
+  static final RegExp _etiquetteRole = RegExp(
+    '(?<![\\wÀ-ÿ])$_etiquettesRole$_h*:$_h*'
+    "(?![DdLl]['\u2019])"
+    '(?!(?:${[...etablissementKeywords, ..._nonNoms].join('|')})\\b)'
+    '($_unite$_h+$_unite(?:$_h+$_unite)?)',
+  );
+
   static final RegExp _prenomChamp = RegExp(r'\b(?:Pr[ée]nom|PR[ÉE]NOM)\b');
 
   /// Fenêtre de recherche de « Prénom » après un « Nom : » seul : fin de la
@@ -398,7 +422,8 @@ final class NameDetector implements EntityDetector {
     for (final (re, enTete) in [
       (_enteteMail, true),
       (_aEcrit, false),
-      (_signature, true)
+      (_signature, true),
+      (_etiquetteRole, true)
     ]) {
       for (final match in re.allMatches(text)) {
         final name = match.group(1)!;
