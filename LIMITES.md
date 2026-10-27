@@ -659,6 +659,18 @@ Qualité <…> » (mot-clé d'établissement), « De : <…> », « Voir la note
 liste (« À : A <a@…>, B <b@…> » : seul le premier est reconnu), nom d'affichage sans chevrons (« De : Zorglub
 Quenelle ») ; un nom de service hors liste des mots-clés devant `<…>` après « De : » est masqué à tort.
 
+**Nom de signature sous une formule de clôture (P2-54).** Sonde : « Cordialement,⏎Zorglub Quenelle⏎Infirmier » laissait
+le nom en clair quand le prénom n'est pas au gazetteer (10 cas rouges). Une formule de clôture seule sur sa ligne
+(`Cordialement`, `Bien à vous`, `Bonne journée`, `Respectueusement`, `Cdt`, `Best regards`, `Sincerely`… ; 20
+formules) suivie, sur la ligne suivante (une ligne vide tolérée), d'un nom seul de 1 à 3 mots en majuscule
+initiale, est masquée. Exclus : articles élidés (« L'équipe »), mots-clés d'établissement, débuts de ligne désignant
+une structure (« Service », « Direction », « Équipe », « Pôle », « Pour »…) et une ligne de trois mots tout en
+majuscules (« POUR LE SERVICE »). Banc inchangé octet pour octet ; 810 tests ; 50 000 signatures : 6,9 s
+(coût de résolution des pseudonymes, déjà documenté au-delà de ~50 000 mentions), sans signature : linéaire.
+**Non traité** : signature sans formule (nom seul en fin de message), nom suivi d'une fonction sur la même ligne
+(« Zorglub Quenelle, infirmier »), formule hors liste ; une structure hors liste sur la ligne suivante (« Cabinet
+Médical Dupont » est exclu, « Maison Bleue » ne l'est pas) est masquée à tort.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,

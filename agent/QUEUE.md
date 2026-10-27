@@ -117,6 +117,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-51 | code | `ecluse_redact` : détecter les valeurs derrière des étiquettes décorées en Markdown ou HTML (« **Nom :** », « <b>Né le</b> ») | P2-50 | fusionnée |
 | P2-52 | code | `ecluse_redact` : détecter une date de naissance derrière une clé de données (`date_naissance`, `dateNaissance`, `dob`, `ddn`…) | P2-51 | fusionnée |
 | P2-53 | code | `ecluse_redact` : détecter le nom d'un correspondant dans un en-tête de courriel (`De :`, `From:`, `… a écrit`) | P2-52 | fusionnée |
+| P2-54 | code | `ecluse_redact` : détecter le nom de signature sous une formule de clôture (`Cordialement,`) | P2-53 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1451,4 +1452,17 @@ que l'adresse quand le prénom n'est pas au gazetteer.
 - Mesure : 11 rouges → verts ; banc inchangé octet pour octet ; 790 tests ; coût identique à la base.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Non traité : signatures, destinataires suivants d'une liste, nom d'affichage sans chevrons.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-54 — Nom de signature sous une formule de clôture (`code`)
+
+Contexte : sonde de signatures (27 octobre 2026) : « Cordialement,⏎Zorglub Quenelle » laissait le nom en clair quand le
+prénom n'est pas au gazetteer (non traité de P2-53).
+
+- Tests d'abord (10 rouges, avant) ; 9 contre-exemples intacts (même ligne, structures, articles, adresse) ; restauration identique.
+- `name_detector.dart` : `_signature` (formule de clôture seule sur sa ligne + nom seul sur la suivante), `_motsStructure`,
+  rejet des lignes de trois mots tout en majuscules.
+- Mesure : 10 rouges → verts ; banc inchangé octet pour octet ; 810 tests.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Non traité : signature sans formule, nom suivi d'une fonction sur la même ligne.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
