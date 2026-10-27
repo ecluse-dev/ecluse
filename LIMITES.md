@@ -612,6 +612,25 @@ remplacée). **Reste mesuré, non traité** : le coût superlinéaire de la rés
 des jetons au-delà de ~50 000 mentions de noms dans un même texte (« née Dupont » ×90 000 : 18 s pour 990 Ko ;
 « Prénom : » ×110 000 : 9 s), hors de la détection ; irréaliste pour un document ordinaire, noté pour mémoire.
 
+**Étiquettes décorées en Markdown ou en HTML (P2-51).** Sonde de 16 présentations : « **Date de naissance :**
+12/03/1950 », « **Né le** 12/03/1950 », « **Nom :** Quenelle », « *Nom* : Quenelle », « `Nom` : … » et
+« <b>Nom :</b> … » laissaient la date, le nom et le prénom **en clair**, les marques de gras, d'italique ou de
+code séparant l'étiquette de sa valeur (les formats `.md` sont pris en charge à l'ingestion). Les marques sont
+neutralisées **dans la vue de détection seulement** : le texte n'est jamais réécrit et le masquage laisse les
+marques en place (« **Nom :** [NOM_1] »). Une suite de `*`, `_` ou `` ` `` d'ouverture n'est retirée que devant un
+mot et hors d'un mot, une suite de fermeture que derrière un mot ou une ponctuation et hors d'un mot, de sorte que
+`jean_dupont`, `[NOM_1]`, `3 * 4`, `__init__` et « une **phrase** en gras » restent intacts (5 contre-exemples
+testés), ainsi que les balises `<b>`, `<i>`, `<u>`, `<em>`, `<strong>`. Tests d'abord (17 rouges) ; banc inchangé
+octet pour octet ; 747 tests. **Incident de conception, corrigé avant fusion** : la première expression
+utilisait des alternatives qui se recouvrent (`\*\*|\*` répétées) et avait un retour arrière exponentiel : 50 000
+étoiles prenaient 51 s (0,1 s sans la règle). Une batterie de stress sur 10 textes d'1 Mo l'a révélé ; remplacée
+par une classe de caractères (1 Mo d'étoiles : 1,6 s), avec 6 tests de non-régression. Contrôle d'intégrité : sur
+3 000 textes aléatoires riches en marques, la restauration redonne exactement l'original dans tous les cas où
+aucun nom n'est masqué, avant comme après la modification ; les écarts restants (141 sur la base, 159 avec la
+règle) concernent exclusivement des textes contenant un nom, dont les mentions partielles sont restaurées sous
+leur première écriture (fusion d'alias, voulue). **Non couvert** : un titre Markdown (« ## **Nom**… »), une
+étiquette entre crochets ou en tableau HTML, un lien (« [Nom](url) »).
+
 
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
