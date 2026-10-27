@@ -322,3 +322,37 @@ reste **ouvert** (dernière rubrique).
   RGPD (P2-09) : pages injoignables depuis l'environnement d'exécution.
 - Seuil d'agrégation de l'export (5) et palier « 85+ » : à confirmer avec les design
   partners.
+
+## 2026-10 — Arbitrages du mainteneur du 27 octobre (14 questions)
+
+Réponses données une à une, avec les conséquences de chaque choix exposées. Les
+arbitrages qui demandent du travail sont devenus les tâches P2-59 à P2-64 de
+`agent/QUEUE.md` ; les autres confirment l'état du code.
+
+**À réaliser**
+
+- **Identifiants : un type par catégorie** (question 1). `identifiant` est scindé
+  (dossier ou numéro administratif, document d'identité, véhicule, réseau) : P2-59.
+- **Téléphones étrangers : pays voisins et Maghreb** (question 5) : P2-60.
+- **Exports structurés : clés explicites et CSV à en-tête** (question 7). La clé
+  nue « nom » reste exclue ; refus explicite si le CSV est ambigu : P2-61.
+- **IBAN de l'espace SEPA avec clé mod 97** (question 8), dans `ecluse_core` ; le BIC
+  reste non traité : P2-62.
+- **Tableaux HTML et titres Markdown** (question 9), dans la vue de détection
+  seulement : P2-63.
+- **Optimiser la résolution des pseudonymes** au-delà de ~50 000 mentions
+  (question 12), avec test différentiel complet avant/après : P2-64.
+
+**Confirmés (aucun travail)**
+
+- Étiquettes de rôle « Patient : », « Résident : »… avec au moins 2 mots (question 2, P2-55).
+- Adresse sans code postal, telle quelle (question 3, P2-56).
+- Saut de ligne dans un identifiant numérique conservé (question 4, P2-38).
+- Étiquettes génériques « Contact », « Tuteur », « Représentant légal »,
+  « Destinataire » : non traitées (question 6).
+- E-mails à IP littérale ou à partie locale avec espace : non traités (question 10).
+- Sur-masquages connus : acceptés, en cas de doute on protège (question 11).
+- Tests de coût chronométrés : gardés, bornes larges ; un rouge sporadique est
+  relancé une fois avant conclusion (question 13).
+- P2-10, P1-00 et P1-12 : laissées en l'état (question 14).
+
