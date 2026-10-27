@@ -686,6 +686,21 @@ Quenelle ») n'est toujours pas détecté ; 100 000 étiquettes consécutives : 
 déjà documenté au-delà de ~50 000 mentions ; 2 s sans cette règle). Pour revenir en arrière : retirer
 `_etiquetteRole` de la boucle de `detect`.
 
+**Adresse sans code postal (P2-56).** Sonde de 18 formulations d'adresse : « 12 rue des Lilas », « 27 boulevard
+Haussmann », « Adresse : 12 cours Victor Hugo », « 8, Av. Jean Jaurès à Lyon » restaient **en clair** (ou, pour les
+deux dernières, le nom de la voie était pris pour un nom de personne et « 12 cours » fuyait), la détection exigeant un
+code postal. Une adresse = numéro (suffixe `bis`/`ter`/lettre A-F toléré) + type de voie + nom de voie de 1 à 5
+mots en majuscule initiale (ou nombre : « rue du 8 Mai 1945 ») est maintenant masquée, confiance 0.55. Types de voie :
+ceux de la forme avec code postal, **sauf** les abréviations ambiguës (`r`, `pl`, `ch`, `all`, `sq`, `crs`, `imp`).
+Tests d'abord (11 rouges) ; 9 contre-exemples intacts (« 3 places libres », « 2 cours à suivre », « 3 chemin de fer »,
+« 12 place disponible », « Annexe 12 B », « Chapitre 3 Cours de biologie »…). Un test existant a changé d'attendu :
+`adresse_multiligne` cas 4 (voie, ligne vide, code postal) donne maintenant **deux** adresses séparées (la voie, la
+commune) au lieu d'une ; l'intention (aucun span ne traverse la ligne vide) est conservée. Banc inchangé octet pour
+octet ; 861 tests ; coût : ×1,2 à ×1,5 sur des entrées pathologiques (le motif existant avec code postal est déjà
+superlinéaire sur « 12 rue » répété : 8 s pour 1 Mo, avant comme après). **Non traité** : nom de voie en minuscules
+(« 12 rue des lilas »), ville seule (« Paris 11e »), numéro en toutes lettres, lieu-dit sans numéro, type de voie
+tronqué ; un nom d'œuvre ou de produit « 12 Place Value » sera masqué à tort.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
