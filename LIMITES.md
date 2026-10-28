@@ -1112,6 +1112,14 @@ journal n'est pas une donnée personnelle » n'est pas validée** (avis d'un DPO
 attendu ; ceci n'est pas un avis juridique). Le README parle d'un journal
 « signé » : ce n'est pas le cas en v0 (le README a été corrigé en ce sens).
 
+**Résolution des pseudonymes en coût linéaire (P2-64).** Le coût venait de deux parcours : chaque mention de nom était
+comparée à toutes les identités déjà établies, et chaque nouveau jeton était cherché dans tout le texte pour écarter un
+littéral `[NOM_n]`. Mesure avant : 10 000 noms distincts (≈ 330 Ko) en 6,4 s, 20 000 en 25,6 s (×4 par doublement).
+Après : 0,5 s pour 4 000, 3,2 s pour 20 000 (linéaire). Les identités sont indexées par segment (une fusion suppose un
+segment commun) et la recherche de littéraux ne porte que sur les segments `[...]` du texte. Sortie inchangée : fuzz
+différentiel sur `main` (300 graines × 2 règles de noms × 3 documents), texte masqué et carte identiques. Test de coût :
+`cout_noms_distincts_test.dart`. Le coût restant au-delà de ~50 000 mentions mentionné plus haut n'a pas été remesuré.
+
 ---
 
 **Écluse réduit le risque, il ne l'annule pas.**
