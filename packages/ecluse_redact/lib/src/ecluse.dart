@@ -235,7 +235,7 @@ abstract final class Ecluse {
         final key = _identityKey(entity);
         var existant = etat.tokenByIdentity[key];
         if (existant == null) {
-          existant = _freshToken(entity.type, etat.counterByType, text);
+          existant = _freshToken(entity.type, etat, text);
           etat.tokenByIdentity[key] = existant;
           etat.attribues.add(existant);
         }
@@ -616,7 +616,8 @@ String _resolveNomToken(
   bool compatible(_NomIdentity identity) =>
       !(gender != null && identity.gender != null && gender != identity.gender);
 
-  final matches = etat.nomIdentities
+  final matches = etat
+      .candidats(segments)
       .where(
         (identity) =>
             (etat.regle == RegleNoms.inclusion || identity.doc == docId) &&
@@ -636,6 +637,7 @@ String _resolveNomToken(
       // mention), comme le promet `LIMITES.md` §5.3 — sans cela, les
       // mentions complètes perdaient prénom et titre à la restauration.
       identity.segments = segments;
+      etat.indexe(identity);
       etat.mapping[identity.token] = entity.value;
     }
     return identity.token;
@@ -647,7 +649,8 @@ String _resolveNomToken(
   if (matches.isEmpty &&
       etat.regle == RegleNoms.identiteComplete &&
       segments.length >= 2) {
-    final anterieures = etat.nomIdentities
+    final anterieures = etat
+        .candidats(segments)
         .where((identity) =>
             identity.doc != docId &&
             compatible(identity) &&
@@ -662,10 +665,10 @@ String _resolveNomToken(
     }
   }
 
-  final token = _freshToken(EntityType.nom, etat.counterByType, text);
+  final token = _freshToken(EntityType.nom, etat, text);
   etat.attribues.add(token);
   etat.mapping[token] = entity.value;
-  etat.nomIdentities.add(_NomIdentity(segments, token, gender, docId));
+  etat.ajouteIdentite(_NomIdentity(segments, token, gender, docId));
   return token;
 }
 
@@ -676,16 +679,20 @@ String _resolveNomToken(
 /// personne à la place du texte de l'utilisateur.
 String _freshToken(
   EntityType type,
-  Map<EntityType, int> counterByType,
+  _Etat etat,
   String text,
 ) {
-  var next = counterByType[type] ?? 0;
+  final zone = etat.zoneCrochets(text);
+  var next = etat.counterByType[type] ?? 0;
   String token;
   do {
     next++;
     token = '[${entityTypeLabel(type)}_$next]';
-  } while (tolerantTokenPattern(token).hasMatch(text));
-  counterByType[type] = next;
+    // Même résultat que `tolerantTokenPattern(token).hasMatch(text)` : un jeton
+    // ne peut figurer que dans un segment `[...]`; sans tel segment, aucun
+    // motif n'est compilé ni appliqué (P2-64).
+  } while (zone.isNotEmpty && etat.motif(token).hasMatch(zone));
+  etat.counterByType[type] = next;
   return token;
 }
 
@@ -714,6 +721,40 @@ final class _Etat {
   final Map<String, String> mapping = {};
   final Map<String, String> tokenByIdentity = {};
   final List<_NomIdentity> nomIdentities = [];
+
+  /// Identités par segment : une mention ne peut se rapprocher que d'une
+  /// identité qui partage au moins un segment avec elle (sous-ensemble dans un
+  /// sens ou dans l'autre), donc inutile de la comparer à toutes (P2-64). Les
+  /// entrées périmées (segments d'une forme plus tard enrichie) sont inoffensives :
+  /// les conditions sont revérifiées sur les candidats.
+  final Map<String, Set<_NomIdentity>> _parSegment = {};
+
+  void ajouteIdentite(_NomIdentity identity) {
+    nomIdentities.add(identity);
+    indexe(identity);
+  }
+
+  void indexe(_NomIdentity identity) {
+    for (final segment in identity.segments) {
+      (_parSegment[segment] ??= Set.identity()).add(identity);
+    }
+  }
+
+  /// Identités pouvant correspondre à [segments] (toutes si [segments] est
+  /// vide, cas où l'inclusion est vraie pour chacune).
+  Iterable<_NomIdentity> candidats(Set<String> segments) {
+    if (segments.isEmpty) return nomIdentities;
+    if (segments.length == 1) {
+      return _parSegment[segments.single] ?? const <_NomIdentity>[];
+    }
+    final r = Set<_NomIdentity>.identity();
+    for (final segment in segments) {
+      final l = _parSegment[segment];
+      if (l != null) r.addAll(l);
+    }
+    return r;
+  }
+
   final Map<EntityType, int> counterByType = {};
 
   /// Patronymes (minuscules) établis par une mention certaine d'un document
@@ -733,6 +774,23 @@ final class _Etat {
 
   static final RegExp _crochets = RegExp(r'\[[^\[\]]*\]');
 
+  /// Motif tolérant de [jeton], compilé une seule fois.
+  RegExp motif(String jeton) => _motifs[jeton] ??= tolerantTokenPattern(jeton);
+
+  String? _zoneTexte;
+  String _zone = '';
+
+  /// Segments `[...]` de [text] joints par des sauts de ligne, relevés une
+  /// seule fois par texte (le même objet est passé à tous les jetons d'un
+  /// appel) : seule zone où un jeton peut figurer en clair.
+  String zoneCrochets(String text) {
+    if (!identical(_zoneTexte, text)) {
+      _zone = [for (final m in _crochets.allMatches(text)) m[0]!].join('\n');
+      _zoneTexte = text;
+    }
+    return _zone;
+  }
+
   /// Jetons déjà attribués qui figurent en clair dans [text] (même résultat
   /// que `tolerantTokenPattern(jeton).hasMatch(text)` pour chacun, dans l'ordre
   /// d'attribution). Un motif commence par `[` et finit par `]` sans autre
@@ -741,13 +799,11 @@ final class _Etat {
   /// coûte plus rien, et les autres ne sont testés que sur ces segments.
   List<String> jetonsLitteraux(String text) {
     if (attribues.isEmpty) return const [];
-    final segments = [for (final m in _crochets.allMatches(text)) m[0]!];
-    if (segments.isEmpty) return const [];
-    final zone = segments.join('\n');
+    final zone = zoneCrochets(text);
+    if (zone.isEmpty) return const [];
     return [
       for (final jeton in attribues)
-        if ((_motifs[jeton] ??= tolerantTokenPattern(jeton)).hasMatch(zone))
-          jeton
+        if (motif(jeton).hasMatch(zone)) jeton
     ];
   }
 
@@ -757,10 +813,10 @@ final class _Etat {
     final c = _Etat(regle)..documents = documents;
     c.mapping.addAll(mapping);
     c.tokenByIdentity.addAll(tokenByIdentity);
-    c.nomIdentities.addAll([
-      for (final n in nomIdentities)
-        _NomIdentity(Set.of(n.segments), n.token, n.gender, n.doc)
-    ]);
+    for (final n in nomIdentities) {
+      c.ajouteIdentite(
+          _NomIdentity(Set.of(n.segments), n.token, n.gender, n.doc));
+    }
     c.counterByType.addAll(counterByType);
     c.patronymes.addAll(patronymes);
     c.attribues.addAll(attribues);
@@ -771,6 +827,7 @@ final class _Etat {
     mapping.clear();
     tokenByIdentity.clear();
     nomIdentities.clear();
+    _parSegment.clear();
     counterByType.clear();
     patronymes.clear();
     attribues.clear();

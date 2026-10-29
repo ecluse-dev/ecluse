@@ -612,6 +612,17 @@ remplacée). **Reste mesuré, non traité** : le coût superlinéaire de la rés
 des jetons au-delà de ~50 000 mentions de noms dans un même texte (« née Dupont » ×90 000 : 18 s pour 990 Ko ;
 « Prénom : » ×110 000 : 9 s), hors de la détection ; irréaliste pour un document ordinaire, noté pour mémoire.
 
+**Résolution des pseudonymes en temps linéaire (P2-64).** Le coût dépendait du nombre d'identités **distinctes**, non
+du nombre de mentions (10 000 noms distincts : 43 à 70 s ; 10 000 mentions d'un même nom : 0,6 s). Deux causes :
+chaque mention était comparée à toutes les identités déjà établies, et chaque nouveau jeton compilait puis
+appliquait son motif à tout le texte. Correction : index des identités par segment (une mention ne peut se rapprocher
+que d'une identité qui partage un segment avec elle) et recherche des jetons littéraux limitée aux segments `[...]`
+du texte, relevés une fois par appel. Mesure après : 10 000 noms distincts 0,8 s, 20 000 : 2,0 s (19 s avant l'index
+sur ce seul poste). Équivalence : 1 800 exécutions de dossier (300 graines × 2 règles × 3 documents, noms
+partiels, ordres inversés, jetons littéraux) donnent exactement les mêmes sorties, cartes et avertissements sur
+`main` et après ; banc inchangé ; 1 031 tests. Test de non-régression : `cout_noms_distincts_test.dart`
+(10 000 noms distincts, moins de 15 s). Le « reste mesuré » du paragraphe précédent est donc levé.
+
 **Étiquettes décorées en Markdown ou en HTML (P2-51).** Sonde de 16 présentations : « **Date de naissance :**
 12/03/1950 », « **Né le** 12/03/1950 », « **Nom :** Quenelle », « *Nom* : Quenelle », « `Nom` : … » et
 « <b>Nom :</b> … » laissaient la date, le nom et le prénom **en clair**, les marques de gras, d'italique ou de
