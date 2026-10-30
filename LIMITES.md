@@ -608,7 +608,7 @@ dans une fenêtre de 300 caractères extraite d'abord. Mesure après : 1,8 s (24
 sorties avant et après ; banc inchangé octet pour octet ; 718 tests. Tests de non-régression ajoutés (160 000 « Nom : »
 et 64 000 « Nom : Aspirine », moins de 15 s : 43 s et plus avant la correction ; une première borne de 4 s,
 posée sur 60 000 répétitions, était trop serrée pour l'exécuteur d'intégration continue — 4,09 s — et a été
-remplacée). **Reste mesuré, non traité** : le coût superlinéaire de la résolution
+remplacée). **Reste mesuré, traité ensuite par P2-64** : le coût superlinéaire de la résolution
 des jetons au-delà de ~50 000 mentions de noms dans un même texte (« née Dupont » ×90 000 : 18 s pour 990 Ko ;
 « Prénom : » ×110 000 : 9 s), hors de la détection ; irréaliste pour un document ordinaire, noté pour mémoire.
 
@@ -1115,3 +1115,14 @@ attendu ; ceci n'est pas un avis juridique). Le README parle d'un journal
 ---
 
 **Écluse réduit le risque, il ne l'annule pas.**
+
+**Résolution des pseudonymes et restauration (P2-64).** Trois coûts distincts, mesurés un à un : (1) `_freshToken` appliquait le motif
+de chaque nouveau jeton à tout le texte (jetons × taille) ; il ne teste plus que les segments `[...]`, relevés une fois ;
+(2) `Ecluse.restore` faisait un `replaceAll` par jeton ; il fait un seul parcours des segments `[...]` (repli sur l'ancien
+algorithme si une valeur contient `[`, `]` ou `\`, cas où l'équivalence n'est plus garantie) ; (3) chaque mention de nom était
+comparée à toutes les identités ; un index par segment ne compare que celles qui partagent un segment. Mesure sur 10 000 noms
+distincts (110 Ko) : 43 s → 0,7 s (détection + masquage), restauration 0,2 s ; 100 000 noms distincts : `redact` 371 s → 22 s,
+`restore` 1,6 s. **Reste** : le coût de `redact` n'est pas encore strictement linéaire (×10 de mentions ≈ ×33 de temps entre
+10 000 et 100 000), ce qui est sans effet pour un document ordinaire. Équivalence : sorties identiques à `main` sur 300 graines
+× 2 modes (avec et sans `Dossier`), et test différentiel de `restore` contre l'ancien algorithme (2 500 textes, dont des
+valeurs piégées).
