@@ -997,6 +997,28 @@ inchangé octet pour octet ; 1278 tests ; coût linéaire (0,9 Mo en 2,1 à 4,0 
 (« mme roux a chuté ») — sans majuscule, rien ne distingue un patronyme d'un mot courant (« mme est partie »), le faux positif serait massif ; les initiales
 isolées sans civilité (« N. Haddad », « Girault N. ») sauf en signature — trop souvent une fin de phrase (« vitamine B. Le patient… »).
 
+**Sur-masquages fréquents (P2-77).** Deuxième lot de la relecture adverse indépendante (un « sage » chargé des faux positifs, ~370 phrases) ; chaque cas est reproduit
+avant correction. Étaient masqués à tort, au point de dégrader le prompt : (1) la **fonction** après une civilité — « Madame la Directrice a signé », « Monsieur le
+Président de la République », « Madame le Maire » ; (2) un **mot de statut** — « Mme Décédée », « Madame Âgée de 82 ans », « Mme Aidante principale », « M. Bénéficiaire
+du RSA » ; (3) la **situation familiale** — « Famille Monoparentale / Recomposée / Nombreuse », « Père Divorcé », « Époux Décédé » ; (4) un champ d'état civil — « Situation
+familiale : **Marié**, deux enfants » (« Marié » vaut « Marie » une fois les accents ôtés) ; (5) un **jour ou un adverbe** avalé avec le prénom — « Lundi Marie viendra »
+donnait « [NOM_1] viendra », la date disparaissait ; (6) les **toponymes « Saint-… »** — « Saint-Denis », « Seine-Saint-Denis », « Saint-Malo » ; (7) les **éponymes
+médicaux** — « Maladie de Charcot-Marie-Tooth », « Syndrome de Gilles de la Tourette » ; (8) un **numéro de lot** au format d'une plaque — « Numéro de lot : AB-123-CD ».
+**Maintenant** : (1) après une civilité, un article en minuscules (`le`, `la`, `les`) n'ouvre jamais un nom (« de la Fontaine » et « La Fontaine » restent des noms) ; (2) à
+(4) une liste de 60 mots de statut est exclue de la civilité, des mots de parenté et de la règle du prénom ; (5) jours, mois, adverbes de temps (`hier`, `demain`,
+`ensuite`) et formules de politesse (`merci`, `bonjour`) ne sont plus pris pour le patronyme voisin d'un prénom — le prénom reste masqué, le jour reste lisible, et
+« Merci Pierre Dupont » masque toujours « Pierre Dupont » (le voisin de droite) ; (6) un mot qui commence par `Saint-` ou `Sainte-` ou contient `-Saint-` n'est pas un prénom ;
+(7) un mot qui suit « maladie / syndrome / trouble / échelle / test / score / loi / indice / signe » + `de`, `de la`, `d'` n'est pas un prénom ; (8) une plaque précédée de « lot »,
+« série », « référence », « modèle », « article », « code » n'en est pas une. **Analyse bénéfice / risque** : chaque exclusion retire du texte masqué un mot qui n'identifie
+personne et que le LLM utilise (la fonction, la date, le statut) ; le risque est une fuite si un vrai patronyme coïncide avec un de ces mots (« Mme Seul », « Mme Cadet » sont
+possibles) — il est jugé faible et borné aux seuls cas où la civilité est directement suivie du mot. **Changement de comportement à connaître** : les communes
+« Saint-… » étaient masquées **par accident** (« Étienne », « Jean », « Denis » sont des prénoms) alors que toutes les autres communes restaient en clair, conformément à la
+politique du projet (le lieu est un quasi-identifiant évalué par le rapport de risque, § 3, et non masqué par la détection). Elles restent maintenant en clair comme les autres :
+10 textes du corpus de quasi-identifiants changent pour cette seule raison, tous « demeure à Saint-Étienne » ; le rapport de risque, qui lit le texte, est inchangé (tests verts).
+Tests d'abord (32 rouges sur 46, 13 témoins qui prouvent que les vrais noms restent masqués) ; 3 896 textes de corpus : 10 changements, tous la raison ci-dessus ; banc inchangé
+octet pour octet ; 1324 tests, tous les paquets verts. **Non traité** : titres de structure qui contiennent un prénom (« Foyer Jean Moulin », « Rue Victor Hugo » restent masqués
+en NOM, par prudence), mots de fête (« Noël »), noms de marques (« Le Robert »), éponymes médicaux hors cues (« le docteur Alzheimer » reste un nom, il l'est).
+
 **Coût d'une chaîne de particules et de balises ouvertes (P2-79).** Troisième lot de la relecture indépendante (le « sage » chargé du code), **défaut bloquant**
 introduit par moi en P2-53 et P2-54 : une chaîne de particules en majuscules ou en minuscules prenait un temps polynomial dans les règles « nom devant `<adresse>` a
 écrit » (P2-53) et « signature après une formule de clôture » (P2-54), parce que `_unite` répétait les particules **sans borne**. Mesuré avant correction : `Van Der ` × 80
