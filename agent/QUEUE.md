@@ -141,6 +141,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-75 | code | `ecluse_redact` : initiales entre une civilité et un patronyme (`Dr A. Faure`) | P2-74 | fusionnée |
 | P2-76 | code | `ecluse_redact` : variantes de contexte de naissance (`DN`, `D.N.`, `Date nais.`, `née 12/9/1938`) | P2-74 | fusionnée |
 | P2-77 | code | `ecluse_redact` : sur-masquages fréquents (fonctions après civilité, statuts, jours voisins, Saint-…, éponymes, lots) | P2-75 | PR ouverte |
+| P2-79 | code | `ecluse_redact`/`ecluse_ingest` : coût d'une chaîne de particules et de balises ouvertes (déni de service) | P2-76 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1779,5 +1780,12 @@ Contexte : relecture adverse indépendante (un « sage » chargé des faux posit
   écartés comme voisin d'un prénom, `_estToponymeSaint`, `_precedeParEponyme`. `identifiant_detector.dart` : plaque précédée de lot/série/référence écartée.
 - Changement de comportement assumé : les communes « Saint-… » ne sont plus masquées (elles l'étaient par accident, contrairement aux autres communes).
 - Mesure : 3 896 textes de corpus, 10 changements (communes Saint-…) ; banc inchangé octet pour octet ; 1324 tests ; tous les paquets verts.
+### P2-79 — Coût d'une chaîne de particules et de balises ouvertes (`code`, bloquant)
+
+Contexte : relecture indépendante du code : `Van Der ` × 80 (640 octets) = 15 s dans `_aEcrit` (P2-53) ; cubique dans `_signature` (P2-54) ; `<prenom ` sans `>` et `<[^>]*>` (docx/odt) quadratiques.
+
+- Tests d'abord (mesure sur la base : 640 octets en 14,8 s) ; 7 tests de coût côté détection, 2 côté ingestion ; un nom à particules reste masqué.
+- `name_detector.dart` : `_unite` borne les particules à trois ; clé XML `[^>\n]{0,200}`. `docx_xml.dart`, `odt_xml.dart`, `docx_extractor.dart` : `[^<>]`.
+- Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; redact 1285 tests, ingest 158.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

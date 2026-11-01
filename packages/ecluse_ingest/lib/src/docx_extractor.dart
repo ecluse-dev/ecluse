@@ -126,7 +126,7 @@ final RegExp _ignoredPartName = RegExp(
   r'^word/(?:header\d*|footer\d*|footnotes|endnotes|comments)\.xml$',
 );
 
-final RegExp _nonEmptyRun = RegExp(r'<w:t(?:\s[^>]*)?>[^<]*[^<\s][^<]*</w:t>');
+final RegExp _nonEmptyRun = RegExp(r'<w:t(?:\s[^<>]*)?>[^<]*[^<\s][^<]*</w:t>');
 
 bool _hasIgnoredText(Archive archive, int maxEntryBytes) {
   for (final file in archive.files) {
