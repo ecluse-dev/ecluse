@@ -1,5 +1,5 @@
 /// Formats de fichier pris en charge en v1.
-enum IngestFormat { txt, md, docx, odt, pdf }
+enum IngestFormat { txt, md, docx, odt, pdf, csv, tsv, json, html, xml }
 
 /// Résultat d'une tentative d'ingestion de fichier.
 ///

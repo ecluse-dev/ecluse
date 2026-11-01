@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'ingest_result.dart';
 import 'magic_bytes.dart';
 
-/// Extrait le texte d'un fichier `.txt`/`.md`.
+/// Extrait le texte d'un fichier `.txt`/`.md` (et, depuis P2-67, `.csv`, `.tsv`,
+/// `.json`, `.html`, `.xml`, lus comme du texte brut).
 ///
 /// Aucun rendu Markdown : la syntaxe brute est déjà le texte que le
 /// pipeline doit voir, et interpréter la syntaxe n'ajoute rien à la

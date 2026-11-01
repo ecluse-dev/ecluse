@@ -863,6 +863,18 @@ feuille de calcul (`.xlsx` refusé), formules de champs et zones de texte flotta
 `ignored_parts`), cellules à plusieurs lignes dont le contenu relève d'une seule valeur (les paragraphes d'une cellule sont joints
 par une espace).
 
+**Formats texte structurés à l'ingestion (P2-67).** Les fichiers `.csv`, `.tsv`, `.json`, `.html`/`.htm` et `.xml` étaient refusés
+(« Format non traité ») alors que la détection lit désormais leur structure : en-tête CSV (P2-61), clés de données explicites (P2-61), tableaux
+HTML (P2-63). Ils sont maintenant lus comme du **texte brut**, avec les garde-fous de `.txt` : UTF-8 strict (BOM retiré), refus d'un
+contenu binaire déguisé (signature reconnue), d'un NUL, de l'UTF-16 et d'un encodage non reconnu. **Conséquence à connaître** : un export
+Excel français est souvent en Windows-1252 : il est refusé avec le motif « ré-enregistrez en UTF-8 », jamais deviné (un accent mal décodé
+décalerait les caractères et casserait le masquage). Aucun rendu : la syntaxe brute est le texte que la détection voit. Une cellule CSV sur
+plusieurs lignes entre guillemets, ou un CSV dont une ligne n'a pas le nombre de colonnes de l'en-tête, lève `TableauAmbiguException` à la
+détection. `IngestFormat` gagne cinq valeurs (`csv`, `tsv`, `json`, `html`, `xml`) : aucune autre partie du dépôt n'énumère ces valeurs. Tests
+d'abord (20 tests, dont le bout en bout par format et les refus) ; ingest 156 tests, redact 1042, demo 37. **Non traité** : `.xlsx`, `.rtf`,
+`.doc`, `.pptx` (refusés avec motif), `.yaml`/`.yml`, `.ini`, `.log`, les encodages autres qu'UTF-8. **Décision de périmètre, révocable** :
+retirer la ligne correspondante du `switch` de `ingest_file.dart` rétablit le refus.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
