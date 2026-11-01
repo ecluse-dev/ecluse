@@ -133,6 +133,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-67 | code | `ecluse_ingest` : formats texte structurés `.csv`, `.tsv`, `.json`, `.html`, `.xml` | P2-66 | fusionnée |
 | P2-68 | code | `ecluse_redact` : prénoms d'origines variées au gazetteer (Maghreb, Afrique de l'Ouest, Europe, Asie) | P2-67 | fusionnée |
 | P2-69 | code | `ecluse_redact` : civilités au pluriel et en majuscules, mots de parenté (`Mmes`, `la famille`, `le docteur`, `Sœur`) | P2-68 | fusionnée |
+| P2-70 | code | `ecluse_redact` : prénom entre deux mots capitalisés, couvrir les deux voisins (`Appeler Pierre Dupont`) | P2-69 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1689,4 +1690,16 @@ Contexte : sonde de 26 formules de politesse : 13 laissaient le nom ou le patron
 - Faux positifs : 3 896 textes de corpus comparés à `main`, 0 changement. Banc inchangé octet pour octet ; 1157 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Sur-masquages connus : « Père Noël », « madame Rose », « Famille Aidante ».
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-70 — Prénom entre deux mots capitalisés (`code`)
+
+Contexte : « Bilan Pierre Dupont.docx » → « [NOM_1] Dupont.docx » ; la règle bidirectionnelle prenait le mot qui précède et laissait celui qui suit.
+
+- Tests d'abord (12 rouges sur 17) ; 5 cas à un seul voisin inchangés ; même personne = même jeton.
+- `name_detector.dart` : si un voisin libre existe de chaque côté du prénom, l'étendue couvre les deux (3 mots, confiance 0.6).
+- Faux positifs / effets : 3 896 textes de corpus comparés à `main`, 32 changent (flou adversarial), tous un patronyme désormais couvert ; banc inchangé
+  octet pour octet ; 1174 tests.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Coût assumé : le mot qui précède reste masqué avec le nom. Non traité : noms dans noms de fichiers, URL, logins.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
