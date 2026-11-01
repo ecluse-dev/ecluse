@@ -129,7 +129,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-63 | code | `ecluse_redact` : tableaux HTML et titres Markdown dans la vue de détection | P2-62 | fusionnée |
 | P2-64 | code | `ecluse_redact` : coût linéaire de la résolution des pseudonymes au-delà de 50 000 mentions | P2-63 | fusionnée |
 | P2-65 | code | `ecluse_ingest`/`ecluse_redact` : tableaux Word et ODT (cellules par tabulation, rangées par saut de ligne) | P2-64 | fusionnée |
-| P2-66 | code | `ecluse_core` : résolveur de chevauchements linéaire (`resolveOverlaps`) | P2-65 | PR ouverte |
+| P2-66 | code | `ecluse_core` : résolveur de chevauchements linéaire (`resolveOverlaps`) | P2-65 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
