@@ -129,6 +129,58 @@ final class NameDetector implements EntityDetector {
   /// octets : 15 s) ; « de la », « van der », « de la » + « Ben » tiennent en trois.
   static const String _unite = '(?:$_particules){0,3}$_cap';
 
+  /// Mots de statut, d'état civil ou de situation familiale qui suivent une
+  /// civilité, un mot de parenté ou une étiquette, ou qui valent un prénom une fois
+  /// les accents ôtés (« Marié » est « Marie ») : jamais un nom (P2-77).
+  static const List<String> _statuts = [
+    'décédé', 'décédée', 'décédés', 'âgé', 'âgée', 'âgés', 'seul', 'seule',
+    'isolé', 'isolée', 'aidant', 'aidante', 'retraité', 'retraitée',
+    'autonome', 'hospitalisé', 'hospitalisée', 'bénéficiaire', 'usager',
+    'usagère', 'patient', 'patiente', 'résident', 'résidente', 'marié',
+    'mariée', 'mariés', 'célibataire', 'divorcé', 'divorcée', 'divorcés',
+    'veuf', 'pacsé', 'pacsée', 'concubin', 'concubine', 'séparé', 'séparée',
+    'monoparentale', 'recomposée', 'nombreuse', 'accueillante', 'gardienne',
+    'aîné', 'aînée', 'cadet', 'cadette', 'généraliste', 'agrégé', 'agrégée',
+    'handicapé', 'handicapée', 'dépendant', 'dépendante', 'malade', 'absent',
+    'absente', 'hébergé', 'hébergée', //
+  ];
+
+  static final Set<String> _statutsSet = _statuts.toSet();
+
+  /// Alternation à première lettre indifférente à la casse, pour un `(?!…)`.
+  static final String _statutsAlt = _statuts
+      .map((w) => '[${w[0].toUpperCase()}${w[0]}]${w.substring(1)}')
+      .join('|');
+
+  static bool _estStatut(String mot) => _statutsSet.contains(mot.toLowerCase());
+
+  /// Jours, mois, adverbes de temps et formules de politesse : jamais
+  /// absorbés comme patronyme voisin d'un prénom (« Lundi Marie viendra »).
+  static const Set<String> _motsVoisinsNeutres = {
+    'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche',
+    'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août',
+    'septembre', 'octobre', 'novembre', 'décembre', 'hier', 'demain',
+    "aujourd'hui", 'ensuite', 'puis', 'enfin', 'merci', 'bonjour', 'bonsoir',
+    'salut', 'cordialement', 'matin', 'soir', 'après-midi', //
+  };
+
+  /// Un toponyme « Saint-… » (« Saint-Denis », « Seine-Saint-Denis ») n'est pas un
+  /// prénom.
+  static bool _estToponymeSaint(String mot) =>
+      RegExp(r'^Sainte?s?-').hasMatch(mot) || mot.contains('-Saint-');
+
+  /// Éponyme médical : le mot suit « maladie de », « syndrome de », « score de »…
+  static final RegExp _devantEponyme = RegExp(
+    r'(?:[Ss]yndrome|[Mm]aladie|[Mm]al|[Tt]roubles?|[ÉéEe]chelle|[Tt]est|'
+    r'[Ss]core|[Ll]oi|[Cc]lassification|[Ii]ndice|[Ss]ignes?)'
+    "[ \\t]+(?:de[ \\t]+(?:la[ \\t]+)?|d['\u2019])\$",
+  );
+
+  static bool _precedeParEponyme(String text, int debut) {
+    final fenetre = text.substring(debut > 40 ? debut - 40 : 0, debut);
+    return _devantEponyme.hasMatch(fenetre);
+  }
+
   /// Une ou plusieurs initiales de prénom avant un patronyme (P2-75) : « A. »,
   /// « J.-P. », « A. B. ». Après une civilité, elles font partie du nom : sans
   /// elles, « Dr A. Faure » masquait l'initiale et laissait « Faure ».
@@ -143,6 +195,9 @@ final class NameDetector implements EntityDetector {
     r'[mM]onsieur|[mM]adame|[mM]ademoiselle|docteur|docteure|doctoresse|'
     r'professeur|professeure)'
     '$_blancOuSaut'
+    // Une fonction (« Madame la Directrice ») ou un statut (« Mme Décédée ») n'est
+    // pas un nom (P2-77) ; « de la Fontaine » reste un nom.
+    '(?!(?:le|la|les)[ \\t]|(?:$_statutsAlt)(?![\\wÀ-ÿ]))'
     '((?:$_initiales){0,3}$_unite'
     '(?:$_h+'
     // Un mot-clé d'établissement n'est jamais un patronyme (voir
@@ -188,6 +243,7 @@ final class NameDetector implements EntityDetector {
     r'[Ff]rère|Père)'
     '$_h+'
     '(?!(?:${etablissementKeywords.join('|')})\\b)'
+    '(?!(?:$_statutsAlt)(?![\\wÀ-ÿ]))'
     '($_cap(?:$_h+$_unite)?)',
   );
 
@@ -863,6 +919,13 @@ final class NameDetector implements EntityDetector {
       final word = match.group(0)!;
       if (_isExcludedAcronym(word)) continue;
       if (!_looksLikeKnownFirstName(word)) continue;
+      // Statut (« Marié »), toponyme (« Saint-Denis ») ou éponyme médical
+      // (« maladie de Charcot-Marie-Tooth ») : pas un prénom (P2-77).
+      if (_estStatut(word) ||
+          _estToponymeSaint(word) ||
+          _precedeParEponyme(text, match.start)) {
+        continue;
+      }
       if (claimed.overlaps(match.start, match.end)) continue;
 
       // Règle bidirectionnelle : un nom de famille supposé peut précéder
@@ -1090,7 +1153,10 @@ final class NameDetector implements EntityDetector {
     final match = _wordBeforeEnd.firstMatch(head);
     if (match == null) return null;
     final word = match.group(1)!;
-    if (_isExcludedAcronym(word)) return null;
+    if (_isExcludedAcronym(word) ||
+        _motsVoisinsNeutres.contains(word.toLowerCase())) {
+      return null;
+    }
     // Le groupe capturé est en tête du motif : son début coïncide avec
     // celui du match entier.
     return _WordSpan(debut + match.start, debut + match.start + word.length);

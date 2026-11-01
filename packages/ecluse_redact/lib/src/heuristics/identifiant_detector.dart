@@ -47,6 +47,12 @@ final class IdentifiantDetector implements EntityDetector {
     r'(?![A-Za-z0-9-])',
   );
 
+  static final RegExp _contexteDeLot = RegExp(
+    r'(?:lot|s[ée]rie|r[ée]f[ée]rence|r[ée]f|catalogue|mod[èe]le|article|code)'
+    r'[ \t.:°n]*$',
+    caseSensitive: false,
+  );
+
   /// Adresse IPv4 derrière « IP » / « adresse IP ».
   static final RegExp _ip = RegExp(
     '\\b(?:adresse$_h+)?IP$_h*[:=]?$_h*'
@@ -105,6 +111,10 @@ final class IdentifiantDetector implements EntityDetector {
       ));
     }
     for (final match in _plaque.allMatches(text)) {
+      // Numéro de lot, de série ou de référence au format d'une plaque (P2-77).
+      final avant =
+          text.substring(match.start > 30 ? match.start - 30 : 0, match.start);
+      if (_contexteDeLot.hasMatch(avant)) continue;
       trouves.add(DetectedEntity(
         type: EntityType.vehicule,
         start: match.start,
