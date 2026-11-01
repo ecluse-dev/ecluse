@@ -24,7 +24,7 @@
 /// standard.
 library;
 
-final RegExp _tagPattern = RegExp('<[^>]*>');
+final RegExp _tagPattern = RegExp('<[^<>]*>');
 final RegExp _entityPattern =
     RegExp('&(#x[0-9A-Fa-f]+|#[0-9]+|amp|lt|gt|quot|apos);');
 

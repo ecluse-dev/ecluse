@@ -140,6 +140,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-74 | code | `ecluse_redact` : forme « Nom, Prénom » (`Marchetti, Odette`) | P2-73 | fusionnée |
 | P2-75 | code | `ecluse_redact` : initiales entre une civilité et un patronyme (`Dr A. Faure`) | P2-74 | PR ouverte |
 | P2-76 | code | `ecluse_redact` : variantes de contexte de naissance (`DN`, `D.N.`, `Date nais.`, `née 12/9/1938`) | P2-74 | PR ouverte |
+| P2-79 | code | `ecluse_redact`/`ecluse_ingest` : coût d'une chaîne de particules et de balises ouvertes (déni de service) | P2-76 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1767,4 +1768,14 @@ Contexte : relecture adverse indépendante (un « sage », 200 sondes) ; deux fu
 - Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1278 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Écarté après analyse : nom en minuscules après `mme`/`mr`/`m.` (faux positifs massifs) ; initiales isolées sans civilité.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-79 — Coût d'une chaîne de particules et de balises ouvertes (`code`, bloquant)
+
+Contexte : relecture indépendante du code : `Van Der ` × 80 (640 octets) = 15 s dans `_aEcrit` (P2-53) ; cubique dans `_signature` (P2-54) ; `<prenom ` sans `>` et `<[^>]*>` (docx/odt) quadratiques.
+
+- Tests d'abord (mesure sur la base : 640 octets en 14,8 s) ; 7 tests de coût côté détection, 2 côté ingestion ; un nom à particules reste masqué.
+- `name_detector.dart` : `_unite` borne les particules à trois ; clé XML `[^>\n]{0,200}`. `docx_xml.dart`, `odt_xml.dart`, `docx_extractor.dart` : `[^<>]`.
+- Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; redact 1285 tests, ingest 158.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
