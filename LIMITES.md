@@ -829,6 +829,27 @@ jetons littéraux dans le texte (`[NOM_1]`, `[ nom_2 ]`, `\[NOM\_3\]`…), compa
 (`cout_noms_distincts_test.dart`, bornes de 10 s pour des mesures de 0,5 à 1,1 s). **Non traité** : la croissance résiduelle
 au-delà de 40 000 noms distincts, non mesurée plus loin ; la détection des noms elle-même (0,5 s pour 10 000 noms).
 
+**Tableaux Word et ODT (P2-65).** Sonde d'ingestion (1ᵉʳ novembre 2026), faite sur des fichiers `.docx` et `.odt` générés : les
+cellules d'un tableau étaient aplaties en **un paragraphe chacune** (« Nom⏎Quenelle⏎Prénom⏎Zorglub »), sans lien entre l'étiquette et sa
+valeur, ni entre l'en-tête d'un tableau et ses colonnes. Les noms d'un tableau étiquette / valeur et d'un tableau à en-tête
+(« Nom ⇥ Prénom ⇥ Service ») restaient **en clair** ; seuls la date de naissance et le téléphone (reconnus par leur forme ou par un
+saut de ligne unique) étaient masqués. Les tableaux sont le format dominant des fiches et plannings des établissements : c'est la fuite
+la plus étendue trouvée depuis P2-34. **Maintenant** (`ecluse_ingest`) : les cellules d'une rangée sont séparées par une tabulation et les
+rangées par un saut de ligne (`</w:tc>` / `</w:tr>` pour le docx, `table:table-cell` / `table:table-row` pour l'odt). Dans une cellule,
+les paragraphes, tabulations et sauts de ligne deviennent des espaces ; une cellule fusionnée (`w:gridSpan`, cellule couverte ou répétée
+d'un odt) garde le même nombre de champs ; un tableau imbriqué reste dans la cellule parente. Hors tableau, l'extraction est inchangée.
+`ecluse_redact` lit alors le texte : un tableau à en-tête (colonne « Nom », « Prénom »…) est traité comme un CSV tabulé (P2-61, avec son
+refus explicite si une rangée n'a pas le nombre de colonnes de l'en-tête, par exemple après une fusion de cellules) ; une rangée de **deux
+champs** « étiquette ⇥ valeur » est lue comme « étiquette : valeur » pour les étiquettes de nom, de prénom et de rôle. Une rangée de plus de
+deux champs ne l'est jamais (« Prénom ⇥ Service ⇥ Chambre » n'est pas un prénom). Tests d'abord (11 rouges sur 15 pour l'extraction et le
+masquage de bout en bout, 9 pour la tabulation) ; contre-exemples : tableau sans colonne de personne, « Nom ⇥ Aspirine » seul, texte hors
+tableau ; banc inchangé octet pour octet ; ingest 136 tests, redact 1042. Coût : 6 entrées pathologiques de 0,35 à 8,6 Mo en 0,2 à 3,5 s
+(extraction) ; un tableau de 50 000 rangées (8,6 Mo) met 4,3 s d'extraction et 28 s de détection, le reste étant le coût quadratique du
+résolveur de chevauchements (`resolveOverlaps`), traité en P2-66. **Non traité** : tableaux des PDF (hors périmètre), cellules d'une
+feuille de calcul (`.xlsx` refusé), formules de champs et zones de texte flottantes, en-têtes et pieds de page (déjà signalés dans
+`ignored_parts`), cellules à plusieurs lignes dont le contenu relève d'une seule valeur (les paragraphes d'une cellule sont joints
+par une espace).
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
