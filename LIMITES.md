@@ -891,6 +891,23 @@ octet ; 1120 tests. **Non traité, et à ne pas surestimer** : la liste reste un
 masque (voir son avertissement) ; un seuil de fréquence demanderait le fichier INSEE avec les effectifs (DATA_SOURCES.md), non retenu ici.
 Un prénom d'une origine non listée reste manqué sans contexte (civilité, étiquette, en-tête…).
 
+**Civilités au pluriel, en minuscules ou en majuscules, mots de parenté (P2-69).** Sonde de 26 formules de politesse (1ᵉʳ novembre 2026) :
+**14 laissaient le nom en clair** — « Mmes Quenelle et Dupont », « MM. Quenelle et Dupont », « La famille Quenelle », « Les époux
+Quenelle », « Les consorts Quenelle », « le docteur Quenelle », « la doctoresse Quenelle », « Père Quenelle », « Mdme », « Melle », « MME
+QUENELLE Zorglub » — et « Sœur Marie-Pierre Quenelle » masquait le prénom (avec « Sœur ») mais **laissait le patronyme**. **Maintenant** :
+(1) civilités singulières ajoutées : `Mdme`, `Melle`, `MME`, `MLLE`, `MR`, `MONSIEUR`, `MADAME`, `MADEMOISELLE`, `DOCTEUR`, `PROFESSEUR` et
+les formes en minuscules `monsieur`, `madame`, `mademoiselle`, `docteur`, `docteure`, `doctoresse`, `professeur`, `professeure` (les titres
+professionnels `docteur`… sont inclus dans l'étendue masquée, comme « Dr ») ; (2) pluriels `Mmes`, `Mlles`, `MM.`, `Mesdames`, `Messieurs` :
+**une entité par nom** (« Quenelle », « Dupont »), jamais un seul jeton pour deux personnes, noms séparés par une virgule, « et » ou « ou » ;
+(3) mots de parenté `famille`, `époux`, `consorts`, `Sœur`/`Soeur`, `Frère`, `Père` suivis d'un nom en majuscule initiale (1 à 2 mots, jamais
+un mot-clé d'établissement ni une particule seule : « la famille de la résidence » n'est pas un nom). Tests d'abord (26 rouges sur 37) ; 13
+contre-exemples intacts (« La famille est présente », « Famille d'accueil », « le docteur est passé », « madame est partie », « 10 MM. de
+mercure », « Père et mère »…) ; **faux positifs** : 3 896 textes de corpus synthétiques comparés à `main`, **0 changement** ; banc inchangé octet
+pour octet ; 1157 tests ; coût linéaire sur 9 entrées d'~1 Mo (1,6 à 3,4 s). **Sur-masquages connus** : « Père Noël » (masque « Noël »), « madame
+Rose » (Rose est un prénom) et tout mot en majuscule initiale après `famille` (« Famille Aidante » masque « Aidante »). **Non traité** : grades
+(« Capitaine », « Colonel »), « tante », « oncle », « grand-mère » suivis d'un nom, « la famille de Rose » (la particule empêche la règle de
+parenté ; seul « Rose » est masqué, car c'est un prénom du gazetteer).
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
