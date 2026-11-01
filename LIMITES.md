@@ -1371,6 +1371,12 @@ texte » : 12,5 s pour 10 000 mentions et 61,6 s pour 20 000 (mesuré avant corr
 segments `[...]` : 188 ms et 328 ms. Si une valeur du dictionnaire contient `[`, `]` ou `\`, l'ancien parcours est conservé, car
 l'équivalence n'y est plus garantie. Équivalence vérifiée par un test différentiel contre l'ancien algorithme.
 
+**Variantes de date de naissance (P2-83).** Trouvées par relecture indépendante, reproduites avant correction : mois français abrégés
+(`janv.`, `févr.`, `fév.`, `avr.`, `juil.`, `déc.`, point facultatif), libellés `Naiss.` / `Naiss :` / `Naissance le` / `Naissance du`, et date compacte
+`JJMMAAAA` après un contexte de naissance. Le contexte reste obligatoire : une date abrégée sans contexte (« réunion le 12 janv. 2027 ») n'est pas touchée.
+**Non traité, décidé** : `Anniversaire :` (vœux et fêtes, faux positifs réels), année à deux chiffres séparée par des blancs (`né le 12 03 50`),
+tableau aligné par espaces sans séparateur (colonne introuvable sans analyse de position).
+
 ---
 
 **Écluse réduit le risque, il ne l'annule pas.**
