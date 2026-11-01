@@ -137,11 +137,39 @@ final class NameDetector implements EntityDetector {
     "de$_h+l['\u2019](?:assuré|assurée|employé|employée)",
   ].map((f) => '(?:$f|${f.toUpperCase()})').join('|');
 
+  /// Séparateur entre une étiquette et sa valeur : `:`, U+001F (cellules d'un
+  /// tableau HTML, P2-63) ou une vraie tabulation (cellules d'un tableau Word ou
+  /// ODT, P2-65). Des espaces seuls ne suffisent jamais.
+  static const String _separateurEtiquette =
+      '(?:$_h*[:\u001F]$_h*|[ \\t\u00A0\u202F]*\\t$_h*)';
+
+  /// Étiquette et valeur séparées par une tabulation (cellules d'un tableau Word
+  /// ou ODT) : seulement si la ligne n'a que ces deux champs. Dans une rangée
+  /// d'en-tête (« Nom⇥Prénom⇥Service »), « Prénom⇥Service » n'est pas une
+  /// étiquette suivie de sa valeur. Lignes bornées à 300 caractères de part et
+  /// d'autre : une ligne plus longue n'est pas un tableau de deux champs.
+  static bool _deuxChamps(String text, int debut, int fin) {
+    final min = debut > 300 ? debut - 300 : 0;
+    final avant = text.substring(min, debut);
+    final nl = avant.lastIndexOf('\n');
+    if (nl == -1 && min > 0) return false;
+    final max = fin + 300 < text.length ? fin + 300 : text.length;
+    final apres = text.substring(fin, max);
+    var nl2 = apres.indexOf('\n');
+    if (nl2 == -1 && max < text.length) return false;
+    if (nl2 == -1) nl2 = apres.length;
+    // Une seule tabulation sur la ligne, celle du séparateur : la valeur ne
+    // chevauche pas une autre cellule.
+    return '\t'.allMatches(text.substring(debut, fin)).length == 1 &&
+        !avant.substring(nl + 1).contains('\t') &&
+        !apres.substring(0, nl2).contains('\t');
+  }
+
   static final RegExp _champNom = RegExp(
     r'\b(?:Nom|NOM)(?:'
     '$_h+(de$_h+naissance|d[\u0027\u2019]usage|de$_h+famille|patronymique|'
     'marital|$_nomQualifie))?'
-    '$_h*[:\u001F]$_h*'
+    '$_separateurEtiquette'
     '(?!(?:Pr[ée]noms?|PR[ÉE]NOMS?|Nom|NOM)\\b)'
     '($_unite(?:$_h+(?!(?:Pr[ée]noms?|PR[ÉE]NOMS?)\\b)$_unite)?)',
   );
@@ -176,7 +204,7 @@ final class NameDetector implements EntityDetector {
     r'\b(?:Pr[ée]noms?|PR[ÉE]NOMS?)(?:'
     '$_h+(?:usuels?|de$_h+naissance|d[\u0027\u2019]usage|[àa]$_h+l[\u0027\u2019]'
     r'[ée]tat$_h+civil))?'
-    '$_h*[:\u001F]$_h*'
+    '$_separateurEtiquette'
     '($_unite(?:$_h+(?!(?:Nom|NOM|Pr[ée]noms?|PR[ÉE]NOMS?)\\b)$_unite){0,2})',
   );
 
@@ -250,7 +278,7 @@ final class NameDetector implements EntityDetector {
   ];
 
   static final RegExp _etiquetteRole = RegExp(
-    '(?<![\\wÀ-ÿ])$_etiquettesRole$_h*:$_h*'
+    '(?<![\\wÀ-ÿ])$_etiquettesRole$_separateurEtiquette'
     "(?![DdLl]['\u2019])"
     '(?!(?:${[...etablissementKeywords, ..._nonNoms].join('|')})\\b)'
     '($_unite$_h+$_unite(?:$_h+$_unite)?)',
@@ -423,6 +451,10 @@ final class NameDetector implements EntityDetector {
     }
 
     for (final match in _champNom.allMatches(text)) {
+      if (match.group(0)!.contains('\t') &&
+          !_deuxChamps(text, match.start, match.end)) {
+        continue;
+      }
       final name = match.group(2)!;
       final start = match.end - name.length;
       // Groupe 1 : étiquette précise ; absent pour « Nom » seul.
@@ -473,6 +505,11 @@ final class NameDetector implements EntityDetector {
       (_cleDonneePlain, true)
     ]) {
       for (final match in re.allMatches(text)) {
+        if (identical(re, _etiquetteRole) &&
+            match.group(0)!.contains('\t') &&
+            !_deuxChamps(text, match.start, match.end)) {
+          continue;
+        }
         final name = match.group(1)!;
         // Signature : trois mots tout en majuscules (« POUR LE SERVICE »)
         // sont une mention, non un nom.
@@ -522,6 +559,10 @@ final class NameDetector implements EntityDetector {
     // Prénom(s) derrière l'étiquette « Prénom » (P2-40), connus ou non du
     // gazetteer.
     for (final match in _champPrenom.allMatches(text)) {
+      if (match.group(0)!.contains('\t') &&
+          !_deuxChamps(text, match.start, match.end)) {
+        continue;
+      }
       final name = match.group(1)!;
       final start = match.end - name.length;
       if (claimed.overlaps(start, match.end)) continue;

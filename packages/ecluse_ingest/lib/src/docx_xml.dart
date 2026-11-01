@@ -14,9 +14,14 @@
 /// - `<w:br/>` / `<w:cr/>` : saut de ligne -> `\n`.
 /// - `</w:p>` : fin de paragraphe -> `\n`.
 ///
-/// Tout le reste (mise en forme `w:pPr`/`w:rPr`, tableaux, styles) est
-/// ignoré : ces balises n'entourent jamais de texte hors `<w:t>` dans un
-/// document Word standard.
+/// - Tableaux (P2-65) : `</w:tc>` -> tabulation entre cellules, `</w:tr>` -> `\n` ;
+///   dans une cellule, paragraphes, tabulations et sauts de ligne deviennent des
+///   espaces ; `<w:gridSpan w:val="N"/>` ajoute N-1 champs vides pour garder le
+///   même nombre de colonnes ; un tableau imbriqué reste dans la cellule parente.
+///
+/// Tout le reste (mise en forme `w:pPr`/`w:rPr`, styles) est ignoré : ces
+/// balises n'entourent jamais de texte hors `<w:t>` dans un document Word
+/// standard.
 library;
 
 final RegExp _tagPattern = RegExp('<[^>]*>');
@@ -25,12 +30,19 @@ final RegExp _entityPattern =
 
 String extractDocxPlainText(String documentXml) {
   final buffer = StringBuffer();
+  // Contenu de la cellule de tableau courante (P2-65) : les paragraphes, tabulations
+  // et sauts de ligne d'une cellule deviennent des espaces, pour que la rangée
+  // tienne sur une ligne (cellules séparées par une tabulation).
+  final cellule = StringBuffer();
   var cursor = 0;
   var inTextRun = false;
+  var celluleDepth = 0;
+  var span = 1;
+  var tabsEnAttente = 0;
 
   for (final match in _tagPattern.allMatches(documentXml)) {
     if (inTextRun) {
-      buffer.write(
+      (celluleDepth > 0 ? cellule : buffer).write(
         _decodeXmlEntities(documentXml.substring(cursor, match.start)),
       );
     }
@@ -41,11 +53,47 @@ String extractDocxPlainText(String documentXml) {
     } else if (_isClosingTag(tag, 'w:t')) {
       inTextRun = false;
     } else if (_isStandaloneTag(tag, 'w:tab')) {
-      buffer.write('\t');
+      (celluleDepth > 0 ? cellule : buffer)
+          .write(celluleDepth > 0 ? ' ' : '\t');
     } else if (_isStandaloneTag(tag, 'w:br') || _isStandaloneTag(tag, 'w:cr')) {
-      buffer.write('\n');
+      (celluleDepth > 0 ? cellule : buffer)
+          .write(celluleDepth > 0 ? ' ' : '\n');
     } else if (_isClosingTag(tag, 'w:p')) {
-      buffer.write('\n');
+      (celluleDepth > 0 ? cellule : buffer)
+          .write(celluleDepth > 0 ? ' ' : '\n');
+    } else if (_tagName(tag) == 'w:tc' && !tag.startsWith('</')) {
+      final vide = tag.endsWith('/>');
+      if (celluleDepth == 0) {
+        buffer.write('\t' * tabsEnAttente);
+        tabsEnAttente = 0;
+        cellule.clear();
+        span = 1;
+      }
+      if (vide) {
+        if (celluleDepth == 0) tabsEnAttente = 1;
+      } else {
+        celluleDepth++;
+      }
+    } else if (celluleDepth == 1 && _isStandaloneTag(tag, 'w:gridSpan')) {
+      final n =
+          int.tryParse(RegExp(r'w:val="(\d+)"').firstMatch(tag)?[1] ?? '');
+      if (n != null && n > 1) span = n > 64 ? 64 : n;
+    } else if (_isClosingTag(tag, 'w:tc') && celluleDepth > 0) {
+      if (celluleDepth == 1) {
+        buffer.write(cellule.toString().replaceAll(_blancs, ' ').trim());
+        tabsEnAttente = span;
+      } else {
+        cellule.write(' ');
+      }
+      celluleDepth--;
+    } else if (_isClosingTag(tag, 'w:tr')) {
+      if (celluleDepth > 0) {
+        cellule.write(' ');
+      } else {
+        buffer.write('\t' * (tabsEnAttente > 0 ? tabsEnAttente - 1 : 0));
+        buffer.write('\n');
+        tabsEnAttente = 0;
+      }
     }
 
     cursor = match.end;
@@ -53,6 +101,9 @@ String extractDocxPlainText(String documentXml) {
 
   return buffer.toString();
 }
+
+/// Blancs d'ASCII seuls (pas l'espace insécable : une cellule garde les siennes).
+final RegExp _blancs = RegExp(r'[ \t\r\n]+');
 
 bool _isOpeningTag(String tag, String name) =>
     !tag.startsWith('</') && !tag.endsWith('/>') && _tagName(tag) == name;
