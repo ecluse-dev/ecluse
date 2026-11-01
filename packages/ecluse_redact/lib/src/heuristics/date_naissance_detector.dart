@@ -53,8 +53,12 @@ final class DateNaissanceDetector implements EntityDetector {
   /// [:] », « naissance : » (deux-points obligatoire, sinon « la naissance
   /// du projet »), « DDN [:] », « DOB [:] ».
   static final String _contexte =
-      '(?<![\\wÀ-ÿ])(?:né(?:e)?(?:\\(e\\))?$_lieu$_b+le$_b*:?'
-      '|date$_s*(?:de$_s+)?naiss(?:ance|\\.)?$_b*:?'
+      '(?<![\\wÀ-ÿ])(?:né(?:e)?(?:\\(e\\))?$_lieu(?:$_b+le)?$_b*:?'
+      '|n\\.$_b+le$_b*:?'
+      '|date$_s*(?:de$_s+)?nais(?:s(?:ance)?)?\\.?$_b*:?'
+      // « âge : 87 ans (12/09/1938) » : un âge puis une date entre parenthèses.
+      '|[aâ]g[ée]e?(?:$_b+de|$_b*:)?$_b*\\d{1,3}$_b*ans$_b*(?=\\()'
+      '|D\\.?N\\.?$_b*:?'
       '|naissance(?=["\']?$_b*[:=>])'
       '|D\\.?D\\.?N\\.?$_b*:?'
       '|DOB$_b*:?'
@@ -67,7 +71,7 @@ final class DateNaissanceDetector implements EntityDetector {
   /// ligne, valeur sur la suivante). Une ligne vide ou une ligne étrangère
   /// entre les deux interrompt la détection.
   static const String _sepContexte =
-      '(?:[ \\t\\u00A0\\u202F"\'>=:\\u001F]+|$_b*[|;]$_b*|$_b*\\r?\\n$_b*)';
+      '(?:[ \\t\\u00A0\\u202F"\'>=:\\u001F(]+|$_b*[|;]$_b*|$_b*\\r?\\n$_b*)';
 
   static const String _jours =
       '(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)$_b+';
@@ -77,7 +81,7 @@ final class DateNaissanceDetector implements EntityDetector {
     '(\\d{1,2}$_b*[\\/\\-.]$_b*\\d{1,2}$_b*[\\/\\-.]$_b*(?:\\d{4}|\\d{2}(?!\\d))'
     '|\\d{1,2}$_b+\\d{1,2}$_b+\\d{4}(?!\\d)'
     '|\\d{4}-\\d{2}-\\d{2}'
-    '|\\d{1,2}(?:er|ᵉʳ)?$_b+(?:${_months.join('|')})$_b+(?:\\d{4}|\\d{2}(?!\\d)))',
+    '|\\d{1,2}(?:er|ᵉʳ)?$_b+(?:${_months.join('|')})\\.?$_b+(?:\\d{4}|\\d{2}(?!\\d)))',
     caseSensitive: false,
   );
 
