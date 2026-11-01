@@ -1033,6 +1033,18 @@ chaîne de 640 octets ; le risque, qu'un nom portant plus de trois particules ne
 **Leçon de méthode** : toute répétition `(...)*` ou `(...)+` d'un sous-motif qui peut se recouvrir lui-même doit être bornée, et la batterie de coût d'une règle doit contenir la
 répétition de son propre motif.
 
+**Colonne « Date de naissance » d'un tableau (P2-78).** Fuite signalée par la relecture indépendante (« sage » n° 1), reproduite avant correction : dans un
+tableau CSV, TSV, Word, ODT ou HTML à en-tête, la colonne « Date de naissance », « Naissance », « Né(e) le », « DDN », « DN » ou « DOB » restait **en clair**
+(`Nom⇥Prénom⇥Né(e) le⇥Tél` / `ROUX⇥Hélène⇥12/03/1938⇥0612345678` donnait la date intacte) : les noms de colonnes étaient lus (P2-61), pas les dates, faute de contexte de
+naissance dans la cellule. Les tableaux étant le format dominant des plannings et des fiches, c'est une fuite fréquente. **Maintenant**, le contexte de naissance est l'en-tête
+de la colonne : chaque cellule de cette colonne qui est une date entière (`12/03/1938`, `12-03-1938`, `12.03.1938`, `1938-03-12`, `12 mars 1938`) est masquée comme date
+de naissance ; une cellule vide ou qui n'est pas une date (« inconnue ») est laissée. Une colonne « Date de visite », « Date d'entrée » ou « Date de péremption » n'est jamais
+lue. Le même refus explicite que pour les noms s'applique (`TableauAmbiguException` si une rangée n'a pas le nombre de colonnes de l'en-tête). Tests d'abord (11 rouges sur 17) ;
+6 contre-exemples intacts ; 3 896 textes de corpus : 0 changement ; banc inchangé octet pour octet ; 1302 tests ; coût linéaire sur 4 entrées jusqu'à 1,8 Mo (1,5 à 4,8 s).
+**Analyse bénéfice / risque** : le bénéfice est la fermeture d'une fuite directe de la date de naissance complète ; le risque est un faux positif sur une colonne nommée
+« Naissance » qui contiendrait une autre date (négligeable : une colonne de ce nom contient la naissance). **Non traité** : en-tête sur une autre ligne que la première
+rangée, dates abrégées sur deux chiffres d'année dans une colonne sans contexte, colonnes de naissance dans une langue autre que le français ou l'anglais.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
