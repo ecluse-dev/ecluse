@@ -1366,6 +1366,11 @@ journal n'est pas une donnée personnelle » n'est pas validée** (avis d'un DPO
 attendu ; ceci n'est pas un avis juridique). Le README parle d'un journal
 « signé » : ce n'est pas le cas en v0 (le README a été corrigé en ce sens).
 
+**Restauration sans coût quadratique (P2-82).** `Ecluse.restore` faisait un remplacement par jeton, soit « jetons × taille du
+texte » : 12,5 s pour 10 000 mentions et 61,6 s pour 20 000 (mesuré avant correction). Il fait désormais un seul parcours des
+segments `[...]` : 188 ms et 328 ms. Si une valeur du dictionnaire contient `[`, `]` ou `\`, l'ancien parcours est conservé, car
+l'équivalence n'y est plus garantie. Équivalence vérifiée par un test différentiel contre l'ancien algorithme.
+
 ---
 
 **Écluse réduit le risque, il ne l'annule pas.**

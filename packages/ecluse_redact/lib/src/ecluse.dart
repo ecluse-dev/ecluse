@@ -279,6 +279,56 @@ abstract final class Ecluse {
   /// (espaces superflus, casse) mais ne devine jamais une correspondance
   /// approximative — voir [tolerantTokenPattern].
   static String restore(String text, Map<String, String> mapping) {
+    // Un jeton ne peut se trouver que dans un segment `[...]` sans crochet. Si
+    // aucune valeur ne contient de crochet ni de barre oblique inversée, les
+    // remplacements ne peuvent ni en créer ni en défaire : un seul parcours des
+    // segments donne le même résultat que les remplacements successifs, sans
+    // le coût « jetons × taille du texte » (P2-64). Sinon, ancien parcours.
+    if (mapping.values.any(_peutRecreerUnJeton)) {
+      return _restoreSequentiel(text, mapping);
+    }
+    final parNom = <String, List<MapEntry<String, RegExp>>>{};
+    for (final entry in mapping.entries) {
+      parNom
+          .putIfAbsent(_cleLache(entry.key), () => [])
+          .add(MapEntry(entry.key, tolerantTokenPattern(entry.key)));
+    }
+    bool exact(RegExp motif, String s) {
+      final m = motif.matchAsPrefix(s);
+      return m != null && m.end == s.length;
+    }
+
+    return text.replaceAllMapped(_segment, (m) {
+      final segment = m[0]!;
+      for (final candidat in [
+        segment,
+        if (segment.startsWith('\\')) segment.substring(1),
+      ]) {
+        for (final c in parNom[_cleLache(candidat)] ??
+            const <MapEntry<String, RegExp>>[]) {
+          if (exact(c.value, candidat)) {
+            return segment.substring(0, segment.length - candidat.length) +
+                mapping[c.key]!;
+          }
+        }
+      }
+      return segment;
+    });
+  }
+
+  static final RegExp _segment = RegExp(r'\\?\[[^\[\]]*\]');
+
+  static bool _peutRecreerUnJeton(String valeur) =>
+      valeur.contains('[') || valeur.contains(']') || valeur.contains('\\');
+
+  /// Clé de rapprochement large : tout ce que [tolerantTokenPattern] tolère en
+  /// plus du jeton (casse, blancs, soulignements, barres obliques inversées,
+  /// crochets) est retiré. Deux textes que le motif apparie ont la même clé ;
+  /// l'inverse est revérifié avec le motif exact.
+  static String _cleLache(String s) =>
+      s.toLowerCase().replaceAll(RegExp(r'[\s_\\\[\]]'), '');
+
+  static String _restoreSequentiel(String text, Map<String, String> mapping) {
     var result = text;
     for (final entry in mapping.entries) {
       result = result.replaceAll(tolerantTokenPattern(entry.key), entry.value);
