@@ -94,4 +94,17 @@ const Set<String> frenchFirstNames = <String>{
   'tristan', 'ulysse', 'valentin', 'victor', 'vincent', 'vivien',
   'wilfried', 'william', 'xavier', 'yacine', 'yanis', 'yann', 'yannick',
   'youssef', 'yves', 'yvon', 'zacharie',
+  // Prénoms d'origines variées (P2-68) : Maghreb, Afrique de l'Ouest, Europe du
+  // Sud et de l'Est, Asie, prénoms anciens et récents. Les prénoms qui sont aussi
+  // des mots courants (Jan, Jun, Lou, Said, Manuel, Mario, Li, Thi) sont écartés.
+  'abdoulaye', 'aicha', 'aminata', 'andrzej', 'anil', 'antonio', 'awa',
+  'ayumi', 'binta', 'brahim', 'carlos', 'cheikh', 'dmitri', 'dylan', 'farid',
+  'fatou', 'francesco', 'ginette', 'giuseppe', 'hakim', 'hiroshi', 'hoa',
+  'huguette', 'ibrahima', 'ioana', 'joao', 'jose', 'kadidja', 'kamel',
+  'kenji', 'khadija', 'krzysztof', 'linh', 'lucette', 'luigi', 'maelys',
+  'marco', 'mariama', 'mauricette', 'mei', 'miguel', 'mohammed', 'moussa',
+  'mustapha', 'nabil', 'naima', 'natalia', 'nikolai', 'nolan', 'oceane',
+  'olga', 'oumou', 'ousmane', 'paulo', 'pedro', 'piotr', 'priya', 'rachid',
+  'raj', 'ravi', 'sakura', 'salima', 'sergei', 'seydou', 'sunita',
+  'svetlana', 'vladimir', 'wei',
 };

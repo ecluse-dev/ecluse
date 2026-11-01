@@ -875,6 +875,22 @@ d'abord (20 tests, dont le bout en bout par format et les refus) ; ingest 156 te
 `.doc`, `.pptx` (refusés avec motif), `.yaml`/`.yml`, `.ini`, `.log`, les encodages autres qu'UTF-8. **Décision de périmètre, révocable** :
 retirer la ligne correspondante du `switch` de `ingest_file.dart` rétablit le refus.
 
+**Diversité des prénoms du gazetteer (P2-68).** Sonde de 143 prénoms courants d'origines variées (« Il a vu {prénom} Zxqvlorn hier. », un
+nom de famille inconnu) : **82 n'étaient pas détectés** (61 sur 143 seulement). Étaient manqués, entre autres, des prénoms du Maghreb
+(Rachid, Nabil, Hakim, Aicha, Khadija), d'Afrique de l'Ouest (Moussa, Ousmane, Cheikh, Fatou, Aminata), d'Europe du Sud et de l'Est
+(Giuseppe, Luigi, Carlos, Piotr, Olga, Svetlana), d'Asie (Linh, Hiroshi, Priya, Ravi), des prénoms anciens (Mauricette, Ginette) et récents
+(Dylan, Océane, Maëlys, Nolan). Le gazetteer du détecteur de noms (une liste de démonstration, 97 lignes) ne contenait que les prénoms
+français les plus répandus. **68 prénoms sont ajoutés**, d'origines variées ; ceux qui sont aussi des mots courants sont **écartés** (Jan et
+Jun, mois abrégés ; Lou ; Said, verbe anglais ; Manuel, adjectif et titre d'ouvrage ; Mario ; Li ; Thi). Tests d'abord (69 rouges sur 78) ;
+phrases ordinaires intactes (« Manuel d'utilisation », « en Jan et en Jun », « Mario Kart »). **Faux positifs mesurés** sur 3 896 textes
+des corpus synthétiques du dépôt (graine 7, 300 textes par corpus : dossiers, flou, patronymes y compris les « leurres », QI ; avant /
+après) : **32 textes changent, tous dans le corpus « flou adversarial »**, conçu pour les prénoms étrangers, et tous pour de **vrais prénoms**
+désormais masqués (Aïcha, Krzysztof, Mei-Ling, Ibrahim…) ; aucun changement dans les corpus témoin, réaliste ni leurres. Banc inchangé octet pour
+octet ; 1120 tests. **Non traité, et à ne pas surestimer** : la liste reste une liste de démonstration. Le gazetteer INSEE des prénoms
+(155 000 entrées, `ecluse_reference`) n'est pas branché au détecteur : sans fréquences, il contient trop de mots courants pour servir de
+masque (voir son avertissement) ; un seuil de fréquence demanderait le fichier INSEE avec les effectifs (DATA_SOURCES.md), non retenu ici.
+Un prénom d'une origine non listée reste manqué sans contexte (civilité, étiquette, en-tête…).
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
