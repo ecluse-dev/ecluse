@@ -284,7 +284,8 @@ abstract final class Ecluse {
     // remplacements ne peuvent ni en créer ni en défaire : un seul parcours des
     // segments donne le même résultat que les remplacements successifs, sans
     // le coût « jetons × taille du texte » (P2-64). Sinon, ancien parcours.
-    if (mapping.values.any(_peutRecreerUnJeton)) {
+    final clesDeJetons = {for (final k in mapping.keys) _cleLache(k)};
+    if (mapping.values.any((v) => _peutRecreerUnJeton(v, clesDeJetons))) {
       return _restoreSequentiel(text, mapping);
     }
     final parNom = <String, List<MapEntry<String, RegExp>>>{};
@@ -318,8 +319,20 @@ abstract final class Ecluse {
 
   static final RegExp _segment = RegExp(r'\\?\[[^\[\]]*\]');
 
-  static bool _peutRecreerUnJeton(String valeur) =>
-      valeur.contains('[') || valeur.contains(']') || valeur.contains('\\');
+  /// Une valeur ne peut recréer ni défaire un jeton que si elle contient une
+  /// barre oblique inversée, un crochet isolé (qui se combinerait avec le texte
+  /// voisin) ou un segment `[...]` que [tolerantTokenPattern] confondrait avec
+  /// un jeton. Un courriel obfusqué `jean[at]example.fr` n'en est pas un : sans
+  /// cette précision, il imposait l'ancien parcours (jetons × texte, P2-85).
+  static bool _peutRecreerUnJeton(String valeur, Set<String> clesDeJetons) {
+    if (valeur.contains('\\')) return true;
+    if (!valeur.contains('[') && !valeur.contains(']')) return false;
+    final sansSegments = valeur.replaceAll(_segment, '');
+    if (sansSegments.contains('[') || sansSegments.contains(']')) return true;
+    return _segment
+        .allMatches(valeur)
+        .any((m) => clesDeJetons.contains(_cleLache(m[0]!)));
+  }
 
   /// Clé de rapprochement large : tout ce que [tolerantTokenPattern] tolère en
   /// plus du jeton (casse, blancs, soulignements, barres obliques inversées,
@@ -561,9 +574,9 @@ final RegExp _decorations = RegExp(r'(?<![\wÀ-ÿ*_`])[*_`]+(?=[\wÀ-ÿ])'
 /// Clé de contrôle nommée à part (P2-42) : après un chiffre, « clé », « cle » ou
 /// « clef » (avec `(` et `:` facultatifs) puis deux chiffres. Neutralisée dans la
 /// vue de détection seulement : le NIR n'est reconnu que si la clé est juste.
-final RegExp _cleNommee =
-    RegExp(r'(?<=[0-9])[ \t]*\(?[ \t]*(?:[Cc]l[ée]f?|CL[ÉE]F?)[ \t]*:?[ \t]*'
-        r'(?=[0-9]{2}(?![0-9]))');
+final RegExp _cleNommee = RegExp(
+    r'(?<=[0-9])[ \t]*(?:\([ \t]*)?(?:[Cc]l[ée]f?|CL[ÉE]F?)[ \t]*(?::[ \t]*)?'
+    r'(?=[0-9]{2}(?![0-9]))');
 
 /// Les détecteurs par défaut, avec un [NameDetector] amorcé par [patronymes].
 List<Detector> _detecteursAvecPatronymes(Set<String> patronymes) => [

@@ -153,7 +153,7 @@ final class AdresseDetector implements EntityDetector {
   static const String _nomVoie = "[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]{1,80}?";
 
   static final RegExp _pattern = RegExp(
-    '$_numero$_h*,?$_h*$_voieMotif'
+    '$_numero$_h*(?:,$_h*)?$_voieMotif'
     '$_h+$_nomVoie'
     '$_voieVersCpCommune'
     '$_codePostalCommune',
@@ -194,7 +194,7 @@ final class AdresseDetector implements EntityDetector {
   /// minuscules (« 12 place disponible », « 3 chemin de fer ») n'est jamais une
   /// adresse. Confiance 0.55 : aucune validation possible.
   static final RegExp _patternSansCodePostal = RegExp(
-    '(?<![\\wÀ-ÿ])$_numero$_h*,?$_h*'
+    '(?<![\\wÀ-ÿ])$_numero$_h*(?:,$_h*)?'
     '(?:${_voiesSansCodePostal.map(_ci).join('|')})\\.?$_h+'
     '(?:$_particuleVoie)*$_motVoie'
     '(?:[ \\t-]+(?:$_particuleVoie)*$_motVoie){0,4}',

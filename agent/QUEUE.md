@@ -147,6 +147,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-81 | code | `ecluse_redact` : signature avec initiale (`N. Haddad`) et nom de naissance `(ex-Garnier)` | P2-79 | fusionnée |
 | P2-82 | code | `Ecluse.restore` : un seul parcours des segments `[...]` au lieu d'un remplacement par jeton (reprise de la partie restauration de #201) | P2-64 | fusionnée |
 | P2-84 | code | `ecluse_redact` : valeurs « vides » d'un champ étiqueté (`Prénom : Non renseigné`, `Néant`, `Idem`…) jamais prises pour un nom | P2-82 | fusionnée |
+| P2-85 | code | Coûts superlinéaires trouvés par relecture : chiffre + blancs, minuscules + point, `sk-` répété, `restore` avec valeur `[at]` | P2-84 | PR ouverte |
 | P2-83 | code | `ecluse_redact` : date de naissance — mois abrégés (`janv.`, `déc.`…), libellés `Naiss.` / `Naissance le/du`, date compacte à 8 chiffres | P2-82 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
@@ -1858,4 +1859,15 @@ Source : relecture indépendante du 1er novembre 2026 (sage « fuites »), cas r
 - Date compacte JJMMAAAA (`DDN : 12031950`), bornes de jour et de mois vérifiées.
 - Contexte de naissance toujours obligatoire ; contre-exemples testés (« Rendez-vous le 12 janv. 2027 », « Réf. 12031950 », `DDN : 31132000`).
 - Mesure : 1 000 textes de corpus, 0 changement ; `format`, `analyze`, 1410 tests verts. `ecluse_core` inchangé.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-85 — Quatre coûts quadratiques trouvés par relecture (`code`)
+
+Source : relecture indépendante du 1er novembre 2026 (sage « robustesse »), reproduits avant correction sur `main`.
+
+- `1` + n blancs : `_cleNommee` (deux `[ \t]*` séparés par `\(?`) et le détecteur d'adresse (deux `[ \t]*` séparés par `,?`) : 4 000 blancs 6,7 s, 20 000 blancs 4,8 s même après la seule correction de l'adresse. Écriture non ambiguë `[ \t]*(?:,[ \t]*)?`.
+- `'a' * n + '.'` : regard arrière non borné `(?<=[A-ZÀ-Þ][a-zà-ÿ]+)\.` du séparateur « Prénom.Nom » (32 000 : 10 s) : vérification à part, une seule remontée par point.
+- `sk-ant-` répété : OpenAI `sk-…T3BlbkFJ…` (40 Ko : 2,5 s, 100 Ko : 44 s) : première partie bornée à 512 caractères.
+- `Ecluse.restore` avec un courriel obfusqué `jean[at]example.fr` : repli séquentiel (10 000 jetons : 9,2 s) : le repli ne vaut plus que pour une valeur qui peut recréer un jeton (barre oblique inversée, crochet isolé, segment `[...]` confondu avec un jeton).
+- Mesure après : chiffre + 20 000 blancs 77 ms ; 100 000 minuscules + point sous 3 s ; `sk-ant-` ×100 000 sous 3 s ; restore 10 000 jetons sous 3 s. 4 000 textes tirés + 1 000 de corpus : 0 changement. `ecluse_core` : une borne de regex.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

@@ -186,4 +186,20 @@ void main() {
       );
     });
   });
+
+  test('« sk-ant- » répété 100 000 fois : coût borné (P2-85)', () async {
+    final texte = 'sk-ant-' * 100000;
+    final sw = Stopwatch()..start();
+    await const SecretDetector().detect(NormalizedText.identity(texte));
+    expect(sw.elapsedMilliseconds, lessThan(3000));
+  });
+
+  test('clé OpenAI récente de 400 caractères avant le marqueur : détectée',
+      () async {
+    final rng = Random(5);
+    final cle = 'sk-proj-${_rand(rng, 400)}T3BlbkFJ${_rand(rng, 60)}';
+    final trouves = await const SecretDetector()
+        .detect(NormalizedText.identity('x $cle y'));
+    expect(trouves, isNotEmpty);
+  });
 }
