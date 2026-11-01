@@ -356,3 +356,16 @@ arbitrages qui demandent du travail sont devenus les tâches P2-59 à P2-64 de
   relancé une fois avant conclusion (question 13).
 - P2-10, P1-00 et P1-12 : laissées en l'état (question 14).
 
+## 2026-11 — P2-10 : transcription vocale locale (arbitrage délégué)
+
+Le mainteneur a délégué l'arbitrage à l'agent (1er novembre 2026). Détail,
+sources et niveaux de vérification dans `agent/specs/P2-10.md`.
+
+- **Moteur retenu : whisper.cpp** (code et poids sous licence MIT, lus sur les
+  README). Vosk reste le repli : sa sortie en minuscules risquerait de contourner
+  les détecteurs de noms, qui s'appuient sur la capitalisation.
+- **Mode** : enregistrement puis transcription, sans flux. Paquet séparé
+  (`ecluse_voice`), jamais dans `ecluse_core`.
+- **Aucun code vocal sur `main`** sans le critère GO/STOP du § 7 de la spec
+  (test d'absence de réseau, licences lues, rappel et fuite des chiffres mesurés
+  sur audio synthétique) validé par le mainteneur.

@@ -73,7 +73,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-07 | spec | Généralisation multi-dimensions (date de naissance vers tranche d'âge, âge vers palier, pathologie rare vers catégorie) : dimensions, table de catégories, honnêteté sur ce qui reste ré-identifiable | P2-03 | fusionnée |
 | P2-08 | spec | Aperçu avec validation en un clic, option et non défaut (entretien #2) : contrat du composant, sans interface autonome | — | fusionnée |
 | P2-09 | spec | Export AIPD : champs du registre pré-rempli, données d'`ecluse_audit` qui y entrent et qui n'y entrent pas | — | fusionnée |
-| P2-10 | spec | Transcription vocale locale : choix Vosk ou whisper.cpp, preuve qu'aucun son ne sort de l'appareil, limite sur les chiffres, critère GO/STOP propre | — | bloquée |
+| P2-10 | spec | Transcription vocale locale : choix Vosk ou whisper.cpp, preuve qu'aucun son ne sort de l'appareil, limite sur les chiffres, critère GO/STOP propre | — | PR ouverte |
 | P2-11 | code | `ecluse_bench` : retirer `pubspec_overrides.yaml` (chemin Windows) du suivi git | — | fusionnée |
 | P2-12 | code | Script reproductible du décompte de la fuite des noms hors civilité, versionné dans `bench/` | P2-02 | fusionnée |
 | P2-13 | code | `Dossier` : règle de noms entre documents activable (N3) : N1 par défaut, fusion par inclusion (N2) à la demande de l'application | P2-06 | fusionnée |
@@ -769,8 +769,8 @@ affirmer sur la nature juridique du journal : poser la question au mainteneur.
 
 ### P2-10 — Transcription vocale locale (`spec`)
 
-**Bloquée** : licences et tailles des modèles non vérifiées. Passer à `à faire`
-est une décision du mainteneur.
+**Déblocage** : le mainteneur a délégué l'arbitrage à l'agent le 1er novembre 2026.
+Spec livrée dans `agent/specs/P2-10.md` (choix tranchés au § 8, GO/STOP au § 7).
 
 Travail : écrire `agent/specs/P2-10.md`, **aucune ligne de code**. Comparer Vosk et
 whisper.cpp (licence du code et des poids lue sur la page, taille, langues,
