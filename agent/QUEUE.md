@@ -147,6 +147,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-81 | code | `ecluse_redact` : signature avec initiale (`N. Haddad`) et nom de naissance `(ex-Garnier)` | P2-79 | fusionnée |
 | P2-82 | code | `Ecluse.restore` : un seul parcours des segments `[...]` au lieu d'un remplacement par jeton (reprise de la partie restauration de #201) | P2-64 | fusionnée |
 | P2-84 | code | `ecluse_redact` : valeurs « vides » d'un champ étiqueté (`Prénom : Non renseigné`, `Néant`, `Idem`…) jamais prises pour un nom | P2-82 | PR ouverte |
+| P2-83 | code | `ecluse_redact` : date de naissance — mois abrégés (`janv.`, `déc.`…), libellés `Naiss.` / `Naissance le/du`, date compacte à 8 chiffres | P2-82 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1847,4 +1848,14 @@ Source : relecture indépendante du 1er novembre 2026 (sage « faux positifs »)
   en plus de non / inconnu / n/a déjà connus des clés de données. Appliquée aux champs `Nom …` et `Prénom …`.
 - Contre-exemples testés : `Prénom : Nonna`, `Prénom : Idemar`, `Nom de naissance : Testard`, `Prénom : Test-Marc` restent masqués.
 - Mesure : 1 000 textes de corpus, 0 changement ; `format`, `analyze`, 1406 tests verts. `ecluse_core` inchangé.
+### P2-83 — Variantes de date de naissance trouvées par relecture (`code`)
+
+Source : relecture indépendante du 1er novembre 2026 (sage « fuites »), cas reproduits sur `main`.
+
+- Mois français abrégés après un contexte de naissance : `12 janv. 1950`, `févr.`, `fév.`, `avr.`, `juil.`, `déc.` restaient en clair
+  (seuls `sept.`, `oct.`, `nov.` passaient, par coïncidence avec la liste des mois anglais).
+- Libellés `Naiss.`, `Naiss :`, `Naissance le …`, `Naissance du …`.
+- Date compacte JJMMAAAA (`DDN : 12031950`), bornes de jour et de mois vérifiées.
+- Contexte de naissance toujours obligatoire ; contre-exemples testés (« Rendez-vous le 12 janv. 2027 », « Réf. 12031950 », `DDN : 31132000`).
+- Mesure : 1 000 textes de corpus, 0 changement ; `format`, `analyze`, 1410 tests verts. `ecluse_core` inchangé.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
