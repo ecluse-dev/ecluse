@@ -108,6 +108,20 @@ final class NameDetector implements EntityDetector {
       '[Ee]l|[Aa]l|[Dd]a|[Dd]as|[Dd]o|[Dd]os|[Dd]i|[Dd]el|[Dd]ella|[Bb]en|[Bb]in|'
       "[Bb]int|[Ii]bn|[Tt]er|[Tt]en|[Zz]u|[Aa]f)$_h+|[DdLl]['’])";
 
+  /// Mots qui ouvrent ordinairement une phrase : jamais pris pour un nom quand
+  /// ils suivent un saut de ligne (P2-73).
+  static const String _debutsDePhrase =
+      'Le|La|Les|Un|Une|Des|Du|De|Ce|Cette|Ces|Il|Elle|Ils|Elles|On|Nous|Vous|'
+      'Je|Tu|Et|Ou|Mais|Donc|Or|Ni|Car|Si|Que|Qui|Dans|Avec|Pour|Sans|Sur|Sous|'
+      'En|Au|Aux|Voir|Merci|Suite|Puis|Ensuite|Aussi|Cependant|Selon';
+
+  /// Séparation entre une civilité (ou une étiquette) et le nom : des blancs, ou
+  /// **un seul** saut de ligne (P2-73), jamais une ligne vide, et jamais devant un
+  /// mot qui ouvre une phrase. Un texte extrait d'un PDF coupe les lignes
+  /// n'importe où.
+  static const String _blancOuSaut =
+      '(?:$_h+|$_h*\\r?\\n$_h*(?!(?:$_debutsDePhrase)\\b))';
+
   /// Une unité de nom : particules éventuelles puis mot capitalisé.
   static const String _unite = '(?:$_particules)*$_cap';
 
@@ -119,7 +133,7 @@ final class NameDetector implements EntityDetector {
     r'Mdme\.?|Melle\.?|MME|MLLE|MR|MONSIEUR|MADAME|MADEMOISELLE|DOCTEUR|PROFESSEUR|'
     r'[mM]onsieur|[mM]adame|[mM]ademoiselle|docteur|docteure|doctoresse|'
     r'professeur|professeure)'
-    '$_h+'
+    '$_blancOuSaut'
     '($_unite'
     '(?:$_h+'
     // Un mot-clé d'établissement n'est jamais un patronyme (voir
@@ -145,7 +159,8 @@ final class NameDetector implements EntityDetector {
   /// tableau HTML, P2-63) ou une vraie tabulation (cellules d'un tableau Word ou
   /// ODT, P2-65). Des espaces seuls ne suffisent jamais.
   static const String _separateurEtiquette =
-      '(?:$_h*[:\u001F]$_h*|[ \\t\u00A0\u202F]*\\t$_h*)';
+      '(?:$_h*[:\u001F](?:$_h*\\r?\\n$_h*(?!(?:$_debutsDePhrase)\\b)|$_h*)|'
+      '[ \\t\u00A0\u202F]*\\t$_h*)';
 
   /// Civilités au pluriel (P2-69) : « Mmes Quenelle et Dupont », « MM. Quenelle et
   /// Dupont », « Mesdames… », « Messieurs… ». Une personne par nom : chaque unité
@@ -215,7 +230,7 @@ final class NameDetector implements EntityDetector {
   static final RegExp _nomDeNaissance = RegExp(
     r'(?<![\wÀ-ÿ])(?:[Nn]ée|[ÉéEe]pouse|[ÉéEe]p\.|[Vv]euve|[Dd]ivorcée|'
     '[Nn]om$_h+de$_h+jeune$_h+fille)'
-    '(?:$_h*:)?$_h+'
+    '(?:$_h*:)?$_blancOuSaut'
     '(?!(?:$_moisEtJours)\\b)'
     '($_unite(?:$_h+$_unite)?)',
   );
@@ -229,6 +244,7 @@ final class NameDetector implements EntityDetector {
     '$_h+(?:usuels?|de$_h+naissance|d[\u0027\u2019]usage|[àa]$_h+l[\u0027\u2019]'
     r'[ée]tat$_h+civil))?'
     '$_separateurEtiquette'
+    '(?!(?:Nom|NOM|Pr[ée]noms?|PR[ÉE]NOMS?)\\b)'
     '($_unite(?:$_h+(?!(?:Nom|NOM|Pr[ée]noms?|PR[ÉE]NOMS?)\\b)$_unite){0,2})',
   );
 
@@ -366,8 +382,12 @@ final class NameDetector implements EntityDetector {
         ? from + _fenetrePrenom
         : text.length;
     final fenetre = text.substring(from, fin);
+    // Trois lignes : « Nom : » puis sa valeur sur la ligne suivante, puis
+    // « Prénom : » (P2-73).
     var coupe = fenetre.indexOf('\n');
-    if (coupe != -1) coupe = fenetre.indexOf('\n', coupe + 1);
+    for (var i = 0; i < 2 && coupe != -1; i++) {
+      coupe = fenetre.indexOf('\n', coupe + 1);
+    }
     return _prenomChamp
         .hasMatch(coupe == -1 ? fenetre : fenetre.substring(0, coupe));
   }
@@ -381,7 +401,9 @@ final class NameDetector implements EntityDetector {
     final fenetre =
         text.substring(to < _fenetrePrenom ? 0 : to - _fenetrePrenom, to);
     var debut = fenetre.lastIndexOf('\n');
-    if (debut > 0) debut = fenetre.lastIndexOf('\n', debut - 1);
+    for (var i = 0; i < 2 && debut > 0; i++) {
+      debut = fenetre.lastIndexOf('\n', debut - 1);
+    }
     return _prenomChamp.hasMatch(fenetre.substring(debut < 0 ? 0 : debut));
   }
 

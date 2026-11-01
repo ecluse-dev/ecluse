@@ -136,6 +136,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-70 | code | `ecluse_redact` : prénom entre deux mots capitalisés, couvrir les deux voisins (`Appeler Pierre Dupont`) | P2-69 | fusionnée |
 | P2-72 | code | `ecluse_redact` : la restauration ne consomme plus la barre oblique d'un chemin Windows devant un jeton | P2-70 | fusionnée |
 | P2-71 | code | `ecluse_redact` : noms dans les noms de fichiers, URL, chemins et identifiants | P2-72 | fusionnée |
+| P2-73 | code | `ecluse_redact` : nom coupé par un retour à la ligne (civilité, étiquette puis valeur) | P2-71 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1726,4 +1727,17 @@ Contexte : `Bilan_Pierre_Dupont_2024.pdf`, `/patient/pierre-dupont`, `pierre.dup
 - Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1207 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Découverte en route, traitée à part : restauration d'un chemin Windows (P2-72, fusionnée).
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-73 — Nom coupé par un retour à la ligne (`code`)
+
+Contexte : « Mme⏎Dupont », « Nom :⏎Quenelle » (texte de PDF) laissaient le nom en clair.
+
+- Tests d'abord (8 rouges sur 18) ; 8 contre-exemples intacts (ligne vide, mots d'ouverture de phrase, « Dr Martin⏎Secretaire »).
+- `name_detector.dart` : `_blancOuSaut` (blancs ou un seul saut de ligne, jamais devant un mot d'ouverture de phrase) entre civilité et nom, après « née… », et
+  après les deux-points d'une étiquette ; fenêtre « Prénom » à proximité portée à trois lignes ; « Prénom : Nom » n'est pas un prénom.
+- Essai abandonné : saut de ligne entre les mots du nom (49 textes de corpus changés, faux positifs). Garde-fou « un nom ne traverse pas sa ligne » conservé.
+- Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1225 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Fuite connue : nom coupé entre ses mots.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
