@@ -138,10 +138,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-71 | code | `ecluse_redact` : noms dans les noms de fichiers, URL, chemins et identifiants | P2-72 | fusionnée |
 | P2-73 | code | `ecluse_redact` : nom coupé par un retour à la ligne (civilité, étiquette puis valeur) | P2-71 | fusionnée |
 | P2-74 | code | `ecluse_redact` : forme « Nom, Prénom » (`Marchetti, Odette`) | P2-73 | fusionnée |
-| P2-75 | code | `ecluse_redact` : initiales entre une civilité et un patronyme (`Dr A. Faure`) | P2-74 | PR ouverte |
-| P2-76 | code | `ecluse_redact` : variantes de contexte de naissance (`DN`, `D.N.`, `Date nais.`, `née 12/9/1938`) | P2-74 | PR ouverte |
-| P2-79 | code | `ecluse_redact`/`ecluse_ingest` : coût d'une chaîne de particules et de balises ouvertes (déni de service) | P2-76 | PR ouverte |
+| P2-75 | code | `ecluse_redact` : initiales entre une civilité et un patronyme (`Dr A. Faure`) | P2-74 | fusionnée |
+| P2-76 | code | `ecluse_redact` : variantes de contexte de naissance (`DN`, `D.N.`, `Date nais.`, `née 12/9/1938`) | P2-74 | fusionnée |
+| P2-77 | code | `ecluse_redact` : sur-masquages fréquents (fonctions après civilité, statuts, jours voisins, Saint-…, éponymes, lots) | P2-75 | fusionnée |
 | P2-78 | code | `ecluse_redact` : colonne « Date de naissance » d'un tableau à en-tête | P2-79 | PR ouverte |
+| P2-79 | code | `ecluse_redact`/`ecluse_ingest` : coût d'une chaîne de particules et de balises ouvertes (déni de service) | P2-76 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1771,6 +1772,15 @@ Contexte : relecture adverse indépendante (un « sage », 200 sondes) ; deux fu
 - Écarté après analyse : nom en minuscules après `mme`/`mr`/`m.` (faux positifs massifs) ; initiales isolées sans civilité.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
 
+### P2-77 — Sur-masquages fréquents (`code`)
+
+Contexte : relecture adverse indépendante (un « sage » chargé des faux positifs) : fonctions, statuts, jours, toponymes, éponymes, lots masqués à tort.
+
+- Tests d'abord (32 rouges sur 46) ; 13 témoins : les vrais noms restent masqués (Madame Dupont, Famille Quenelle, Mme Saint-Pierre, Dr Alzheimer, Appeler Pierre Dupont…).
+- `name_detector.dart` : fonction après civilité (`le|la|les` minuscules), liste `_statuts` (civilité, parenté, prénom), `_motsVoisinsNeutres` (jours, mois, adverbes, politesse)
+  écartés comme voisin d'un prénom, `_estToponymeSaint`, `_precedeParEponyme`. `identifiant_detector.dart` : plaque précédée de lot/série/référence écartée.
+- Changement de comportement assumé : les communes « Saint-… » ne sont plus masquées (elles l'étaient par accident, contrairement aux autres communes).
+- Mesure : 3 896 textes de corpus, 10 changements (communes Saint-…) ; banc inchangé octet pour octet ; 1324 tests ; tous les paquets verts.
 ### P2-79 — Coût d'une chaîne de particules et de balises ouvertes (`code`, bloquant)
 
 Contexte : relecture indépendante du code : `Van Der ` × 80 (640 octets) = 15 s dans `_aEcrit` (P2-53) ; cubique dans `_signature` (P2-54) ; `<prenom ` sans `>` et `<[^>]*>` (docx/odt) quadratiques.
