@@ -128,7 +128,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-62 | code | `ecluse_core` : IBAN de l'espace SEPA avec clé mod 97 | P2-61 | fusionnée |
 | P2-63 | code | `ecluse_redact` : tableaux HTML et titres Markdown dans la vue de détection | P2-62 | fusionnée |
 | P2-64 | code | `ecluse_redact` : coût linéaire de la résolution des pseudonymes au-delà de 50 000 mentions | P2-63 | fusionnée |
-| P2-66 | code | `ecluse_core` : résolveur de chevauchements linéaire (`resolveOverlaps`) | P2-64 | PR ouverte |
+| P2-65 | code | `ecluse_ingest`/`ecluse_redact` : tableaux Word et ODT (cellules par tabulation, rangées par saut de ligne) | P2-64 | fusionnée |
+| P2-66 | code | `ecluse_core` : résolveur de chevauchements linéaire (`resolveOverlaps`) | P2-65 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1637,4 +1638,17 @@ Cause : `resolveOverlaps` comparait chaque candidate à toutes les entités rete
   candidat est examinée. Priorité inchangée. Bibliothèque standard seule.
 - Mesure : banc inchangé octet pour octet ; core 215 tests ; tableau CSV de 40 000 rangées 18 s → 2,3 s.
 - Aucune dépendance ajoutée.
+### P2-65 — Tableaux Word et ODT (`code`)
+
+Contexte : sonde d'ingestion du 1ᵉʳ novembre : les cellules d'un tableau docx ou odt étaient aplaties une par ligne ; les noms d'un tableau
+étiquette / valeur ou à en-tête restaient en clair.
+
+- Tests d'abord (11 rouges sur 15, plus 5 rouges sur 9 pour la tabulation) ; contre-exemples (tableau sans colonne de personne, « Nom ⇥ Aspirine »)
+  intacts ; restauration identique.
+- `ecluse_ingest` : `docx_xml.dart` et `odt_xml.dart` émettent cellules séparées par une tabulation et rangées par un saut de ligne
+  (fusion de cellules conservée, tableau imbriqué dans la cellule parente).
+- `ecluse_redact` : `name_detector.dart` lit « étiquette ⇥ valeur » comme « étiquette : valeur » pour une rangée de deux champs seulement.
+- Mesure : banc inchangé octet pour octet ; ingest 136 tests, redact 1042, core 212, demo 37, audit 34, reid 134.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Constat reporté en P2-66 : le résolveur de chevauchements est quadratique (tableau de 50 000 rangées : 28 s de détection).
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
