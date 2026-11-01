@@ -1033,6 +1033,17 @@ chaîne de 640 octets ; le risque, qu'un nom portant plus de trois particules ne
 **Leçon de méthode** : toute répétition `(...)*` ou `(...)+` d'un sous-motif qui peut se recouvrir lui-même doit être bornée, et la batterie de coût d'une règle doit contenir la
 répétition de son propre motif.
 
+**Identifiants administratifs sans « n° » (P2-80).** Fuite signalée par la relecture indépendante (« sage » n° 1), reproduite avant correction : « Caisse : CPAM 49, **dossier
+4900123456** », « **dossier APA 2026/0412** », « **N° résident : 000123** », « **Plan d'aide n° PA-2026-0042** » restaient en clair, alors que « dossier n° 2024-0412 »,
+« N° de dossier », « adhérent n° » l'étaient depuis P2-57. Ajoutés : les étiquettes « n° de résident / usager », « Plan d'aide n° », et « dossier » **suivi directement d'une
+valeur** (« dossier 4900123456 », « Référence dossier : AB-2026-00412 »). Garde-fous, plus stricts que pour les formes avec « n° » : au moins **six chiffres**, jamais une date
+(`dossier du 12/03/2026`), jamais un mois d'année (`dossier 2024-04`), jamais une année seule (`Dossier 2024`), jamais un mot (`dossier en cours`, `Dossier médical complet`). Même
+type `identifiant` que P2-57 (aucune API modifiée). Tests d'abord (8 rouges sur 21) ; 12 contre-exemples intacts ; 3 896 textes de corpus : 0 changement ; banc inchangé octet pour octet ;
+1352 tests ; coût linéaire sur 5 entrées jusqu'à 1,1 Mo (2,2 à 3,7 s). **Analyse bénéfice / risque** : bénéfice, des numéros de dossier ou de résident qui identifient une personne
+auprès d'un organisme ; risque, un nombre à six chiffres ou plus derrière le mot « dossier » qui ne serait pas un identifiant de personne (un numéro de lot de documents), masqué à
+tort sans conséquence pour le sens. **Non traité** : « Réf. : 884412 » (une référence n'est pas forcément personnelle), « Numéro de sécurité : 12345 » (cinq chiffres),
+identifiants sans aucune étiquette.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,

@@ -142,6 +142,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-76 | code | `ecluse_redact` : variantes de contexte de naissance (`DN`, `D.N.`, `Date nais.`, `née 12/9/1938`) | P2-74 | fusionnée |
 | P2-77 | code | `ecluse_redact` : sur-masquages fréquents (fonctions après civilité, statuts, jours voisins, Saint-…, éponymes, lots) | P2-75 | PR ouverte |
 | P2-79 | code | `ecluse_redact`/`ecluse_ingest` : coût d'une chaîne de particules et de balises ouvertes (déni de service) | P2-76 | fusionnée |
+| P2-80 | code | `ecluse_redact` : identifiants administratifs sans « n° » (`dossier 4900123456`, `N° résident`, `Plan d'aide n°`) | P2-79 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1787,5 +1788,15 @@ Contexte : relecture indépendante du code : `Van Der ` × 80 (640 octets) = 15 
 - Tests d'abord (mesure sur la base : 640 octets en 14,8 s) ; 7 tests de coût côté détection, 2 côté ingestion ; un nom à particules reste masqué.
 - `name_detector.dart` : `_unite` borne les particules à trois ; clé XML `[^>\n]{0,200}`. `docx_xml.dart`, `odt_xml.dart`, `docx_extractor.dart` : `[^<>]`.
 - Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; redact 1285 tests, ingest 158.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-80 — Identifiants administratifs sans « n° » (`code`)
+
+Contexte : relecture indépendante : « dossier 4900123456 », « N° résident : 000123 », « Plan d'aide n° PA-2026-0042 » restaient en clair.
+
+- Tests d'abord (8 rouges sur 21) ; 12 contre-exemples intacts (année, date, mois d'année, mots, deux chiffres).
+- `identifiant_detector.dart` : étiquettes « n° de résident / usager », « Plan d'aide n° » ; `_dossierNu` (« dossier » + valeur d'au moins six chiffres, ni date ni mois d'année).
+- Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1352 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
