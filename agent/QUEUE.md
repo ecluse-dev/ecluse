@@ -147,7 +147,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-81 | code | `ecluse_redact` : signature avec initiale (`N. Haddad`) et nom de naissance `(ex-Garnier)` | P2-79 | fusionnée |
 | P2-82 | code | `Ecluse.restore` : un seul parcours des segments `[...]` au lieu d'un remplacement par jeton (reprise de la partie restauration de #201) | P2-64 | fusionnée |
 | P2-84 | code | `ecluse_redact` : valeurs « vides » d'un champ étiqueté (`Prénom : Non renseigné`, `Néant`, `Idem`…) jamais prises pour un nom | P2-82 | fusionnée |
-| P2-85 | code | Coûts superlinéaires trouvés par relecture : chiffre + blancs, minuscules + point, `sk-` répété, `restore` avec valeur `[at]` | P2-84 | PR ouverte |
+| P2-85 | code | Coûts superlinéaires trouvés par relecture : chiffre + blancs, minuscules + point, `sk-` répété, `restore` avec valeur `[at]` | P2-84 | fusionnée |
 | P2-83 | code | `ecluse_redact` : date de naissance — mois abrégés (`janv.`, `déc.`…), libellés `Naiss.` / `Naissance le/du`, date compacte à 8 chiffres | P2-82 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
