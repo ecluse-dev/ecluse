@@ -127,7 +127,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-61 | code | `ecluse_redact` : noms en clés de données explicites et CSV à en-tête | P2-60 | fusionnée |
 | P2-62 | code | `ecluse_core` : IBAN de l'espace SEPA avec clé mod 97 | P2-61 | fusionnée |
 | P2-63 | code | `ecluse_redact` : tableaux HTML et titres Markdown dans la vue de détection | P2-62 | fusionnée |
-| P2-64 | code | `ecluse_redact` : coût linéaire de la résolution des pseudonymes au-delà de 50 000 mentions | P2-63 | à faire |
+| P2-64 | code | `ecluse_redact` : coût linéaire de la résolution des pseudonymes au-delà de 50 000 mentions | P2-63 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1611,3 +1611,16 @@ Contexte : arbitrage du 27 octobre (question 9) : tableaux HTML et titres Markdo
   (10 000 jetons × 110 Ko). Piste : relever une fois les segments `[...]` du texte (comme `jetonsLitteraux`) et ne tester que ceux-ci.
 - Méthode à reprendre : profiler d'abord (une phase à la fois), puis correction, puis fuzz différentiel (script `fuzz` : 300 graines × 2 règles × 3
   documents, sortie de référence calculée sur `main`), puis test de coût (`cout_noms_distincts_test.dart`, déjà écrit, rouge).
+
+### P2-64 — Coût de la résolution des pseudonymes (reprise, `code`)
+
+Suite de l'état des lieux ci-dessus. Cause principale : `_freshToken` appliquait le motif de jeton à tout le texte pour chaque nouveau
+jeton ; seconde cause : comparaison de chaque mention à toutes les identités.
+
+- Test de coût d'abord (rouge : 43 s et 13,5 s pour une borne de 10 s), puis deux corrections mesurées séparément.
+- `ecluse.dart` : `_zoneCrochets` (segments `[...]` relevés une fois par texte) ; index des identités par segment et par ensemble de segments
+  (`candidats`), prédicat exact conservé.
+- Équivalence : 3 000 exécutions + 2 000 avec jetons littéraux, identiques à `main` ; banc inchangé octet pour octet ; 1033 tests.
+- Mesure : 10 000 noms distincts 37 s → 0,55 s ; « Marie X » ×10 000 14 s → 1,1 s.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

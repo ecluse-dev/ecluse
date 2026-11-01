@@ -811,6 +811,24 @@ imbriqués, listes de définitions (`dl`, `dt`, `dd`), liens Markdown (texte et 
 pas retenus. Un en-tête écrit avec `<td>` plutôt que `<th>` (`Nom`, `Prénom` en `td`) peut faire lire « Nom : Prénom » comme un
 nom : la valeur « Prénom » ou « Nom » est écartée, mais pas un autre libellé de colonne.
 
+**Coût de la résolution des pseudonymes (P2-64).** Arbitrage du 27 octobre (question 12). Le coût résiduel « au-delà de
+~50 000 mentions » (P2-48, P2-53 à P2-56) dépendait en réalité du nombre d'identités **distinctes**, non du nombre de
+mentions : 10 000 noms distincts (110 Ko) prenaient 37 à 43 s, 10 000 mentions d'un même nom 0,6 s, 10 000 « Marie X »
+14 s. Mesuré avant de corriger (détection : 0,5 s ; tout le reste dans la résolution). **Cause principale** (trouvée après
+une première piste insuffisante, un index des identités seul : 43 s → 36 s) : `_freshToken` appliquait le motif de jeton
+à **tout le texte** pour chaque nouveau jeton (10 000 jetons × 110 Ko). Il ne regarde plus que les segments `[...]` sans
+crochet intérieur, relevés une fois par texte (même raisonnement que `jetonsLitteraux`, P2-25) : 37 s → 0,55 s.
+**Seconde cause** : chaque mention était comparée à toutes les identités du dossier ; un index les retrouve par segment le
+plus rare de la mention (identités qui contiennent tous ses segments) et par sous-ensemble exact de ses segments
+(identités incluses dans la mention), le prédicat d'inclusion exact restant appliqué ensuite : « Marie X » ×10 000 :
+14 s → 1,1 s. Mesuré : 10 000 / 20 000 / 40 000 noms distincts en 0,55 / 2,0 / 5,2 s (légère croissance résiduelle, due au
+reste de l'attribution) ; 10 000 / 20 000 « Marie X » en 1,1 / 2,8 s. **Équivalence vérifiée** : 3 000 exécutions
+(1 500 graines × 2 règles de noms × 3 documents d'un dossier, civilités, initiales, ordres inversés) puis 2 000 avec des
+jetons littéraux dans le texte (`[NOM_1]`, `[ nom_2 ]`, `\[NOM\_3\]`…), comparées à `main` : sorties identiques
+(texte masqué et carte de restauration). Banc inchangé octet pour octet ; 1033 tests ; trois tests de coût
+(`cout_noms_distincts_test.dart`, bornes de 10 s pour des mesures de 0,5 à 1,1 s). **Non traité** : la croissance résiduelle
+au-delà de 40 000 noms distincts, non mesurée plus loin ; la détection des noms elle-même (0,5 s pour 10 000 noms).
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
