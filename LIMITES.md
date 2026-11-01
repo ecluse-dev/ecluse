@@ -913,8 +913,8 @@ Bilan Pierre Dupont.docx » donnait « [NOM_1] Dupont.docx ». La cause est gén
 et un mot capitalisé voisin) **prenait le mot qui précède et ne regardait pas celui qui suit** quand les deux existaient. Donc dès qu'un
 mot capitalisé précédait « Prénom Nom » — début de phrase (« Appeler Pierre Dupont demain »), titre (« Bilan Pierre Dupont »), mot
 d'état (« Patient Pierre Dupont », « Résident Pierre Dupont »), « Merci », un jour (« Mardi ») — **le patronyme restait en clair**. Mesuré :
-12 formes sur 17 testées (« Appeler », « Contacter », « Bilan », « Merci », « Mardi », « Rendez-vous », « Résident », « Patient »,
-« Visite »…). **Maintenant**, quand un mot capitalisé libre existe de chaque côté du prénom, **les deux sont couverts** (étendue de trois
+9 formulations sur 14 sondées laissaient le patronyme (« Appeler », « Contacter », « Bilan », « Merci », « Mardi », « Rendez-vous »,
+« Résident », « Patient », « Visite »). **Maintenant**, quand un mot capitalisé libre existe de chaque côté du prénom, **les deux sont couverts** (étendue de trois
 mots, confiance 0.6) : on ne sait pas lequel est le patronyme (« Dupont Pierre Jean » ou « Pierre Dupont »), et en couvrir un seul laissait
 l'autre en clair. Les cas à un seul voisin sont inchangés (« Il faut appeler Pierre Dupont » → « Il faut appeler [NOM_1] »). **Coût
 assumé** : le mot capitalisé qui précède est masqué avec le nom (« [NOM_1] demain » pour « Appeler Pierre Dupont demain »), comme il
