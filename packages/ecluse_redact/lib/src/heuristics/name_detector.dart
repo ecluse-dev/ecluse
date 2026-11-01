@@ -558,15 +558,44 @@ final class NameDetector implements EntityDetector {
   /// positions restent celles du texte d'origine, dont les valeurs sont relues.
   static final RegExp _soulignes =
       RegExp(r'(?<=[A-Za-zÀ-ÿ0-9])_(?=[A-Za-zÀ-ÿ0-9])');
+  // Le regard arrière « majuscule + minuscules » n'est plus dans le motif :
+  // non borné, il était évalué à chaque position et remontait toute la suite
+  // de minuscules (`'a' * 32000 + '.'` : 10 s, P2-85). Il est vérifié à part,
+  // en remontant une seule suite de minuscules par point.
   static final RegExp _pointsEntreMajuscules =
-      RegExp(r'(?<=[A-ZÀ-Þ][a-zà-ÿ]+)\.(?=[A-ZÀ-Þ][a-zà-ÿ])');
+      RegExp(r'\.(?=[A-ZÀ-Þ][a-zà-ÿ])');
+
+  static bool _minuscule(int c) =>
+      (c >= 0x61 && c <= 0x7A) || (c >= 0xE0 && c <= 0xFF);
+
+  static bool _majuscule(int c) =>
+      (c >= 0x41 && c <= 0x5A) || (c >= 0xC0 && c <= 0xDE);
+
+  static String _pointsEntreMots(String text) {
+    final unites = text.codeUnits;
+    final tampon = StringBuffer();
+    var dernier = 0;
+    for (final m in _pointsEntreMajuscules.allMatches(text)) {
+      var i = m.start - 1;
+      while (i >= 0 && _minuscule(unites[i])) {
+        i--;
+      }
+      if (i < 0 || i == m.start - 1 || !_majuscule(unites[i])) continue;
+      tampon
+        ..write(text.substring(dernier, m.start))
+        ..write(' ');
+      dernier = m.end;
+    }
+    if (dernier == 0) return text;
+    return (tampon..write(text.substring(dernier))).toString();
+  }
 
   static String _separateursDeMots(String text) {
     if (!text.contains('_') && !text.contains('.')) return text;
     var travail = text;
     if (text.contains('_')) travail = travail.replaceAll(_soulignes, ' ');
     if (text.contains('.')) {
-      travail = travail.replaceAll(_pointsEntreMajuscules, ' ');
+      travail = _pointsEntreMots(travail);
     }
     return travail;
   }
