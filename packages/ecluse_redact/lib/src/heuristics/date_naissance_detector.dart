@@ -67,7 +67,7 @@ final class DateNaissanceDetector implements EntityDetector {
   /// ligne, valeur sur la suivante). Une ligne vide ou une ligne étrangère
   /// entre les deux interrompt la détection.
   static const String _sepContexte =
-      '(?:[ \\t\\u00A0\\u202F"\'>=:]+|$_b*[|;]$_b*|$_b*\\r?\\n$_b*)';
+      '(?:[ \\t\\u00A0\\u202F"\'>=:\\u001F]+|$_b*[|;]$_b*|$_b*\\r?\\n$_b*)';
 
   static const String _jours =
       '(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)$_b+';

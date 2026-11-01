@@ -141,7 +141,8 @@ final class NameDetector implements EntityDetector {
     r'\b(?:Nom|NOM)(?:'
     '$_h+(de$_h+naissance|d[\u0027\u2019]usage|de$_h+famille|patronymique|'
     'marital|$_nomQualifie))?'
-    '$_h*:$_h*'
+    '$_h*[:\u001F]$_h*'
+    '(?!(?:Pr[ée]noms?|PR[ÉE]NOMS?|Nom|NOM)\\b)'
     '($_unite(?:$_h+(?!(?:Pr[ée]noms?|PR[ÉE]NOMS?)\\b)$_unite)?)',
   );
 
@@ -175,7 +176,7 @@ final class NameDetector implements EntityDetector {
     r'\b(?:Pr[ée]noms?|PR[ÉE]NOMS?)(?:'
     '$_h+(?:usuels?|de$_h+naissance|d[\u0027\u2019]usage|[àa]$_h+l[\u0027\u2019]'
     r'[ée]tat$_h+civil))?'
-    '$_h*:$_h*'
+    '$_h*[:\u001F]$_h*'
     '($_unite(?:$_h+(?!(?:Nom|NOM|Pr[ée]noms?|PR[ÉE]NOMS?)\\b)$_unite){0,2})',
   );
 

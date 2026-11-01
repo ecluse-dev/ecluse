@@ -36,7 +36,7 @@ final class IdentifiantDetector implements EntityDetector {
       ')';
 
   static final RegExp _etiquette = RegExp(
-    '$_etiquettes$_h*(?:[:=]$_h*)?$_numero(?:[:=]$_h*)?'
+    '$_etiquettes$_h*(?:[:=\\u001F]$_h*)?$_numero(?:[:=\\u001F]$_h*)?'
     '([A-Za-z0-9][A-Za-z0-9/._-]{2,24})',
     caseSensitive: false,
   );
