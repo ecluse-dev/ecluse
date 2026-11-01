@@ -140,7 +140,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-74 | code | `ecluse_redact` : forme « Nom, Prénom » (`Marchetti, Odette`) | P2-73 | fusionnée |
 | P2-75 | code | `ecluse_redact` : initiales entre une civilité et un patronyme (`Dr A. Faure`) | P2-74 | fusionnée |
 | P2-76 | code | `ecluse_redact` : variantes de contexte de naissance (`DN`, `D.N.`, `Date nais.`, `née 12/9/1938`) | P2-74 | fusionnée |
-| P2-77 | code | `ecluse_redact` : sur-masquages fréquents (fonctions après civilité, statuts, jours voisins, Saint-…, éponymes, lots) | P2-75 | PR ouverte |
+| P2-77 | code | `ecluse_redact` : sur-masquages fréquents (fonctions après civilité, statuts, jours voisins, Saint-…, éponymes, lots) | P2-75 | fusionnée |
+| P2-78 | code | `ecluse_redact` : colonne « Date de naissance » d'un tableau à en-tête | P2-79 | fusionnée |
 | P2-79 | code | `ecluse_redact`/`ecluse_ingest` : coût d'une chaîne de particules et de balises ouvertes (déni de service) | P2-76 | fusionnée |
 | P2-80 | code | `ecluse_redact` : identifiants administratifs sans « n° » (`dossier 4900123456`, `N° résident`, `Plan d'aide n°`) | P2-79 | PR ouverte |
 
@@ -1798,5 +1799,13 @@ Contexte : relecture indépendante : « dossier 4900123456 », « N° résident 
 - Tests d'abord (8 rouges sur 21) ; 12 contre-exemples intacts (année, date, mois d'année, mots, deux chiffres).
 - `identifiant_detector.dart` : étiquettes « n° de résident / usager », « Plan d'aide n° » ; `_dossierNu` (« dossier » + valeur d'au moins six chiffres, ni date ni mois d'année).
 - Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1352 tests ; coût linéaire.
+### P2-78 — Colonne « Date de naissance » d'un tableau (`code`)
+
+Contexte : relecture indépendante : la date d'une colonne « Né(e) le » / « Date de naissance » restait en clair dans un tableau CSV, Word ou HTML.
+
+- Tests d'abord (11 rouges sur 17) ; 6 contre-exemples (Date de visite, d'entrée, de péremption, cellule non date, cellule vide, pas un tableau) ; refus explicite conservé.
+- `tableau_csv.dart` : lecture générique par colonnes (`_cellulesDeColonnes`) ; `cellulesDeNaissance`. `date_naissance_detector.dart` : cellule entière qui est une date ; recherche
+  dichotomique du chevauchement.
+- Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1302 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
