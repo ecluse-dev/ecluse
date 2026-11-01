@@ -125,6 +125,11 @@ final class NameDetector implements EntityDetector {
   /// Une unité de nom : particules éventuelles puis mot capitalisé.
   static const String _unite = '(?:$_particules)*$_cap';
 
+  /// Une ou plusieurs initiales de prénom avant un patronyme (P2-75) : « A. »,
+  /// « J.-P. », « A. B. ». Après une civilité, elles font partie du nom : sans
+  /// elles, « Dr A. Faure » masquait l'initiale et laissait « Faure ».
+  static const String _initiales = '[A-ZÀ-Þ]\\.(?:-?[A-ZÀ-Þ]\\.)*$_h+';
+
   static final RegExp _civility = RegExp(
     r'\b(?:M\.|Mrs\.?|Mr\.?|Ms\.?|Mme\.?|Mlle\.?|Mademoiselle|Monsieur|Madame|Mgr|'
     r'[Aa]bbé|Dre\.?|Dr\.?|Docteure|Docteur|Pr\.?|Professeure|Professeur|Maître|'
@@ -134,7 +139,7 @@ final class NameDetector implements EntityDetector {
     r'[mM]onsieur|[mM]adame|[mM]ademoiselle|docteur|docteure|doctoresse|'
     r'professeur|professeure)'
     '$_blancOuSaut'
-    '($_unite'
+    '((?:$_initiales){0,3}$_unite'
     '(?:$_h+'
     // Un mot-clé d'établissement n'est jamais un patronyme (voir
     // `etablissementKeywords`).
@@ -676,7 +681,7 @@ final class NameDetector implements EntityDetector {
           confidence: 0.9,
         ),
       );
-      surnameSources.add(name);
+      surnameSources.add(name.replaceFirst(RegExp('^(?:$_initiales)+'), ''));
       claimed.add(match.start, match.end); // réserve civilité + nom
     }
 

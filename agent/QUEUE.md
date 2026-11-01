@@ -138,6 +138,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-71 | code | `ecluse_redact` : noms dans les noms de fichiers, URL, chemins et identifiants | P2-72 | fusionnée |
 | P2-73 | code | `ecluse_redact` : nom coupé par un retour à la ligne (civilité, étiquette puis valeur) | P2-71 | fusionnée |
 | P2-74 | code | `ecluse_redact` : forme « Nom, Prénom » (`Marchetti, Odette`) | P2-73 | fusionnée |
+| P2-75 | code | `ecluse_redact` : initiales entre une civilité et un patronyme (`Dr A. Faure`) | P2-74 | PR ouverte |
+| P2-76 | code | `ecluse_redact` : variantes de contexte de naissance (`DN`, `D.N.`, `Date nais.`, `née 12/9/1938`) | P2-74 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1753,4 +1755,16 @@ Contexte : relecture manuelle d'un compte rendu synthétique : « Marchetti, Ode
 - Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1243 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Non traité : prénom hors gazetteer, initiales isolées, tout en minuscules.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-75 et P2-76 — Initiales après une civilité ; variantes de « date de naissance » (`code`)
+
+Contexte : relecture adverse indépendante (un « sage », 200 sondes) ; deux fuites reproduites avant correction.
+
+- Tests d'abord (21 rouges sur 35) ; contre-exemples intacts (initiale seule, `DN 12`, `Né 3 fois`, dates de rendez-vous).
+- `name_detector.dart` : `_initiales` (0 à 3 initiales) dans le groupe de nom de `_civility`, patronyme seul dans la seconde passe.
+- `date_naissance_detector.dart` : contextes `DN`, `D.N.`, `Date nais.`, `née`/`né` sans « le », `n. le`, âge puis date entre parenthèses ; mois abrégé suivi d'un point.
+- Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1278 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Écarté après analyse : nom en minuscules après `mme`/`mr`/`m.` (faux positifs massifs) ; initiales isolées sans civilité.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

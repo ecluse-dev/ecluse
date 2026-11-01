@@ -983,6 +983,20 @@ avant cette tâche (règle bidirectionnelle). **Non traité** : « Nom, Prénom 
 initiales « O. Marchetti » (un nom après une initiale isolée est trop souvent une fin de phrase : « vitamine B. Le patient… »), « mme marchetti » tout en
 minuscules.
 
+**Initiales après une civilité, variantes de « date de naissance » (P2-75, P2-76).** Premier lot issu d'une **relecture adverse par un relecteur indépendant** (un
+« sage », 200 sondes synthétiques, 1ᵉʳ novembre 2026) ; chaque point est reproduit avant correction. *P2-75* : « Dr A. Faure a prescrit » donnait « [NOM_1]. Faure a
+prescrit » — l'initiale masquée, le **patronyme en clair** (inversion), alors que « Dr M. Dupont », « M. J. Dupuis », « Mme M.-C. Roux » sont la forme usuelle des
+soignants cités. Après une civilité, de une à trois initiales (« A. », « J.-P. », « A. B. ») font maintenant partie du nom ; sans patronyme derrière
+(« Mme B. a refusé »), le comportement est inchangé ; le patronyme seul alimente la seconde passe (« Dr Faure » plus loin = même jeton). *P2-76* : « DN
+12.09.1938 », « D.N. : 12/09/1938 », « Date nais. 12/09/1938 », « née 12/9/1938 » (sans « le »), « né à Lyon 12/09/1938 », « n. le 12 sept. 1938 » (mois abrégé
+suivi d'un point) et « âge : 87 ans (12/09/1938) » laissaient la date **en clair** ; elles sont maintenant des contextes de naissance ; la date doit toujours
+suivre (« DN 12 », « Né 3 fois », « Date nais. inconnue », « Rendez-vous le 12/09/2026 » restent intacts). **Analyse bénéfice / risque** : la fuite (patronyme d'un
+soignant, date de naissance complète) est directe et fréquente ; le risque de faux positif est nul pour les initiales (ancrées sur une civilité) et borné pour
+les dates (un contexte de naissance est toujours exigé, la forme de date aussi). Tests d'abord (21 rouges sur 35) ; 3 896 textes de corpus : 0 changement ; banc
+inchangé octet pour octet ; 1278 tests ; coût linéaire (0,9 Mo en 2,1 à 4,0 s). **Non traité, décision motivée** : un nom en minuscules après `mme`, `mr`, `m.`
+(« mme roux a chuté ») — sans majuscule, rien ne distingue un patronyme d'un mot courant (« mme est partie »), le faux positif serait massif ; les initiales
+isolées sans civilité (« N. Haddad », « Girault N. ») sauf en signature — trop souvent une fin de phrase (« vitamine B. Le patient… »).
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
