@@ -140,6 +140,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-74 | code | `ecluse_redact` : forme « Nom, Prénom » (`Marchetti, Odette`) | P2-73 | fusionnée |
 | P2-75 | code | `ecluse_redact` : initiales entre une civilité et un patronyme (`Dr A. Faure`) | P2-74 | PR ouverte |
 | P2-76 | code | `ecluse_redact` : variantes de contexte de naissance (`DN`, `D.N.`, `Date nais.`, `née 12/9/1938`) | P2-74 | PR ouverte |
+| P2-77 | code | `ecluse_redact` : sur-masquages fréquents (fonctions après civilité, statuts, jours voisins, Saint-…, éponymes, lots) | P2-75 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1767,4 +1768,16 @@ Contexte : relecture adverse indépendante (un « sage », 200 sondes) ; deux fu
 - Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1278 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Écarté après analyse : nom en minuscules après `mme`/`mr`/`m.` (faux positifs massifs) ; initiales isolées sans civilité.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-77 — Sur-masquages fréquents (`code`)
+
+Contexte : relecture adverse indépendante (un « sage » chargé des faux positifs) : fonctions, statuts, jours, toponymes, éponymes, lots masqués à tort.
+
+- Tests d'abord (32 rouges sur 46) ; 13 témoins : les vrais noms restent masqués (Madame Dupont, Famille Quenelle, Mme Saint-Pierre, Dr Alzheimer, Appeler Pierre Dupont…).
+- `name_detector.dart` : fonction après civilité (`le|la|les` minuscules), liste `_statuts` (civilité, parenté, prénom), `_motsVoisinsNeutres` (jours, mois, adverbes, politesse)
+  écartés comme voisin d'un prénom, `_estToponymeSaint`, `_precedeParEponyme`. `identifiant_detector.dart` : plaque précédée de lot/série/référence écartée.
+- Changement de comportement assumé : les communes « Saint-… » ne sont plus masquées (elles l'étaient par accident, contrairement aux autres communes).
+- Mesure : 3 896 textes de corpus, 10 changements (communes Saint-…) ; banc inchangé octet pour octet ; 1324 tests ; tous les paquets verts.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
