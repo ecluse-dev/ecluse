@@ -963,7 +963,7 @@ phrase (« Le », « Il », « Dans », « Merci »…) n'est jamais pris pour u
 (P2-36) : la fenêtre passe de deux à **trois** lignes, pour couvrir « Nom : / valeur / Prénom : ». Dans « Prénom : » la valeur « Nom » ou « Prénom » n'est
 jamais un prénom. **Garde-fou conservé** : un nom n'est jamais prolongé au-delà de sa ligne (« Dr Martin⏎Secretaire de séance » ne masque pas
 « Secretaire » : deux tests anciens l'imposent) ; un essai qui admettait le saut de ligne **entre les mots** du nom changeait 49 textes des corpus
-synthétiques par des faux positifs de ce type, il est donc abandonné. Tests d'abord (11 rouges sur 20) ; 8 contre-exemples intacts (ligne vide, « Mme⏎Le
+synthétiques par des faux positifs de ce type, il est donc abandonné. Tests d'abord (8 rouges sur 18) ; 8 contre-exemples intacts (ligne vide, « Mme⏎Le
 rapport », « Nom :⏎Aspirine », « Dr⏎Dans le service »…) ; 3 896 textes de corpus : 0 changement ; banc inchangé octet pour octet ; 1225 tests ; coût
 linéaire sur 8 entrées d'~1 Mo (2,2 à 3,6 s). **Non traité, fuite connue** : un nom coupé **entre ses mots** (« Mme Marie⏎Dupont » masque « Marie »,
 « Jean⏎Dupont est venu » masque « Jean », « Dupont⏎Jean » masque « Jean »), et une coupure par trait d'union (« Dupont-⏎Martin »). C'est le prix du

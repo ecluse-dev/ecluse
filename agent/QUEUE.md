@@ -1733,7 +1733,7 @@ Contexte : `Bilan_Pierre_Dupont_2024.pdf`, `/patient/pierre-dupont`, `pierre.dup
 
 Contexte : « Mme⏎Dupont », « Nom :⏎Quenelle » (texte de PDF) laissaient le nom en clair.
 
-- Tests d'abord (11 rouges sur 20) ; 8 contre-exemples intacts (ligne vide, mots d'ouverture de phrase, « Dr Martin⏎Secretaire »).
+- Tests d'abord (8 rouges sur 18) ; 8 contre-exemples intacts (ligne vide, mots d'ouverture de phrase, « Dr Martin⏎Secretaire »).
 - `name_detector.dart` : `_blancOuSaut` (blancs ou un seul saut de ligne, jamais devant un mot d'ouverture de phrase) entre civilité et nom, après « née… », et
   après les deux-points d'une étiquette ; fenêtre « Prénom » à proximité portée à trois lignes ; « Prénom : Nom » n'est pas un prénom.
 - Essai abandonné : saut de ligne entre les mots du nom (49 textes de corpus changés, faux positifs). Garde-fou « un nom ne traverse pas sa ligne » conservé.
