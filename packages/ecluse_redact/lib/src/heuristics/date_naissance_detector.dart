@@ -27,6 +27,8 @@ final class DateNaissanceDetector implements EntityDetector {
     'janvier', 'février', 'fevrier', 'mars', 'avril', 'mai', 'juin',
     'juillet', 'août', 'aout', 'septembre', 'octobre', 'novembre',
     'décembre', 'decembre', //
+    // Abréviations françaises (P2-83) ; le point est facultatif plus bas.
+    'janv', 'févr', 'fevr', 'fév', 'fev', 'avr', 'juil', 'déc', //
     // Mois anglais (« DOB: 12 March 1950 »), contexte de naissance obligatoire.
     'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august',
     'september', 'october', 'november', 'december', 'jan', 'feb', 'mar', 'apr',
@@ -62,6 +64,9 @@ final class DateNaissanceDetector implements EntityDetector {
       '|[aâ]g[ée]e?(?:$_b+de|$_b*:)?$_b*\\d{1,3}$_b*ans$_b*(?=\\()'
       '|D\\.?N\\.?$_b*:?'
       '|naissance(?=["\']?$_b*[:=>])'
+      // « Naiss. 12/03/1950 », « Naiss : … », « Naissance le/du … » (P2-83).
+      '|naiss(?:\\.$_b*:?|(?=$_b*:))'
+      '|naissance$_b+(?:le|du)$_b*:?'
       '|D\\.?D\\.?N\\.?$_b*:?'
       '|DOB$_b*:?'
       '|date$_s*of$_s*birth$_b*:?'
@@ -83,6 +88,8 @@ final class DateNaissanceDetector implements EntityDetector {
       '\\d{1,2}$_b*[\\/\\-.]$_b*\\d{1,2}$_b*[\\/\\-.]$_b*(?:\\d{4}|\\d{2}(?!\\d))'
       '|\\d{1,2}$_b+\\d{1,2}$_b+\\d{4}(?!\\d)'
       '|\\d{4}-\\d{2}-\\d{2}'
+      // Date compacte JJMMAAAA (exports de logiciels), bornes de jour et de mois.
+      '|(?:0[1-9]|[12]\\d|3[01])(?:0[1-9]|1[0-2])(?:19|20)\\d{2}(?!\\d)'
       '|\\d{1,2}(?:er|ᵉʳ)?$_b+(?:${_months.join('|')})\\.?$_b+(?:\\d{4}|\\d{2}(?!\\d))';
 
   static final RegExp _pattern = RegExp(
