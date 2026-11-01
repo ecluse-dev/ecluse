@@ -146,6 +146,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-80 | code | `ecluse_redact` : identifiants administratifs sans « n° » (`dossier 4900123456`, `N° résident`, `Plan d'aide n°`) | P2-79 | fusionnée |
 | P2-81 | code | `ecluse_redact` : signature avec initiale (`N. Haddad`) et nom de naissance `(ex-Garnier)` | P2-79 | fusionnée |
 | P2-82 | code | `Ecluse.restore` : un seul parcours des segments `[...]` au lieu d'un remplacement par jeton (reprise de la partie restauration de #201) | P2-64 | fusionnée |
+| P2-84 | code | `ecluse_redact` : valeurs « vides » d'un champ étiqueté (`Prénom : Non renseigné`, `Néant`, `Idem`…) jamais prises pour un nom | P2-82 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1835,4 +1836,15 @@ ne l'était pas.
   graines fixes, valeurs piégées).
 - Mesure après : 2 000 mentions 65 ms ; 10 000 : 188 ms ; 20 000 : 328 ms.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-84 — Valeurs vides derrière « Nom : » / « Prénom : » (`code`)
+
+Source : relecture indépendante du 1er novembre 2026 (sage « faux positifs »), cas reproduits sur `main` : `Prénom : Non renseigné` donnait
+`Prénom : [NOM_1] renseigné` (valeur tronquée, phrase illisible).
+
+- Liste fermée de valeurs vides, comparées au mot entier : néant, sans, idem, identique, anonyme, anonymisé(e), confidentiel(le), exemple, test, « à compléter »,
+  en plus de non / inconnu / n/a déjà connus des clés de données. Appliquée aux champs `Nom …` et `Prénom …`.
+- Contre-exemples testés : `Prénom : Nonna`, `Prénom : Idemar`, `Nom de naissance : Testard`, `Prénom : Test-Marc` restent masqués.
+- Mesure : 1 000 textes de corpus, 0 changement ; `format`, `analyze`, 1406 tests verts. `ecluse_core` inchangé.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
