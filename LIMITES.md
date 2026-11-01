@@ -908,6 +908,24 @@ Rose » (Rose est un prénom) et tout mot en majuscule initiale après `famille`
 (« Capitaine », « Colonel »), « tante », « oncle », « grand-mère » suivis d'un nom, « la famille de Rose » (la particule empêche la règle de
 parenté ; seul « Rose » est masqué, car c'est un prénom du gazetteer).
 
+**Prénom entre deux mots capitalisés (P2-70).** Trouvé en sondant des noms dans des noms de fichiers (1ᵉʳ novembre 2026) : « Pièce jointe :
+Bilan Pierre Dupont.docx » donnait « [NOM_1] Dupont.docx ». La cause est générale : la règle bidirectionnelle (un prénom du gazetteer
+et un mot capitalisé voisin) **prenait le mot qui précède et ne regardait pas celui qui suit** quand les deux existaient. Donc dès qu'un
+mot capitalisé précédait « Prénom Nom » — début de phrase (« Appeler Pierre Dupont demain »), titre (« Bilan Pierre Dupont »), mot
+d'état (« Patient Pierre Dupont », « Résident Pierre Dupont »), « Merci », un jour (« Mardi ») — **le patronyme restait en clair**. Mesuré :
+12 formes sur 17 testées (« Appeler », « Contacter », « Bilan », « Merci », « Mardi », « Rendez-vous », « Résident », « Patient »,
+« Visite »…). **Maintenant**, quand un mot capitalisé libre existe de chaque côté du prénom, **les deux sont couverts** (étendue de trois
+mots, confiance 0.6) : on ne sait pas lequel est le patronyme (« Dupont Pierre Jean » ou « Pierre Dupont »), et en couvrir un seul laissait
+l'autre en clair. Les cas à un seul voisin sont inchangés (« Il faut appeler Pierre Dupont » → « Il faut appeler [NOM_1] »). **Coût
+assumé** : le mot capitalisé qui précède est masqué avec le nom (« [NOM_1] demain » pour « Appeler Pierre Dupont demain »), comme il
+l'était déjà ; seul le patronyme est en plus protégé. Une mention ultérieure « Pierre Dupont » rejoint la même identité (inclusion de
+segments). Tests d'abord (12 rouges sur 17) ; **comparaison sur 3 896 textes de corpus synthétiques** (`main` contre branche) : 32
+textes changent, tous dans le corpus « flou adversarial », tous pour un patronyme désormais couvert (« Contacter Aïcha Gauthier »,
+« Contacter Mei-Ling Vasseur »…) ; aucun changement dans les corpus témoin, réaliste ni leurres ; banc inchangé octet pour octet ; 1174
+tests. **Non traité** : les noms dans les noms de fichiers, URL, logins et chemins (`Bilan_Pierre_Dupont_2024.pdf`, `pierre-dupont`,
+`pierre.dupont`, `@pierre_dupont`, `C:\Users\Zorglub`) restent en clair — le séparateur `_`, `-`, `.` ou l'absence de séparation
+(`BilanPierreDupont`) fait un seul mot ; « Bilan-Pierre-Dupont.pdf » masque le prénom mais pas le reste.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
