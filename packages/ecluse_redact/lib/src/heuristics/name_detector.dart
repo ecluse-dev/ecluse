@@ -114,7 +114,11 @@ final class NameDetector implements EntityDetector {
   static final RegExp _civility = RegExp(
     r'\b(?:M\.|Mrs\.?|Mr\.?|Ms\.?|Mme\.?|Mlle\.?|Mademoiselle|Monsieur|Madame|Mgr|'
     r'[Aa]bbé|Dre\.?|Dr\.?|Docteure|Docteur|Pr\.?|Professeure|Professeur|Maître|'
-    r'Maitre|Me)'
+    r'Maitre|Me|'
+    // P2-69 : formes abrégées et en majuscules, minuscules du dialogue.
+    r'Mdme\.?|Melle\.?|MME|MLLE|MR|MONSIEUR|MADAME|MADEMOISELLE|DOCTEUR|PROFESSEUR|'
+    r'[mM]onsieur|[mM]adame|[mM]ademoiselle|docteur|docteure|doctoresse|'
+    r'professeur|professeure)'
     '$_h+'
     '($_unite'
     '(?:$_h+'
@@ -142,6 +146,26 @@ final class NameDetector implements EntityDetector {
   /// ODT, P2-65). Des espaces seuls ne suffisent jamais.
   static const String _separateurEtiquette =
       '(?:$_h*[:\u001F]$_h*|[ \\t\u00A0\u202F]*\\t$_h*)';
+
+  /// Civilités au pluriel (P2-69) : « Mmes Quenelle et Dupont », « MM. Quenelle et
+  /// Dupont », « Mesdames… », « Messieurs… ». Une personne par nom : chaque unité
+  /// est une entité séparée, jamais un seul jeton pour deux personnes.
+  static final RegExp _civilitePlurielle = RegExp(
+    r'(?<![\wÀ-ÿ])(?:Mmes|Mlles|MM\.|Mesdames|Messieurs)'
+    '$_h+'
+    '($_unite(?:(?:$_h*,$_h*|$_h+(?:et|ou)$_h+)$_unite){0,3})',
+  );
+
+  /// Mots de parenté et de religion qui annoncent un nom (P2-69) : « la famille
+  /// Quenelle », « les époux Quenelle », « Sœur Marie-Pierre Quenelle », « Père
+  /// Quenelle ». Un mot-clé d'établissement n'est jamais un patronyme.
+  static final RegExp _cueParente = RegExp(
+    r'(?<![\wÀ-ÿ])(?:[Ff]amille|[EeÉé]poux|[Cc]onsorts|[SsŒœ]œur|[Ss]oeur|'
+    r'[Ff]rère|Père)'
+    '$_h+'
+    '(?!(?:${etablissementKeywords.join('|')})\\b)'
+    '($_cap(?:$_h+$_unite)?)',
+  );
 
   /// Étiquette et valeur séparées par une tabulation (cellules d'un tableau Word
   /// ou ODT) : seulement si la ligne n'a que ces deux champs. Dans une rangée
@@ -415,7 +439,12 @@ final class NameDetector implements EntityDetector {
     'Dr', 'Dr.', 'Dre', 'Dre.', 'Docteur', 'Docteure', 'Pr', 'Pr.',
     'Professeur',
     'Professeure', 'Me', 'Maître', 'Maitre', //
+    // P2-69
+    'DOCTEUR', 'PROFESSEUR', 'docteur', 'docteure', 'doctoresse', 'professeur',
+    'professeure', //
   };
+
+  static bool _motDeLiaison(String s) => s == 'et' || s == 'ou';
 
   static bool _isProfessionalTitle(String civility) =>
       _professionalTitles.contains(civility.trim());
@@ -471,6 +500,47 @@ final class NameDetector implements EntityDetector {
           end: match.end,
           value: name,
           confidence: 0.6,
+        ),
+      );
+      surnameSources.add(name);
+      claimed.add(start, match.end);
+    }
+
+    // Civilités au pluriel : une entité par nom (P2-69).
+    for (final match in _civilitePlurielle.allMatches(text)) {
+      final groupe = match.group(1)!;
+      final debutGroupe = match.end - groupe.length;
+      for (final u in _uniteAt.allMatches(groupe)) {
+        final start = debutGroupe + u.start;
+        final end = debutGroupe + u.end;
+        final name = text.substring(start, end);
+        if (_motDeLiaison(name) || claimed.overlaps(start, end)) continue;
+        results.add(
+          DetectedEntity(
+            type: EntityType.nom,
+            start: start,
+            end: end,
+            value: name,
+            confidence: 0.9,
+          ),
+        );
+        surnameSources.add(name);
+        claimed.add(start, end);
+      }
+    }
+
+    // Mots de parenté : « la famille Quenelle » (P2-69).
+    for (final match in _cueParente.allMatches(text)) {
+      final name = match.group(1)!;
+      final start = match.end - name.length;
+      if (claimed.overlaps(start, match.end)) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.nom,
+          start: start,
+          end: match.end,
+          value: name,
+          confidence: 0.7,
         ),
       );
       surnameSources.add(name);
