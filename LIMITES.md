@@ -954,6 +954,21 @@ positifs connus** : un lien dont deux parties sont un prénom et un mot rare (`/
 que parce que `papier` est dans la liste de mots courants. **Non traité** : prénom hors gazetteer (`zorglub-quenelle`), nom sans séparateur
 (`BilanPierreDupont.pdf`, `pierredupont`), nom seul (`/pierre/`), identifiants à chiffres (`pdupont42`), et le contenu des fichiers eux-mêmes.
 
+**Nom coupé par un retour à la ligne (P2-73).** Sonde de 14 coupures (1ᵉʳ novembre 2026) : un texte extrait d'un PDF ou copié d'une mise en page coupe
+les lignes n'importe où, et un nom coupé restait **en clair** — « Mme⏎Dupont », « Le Dr⏎Quenelle », « née⏎Dupont », surtout la disposition
+étiquette puis valeur sur la ligne suivante (« Nom :⏎Quenelle⏎Prénom :⏎Zorglub »), très courante dans les fiches exportées en PDF. **Maintenant**, un
+**seul** saut de ligne (jamais une ligne vide) est admis (1) entre une civilité et son nom, (2) entre « née », « épouse », « veuve »… et le nom de
+naissance, (3) entre une étiquette « Nom : », « Prénom : », « Patient : »… (deux-points obligatoire) et sa valeur. Un mot qui ouvre ordinairement une
+phrase (« Le », « Il », « Dans », « Merci »…) n'est jamais pris pour un nom derrière un saut de ligne. La règle « Nom » seul exige « Prénom » à proximité
+(P2-36) : la fenêtre passe de deux à **trois** lignes, pour couvrir « Nom : / valeur / Prénom : ». Dans « Prénom : » la valeur « Nom » ou « Prénom » n'est
+jamais un prénom. **Garde-fou conservé** : un nom n'est jamais prolongé au-delà de sa ligne (« Dr Martin⏎Secretaire de séance » ne masque pas
+« Secretaire » : deux tests anciens l'imposent) ; un essai qui admettait le saut de ligne **entre les mots** du nom changeait 49 textes des corpus
+synthétiques par des faux positifs de ce type, il est donc abandonné. Tests d'abord (8 rouges sur 18) ; 8 contre-exemples intacts (ligne vide, « Mme⏎Le
+rapport », « Nom :⏎Aspirine », « Dr⏎Dans le service »…) ; 3 896 textes de corpus : 0 changement ; banc inchangé octet pour octet ; 1225 tests ; coût
+linéaire sur 8 entrées d'~1 Mo (2,2 à 3,6 s). **Non traité, fuite connue** : un nom coupé **entre ses mots** (« Mme Marie⏎Dupont » masque « Marie »,
+« Jean⏎Dupont est venu » masque « Jean », « Dupont⏎Jean » masque « Jean »), et une coupure par trait d'union (« Dupont-⏎Martin »). C'est le prix du
+garde-fou ; une solution demande de distinguer une fin de ligne de mise en page d'une fin de phrase, ce que le texte seul ne permet pas.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
