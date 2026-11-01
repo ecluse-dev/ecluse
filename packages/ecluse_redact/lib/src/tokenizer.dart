@@ -37,5 +37,11 @@ RegExp tolerantTokenPattern(String token) {
   // Un échappement Markdown (barre oblique inversée devant un crochet ou un
   // soulignement) est toléré : il est exact et sans perte (P2-31).
   final escaped = RegExp.escape(inner).replaceAll('_', r'(?:\\?[ _])*');
-  return RegExp('\\\\?\\[\\s*$escaped\\s*\\\\?\\]', caseSensitive: false);
+  // Les deux crochets échappés (Markdown), ou aucun : une barre oblique devant le
+  // seul crochet ouvrant est un séparateur de chemin Windows (`C:\\Users\\[NOM_1]`)
+  // et reste (P2-72). La fermante échappée seule reste tolérée.
+  return RegExp(
+    '\\\\\\[\\s*$escaped\\s*\\\\\\]|\\[\\s*$escaped\\s*\\\\?\\]',
+    caseSensitive: false,
+  );
 }
