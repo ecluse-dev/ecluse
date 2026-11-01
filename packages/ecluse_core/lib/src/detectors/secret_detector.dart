@@ -85,7 +85,7 @@ final class SecretDetector implements Detector {
         '${_before}sk-ant-(?:api|admin)[0-9]{2}-[A-Za-z0-9_\\-]{80,}$_after'),
     // OpenAI : format récent (marqueur fixe), puis ancien format.
     RegExp('${_before}sk-(?:(?:proj|svcacct|admin)-)?'
-        '[A-Za-z0-9_\\-]{20,}T3BlbkFJ[A-Za-z0-9_\\-]{20,}$_after'),
+        '[A-Za-z0-9_\\-]{20,512}T3BlbkFJ[A-Za-z0-9_\\-]{20,}$_after'),
     RegExp('${_before}sk-[A-Za-z0-9]{48}$_after'),
   ];
 

@@ -1383,6 +1383,16 @@ derrière `Nom …` / `Prénom …` et les clés de données. Coût de fuite : u
 **Non traité, décidé** : `Anniversaire :` (vœux et fêtes, faux positifs réels), année à deux chiffres séparée par des blancs (`né le 12 03 50`),
 tableau aligné par espaces sans séparateur (colonne introuvable sans analyse de position).
 
+**Quatre coûts quadratiques corrigés (P2-85).** Trouvés par relecture indépendante, mesurés avant correction : un chiffre suivi de milliers de blancs
+(`_cleNommee` et adresse : deux `[ \t]*` séparés par un élément facultatif), une longue suite de minuscules suivie d'un point (regard arrière non borné du
+séparateur « Prénom.Nom »), `sk-ant-` répété (clé OpenAI), `restore` avec une valeur contenant un crochet inoffensif (`jean[at]example.fr`). Tous ramenés à un coût
+linéaire ; une clé OpenAI dont la première partie dépasse 512 caractères n'est plus reconnue (les clés réelles en font moins de 150).
+**Mesuré, non traité** : (a) la résolution des jetons garde un coût « jetons × segments `[...]` » (5 000 téléphones + 40 000 crochets : 10 s ; un journal de 1 Mo
+avec 80 000 segments : de l'ordre de la minute) ; (b) **la restauration n'est pas toujours identique au texte d'origine** quand deux noms adjacents sont fusionnés en
+une seule mention (`Dr Bernard Dr Costa`, `Marie Marie Marie`), ce qui contredit en partie § 5.3 : aucun avertissement n'est émis ; (c) **entités numériques HTML et échappements
+`\uXXXX`** (`jean&#46;dupont&#64;example&#46;fr`, `06&#32;12…`) ne sont pas décodés par l'ingestion : l'identifiant correspondant reste en clair, sans avertissement ;
+(d) un journal d'audit importé n'est pas validé (`ts` arbitraire, clés de comptes libres) et l'export peut lever une exception.
+
 ---
 
 **Écluse réduit le risque, il ne l'annule pas.**
