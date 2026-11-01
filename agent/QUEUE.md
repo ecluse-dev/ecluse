@@ -145,6 +145,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-79 | code | `ecluse_redact`/`ecluse_ingest` : coût d'une chaîne de particules et de balises ouvertes (déni de service) | P2-76 | fusionnée |
 | P2-80 | code | `ecluse_redact` : identifiants administratifs sans « n° » (`dossier 4900123456`, `N° résident`, `Plan d'aide n°`) | P2-79 | fusionnée |
 | P2-81 | code | `ecluse_redact` : signature avec initiale (`N. Haddad`) et nom de naissance `(ex-Garnier)` | P2-79 | fusionnée |
+| P2-82 | code | `Ecluse.restore` : un seul parcours des segments `[...]` au lieu d'un remplacement par jeton (reprise de la partie restauration de #201) | P2-64 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1818,5 +1819,20 @@ Contexte : relecture indépendante : « Cordialement,⏎N. Haddad » et « Mme R
 - Tests d'abord (6 rouges sur 11) ; contre-exemples intacts (« N. B. » seul, « ex-patient », « ex-fumeur », « l'ex-Yougoslavie »).
 - `name_detector.dart` : `_signature` accepte les initiales ; `_exNomNaissance` (entre parenthèses seulement).
 - Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1359 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-82 — Restauration sans coût quadratique (`code`)
+
+Constat (mesuré sur `main`, avant correction) : `Ecluse.restore` faisait un `replaceAll` par jeton,
+donc « jetons × taille du texte » : 2 000 mentions 0,6 s ; 10 000 : 12,5 s ; 20 000 : 61,6 s.
+La partie « résolution » de P2-64 était déjà fusionnée (#202) ; la partie « restauration » de la PR #201
+ne l'était pas.
+
+- `restore` : un seul parcours des segments `[...]` ; repli sur l'ancien algorithme si une valeur
+  contient `[`, `]` ou `\` (l'équivalence n'est alors plus garantie).
+- Test différentiel `restore_equivalence_test.dart` contre l'ancien algorithme (2 000 textes tirés,
+  graines fixes, valeurs piégées).
+- Mesure après : 2 000 mentions 65 ms ; 10 000 : 188 ms ; 20 000 : 328 ms.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
