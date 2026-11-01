@@ -62,3 +62,20 @@ chaîné, pas de chiffrement de la table de correspondance (elle reste en
 mémoire process), pas de mode « aperçu + validation » — le mode par
 défaut est automatique et transparent de bout en bout. Voir
 `BRIEF_DEMO.md` à la racine du monorepo.
+
+## Sas pour Claude Code
+
+`bin/sas.dart` lance le moteur local utilisé par le mod Claude Code
+[`integrations/claude-code/ecluse-sas`](../../integrations/claude-code/ecluse-sas/) :
+
+```sh
+cd packages/ecluse_demo
+dart run bin/sas.dart        # 127.0.0.1:8787, ECLUSE_SAS_PORT pour changer
+```
+
+Il n'appelle aucun LLM et ne demande aucune clé. Deux routes :
+`POST /v1/redact` et `POST /v1/restore`, corps `{session, text}`. La table de
+correspondance reste en mémoire, par session, avec des jetons stables sur
+toute la conversation ; elle n'est jamais renvoyée, journalisée ni écrite
+sur disque. Un hôte autre que la machine locale ou un corps non JSON est
+refusé.
