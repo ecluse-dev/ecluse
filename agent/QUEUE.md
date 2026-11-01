@@ -131,6 +131,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-65 | code | `ecluse_ingest`/`ecluse_redact` : tableaux Word et ODT (cellules par tabulation, rangées par saut de ligne) | P2-64 | fusionnée |
 | P2-66 | code | `ecluse_core` : résolveur de chevauchements linéaire (`resolveOverlaps`) | P2-65 | fusionnée |
 | P2-67 | code | `ecluse_ingest` : formats texte structurés `.csv`, `.tsv`, `.json`, `.html`, `.xml` | P2-66 | fusionnée |
+| P2-68 | code | `ecluse_redact` : prénoms d'origines variées au gazetteer (Maghreb, Afrique de l'Ouest, Europe, Asie) | P2-67 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1663,4 +1664,16 @@ Contexte : `.csv`, `.tsv`, `.json`, `.html`, `.xml` étaient refusés alors que 
 - Mesure : ingest 156 tests, redact 1042, demo 37 ; aucun changement de détection.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Décision de périmètre révocable (retirer la branche du `switch`).
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-68 — Diversité des prénoms du gazetteer (`code`)
+
+Contexte : sonde de 143 prénoms d'origines variées derrière un nom inconnu : 82 manqués.
+
+- Tests d'abord (69 rouges sur 78) ; 8 mots ordinaires écartés testés intacts ; 4 phrases ordinaires intactes.
+- `french_first_names.dart` : 68 prénoms ajoutés ; Jan, Jun, Lou, Said, Manuel, Mario, Li, Thi écartés (mots courants).
+- Faux positifs : 3 896 textes de corpus synthétiques comparés à `main` ; 32 changent, tous dans « flou adversarial », tous de vrais prénoms.
+- Mesure : banc inchangé octet pour octet ; 1120 tests.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Non traité : branchement du gazetteer INSEE (sans fréquences, trop de mots courants).
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
