@@ -143,7 +143,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-77 | code | `ecluse_redact` : sur-masquages fréquents (fonctions après civilité, statuts, jours voisins, Saint-…, éponymes, lots) | P2-75 | fusionnée |
 | P2-78 | code | `ecluse_redact` : colonne « Date de naissance » d'un tableau à en-tête | P2-79 | fusionnée |
 | P2-79 | code | `ecluse_redact`/`ecluse_ingest` : coût d'une chaîne de particules et de balises ouvertes (déni de service) | P2-76 | fusionnée |
-| P2-80 | code | `ecluse_redact` : identifiants administratifs sans « n° » (`dossier 4900123456`, `N° résident`, `Plan d'aide n°`) | P2-79 | PR ouverte |
+| P2-80 | code | `ecluse_redact` : identifiants administratifs sans « n° » (`dossier 4900123456`, `N° résident`, `Plan d'aide n°`) | P2-79 | fusionnée |
+| P2-81 | code | `ecluse_redact` : signature avec initiale (`N. Haddad`) et nom de naissance `(ex-Garnier)` | P2-79 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1807,5 +1808,15 @@ Contexte : relecture indépendante : la date d'une colonne « Né(e) le » / « 
 - `tableau_csv.dart` : lecture générique par colonnes (`_cellulesDeColonnes`) ; `cellulesDeNaissance`. `date_naissance_detector.dart` : cellule entière qui est une date ; recherche
   dichotomique du chevauchement.
 - Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1302 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-81 — Signature avec initiale et nom de naissance « (ex-X) » (`code`)
+
+Contexte : relecture indépendante : « Cordialement,⏎N. Haddad » et « Mme Roux (ex-Garnier) » laissaient un nom en clair.
+
+- Tests d'abord (6 rouges sur 11) ; contre-exemples intacts (« N. B. » seul, « ex-patient », « ex-fumeur », « l'ex-Yougoslavie »).
+- `name_detector.dart` : `_signature` accepte les initiales ; `_exNomNaissance` (entre parenthèses seulement).
+- Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1359 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
