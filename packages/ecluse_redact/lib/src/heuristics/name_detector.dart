@@ -123,7 +123,11 @@ final class NameDetector implements EntityDetector {
       '(?:$_h+|$_h*\\r?\\n$_h*(?!(?:$_debutsDePhrase)\\b))';
 
   /// Une unité de nom : particules éventuelles puis mot capitalisé.
-  static const String _unite = '(?:$_particules)*$_cap';
+  ///
+  /// Au plus trois particules d'affilée (P2-79) : la répétition sans borne rendait
+  /// les règles qui enchaînent des unités polynomiales (« Van Der » × 80 = 640
+  /// octets : 15 s) ; « de la », « van der », « de la » + « Ben » tiennent en trois.
+  static const String _unite = '(?:$_particules){0,3}$_cap';
 
   /// Une ou plusieurs initiales de prénom avant un patronyme (P2-75) : « A. »,
   /// « J.-P. », « A. B. ». Après une civilité, elles font partie du nom : sans
@@ -351,7 +355,7 @@ final class NameDetector implements EntityDetector {
   /// `cle=v`) : 1 à 4 mots, casse libre, la clé étant l'indice.
   static final RegExp _cleDonneeLax = RegExp(
     '(?:["\u0027]$_cleNom["\u0027]$_h*:$_h*["\u0027]?'
-    '|<$_cleNom(?:$_h[^>]*)?>$_h*'
+    '|<$_cleNom(?:$_h[^>\\n]{0,200})?>$_h*'
     '|(?<![\\w"\u0027.-])$_cleNom$_h*=$_h*["\u0027]?)'
     '$_valeurVide($_motLax(?:$_h+$_motLax){0,3})(?![A-Za-zÀ-ÿ0-9_])',
     caseSensitive: false,
