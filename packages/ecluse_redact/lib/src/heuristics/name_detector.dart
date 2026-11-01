@@ -489,6 +489,7 @@ final class NameDetector implements EntityDetector {
     'profil',
     'patient', 'patiente', 'resident', 'residente', 'suivi', 'visite', 'test',
     'www', 'com', 'org', 'net', 'fr', 'html', 'php', 'asp', //
+    'et', 'ou', 'de', 'du', 'la', 'le', 'en', 'au', 'aux', 'un', 'sa', 'son', //
   };
 
   static final RegExp _slug =
@@ -568,21 +569,60 @@ final class NameDetector implements EntityDetector {
 
   @override
   List<DetectedEntity> detect(String text) {
+    final base = _detecter(text);
+    var resultats = base;
+    // Deuxième lecture sur la copie où `_` et `.` séparent des mots (P2-71) : ses
+    // entités ne comptent que si elles ne chevauchent pas celles de la première
+    // lecture, qui garde seule les clés de données (`nom_patient`) intactes.
     final travail = _separateursDeMots(text);
-    final base = _detecter(travail);
-    final resultats = identical(travail, text)
-        ? base
-        : [
-            for (final e in base)
-              DetectedEntity(
-                type: e.type,
-                start: e.start,
-                end: e.end,
-                value: text.substring(e.start, e.end),
-                confidence: e.confidence,
-                tier: e.tier,
-              ),
-          ];
+    if (!identical(travail, text)) {
+      // `proprietaire[p]` : index de l'entité de la première lecture qui couvre la
+      // position p (-1 sinon) ; coût linéaire en la taille du texte.
+      final proprietaire = Int32List(text.length)
+        ..fillRange(0, text.length, -1);
+      for (var i = 0; i < base.length; i++) {
+        proprietaire.fillRange(base[i].start, base[i].end, i);
+      }
+      final retirees = <int>{};
+      final supplements = <DetectedEntity>[];
+      for (final e in _detecter(travail)) {
+        final touchees = <int>{};
+        var deborde = false;
+        for (var p = e.start; p < e.end; p++) {
+          final o = proprietaire[p];
+          if (o != -1) touchees.add(o);
+        }
+        // Une entité de la seconde lecture qui en recouvre entièrement d'autres
+        // les remplace (« Pierre Dupont » pour « Pierre » seul) ; qui les déborde
+        // seulement, ou qui chevauche une entité déjà remplacée, elle est écartée.
+        for (final o in touchees) {
+          if (base[o].start < e.start ||
+              base[o].end > e.end ||
+              retirees.contains(o)) {
+            deborde = true;
+          }
+        }
+        if (deborde) continue;
+        retirees.addAll(touchees);
+        supplements.add(
+          DetectedEntity(
+            type: e.type,
+            start: e.start,
+            end: e.end,
+            value: text.substring(e.start, e.end),
+            confidence: e.confidence,
+            tier: e.tier,
+          ),
+        );
+      }
+      if (supplements.isNotEmpty) {
+        resultats = [
+          for (var i = 0; i < base.length; i++)
+            if (!retirees.contains(i)) base[i],
+          ...supplements,
+        ]..sort((a, b) => a.start - b.start);
+      }
+    }
     if (!text.contains(RegExp(r'[._-]'))) return resultats;
     final slugs = _slugs(text, resultats);
     if (slugs.isEmpty) return resultats;

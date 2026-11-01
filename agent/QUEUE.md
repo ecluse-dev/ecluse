@@ -135,6 +135,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-69 | code | `ecluse_redact` : civilités au pluriel et en majuscules, mots de parenté (`Mmes`, `la famille`, `le docteur`, `Sœur`) | P2-68 | fusionnée |
 | P2-70 | code | `ecluse_redact` : prénom entre deux mots capitalisés, couvrir les deux voisins (`Appeler Pierre Dupont`) | P2-69 | fusionnée |
 | P2-72 | code | `ecluse_redact` : la restauration ne consomme plus la barre oblique d'un chemin Windows devant un jeton | P2-70 | PR ouverte |
+| P2-71 | code | `ecluse_redact` : noms dans les noms de fichiers, URL, chemins et identifiants | P2-72 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1713,4 +1714,16 @@ Contexte : `C:\Users\[NOM_1]\Documents` se restaurait en `C:\UsersJean Dupont\Do
 - `tokenizer.dart` : `tolerantTokenPattern` n'accepte la barre oblique devant le crochet ouvrant que si la fermante est échappée aussi.
 - Mesure : banc inchangé octet pour octet ; 1179 tests ; demo, ingest, audit verts.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-71 — Noms dans les noms de fichiers, URL, chemins et identifiants (`code`)
+
+Contexte : `Bilan_Pierre_Dupont_2024.pdf`, `/patient/pierre-dupont`, `pierre.dupont`, `@pierre_dupont` restaient en clair (13 formes sur 25).
+
+- Tests d'abord (13 rouges sur 25) ; contre-exemples (`/sous-marin`, `compte_rendu_final.docx`, `user_id=12345`…) intacts ; restauration identique.
+- `name_detector.dart` : seconde lecture sur une copie de même longueur (`_` et `.` en espaces) fusionnée avec la première (remplace seulement ce qu'elle
+  recouvre entièrement) ; `_slugs` (noms en minuscules dans un contexte d'URL, de chemin, de fichier ou d'identifiant).
+- Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1204 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Découverte en route, traitée à part : restauration d'un chemin Windows (P2-72, fusionnée).
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

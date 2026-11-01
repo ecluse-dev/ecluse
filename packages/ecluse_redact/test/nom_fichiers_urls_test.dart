@@ -42,6 +42,9 @@ void main() {
 
   const intacts = {
     'https://exemple.fr/sous-marin': 'sous-marin',
+    'https://exemple.fr/pierre-et-vacances': 'pierre-et-vacances',
+    'https://exemple.fr/rose-des-vents': 'rose-des-vents',
+    'https://exemple.fr/louis-de-funes-fan': 'louis-de-funes',
     'https://exemple.fr/grand-pere/pierre-papier': 'pierre-papier',
     'https://exemple.fr/rendez-vous': 'rendez-vous',
     'le fichier bilan_annuel_2024.pdf': 'bilan_annuel_2024.pdf',
