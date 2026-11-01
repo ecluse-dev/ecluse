@@ -37,6 +37,13 @@ const _colonnesDeNoms = {
   'lastname', 'firstname', 'surname', 'familyname', 'givenname', 'nomprenom', //
 };
 
+/// Colonnes de date de naissance (P2-78), en forme normalisée : « Date de
+/// naissance », « Naissance », « Né(e) le », « DDN », « DN », « DOB »…
+const _colonnesDeNaissance = {
+  'datedenaissance', 'naissance', 'nele', 'neele', 'ddn', 'dn', 'dob',
+  'datenaissance', 'datenaiss', 'datenais', 'dateofbirth', 'birthdate', //
+};
+
 const _sansValeur = {
   'null', 'none', 'nan', 'inconnu', 'inconnue', 'vide', 'na', 'nc', 'nr', //
 };
@@ -94,7 +101,22 @@ CelluleNom _interieur(String text, CelluleNom c) {
 }
 
 /// Cellules de noms de tous les tableaux à en-tête de [text].
-List<CelluleNom> cellulesDeNoms(String text) {
+List<CelluleNom> cellulesDeNoms(String text) =>
+    _cellulesDeColonnes(text, _colonnesDeNoms.contains, filtrerNoms: true);
+
+/// Cellules des colonnes de date de naissance de tous les tableaux à en-tête de
+/// [text] (P2-78) : le contexte de naissance est l'en-tête de la colonne.
+List<CelluleNom> cellulesDeNaissance(String text) => _cellulesDeColonnes(
+      text,
+      _colonnesDeNaissance.contains,
+      filtrerNoms: false,
+    );
+
+List<CelluleNom> _cellulesDeColonnes(
+  String text,
+  bool Function(String) estColonne, {
+  required bool filtrerNoms,
+}) {
   // Découpe en lignes sans copier le texte.
   final lignes = <CelluleNom>[];
   var debut = 0;
@@ -110,7 +132,7 @@ List<CelluleNom> cellulesDeNoms(String text) {
   final sortie = <CelluleNom>[];
   var i = 0;
   while (i < lignes.length) {
-    final entete = _entete(text, lignes[i]);
+    final entete = _entete(text, lignes[i], estColonne);
     if (entete == null || i + 1 >= lignes.length) {
       i++;
       continue;
@@ -155,9 +177,13 @@ List<CelluleNom> cellulesDeNoms(String text) {
         if (c.end <= c.start) continue;
         final valeur = text.substring(c.start, c.end);
         final n = _normalise(valeur);
-        if (n.isEmpty ||
-            _sansValeur.contains(n) ||
-            _colonnesDeNoms.contains(n)) {
+        if (filtrerNoms) {
+          if (n.isEmpty ||
+              _sansValeur.contains(n) ||
+              _colonnesDeNoms.contains(n)) {
+            continue;
+          }
+        } else if (valeur.trim().isEmpty) {
           continue;
         }
         if (valeur.length > 60) continue;
@@ -172,7 +198,11 @@ List<CelluleNom> cellulesDeNoms(String text) {
 /// Reconnaît un en-tête : au moins 2 champs courts dont un nom de colonne de
 /// personne. Renvoie le séparateur, les index des colonnes de noms et le
 /// nombre de colonnes.
-(String, List<int>, int)? _entete(String text, CelluleNom ligne) {
+(String, List<int>, int)? _entete(
+  String text,
+  CelluleNom ligne,
+  bool Function(String) estColonne,
+) {
   if (ligne.end - ligne.start > 400) return null;
   for (final sep in _separateurs) {
     final brute = text.substring(ligne.start, ligne.end);
@@ -184,8 +214,7 @@ List<CelluleNom> cellulesDeNoms(String text) {
     for (var k = 0; k < cells.length; k++) {
       final c = _interieur(text, cells[k]);
       if (c.end - c.start > 40) courts = false;
-      if (_colonnesDeNoms
-          .contains(_normalise(text.substring(c.start, c.end)))) {
+      if (estColonne(_normalise(text.substring(c.start, c.end)))) {
         colonnes.add(k);
       }
     }

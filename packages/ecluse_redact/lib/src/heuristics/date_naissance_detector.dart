@@ -1,5 +1,7 @@
 import 'package:ecluse_core/ecluse_core.dart';
 
+import 'tableau_csv.dart';
+
 /// Détecteur heuristique de dates de naissance — **v0 de démonstration**.
 ///
 /// Une date seule (`12/03/1985`) n'indique pas qu'il s'agit d'une naissance :
@@ -76,14 +78,38 @@ final class DateNaissanceDetector implements EntityDetector {
   static const String _jours =
       '(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)$_b+';
 
+  /// Les formes de date reconnues (sans contexte).
+  static final String _formesDeDate =
+      '\\d{1,2}$_b*[\\/\\-.]$_b*\\d{1,2}$_b*[\\/\\-.]$_b*(?:\\d{4}|\\d{2}(?!\\d))'
+      '|\\d{1,2}$_b+\\d{1,2}$_b+\\d{4}(?!\\d)'
+      '|\\d{4}-\\d{2}-\\d{2}'
+      '|\\d{1,2}(?:er|ᵉʳ)?$_b+(?:${_months.join('|')})\\.?$_b+(?:\\d{4}|\\d{2}(?!\\d))';
+
   static final RegExp _pattern = RegExp(
-    '$_contexte$_sepContexte(?:$_jours)?'
-    '(\\d{1,2}$_b*[\\/\\-.]$_b*\\d{1,2}$_b*[\\/\\-.]$_b*(?:\\d{4}|\\d{2}(?!\\d))'
-    '|\\d{1,2}$_b+\\d{1,2}$_b+\\d{4}(?!\\d)'
-    '|\\d{4}-\\d{2}-\\d{2}'
-    '|\\d{1,2}(?:er|ᵉʳ)?$_b+(?:${_months.join('|')})\\.?$_b+(?:\\d{4}|\\d{2}(?!\\d)))',
+    '$_contexte$_sepContexte(?:$_jours)?($_formesDeDate)',
     caseSensitive: false,
   );
+
+  /// Cellule entière qui est une date (colonne « Date de naissance », P2-78).
+  static final RegExp _celluleDate = RegExp(
+    '^(?:$_formesDeDate)\$',
+    caseSensitive: false,
+  );
+
+  /// Vrai si [triees] (triées par début, disjointes) chevauche `[debut, fin)`.
+  static bool _chevauche(List<DetectedEntity> triees, int debut, int fin) {
+    var lo = 0;
+    var hi = triees.length;
+    while (lo < hi) {
+      final mid = (lo + hi) >> 1;
+      if (triees[mid].start < fin) {
+        lo = mid + 1;
+      } else {
+        hi = mid;
+      }
+    }
+    return lo > 0 && triees[lo - 1].end > debut;
+  }
 
   @override
   List<DetectedEntity> detect(String text) {
@@ -97,6 +123,23 @@ final class DateNaissanceDetector implements EntityDetector {
           start: start,
           end: match.end,
           value: group,
+          confidence: 0.7,
+        ),
+      );
+    }
+    // Colonne « Date de naissance » d'un tableau à en-tête (P2-78) : l'en-tête
+    // est le contexte, la cellule doit être une date entière.
+    final deja = [...results];
+    for (final c in cellulesDeNaissance(text)) {
+      final valeur = text.substring(c.start, c.end);
+      if (!_celluleDate.hasMatch(valeur)) continue;
+      if (_chevauche(deja, c.start, c.end)) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.dateNaissance,
+          start: c.start,
+          end: c.end,
+          value: valeur,
           confidence: 0.7,
         ),
       );
