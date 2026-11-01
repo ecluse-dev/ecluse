@@ -1056,6 +1056,15 @@ lue. Le même refus explicite que pour les noms s'applique (`TableauAmbiguExcept
 « Naissance » qui contiendrait une autre date (négligeable : une colonne de ce nom contient la naissance). **Non traité** : en-tête sur une autre ligne que la première
 rangée, dates abrégées sur deux chiffres d'année dans une colonne sans contexte, colonnes de naissance dans une langue autre que le français ou l'anglais.
 
+**Signature avec initiale, nom de naissance « (ex-X) » (P2-81).** Deux fuites sûres signalées par la relecture indépendante (« sage » n° 1), reproduites avant correction : (1) la
+signature « N. Haddad » (ou « Haddad N. ») derrière une formule de clôture laissait le nom en clair, l'initiale empêchant la règle de P2-54 ; (2) « Mme Roux (ex-Garnier) » masquait
+« Roux » et laissait « Garnier », nom de naissance, un identifiant fort. **Maintenant** : la ligne qui suit une formule de clôture accepte de une à deux initiales devant le nom, ou
+une initiale derrière (« A. B. Quenelle », « J.-P. Zxqvlorn », « Haddad N. ») ; « (ex-Garnier) », **entre parenthèses seulement**, est traité comme « née Garnier ». Hors parenthèses,
+« ex-patient », « ex-fumeur », « l'ex-Yougoslavie » ne sont jamais des noms ; « Mme Roux, ex-Garnier » (sans parenthèses) reste non traité, volontairement. Tests d'abord (6 rouges sur 11) ;
+contre-exemples intacts ; 3 896 textes de corpus : 0 changement ; banc inchangé octet pour octet ; 1359 tests ; coût linéaire sur 4 entrées jusqu'à 1,6 Mo (2,3 à 19 s : 100 ms par millier
+de « Van Der » sur une même ligne, linéaire de 25 000 à 100 000 répétitions). **Analyse bénéfice / risque** : bénéfice direct (nom de soignant, nom de naissance) ; risque d'un faux
+positif sur « (ex-Marseille) », parenthèse rare, jugé acceptable.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,

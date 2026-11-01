@@ -361,8 +361,17 @@ final class NameDetector implements EntityDetector {
     '$_h*[,.!]?$_h*\\r?\\n(?:$_h*\\r?\\n)?$_h*'
     "(?![Ll]['\u2019])"
     '(?!(?:${[...etablissementKeywords, ..._motsStructure].join('|')})\\b)'
-    '($_unite(?:$_h+$_unite){0,2})$_h*\\r?\$',
+    // Initiale(s) devant le nom (« N. Haddad ») ou derrière (« Haddad N. ») : P2-81.
+    '((?:$_initiales){0,2}$_unite(?:$_h+$_unite){0,2}'
+    '|$_unite$_h+[A-ZÀ-Þ]\\.)$_h*\\r?\$',
     multiLine: true,
+  );
+
+  /// Nom de naissance entre parenthèses, précédé de « ex- » (P2-81) :
+  /// « Mme Roux (ex-Garnier) ». Seulement entre parenthèses : « ex-patient »,
+  /// « ex-fumeur » et « l'ex-Yougoslavie » ne sont pas des noms.
+  static final RegExp _exNomNaissance = RegExp(
+    '\\([Ee]x-($_unite)\\)',
   );
 
   /// Étiquettes de rôle qui désignent sans ambiguïté une personne (P2-55). Les
@@ -811,6 +820,24 @@ final class NameDetector implements EntityDetector {
       );
       surnameSources.add(name);
       claimed.add(start, match.end);
+    }
+
+    // « (ex-Garnier) » : nom de naissance entre parenthèses (P2-81).
+    for (final match in _exNomNaissance.allMatches(text)) {
+      final name = match.group(1)!;
+      final start = match.end - 1 - name.length;
+      if (claimed.overlaps(start, start + name.length)) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.nom,
+          start: start,
+          end: start + name.length,
+          value: name,
+          confidence: 0.7,
+        ),
+      );
+      surnameSources.add(name);
+      claimed.add(start, start + name.length);
     }
 
     // Nom de naissance ou d'épouse (P2-45).
