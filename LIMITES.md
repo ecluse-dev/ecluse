@@ -1371,6 +1371,12 @@ texte » : 12,5 s pour 10 000 mentions et 61,6 s pour 20 000 (mesuré avant corr
 segments `[...]` : 188 ms et 328 ms. Si une valeur du dictionnaire contient `[`, `]` ou `\`, l'ancien parcours est conservé, car
 l'équivalence n'y est plus garantie. Équivalence vérifiée par un test différentiel contre l'ancien algorithme.
 
+**Valeurs vides d'un champ étiqueté (P2-84).** `Prénom : Non renseigné` masquait « Non » et laissait « renseigné ». Une liste fermée de valeurs vides
+(non, inconnu, néant, sans, idem, identique, anonyme, anonymisé, confidentiel, exemple, test, « à compléter »), comparées au mot entier, n'est plus prise pour un nom
+derrière `Nom …` / `Prénom …` et les clés de données. Coût de fuite : un patronyme réel égal à l'un de ces mots (« Idem », « Néant »), négligeable.
+**Décidé, non traité** (relecture du 1er novembre) : la clé JSON/XML nue `nom` / `name` (arbitrage du 27 octobre : elle désigne aussi un fichier ou un projet) ;
+`Nom :` seul sans `Prénom` voisin (conception P2-36).
+
 **Variantes de date de naissance (P2-83).** Trouvées par relecture indépendante, reproduites avant correction : mois français abrégés
 (`janv.`, `févr.`, `fév.`, `avr.`, `juil.`, `déc.`, point facultatif), libellés `Naiss.` / `Naiss :` / `Naissance le` / `Naissance du`, et date compacte
 `JJMMAAAA` après un contexte de naissance. Le contexte reste obligatoire : une date abrégée sans contexte (« réunion le 12 janv. 2027 ») n'est pas touchée.
