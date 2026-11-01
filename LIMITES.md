@@ -936,6 +936,24 @@ ouvrant si la fermante est elle aussi échappée ; les formes de P2-31 (`\[NOM\_
 restent restaurées. Tests d'abord (4 rouges sur 5) ; banc inchangé octet pour octet ; 1179 tests, tous les paquets verts. **Non traité** : une
 réponse de LLM qui n'échappe que le crochet ouvrant (`\[NOM_1]`) laisse désormais la barre oblique et le jeton se restaure (« \Jean Dupont »).
 
+**Noms dans les noms de fichiers, URL, chemins et identifiants (P2-71).** Sondes (1ᵉʳ novembre 2026) : `Bilan_Pierre_Dupont_2024.pdf`,
+`Dupont_Pierre_bilan.docx`, `Pierre.Dupont.pdf`, `https://exemple.fr/patient/pierre-dupont`, `/home/pierre.dupont/dossiers`,
+`C:\Users\pierre.dupont\Documents`, `@pierre_dupont`, `login=pierre_dupont` restaient **en clair** (13 sur 25 formes testées) : `_` et `.`
+font un seul mot, et un nom en minuscules n'a pas de majuscule pour la détection. **Deux lectures** désormais, dans le détecteur de noms.
+(1) *Copie de travail* de même longueur où `_` entre deux caractères alphanumériques, et `.` entre deux mots à initiale majuscule, deviennent
+une espace : `Bilan_Pierre_Dupont_2024.pdf` se lit « Bilan Pierre Dupont 2024.pdf » ; ses entités ne s'ajoutent que si elles ne chevauchent pas
+celles de la lecture sur le texte d'origine, **sauf quand elles les recouvrent entièrement** (« Pierre Dupont » remplace « Pierre » seul). La
+lecture d'origine reste prioritaire parce que les clés de données de P2-61 (`nom_patient`) exigent le `_`. Les valeurs sont relues dans le
+texte d'origine : le texte n'est jamais réécrit. (2) *Noms en minuscules*, `pierre-dupont`, `pierre.dupont`, `pierre_dupont` : seulement dans un
+contexte (après `/`, `\`, `@` ou `=`, devant une extension de fichier courante, ou derrière « identifiant : », « login = »…), avec un prénom du
+gazetteer, et couvrant le prénom et ses deux voisines alphabétiques hors mots courants (documents, articles, prépositions : `bilan`, `compte`,
+`rendu`, `sous`, `et`, `de`, `papier`…). Tests d'abord (13 rouges sur 25, puis 3 contre-exemples ajoutés en vérifiant) ; 13 contre-exemples
+intacts (`/sous-marin`, `/pierre-et-vacances`, `/rose-des-vents`, `compte_rendu_final.docx`, `Date_Naissance`, `user_id=12345`, `pierre.js`…) ;
+3 896 textes de corpus : 0 changement ; banc inchangé octet pour octet ; 1207 tests ; coût linéaire sur 9 entrées d'~1 Mo (0,2 à 5 s). **Faux
+positifs connus** : un lien dont deux parties sont un prénom et un mot rare (`/louis-vuitton`, `/pierre-curie`) est masqué ; `/pierre-papier` ne l'est
+que parce que `papier` est dans la liste de mots courants. **Non traité** : prénom hors gazetteer (`zorglub-quenelle`), nom sans séparateur
+(`BilanPierreDupont.pdf`, `pierredupont`), nom seul (`/pierre/`), identifiants à chiffres (`pdupont42`), et le contenu des fichiers eux-mêmes.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
