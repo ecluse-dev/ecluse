@@ -130,6 +130,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-64 | code | `ecluse_redact` : coût linéaire de la résolution des pseudonymes au-delà de 50 000 mentions | P2-63 | fusionnée |
 | P2-65 | code | `ecluse_ingest`/`ecluse_redact` : tableaux Word et ODT (cellules par tabulation, rangées par saut de ligne) | P2-64 | fusionnée |
 | P2-66 | code | `ecluse_core` : résolveur de chevauchements linéaire (`resolveOverlaps`) | P2-65 | fusionnée |
+| P2-67 | code | `ecluse_ingest` : formats texte structurés `.csv`, `.tsv`, `.json`, `.html`, `.xml` | P2-66 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1651,4 +1652,15 @@ Contexte : sonde d'ingestion du 1ᵉʳ novembre : les cellules d'un tableau docx
 - Mesure : banc inchangé octet pour octet ; ingest 136 tests, redact 1042, core 212, demo 37, audit 34, reid 134.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Constat reporté en P2-66 : le résolveur de chevauchements est quadratique (tableau de 50 000 rangées : 28 s de détection).
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-67 — Formats texte structurés à l'ingestion (`code`)
+
+Contexte : `.csv`, `.tsv`, `.json`, `.html`, `.xml` étaient refusés alors que la détection lit désormais leurs structures (P2-61, P2-63).
+
+- Tests d'abord (compilation rouge, puis 20 tests) ; refus conservés : Windows-1252, UTF-16, binaire déguisé, NUL, `.xlsx`, `.rtf`, `.doc`, `.pptx`.
+- `ecluse_ingest` : cinq valeurs de `IngestFormat`, cinq branches du `switch`, motifs de refus mis à jour ; lecture par `ingestPlainText`.
+- Mesure : ingest 156 tests, redact 1042, demo 37 ; aucun changement de détection.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Décision de périmètre révocable (retirer la branche du `switch`).
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
