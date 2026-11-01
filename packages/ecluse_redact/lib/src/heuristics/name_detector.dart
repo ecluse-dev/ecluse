@@ -274,6 +274,7 @@ final class NameDetector implements EntityDetector {
     '$_h+(de$_h+naissance|d[\u0027\u2019]usage|de$_h+famille|patronymique|'
     'marital|$_nomQualifie))?'
     '$_separateurEtiquette'
+    '$_valeurVide'
     '(?!(?:Pr[ée]noms?|PR[ÉE]NOMS?|Nom|NOM)\\b)'
     '($_unite(?:$_h+(?!(?:Pr[ée]noms?|PR[ÉE]NOMS?)\\b)$_unite)?)',
   );
@@ -309,6 +310,7 @@ final class NameDetector implements EntityDetector {
     '$_h+(?:usuels?|de$_h+naissance|d[\u0027\u2019]usage|[àa]$_h+l[\u0027\u2019]'
     r'[ée]tat$_h+civil))?'
     '$_separateurEtiquette'
+    '$_valeurVide'
     '(?!(?:Nom|NOM|Pr[ée]noms?|PR[ÉE]NOMS?)\\b)'
     '($_unite(?:$_h+(?!(?:Nom|NOM|Pr[ée]noms?|PR[ÉE]NOMS?)\\b)$_unite){0,2})',
   );
@@ -412,7 +414,11 @@ final class NameDetector implements EntityDetector {
   static final String _valeurVide = '(?!(?:${[
     'null', 'none', 'nan', 'undefined', 'unknown', 'inconnue?', 'vide', //
     'true', 'false', 'oui', 'non', 'n/?a', 'nc', 'nr', //
-  ].map((m) => '[${m[0].toUpperCase()}${m[0]}]${m.substring(1)}|${m.toUpperCase()}').join('|')})(?![A-Za-zÀ-ÿ0-9_]))';
+    // Valeurs « vides » d'un formulaire (P2-84) : liste fermée, mot entier.
+    'néant', 'sans', 'idem', 'identique', 'anonyme', 'anonymis[ée]e?', //
+    'confidentiel(?:le)?', 'exemple', 'test', //
+  ].map((m) => '[${m[0].toUpperCase()}${m[0]}]${m.substring(1)}|${m.toUpperCase()}').join('|')}'
+      '|[AÀ]$_h+compl[ée]ter)(?![A-Za-zÀ-ÿ0-9_]))';
 
   static const String _motLax = "[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'’.-]*";
 
