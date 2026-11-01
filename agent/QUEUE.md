@@ -128,8 +128,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-62 | code | `ecluse_core` : IBAN de l'espace SEPA avec clé mod 97 | P2-61 | fusionnée |
 | P2-63 | code | `ecluse_redact` : tableaux HTML et titres Markdown dans la vue de détection | P2-62 | fusionnée |
 | P2-64 | code | `ecluse_redact` : coût linéaire de la résolution des pseudonymes au-delà de 50 000 mentions | P2-63 | fusionnée |
-| P2-65 | code | `ecluse_ingest`/`ecluse_redact` : tableaux Word et ODT (cellules par tabulation, rangées par saut de ligne) | P2-64 | PR ouverte |
-| P2-66 | code | `ecluse_core` : résolveur de chevauchements linéaire (`resolveOverlaps`) | P2-65 | à faire |
+| P2-65 | code | `ecluse_ingest`/`ecluse_redact` : tableaux Word et ODT (cellules par tabulation, rangées par saut de ligne) | P2-64 | fusionnée |
+| P2-66 | code | `ecluse_core` : résolveur de chevauchements linéaire (`resolveOverlaps`) | P2-65 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1627,6 +1627,17 @@ jeton ; seconde cause : comparaison de chaque mention à toutes les identités.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
 
+### P2-66 — Résolveur de chevauchements linéaire (`code`)
+
+Contexte : en mesurant un tableau de 40 000 rangées (P2-65), `Ecluse.detect` prenait 18 s alors que le détecteur de noms seul en prenait 0,7.
+Cause : `resolveOverlaps` comparait chaque candidate à toutes les entités retenues.
+
+- Tests d'abord : équivalence avec l'ancienne implémentation (gardée dans le test) sur 5 000 tirages aléatoires, plus deux tests de coût
+  (80 000 entités disjointes, 80 000 entités se chevauchant par paires) rouges avant (14 s et 9,8 s pour une borne de 3 s).
+- `ecluse_core` : `resolver.dart` utilise une `SplayTreeMap` triée par début ; seule l'entité retenue qui commence le plus tard avant la fin du
+  candidat est examinée. Priorité inchangée. Bibliothèque standard seule.
+- Mesure : banc inchangé octet pour octet ; core 215 tests ; tableau CSV de 40 000 rangées 18 s → 2,3 s.
+- Aucune dépendance ajoutée.
 ### P2-65 — Tableaux Word et ODT (`code`)
 
 Contexte : sonde d'ingestion du 1ᵉʳ novembre : les cellules d'un tableau docx ou odt étaient aplaties une par ligne ; les noms d'un tableau

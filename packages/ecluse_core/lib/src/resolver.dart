@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'detection/detector_tier.dart';
 import 'entity.dart';
 
@@ -32,14 +34,17 @@ List<DetectedEntity> resolveOverlaps(List<DetectedEntity> entities) {
       return a.start - b.start;
     });
 
-  final kept = <DetectedEntity>[];
+  // Les entités retenues sont disjointes : parmi elles, seule celle qui commence
+  // le plus tard avant la fin du candidat peut le chevaucher (les suivantes
+  // commencent après sa fin, les précédentes finissent avant son début). Une table
+  // triée par début donne cette entité en O(log n) au lieu de comparer le candidat
+  // à toutes les retenues (80 000 entités : 18 s, P2-66).
+  final kept = SplayTreeMap<int, DetectedEntity>();
   for (final candidate in byPriority) {
-    final overlaps = kept.any(
-      (k) => candidate.start < k.end && k.start < candidate.end,
-    );
-    if (!overlaps) kept.add(candidate);
+    final avant = kept.lastKeyBefore(candidate.end);
+    final overlaps = avant != null && kept[avant]!.end > candidate.start;
+    if (!overlaps) kept[candidate.start] = candidate;
   }
 
-  kept.sort((a, b) => a.start - b.start);
-  return kept;
+  return kept.values.toList();
 }
