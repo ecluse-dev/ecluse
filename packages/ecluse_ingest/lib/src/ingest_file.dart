@@ -34,6 +34,20 @@ IngestResult _ingest(List<int> bytes, String filename) {
       return ingestPlainText(bytes, IngestFormat.txt);
     case 'md':
       return ingestPlainText(bytes, IngestFormat.md);
+    // Formats texte structurés (P2-67) : lus comme du texte brut, mêmes
+    // garde-fous (UTF-8 strict, pas de binaire déguisé, pas de NUL). La structure
+    // (en-tête CSV, clés de données, tableaux HTML) est lue par la détection.
+    case 'csv':
+      return ingestPlainText(bytes, IngestFormat.csv);
+    case 'tsv':
+      return ingestPlainText(bytes, IngestFormat.tsv);
+    case 'json':
+      return ingestPlainText(bytes, IngestFormat.json);
+    case 'html':
+    case 'htm':
+      return ingestPlainText(bytes, IngestFormat.html);
+    case 'xml':
+      return ingestPlainText(bytes, IngestFormat.xml);
     case 'docx':
       return ingestDocx(bytes);
     case 'odt':
@@ -43,12 +57,13 @@ IngestResult _ingest(List<int> bytes, String filename) {
     case null:
       return const IngestRefused(
         'Fichier sans extension reconnaissable : formats gérés -> .txt, '
-        '.md, .docx, .odt, .pdf (texte natif).',
+        '.md, .csv, .tsv, .json, .html, .xml, .docx, .odt, .pdf (texte natif).',
       );
     default:
       return IngestRefused(
-        'Format « .$extension » non traité (formats gérés : .txt, .md, '
-        '.docx, .odt, .pdf à texte natif). Écluse ne traite ni l\'image, '
+        'Format « .$extension » non traité (formats gérés : .txt, .md, .csv, '
+        '.tsv, .json, .html, .xml, .docx, .odt, .pdf à texte natif). Écluse '
+        'ne traite ni l\'image, '
         'ni le scan, ni le manuscrit pour le moment.',
       );
   }
