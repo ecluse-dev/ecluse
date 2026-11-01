@@ -41,7 +41,8 @@ final class SasSession {
       }
       final label = match.group(1)!;
       final identity = '$label:${entry.value}';
-      sessionTokenByLocal[entry.key] = _tokenByIdentity.putIfAbsent(identity, () {
+      sessionTokenByLocal[entry.key] =
+          _tokenByIdentity.putIfAbsent(identity, () {
         final next = (_counterByLabel[label] ?? 0) + 1;
         _counterByLabel[label] = next;
         final token = '[${label}_$next]';

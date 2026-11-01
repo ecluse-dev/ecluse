@@ -101,10 +101,10 @@ void main() {
 
     test('refuse un JSON invalide ou incomplet', () async {
       final handler = buildSasHandler();
-      expect((await handler(_post('v1/redact', '{pas du json'))).statusCode,
-          400);
-      expect((await handler(_post('v1/redact', {'text': 'x'}))).statusCode,
-          400);
+      expect(
+          (await handler(_post('v1/redact', '{pas du json'))).statusCode, 400);
+      expect(
+          (await handler(_post('v1/redact', {'text': 'x'}))).statusCode, 400);
       expect(
           (await handler(_post('v1/redact', {'session': '', 'text': 'x'})))
               .statusCode,
