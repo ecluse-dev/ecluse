@@ -1723,7 +1723,7 @@ Contexte : `Bilan_Pierre_Dupont_2024.pdf`, `/patient/pierre-dupont`, `pierre.dup
 - Tests d'abord (13 rouges sur 25) ; contre-exemples (`/sous-marin`, `compte_rendu_final.docx`, `user_id=12345`…) intacts ; restauration identique.
 - `name_detector.dart` : seconde lecture sur une copie de même longueur (`_` et `.` en espaces) fusionnée avec la première (remplace seulement ce qu'elle
   recouvre entièrement) ; `_slugs` (noms en minuscules dans un contexte d'URL, de chemin, de fichier ou d'identifiant).
-- Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1204 tests ; coût linéaire.
+- Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1207 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Découverte en route, traitée à part : restauration d'un chemin Windows (P2-72, fusionnée).
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

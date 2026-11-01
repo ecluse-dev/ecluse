@@ -949,7 +949,7 @@ contexte (après `/`, `\`, `@` ou `=`, devant une extension de fichier courante,
 gazetteer, et couvrant le prénom et ses deux voisines alphabétiques hors mots courants (documents, articles, prépositions : `bilan`, `compte`,
 `rendu`, `sous`, `et`, `de`, `papier`…). Tests d'abord (13 rouges sur 25, puis 3 contre-exemples ajoutés en vérifiant) ; 13 contre-exemples
 intacts (`/sous-marin`, `/pierre-et-vacances`, `/rose-des-vents`, `compte_rendu_final.docx`, `Date_Naissance`, `user_id=12345`, `pierre.js`…) ;
-3 896 textes de corpus : 0 changement ; banc inchangé octet pour octet ; 1204 tests ; coût linéaire sur 9 entrées d'~1 Mo (0,2 à 5 s). **Faux
+3 896 textes de corpus : 0 changement ; banc inchangé octet pour octet ; 1207 tests ; coût linéaire sur 9 entrées d'~1 Mo (0,2 à 5 s). **Faux
 positifs connus** : un lien dont deux parties sont un prénom et un mot rare (`/louis-vuitton`, `/pierre-curie`) est masqué ; `/pierre-papier` ne l'est
 que parce que `papier` est dans la liste de mots courants. **Non traité** : prénom hors gazetteer (`zorglub-quenelle`), nom sans séparateur
 (`BilanPierreDupont.pdf`, `pierredupont`), nom seul (`/pierre/`), identifiants à chiffres (`pdupont42`), et le contenu des fichiers eux-mêmes.
