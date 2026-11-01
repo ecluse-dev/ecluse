@@ -137,6 +137,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-72 | code | `ecluse_redact` : la restauration ne consomme plus la barre oblique d'un chemin Windows devant un jeton | P2-70 | fusionnée |
 | P2-71 | code | `ecluse_redact` : noms dans les noms de fichiers, URL, chemins et identifiants | P2-72 | fusionnée |
 | P2-73 | code | `ecluse_redact` : nom coupé par un retour à la ligne (civilité, étiquette puis valeur) | P2-71 | fusionnée |
+| P2-74 | code | `ecluse_redact` : forme « Nom, Prénom » (`Marchetti, Odette`) | P2-73 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1740,4 +1741,16 @@ Contexte : « Mme⏎Dupont », « Nom :⏎Quenelle » (texte de PDF) laissaient 
 - Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1225 tests ; coût linéaire.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Fuite connue : nom coupé entre ses mots.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-74 — Forme « Nom, Prénom » (`code`)
+
+Contexte : relecture manuelle d'un compte rendu synthétique : « Marchetti, Odette » masquait le prénom et laissait le patronyme.
+
+- Tests d'abord (10 rouges sur 18) ; 8 contre-exemples intacts (« Bonjour, Odette », « Rappel, Odette doit venir », « Paris, Pierre est venu »…).
+- `name_detector.dart` : `_matchPrevVirgule` (mot capitalisé avant la virgule, hors formules d'adresse, prénom suivi d'une ponctuation / parenthèse / chiffre / fin
+  de ligne) ; `ecluse.dart` : les virgules sont ignorées pour l'identité (`_nameSegments`).
+- Mesure : 3 896 textes de corpus, 0 changement ; banc inchangé octet pour octet ; 1243 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Non traité : prénom hors gazetteer, initiales isolées, tout en minuscules.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
