@@ -969,6 +969,20 @@ linéaire sur 8 entrées d'~1 Mo (2,2 à 3,6 s). **Non traité, fuite connue** :
 « Jean⏎Dupont est venu » masque « Jean », « Dupont⏎Jean » masque « Jean »), et une coupure par trait d'union (« Dupont-⏎Martin »). C'est le prix du
 garde-fou ; une solution demande de distinguer une fin de ligne de mise en page d'une fin de phrase, ce que le texte seul ne permet pas.
 
+**Forme « Nom, Prénom » (P2-74).** Trouvé en relisant à la main un compte rendu synthétique réaliste (1ᵉʳ novembre 2026) : « Dossier n° 2024-18 :
+Marchetti, Odette » et « Marchetti, Odette (née Rossi) » donnaient « Marchetti, [NOM_1] … » — le **patronyme restait en clair**. La forme « Nom, Prénom »
+est celle des listes, des fiches, des états d'effectifs et des index. Le mot capitalisé qui précède la virgule est maintenant couvert, **avec** le
+prénom, quand le prénom du gazetteer qui suit est lui-même suivi d'une ponctuation (`( , ; : - — – .`), d'un chiffre ou de la fin de ligne : jamais quand
+une phrase continue en minuscules (« Rappel, Odette doit venir », « Paris, Pierre est venu hier »), et jamais derrière une formule d'adresse ou de
+liaison (« Bonjour, Odette », « Merci, Odette », « Cordialement, Odette », « Oui, Pierre est là », « Alors, Marie arrive »…). L'entité couvre « Marchetti,
+Odette » ; la virgule est ignorée pour l'identité, donc « Marchetti, Odette » et « Odette Marchetti » reçoivent **le même jeton**. Tests d'abord (10 rouges
+sur 18) ; 8 contre-exemples intacts ; 3 896 textes de corpus : 0 changement (les corpus ne contiennent pas cette forme) ; banc inchangé octet pour octet ;
+1243 tests ; coût linéaire (×1,6 sur 100 000 mentions « Aa, Marie », dû aux entités en plus). **Faux positifs connus** : un mot capitalisé hors liste
+suivi d'une virgule puis d'un prénom en fin de proposition (« Rappel, Odette. » → « Rappel » masqué) ; la formule « Cher Pierre » masquait déjà « Cher »
+avant cette tâche (règle bidirectionnelle). **Non traité** : « Nom, Prénom » dont le prénom n'est pas au gazetteer (« Marchetti, Zorglub »), la forme à
+initiales « O. Marchetti » (un nom après une initiale isolée est trop souvent une fin de phrase : « vitamine B. Le patient… »), « mme marchetti » tout en
+minuscules.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
