@@ -997,6 +997,20 @@ inchangé octet pour octet ; 1278 tests ; coût linéaire (0,9 Mo en 2,1 à 4,0 
 (« mme roux a chuté ») — sans majuscule, rien ne distingue un patronyme d'un mot courant (« mme est partie »), le faux positif serait massif ; les initiales
 isolées sans civilité (« N. Haddad », « Girault N. ») sauf en signature — trop souvent une fin de phrase (« vitamine B. Le patient… »).
 
+**Coût d'une chaîne de particules et de balises ouvertes (P2-79).** Troisième lot de la relecture indépendante (le « sage » chargé du code), **défaut bloquant**
+introduit par moi en P2-53 et P2-54 : une chaîne de particules en majuscules ou en minuscules prenait un temps polynomial dans les règles « nom devant `<adresse>` a
+écrit » (P2-53) et « signature après une formule de clôture » (P2-54), parce que `_unite` répétait les particules **sans borne**. Mesuré avant correction : `Van Der ` × 80
+(**640 octets**) = 14,8 s ; × 250 (2 Ko) = 50 s ; `de la ` × 4 000 (24 Ko) = 11 s ; 10 Ko = 53 s par `Ecluse.redact` ; 1 Mo ne se termine pas. Un seul message de
+cette forme gelait l'application (déni de service local). Ma batterie de coût de P2-53 et de P2-58 ne contenait ni particules répétées ni balises ouvertes ; elle en contient
+maintenant. **Correctif** : au plus **trois particules d'affilée** (`{0,3}`) — « de la », « van der », « de la Ben » tiennent en trois ; une chaîne plus longue n'est pas un nom.
+Même défaut de borne ailleurs, corrigé dans la foulée : `<prenom ` sans `>` (balise XML de clé de données, P2-61) était quadratique (`[^>]*` → `[^>\n]{0,200}`) ; l'extracteur
+docx/odt (`<[^>]*>`, `ecluse_ingest`) l'était aussi sur un XML mal formé : 50 000 `<` sans `>` = 20 s, 100 000 = 70 s, donc un `document.xml` mal formé gelait l'ingestion
+(`<[^<>]*>`, linéaire). Mesuré après : 640 octets en 0,0 s ; 24 Ko en moins d'une seconde ; 100 000 `<` en moins de 3 s (test). Tests d'abord (7 + 2 tests de coût) ; 3 896 textes de
+corpus : 0 changement ; banc inchangé octet pour octet ; redact 1285 tests, ingest 158. **Analyse bénéfice / risque** : le bénéfice est de supprimer un déni de service d'une
+chaîne de 640 octets ; le risque, qu'un nom portant plus de trois particules ne soit plus reconnu en entier (aucun cas réel connu ; « de la », « van den », « von der » en font deux).
+**Leçon de méthode** : toute répétition `(...)*` ou `(...)+` d'un sous-motif qui peut se recouvrir lui-même doit être bornée, et la batterie de coût d'une règle doit contenir la
+répétition de son propre motif.
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
