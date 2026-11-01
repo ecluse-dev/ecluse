@@ -449,8 +449,147 @@ final class NameDetector implements EntityDetector {
   static bool _isProfessionalTitle(String civility) =>
       _professionalTitles.contains(civility.trim());
 
+  /// Séparateurs de mots d'un nom de fichier ou d'un identifiant (P2-71) :
+  /// `_` entre deux caractères alphanumériques, et `.` entre deux mots à initiale
+  /// majuscule (`Bilan_Pierre_Dupont_2024.pdf`, `Pierre.Dupont.pdf`). Remplacés
+  /// par une espace sur une copie de travail de **même longueur** : les
+  /// positions restent celles du texte d'origine, dont les valeurs sont relues.
+  static final RegExp _soulignes =
+      RegExp(r'(?<=[A-Za-zÀ-ÿ0-9])_(?=[A-Za-zÀ-ÿ0-9])');
+  static final RegExp _pointsEntreMajuscules =
+      RegExp(r'(?<=[A-ZÀ-Þ][a-zà-ÿ]+)\.(?=[A-ZÀ-Þ][a-zà-ÿ])');
+
+  static String _separateursDeMots(String text) {
+    if (!text.contains('_') && !text.contains('.')) return text;
+    var travail = text;
+    if (text.contains('_')) travail = travail.replaceAll(_soulignes, ' ');
+    if (text.contains('.')) {
+      travail = travail.replaceAll(_pointsEntreMajuscules, ' ');
+    }
+    return travail;
+  }
+
+  /// Extensions de fichier courantes : la dernière partie d'un nom de fichier
+  /// n'est pas un nom.
+  static const _extensions = {
+    'pdf', 'doc', 'docx', 'odt', 'txt', 'md', 'xls', 'xlsx', 'csv', 'ods',
+    'ppt', 'pptx', 'png', 'jpg', 'jpeg', 'gif', 'html', 'htm', 'json', 'xml',
+    'zip', 'rtf', 'tif', 'tiff', //
+  };
+
+  /// Mots qui ne sont pas des noms et qui côtoient un prénom dans un nom de
+  /// fichier ou une adresse (documents, articles, prépositions, mots courants).
+  static const _motsCourants = {
+    'bilan', 'dossier', 'fiche', 'rapport', 'compte', 'rendu', 'courrier',
+    'ordonnance', 'certificat', 'scan', 'copie', 'final', 'version', 'projet',
+    'note', 'notes', 'liste', 'plan', 'planning', 'cr', 'pour', 'avec', 'sans',
+    'sous', 'sur', 'dans', 'chez', 'les', 'des', 'une', 'the', 'and', 'papier',
+    'ciseaux', 'pere', 'mere', 'grand', 'grande', 'petit', 'petite', 'chef',
+    'lieu', 'rue', 'avenue', 'index', 'home', 'user', 'users', 'admin',
+    'profil',
+    'patient', 'patiente', 'resident', 'residente', 'suivi', 'visite', 'test',
+    'www', 'com', 'org', 'net', 'fr', 'html', 'php', 'asp', //
+  };
+
+  static final RegExp _slug =
+      RegExp(r'(?<![\w.\-])([a-zà-ÿ]{2,}(?:[._-][a-zà-ÿ]{2,}){1,3})(?![\w@])');
+
+  static final RegExp _etiquetteIdentifiant = RegExp(
+    r'(?:identifiant|login|utilisateur|username|pseudo|compte|user)[ \t]*[:=][ \t]*$',
+    caseSensitive: false,
+  );
+
+  /// Nom en minuscules dans un nom de fichier, une adresse web, un chemin ou un
+  /// identifiant (P2-71) : `pierre-dupont`, `pierre.dupont`, `@pierre_dupont`,
+  /// `ordonnance_pierre_dupont.pdf`. Le contexte est exigé (après `/`, `\`, `@`
+  /// ou `=`, devant une extension de fichier, ou derrière « identifiant : »), et
+  /// l'une des parties doit être un prénom du gazetteer ; le prénom et ses deux
+  /// voisines alphabétiques, hors mots courants, sont couverts.
+  List<DetectedEntity> _slugs(String text, List<DetectedEntity> deja) {
+    final reserve = _Reserve(text.length);
+    for (final e in deja) {
+      reserve.add(e.start, e.end);
+    }
+    final ajouts = <DetectedEntity>[];
+    for (final m in _slug.allMatches(text)) {
+      var parties = [
+        for (final p in RegExp(r'[a-zà-ÿ]+').allMatches(m.group(1)!)) p
+      ];
+      final base = m.start;
+      var extension = false;
+      final jeton = m.group(1)!;
+      final dernierPoint = jeton.lastIndexOf('.');
+      if (dernierPoint > 0 &&
+          _extensions.contains(jeton.substring(dernierPoint + 1))) {
+        parties = parties.sublist(0, parties.length - 1);
+        extension = true;
+      }
+      if (parties.length < 2) continue;
+      final avant = m.start > 0 ? text[m.start - 1] : '';
+      final debutLigne =
+          text.substring(m.start > 40 ? m.start - 40 : 0, m.start);
+      final contexte = extension ||
+          '/\\@='.contains(avant) && avant.isNotEmpty ||
+          _etiquetteIdentifiant.hasMatch(debutLigne);
+      if (!contexte) continue;
+      var premier = -1;
+      var dernier = -1;
+      for (var i = 0; i < parties.length; i++) {
+        if (!_isKnownFirstName(parties[i].group(0)!)) continue;
+        final voisines = [
+          for (final j in [i - 1, i, i + 1])
+            if (j >= 0 &&
+                j < parties.length &&
+                (j == i || !_motsCourants.contains(parties[j].group(0)!)))
+              j
+        ];
+        for (final j in voisines) {
+          if (premier == -1 || j < premier) premier = j;
+          if (j > dernier) dernier = j;
+        }
+      }
+      if (premier == -1 || dernier - premier < 1) continue;
+      final start = base + parties[premier].start;
+      final end = base + parties[dernier].end;
+      if (reserve.overlaps(start, end)) continue;
+      ajouts.add(
+        DetectedEntity(
+          type: EntityType.nom,
+          start: start,
+          end: end,
+          value: text.substring(start, end),
+          confidence: 0.55,
+        ),
+      );
+      reserve.add(start, end);
+    }
+    return ajouts;
+  }
+
   @override
   List<DetectedEntity> detect(String text) {
+    final travail = _separateursDeMots(text);
+    final base = _detecter(travail);
+    final resultats = identical(travail, text)
+        ? base
+        : [
+            for (final e in base)
+              DetectedEntity(
+                type: e.type,
+                start: e.start,
+                end: e.end,
+                value: text.substring(e.start, e.end),
+                confidence: e.confidence,
+                tier: e.tier,
+              ),
+          ];
+    if (!text.contains(RegExp(r'[._-]'))) return resultats;
+    final slugs = _slugs(text, resultats);
+    if (slugs.isEmpty) return resultats;
+    return [...resultats, ...slugs]..sort((a, b) => a.start - b.start);
+  }
+
+  List<DetectedEntity> _detecter(String text) {
     final results = <DetectedEntity>[];
     // Parallèle à `results` (même index) : le nom seul, sans le titre
     // professionnel éventuel, pour la deuxième passe (voir
