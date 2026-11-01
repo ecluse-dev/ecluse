@@ -132,6 +132,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-66 | code | `ecluse_core` : résolveur de chevauchements linéaire (`resolveOverlaps`) | P2-65 | fusionnée |
 | P2-67 | code | `ecluse_ingest` : formats texte structurés `.csv`, `.tsv`, `.json`, `.html`, `.xml` | P2-66 | fusionnée |
 | P2-68 | code | `ecluse_redact` : prénoms d'origines variées au gazetteer (Maghreb, Afrique de l'Ouest, Europe, Asie) | P2-67 | fusionnée |
+| P2-69 | code | `ecluse_redact` : civilités au pluriel et en majuscules, mots de parenté (`Mmes`, `la famille`, `le docteur`, `Sœur`) | P2-68 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1676,4 +1677,16 @@ Contexte : sonde de 143 prénoms d'origines variées derrière un nom inconnu : 
 - Mesure : banc inchangé octet pour octet ; 1120 tests.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Non traité : branchement du gazetteer INSEE (sans fréquences, trop de mots courants).
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-69 — Civilités au pluriel, minuscules et majuscules, mots de parenté (`code`)
+
+Contexte : sonde de 26 formules de politesse : 13 laissaient le nom ou le patronyme en clair (dont « Sœur Marie-Pierre Quenelle »), 12 sont traitées (« Capitaine » non).
+
+- Tests d'abord (26 rouges sur 37) ; 13 contre-exemples intacts ; un établissement derrière « famille » reste un établissement ; restauration identique.
+- `name_detector.dart` : civilités singulières étendues (`Mdme`, `Melle`, majuscules, minuscules, `docteur`…) ; `_civilitePlurielle` (une entité par nom) ;
+  `_cueParente` (`famille`, `époux`, `consorts`, `Sœur`, `Frère`, `Père`).
+- Faux positifs : 3 896 textes de corpus comparés à `main`, 0 changement. Banc inchangé octet pour octet ; 1157 tests ; coût linéaire.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
+- Sur-masquages connus : « Père Noël », « madame Rose », « Famille Aidante ».
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
