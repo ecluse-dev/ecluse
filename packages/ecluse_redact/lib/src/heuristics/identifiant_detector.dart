@@ -28,12 +28,29 @@ final class IdentifiantDetector implements EntityDetector {
       '|\\bdossier(?:$_h+[A-Za-zÀ-ÿ]{2,12})?$_h*(?:n[°º]|no\\.?|numéro)'
       '|(?:n[°º]|no\\.?|num\\.?|numéro)$_h*(?:de$_h+|d[\'’])?'
       '(?:dossier|patient(?:e)?|adhérent(?:e)?|allocataire|contrat|police|'
-      'sociétaire|client(?:e)?|passeport|carte)(?:$_h+[A-Za-zÀ-ÿ]{2,8})?'
+      'sociétaire|client(?:e)?|passeport|carte|r[ée]sident(?:e)?|usag(?:er|ère))'
+      '(?:$_h+[A-Za-zÀ-ÿ]{2,8})?'
       '|\\badhérent(?:e)?$_h*(?:n[°º]|no\\.?|numéro)'
+      // « Plan d'aide n° PA-2026-0042 » (P2-80).
+      "|\\bplan$_h+d['\u2019]aide$_h*(?:n[°º]|no\\.?|numéro)"
       '|\\b(?:passeport|CNI|permis$_h+de$_h+conduire|'
       'carte$_h+(?:nationale$_h+)?d[\'’]identité)'
       '|\\b(?:immatriculation|plaque(?:$_h+d[\'’]immatriculation)?)'
       ')';
+
+  /// « dossier » suivi directement d'une valeur, sans « n° » (P2-80) : « dossier
+  /// 4900123456 », « dossier APA 2026/0412 », « Référence dossier : AB-2026-00412 ».
+  /// Plus strict que l'étiquette avec « n° » : au moins six chiffres, et jamais une
+  /// date ni un mois d'année (« dossier du 12/03/2026 », « dossier 2024-04 »).
+  static final RegExp _dossierNu = RegExp(
+    '\\bdossier(?:$_h+[A-Za-zÀ-ÿ]{2,12})?$_h*:?$_h*'
+    '([A-Za-z0-9][A-Za-z0-9/._-]{4,24})',
+    caseSensitive: false,
+  );
+
+  static final RegExp _formeDeDate = RegExp(
+    r'^(?:\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}|\d{4}[/.-]\d{1,2}(?:[/.-]\d{1,2})?)$',
+  );
 
   static final RegExp _etiquette = RegExp(
     '$_etiquettes$_h*(?:[:=\\u001F]$_h*)?$_numero(?:[:=\\u001F]$_h*)?'
@@ -92,6 +109,19 @@ final class IdentifiantDetector implements EntityDetector {
       final debut = match.start + match.group(0)!.lastIndexOf(match.group(1)!);
       trouves.add(DetectedEntity(
         type: _categorie(text.substring(match.start, debut)),
+        start: debut,
+        end: debut + valeur.length,
+        value: valeur,
+        confidence: 0.7,
+      ));
+    }
+    for (final match in _dossierNu.allMatches(text)) {
+      final valeur = match.group(1)!.replaceFirst(RegExp(r'[./_-]+$'), '');
+      if (_formeDeDate.hasMatch(valeur)) continue;
+      if (RegExp('[0-9]').allMatches(valeur).length < 6) continue;
+      final debut = match.start + match.group(0)!.lastIndexOf(match.group(1)!);
+      trouves.add(DetectedEntity(
+        type: EntityType.identifiant,
         start: debut,
         end: debut + valeur.length,
         value: valeur,
