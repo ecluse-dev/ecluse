@@ -842,7 +842,7 @@ d'un odt) garde le même nombre de champs ; un tableau imbriqué reste dans la c
 refus explicite si une rangée n'a pas le nombre de colonnes de l'en-tête, par exemple après une fusion de cellules) ; une rangée de **deux
 champs** « étiquette ⇥ valeur » est lue comme « étiquette : valeur » pour les étiquettes de nom, de prénom et de rôle. Une rangée de plus de
 deux champs ne l'est jamais (« Prénom ⇥ Service ⇥ Chambre » n'est pas un prénom). Tests d'abord (11 rouges sur 15 pour l'extraction et le
-masquage de bout en bout, 9 pour la tabulation) ; contre-exemples : tableau sans colonne de personne, « Nom ⇥ Aspirine » seul, texte hors
+masquage de bout en bout, 5 rouges sur 9 pour la tabulation) ; contre-exemples : tableau sans colonne de personne, « Nom ⇥ Aspirine » seul, texte hors
 tableau ; banc inchangé octet pour octet ; ingest 136 tests, redact 1042. Coût : 6 entrées pathologiques de 0,35 à 8,6 Mo en 0,2 à 3,5 s
 (extraction) ; un tableau de 50 000 rangées (8,6 Mo) met 4,3 s d'extraction et 28 s de détection, le reste étant le coût quadratique du
 résolveur de chevauchements (`resolveOverlaps`), traité en P2-66. **Non traité** : tableaux des PDF (hors périmètre), cellules d'une

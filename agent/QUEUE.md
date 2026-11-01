@@ -1632,7 +1632,7 @@ jeton ; seconde cause : comparaison de chaque mention à toutes les identités.
 Contexte : sonde d'ingestion du 1ᵉʳ novembre : les cellules d'un tableau docx ou odt étaient aplaties une par ligne ; les noms d'un tableau
 étiquette / valeur ou à en-tête restaient en clair.
 
-- Tests d'abord (11 rouges sur 15, plus 9 pour la tabulation) ; contre-exemples (tableau sans colonne de personne, « Nom ⇥ Aspirine »)
+- Tests d'abord (11 rouges sur 15, plus 5 rouges sur 9 pour la tabulation) ; contre-exemples (tableau sans colonne de personne, « Nom ⇥ Aspirine »)
   intacts ; restauration identique.
 - `ecluse_ingest` : `docx_xml.dart` et `odt_xml.dart` émettent cellules séparées par une tabulation et rangées par un saut de ligne
   (fusion de cellules conservée, tableau imbriqué dans la cellule parente).
