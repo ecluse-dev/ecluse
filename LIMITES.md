@@ -829,6 +829,19 @@ jetons littéraux dans le texte (`[NOM_1]`, `[ nom_2 ]`, `\[NOM\_3\]`…), compa
 (`cout_noms_distincts_test.dart`, bornes de 10 s pour des mesures de 0,5 à 1,1 s). **Non traité** : la croissance résiduelle
 au-delà de 40 000 noms distincts, non mesurée plus loin ; la détection des noms elle-même (0,5 s pour 10 000 noms).
 
+**Résolveur de chevauchements linéaire (P2-66).** Mesuré en traitant un tableau de 40 000 rangées (P2-65) : la détection de noms seule
+prenait 0,7 s, mais `Ecluse.detect` 18 s. La cause est dans `ecluse_core` : `resolveOverlaps` comparait **chaque** entité candidate à
+**toutes** les entités déjà retenues (`kept.any(...)`), soit un coût quadratique dès qu'un texte contient beaucoup d'entités (80 000
+entités disjointes : 14 s ; 80 000 entités se chevauchant par paires : 9,8 s). C'est aussi la **cause restante** des coûts « au-delà de
+~50 000 mentions » signalés de P2-48 à P2-56 : la résolution des pseudonymes (P2-64) n'en était qu'une partie. Les entités retenues étant
+disjointes, seule celle qui commence le plus tard avant la fin du candidat peut le chevaucher : une `SplayTreeMap` triée par début la
+donne en O(log n). L'ordre de priorité (longueur, confiance, tier, position) est inchangé. **Équivalence vérifiée** : 5 000 tirages
+aléatoires (jusqu'à 40 entités, longueurs, confiances, tiers et types variés, égalités) comparés à l'ancienne implémentation, gardée dans
+le test : sorties identiques. Mesuré : 80 000 entités en moins de 3 s (borne du test) ; tableau CSV de 10 000 / 20 000 / 40 000 / 80 000
+rangées en 0,8 / 1,2 / 2,3 / 4,3 s (avant : 1,5 / 4,7 / 18 s pour 10 000 / 20 000 / 40 000) ; « née Dupont » ×100 000 (1,1 Mo) en 3,1 s
+et ×200 000 (2,2 Mo) en 5,9 s ; 80 000 noms distincts en 4,4 s. Banc inchangé octet pour octet ; core 215 tests, tous les paquets verts.
+`ecluse_core` reste pur (la bibliothèque standard `dart:collection` seule, aucune dépendance ajoutée).
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
