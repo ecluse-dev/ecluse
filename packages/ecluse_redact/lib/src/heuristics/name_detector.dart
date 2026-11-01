@@ -669,7 +669,14 @@ final class NameDetector implements EntityDetector {
       final int start;
       final int end;
       final double confidence;
-      if (hasFreeLastNameBefore) {
+      if (hasFreeLastNameBefore && hasFreeLastNameAfter) {
+        // Un mot capitalisé de chaque côté (« Appeler Pierre Dupont », « Patient
+        // Pierre Dupont ») : on ne sait pas lequel est le patronyme. Les deux sont
+        // couverts (P2-70) ; en prendre un seul laissait l'autre en clair.
+        start = before.start;
+        end = after.end;
+        confidence = 0.6;
+      } else if (hasFreeLastNameBefore) {
         start = before.start;
         end = match.end;
         confidence = 0.6;
