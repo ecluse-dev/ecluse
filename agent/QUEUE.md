@@ -1681,7 +1681,7 @@ Contexte : sonde de 143 prénoms d'origines variées derrière un nom inconnu : 
 
 ### P2-69 — Civilités au pluriel, minuscules et majuscules, mots de parenté (`code`)
 
-Contexte : sonde de 26 formules de politesse : 14 laissaient le nom en clair, « Sœur Marie-Pierre Quenelle » laissait le patronyme.
+Contexte : sonde de 26 formules de politesse : 13 laissaient le nom ou le patronyme en clair (dont « Sœur Marie-Pierre Quenelle »), 12 sont traitées (« Capitaine » non).
 
 - Tests d'abord (26 rouges sur 37) ; 13 contre-exemples intacts ; un établissement derrière « famille » reste un établissement ; restauration identique.
 - `name_detector.dart` : civilités singulières étendues (`Mdme`, `Melle`, majuscules, minuscules, `docteur`…) ; `_civilitePlurielle` (une entité par nom) ;

@@ -892,9 +892,9 @@ masque (voir son avertissement) ; un seuil de fréquence demanderait le fichier 
 Un prénom d'une origine non listée reste manqué sans contexte (civilité, étiquette, en-tête…).
 
 **Civilités au pluriel, en minuscules ou en majuscules, mots de parenté (P2-69).** Sonde de 26 formules de politesse (1ᵉʳ novembre 2026) :
-**14 laissaient le nom en clair** — « Mmes Quenelle et Dupont », « MM. Quenelle et Dupont », « La famille Quenelle », « Les époux
+**13 laissaient le nom (ou le patronyme) en clair** — « Mmes Quenelle et Dupont », « MM. Quenelle et Dupont », « La famille Quenelle », « Les époux
 Quenelle », « Les consorts Quenelle », « le docteur Quenelle », « la doctoresse Quenelle », « Père Quenelle », « Mdme », « Melle », « MME
-QUENELLE Zorglub » — et « Sœur Marie-Pierre Quenelle » masquait le prénom (avec « Sœur ») mais **laissait le patronyme**. **Maintenant** :
+QUENELLE Zorglub » — et « Sœur Marie-Pierre Quenelle » masquait le prénom (avec « Sœur ») mais **laissait le patronyme** ; « Capitaine Quenelle » fait partie des 13 et n'est pas traité. **Maintenant** :
 (1) civilités singulières ajoutées : `Mdme`, `Melle`, `MME`, `MLLE`, `MR`, `MONSIEUR`, `MADAME`, `MADEMOISELLE`, `DOCTEUR`, `PROFESSEUR` et
 les formes en minuscules `monsieur`, `madame`, `mademoiselle`, `docteur`, `docteure`, `doctoresse`, `professeur`, `professeure` (les titres
 professionnels `docteur`… sont inclus dans l'étendue masquée, comme « Dr ») ; (2) pluriels `Mmes`, `Mlles`, `MM.`, `Mesdames`, `Messieurs` :
