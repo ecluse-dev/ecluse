@@ -134,6 +134,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-68 | code | `ecluse_redact` : prénoms d'origines variées au gazetteer (Maghreb, Afrique de l'Ouest, Europe, Asie) | P2-67 | fusionnée |
 | P2-69 | code | `ecluse_redact` : civilités au pluriel et en majuscules, mots de parenté (`Mmes`, `la famille`, `le docteur`, `Sœur`) | P2-68 | fusionnée |
 | P2-70 | code | `ecluse_redact` : prénom entre deux mots capitalisés, couvrir les deux voisins (`Appeler Pierre Dupont`) | P2-69 | fusionnée |
+| P2-72 | code | `ecluse_redact` : la restauration ne consomme plus la barre oblique d'un chemin Windows devant un jeton | P2-70 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1702,4 +1703,14 @@ Contexte : « Bilan Pierre Dupont.docx » → « [NOM_1] Dupont.docx » ; la rè
   octet pour octet ; 1174 tests.
 - `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - Coût assumé : le mot qui précède reste masqué avec le nom. Non traité : noms dans noms de fichiers, URL, logins.
+- **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-72 — Restauration d'un chemin Windows (`code`)
+
+Contexte : `C:\Users\[NOM_1]\Documents` se restaurait en `C:\UsersJean Dupont\Documents` (barre oblique consommée, défaut de P2-31).
+
+- Tests d'abord (4 rouges sur 5) ; formes Markdown de P2-31 conservées.
+- `tokenizer.dart` : `tolerantTokenPattern` n'accepte la barre oblique devant le crochet ouvrant que si la fermante est échappée aussi.
+- Mesure : banc inchangé octet pour octet ; 1179 tests ; demo, ingest, audit verts.
+- `ecluse_core` inchangé. Aucune dépendance ajoutée.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.

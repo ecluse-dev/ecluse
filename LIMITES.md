@@ -926,6 +926,16 @@ tests. **Non traité** : les noms dans les noms de fichiers, URL, logins et chem
 `pierre.dupont`, `@pierre_dupont`, `C:\Users\Zorglub`) restent en clair — le séparateur `_`, `-`, `.` ou l'absence de séparation
 (`BilanPierreDupont`) fait un seul mot ; « Bilan-Pierre-Dupont.pdf » masque le prénom mais pas le reste.
 
+**Restauration d'un chemin Windows (P2-72).** Trouvé en sondant des noms dans des chemins (1ᵉʳ novembre 2026), sur un défaut introduit par P2-31
+et documenté alors comme « effet de bord assumé » : `C:\Users\Jean Dupont\Documents` devient `C:\Users\[NOM_1]\Documents`, et
+`Ecluse.restore` rendait `C:\UsersJean Dupont\Documents` : la tolérance à l'échappement Markdown consommait la barre oblique devant le jeton.
+Le texte restauré n'était donc **pas celui de l'utilisateur** sur tout chemin Windows (poste de travail, partage réseau `\\serveur\dossier\`),
+alors que la restauration exacte est un invariant du projet. L'échappement Markdown échappe les **deux** crochets (`\[NOM\_1\]`) ; une barre
+oblique devant le seul crochet ouvrant est un séparateur de chemin. `tolerantTokenPattern` n'accepte plus qu'une barre oblique devant le crochet
+ouvrant si la fermante est elle aussi échappée ; les formes de P2-31 (`\[NOM\_1\]`, `\[NOM_1\]`, `[NOM\_1]`, `**\[NOM\_1\]**`, `[ NOM\_1 ]`)
+restent restaurées. Tests d'abord (4 rouges sur 5) ; banc inchangé octet pour octet ; 1179 tests, tous les paquets verts. **Non traité** : une
+réponse de LLM qui n'échappe que le crochet ouvrant (`\[NOM_1]`) laisse désormais la barre oblique et le jeton se restaure (« \Jean Dupont »).
+
 ### 5.3 Cohérence des pseudonymes et fidélité de la restauration
 
 Deux mentions reconnues comme la même personne reçoivent le **même jeton**,
@@ -1004,8 +1014,8 @@ complet et les crochets échappés seuls), soit 10 sur 17 (mesuré). Le reste
 n'est **volontairement pas** restauré : changer les délimiteurs ou deviner un jeton sans
 crochets exposerait à restaurer la mauvaise valeur ; un jeton non restauré reste visible dans
 la réponse plutôt que remplacé à tort. Le numéro reste exact : `\[NOM\_10\]` ne restaure
-jamais `[NOM_1]`. Effet de bord assumé : une barre oblique inversée placée juste devant un
-jeton exact est consommée avec lui.
+jamais `[NOM_1]`. Effet de bord de P2-31, **corrigé en P2-72** : une barre oblique
+inversée placée devant un jeton exact était consommée avec lui (voir P2-72).
 
 ### 5.4 Portée du rattrapage des mentions partielles
 
