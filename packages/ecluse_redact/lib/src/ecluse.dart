@@ -639,8 +639,9 @@ String _resolveNomToken(
       // reprend (« Dr Nadia Costa » plutôt que le « Costa » de la première
       // mention), comme le promet `LIMITES.md` §5.3 — sans cela, les
       // mentions complètes perdaient prénom et titre à la restauration.
+      final anciens = identity.segments;
       identity.segments = segments;
-      etat.indexe(identity);
+      etat.reindexe(identity, anciens);
       etat.mapping[identity.token] = entity.value;
     }
     return identity.token;
@@ -653,7 +654,7 @@ String _resolveNomToken(
       etat.regle == RegleNoms.identiteComplete &&
       segments.length >= 2) {
     final anterieures = etat
-        .candidats({segments.first})
+        .candidats(segments)
         .where((identity) =>
             identity.doc != docId &&
             compatible(identity) &&
@@ -690,9 +691,27 @@ String _freshToken(
   do {
     next++;
     token = '[${entityTypeLabel(type)}_$next]';
-  } while (tolerantTokenPattern(token).hasMatch(text));
+  } while (tolerantTokenPattern(token).hasMatch(_zoneCrochets(text)));
   counterByType[type] = next;
   return token;
+}
+
+/// Dernier texte examiné et ses segments `[...]` sans crochet intérieur, joints
+/// par un saut de ligne. Un motif de jeton commence par `[` et finit par `]` sans
+/// autre crochet : il ne peut se trouver que dans un tel segment. Relever ces
+/// segments une fois par texte, au lieu d'appliquer le motif au texte entier pour
+/// chaque nouveau jeton, évite un coût quadratique (P2-64).
+String? _texteExamine;
+String _zoneExaminee = '';
+
+String _zoneCrochets(String text) {
+  if (!identical(text, _texteExamine)) {
+    _texteExamine = text;
+    _zoneExaminee = [
+      for (final m in RegExp(r'\[[^\[\]]*\]').allMatches(text)) m[0]!
+    ].join('\n');
+  }
+  return _zoneExaminee;
 }
 
 /// Levée par `Ecluse.redact(refuseSecrets: true)` quand le texte contient au
@@ -721,11 +740,20 @@ final class _Etat {
   final Map<String, String> tokenByIdentity = {};
   final List<_NomIdentity> nomIdentities = [];
 
-  /// Index des identités par segment (P2-64). Une identité y figure sous tous les
-  /// segments qu'elle a eus (les segments ne font que croître) ; `_sansSegment`
-  /// garde celles qui n'en ont aucun, qui correspondent à toute mention.
+  /// Index des identités (P2-64). Une mention correspond à une identité si ses
+  /// segments sont **inclus dans** ceux de l'identité, ou l'inverse : le premier
+  /// cas se cherche par le segment le plus rare de la mention (`_parSegment`), le
+  /// second par les sous-ensembles de la mention (`_parEnsemble`, clé = segments
+  /// triés). `_parSegment` garde une identité sous tous les segments qu'elle a eus
+  /// (ils ne font que croître) ; `_sansSegment` garde celles qui n'en ont aucun,
+  /// qui correspondent à toute mention.
   final Map<String, Set<_NomIdentity>> _parSegment = {};
+  final Map<String, Set<_NomIdentity>> _parEnsemble = {};
   final Set<_NomIdentity> _sansSegment = {};
+
+  static String _cle(Set<String> segments) =>
+      (segments.toList()..sort()).join('\u0000');
+
   final Map<EntityType, int> counterByType = {};
 
   void ajouteIdentite(_NomIdentity identite) {
@@ -741,23 +769,51 @@ final class _Etat {
     for (final segment in identite.segments) {
       (_parSegment[segment] ??= {}).add(identite);
     }
+    (_parEnsemble[_cle(identite.segments)] ??= {}).add(identite);
   }
 
-  /// Identités susceptibles de correspondre à une mention de [segments] : celles
-  /// qui partagent au moins un segment avec elle, plus celles sans segment. Une
-  /// mention sans segment peut correspondre à toutes les identités.
+  /// L'identité vient de changer de segments (forme plus complète rencontrée).
+  void reindexe(_NomIdentity identite, Set<String> anciens) {
+    _parEnsemble[_cle(anciens)]?.remove(identite);
+    indexe(identite);
+  }
+
+  /// Identités susceptibles de correspondre à une mention de [segments] : un
+  /// sur-ensemble de celles qui correspondent réellement (le prédicat exact est
+  /// ensuite appliqué par l'appelant).
   Iterable<_NomIdentity> candidats(Set<String> segments) {
     if (segments.isEmpty) return nomIdentities;
     final vues = <_NomIdentity>{..._sansSegment};
-    final candidates = [..._sansSegment];
+    // Identités qui contiennent tous les segments de la mention : la plus petite
+    // des listes de segment suffit.
+    Set<_NomIdentity>? plusPetite;
     for (final segment in segments) {
       final liste = _parSegment[segment];
-      if (liste == null) continue;
-      for (final identite in liste) {
-        if (vues.add(identite)) candidates.add(identite);
+      if (liste == null) {
+        plusPetite = const {};
+        break;
+      }
+      if (plusPetite == null || liste.length < plusPetite.length) {
+        plusPetite = liste;
       }
     }
-    return candidates;
+    vues.addAll(plusPetite ?? const {});
+    // Identités dont les segments sont inclus dans ceux de la mention.
+    final liste = segments.toList();
+    if (liste.length > 8) {
+      for (final segment in liste) {
+        vues.addAll(_parSegment[segment] ?? const {});
+      }
+    } else {
+      for (var masque = 1; masque < (1 << liste.length); masque++) {
+        final sous = {
+          for (var k = 0; k < liste.length; k++)
+            if (masque & (1 << k) != 0) liste[k]
+        };
+        vues.addAll(_parEnsemble[_cle(sous)] ?? const {});
+      }
+    }
+    return vues;
   }
 
   /// Patronymes (minuscules) établis par une mention certaine d'un document
@@ -816,6 +872,7 @@ final class _Etat {
     tokenByIdentity.clear();
     nomIdentities.clear();
     _parSegment.clear();
+    _parEnsemble.clear();
     _sansSegment.clear();
     counterByType.clear();
     patronymes.clear();
