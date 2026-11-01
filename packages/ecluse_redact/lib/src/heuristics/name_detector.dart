@@ -859,7 +859,8 @@ final class NameDetector implements EntityDetector {
       // Règle bidirectionnelle : un nom de famille supposé peut précéder
       // ou suivre le prénom reconnu, sans condition de casse dans un sens
       // comme dans l'autre (voir le commentaire de classe).
-      final before = _matchPrevCapitalizedWord(text, match.start);
+      final before = _matchPrevCapitalizedWord(text, match.start) ??
+          _matchPrevVirgule(text, match.start, match.end);
       final hasFreeLastNameBefore =
           before != null && !claimed.overlaps(before.start, before.end);
 
@@ -1083,6 +1084,46 @@ final class NameDetector implements EntityDetector {
     if (_isExcludedAcronym(word)) return null;
     // Le groupe capturé est en tête du motif : son début coïncide avec
     // celui du match entier.
+    return _WordSpan(debut + match.start, debut + match.start + word.length);
+  }
+
+  /// Mots d'adresse ou de liaison qui précèdent une virgule puis un prénom
+  /// sans être un patronyme (« Bonjour, Odette »).
+  static const String _avantVirgule =
+      'Bonjour|Bonsoir|Salut|Merci|Cordialement|Bien|Cher|Chère|Chers|Alors|Donc|'
+      'Oui|Non|Voilà|Voila|Allô|Allo|Hello|Hi|Dear|Madame|Monsieur|Docteur|Dr|'
+      'Mme|Mlle|Ensuite|Puis|Enfin|Aussi|Ainsi|Pourtant|Pardon|Désolé|Bravo|Ok|OK';
+
+  static final RegExp _nomVirgule = RegExp(
+    '($_cap),$_h+\$',
+  );
+
+  static final RegExp _apresPrenomVirgule = RegExp(
+    r'^[ \t\u00A0\u202F]*(?:[(,;:\n\r\-\u2013\u2014.]|\d|$)',
+  );
+
+  /// Forme « Nom, Prénom » (P2-74) : le mot capitalisé avant « , » qui précède le
+  /// prénom commençant en [prenomDebut] et finissant en [prenomFin]. Seulement si
+  /// le prénom est suivi d'une ponctuation, d'une parenthèse, d'un chiffre ou de
+  /// la fin de ligne (jamais d'une phrase qui continue en minuscules), et si ce
+  /// mot n'est pas une formule d'adresse.
+  static _WordSpan? _matchPrevVirgule(
+      String text, int prenomDebut, int prenomFin) {
+    final fin = prenomFin + 40 < text.length ? prenomFin + 40 : text.length;
+    if (!_apresPrenomVirgule.hasMatch(text.substring(prenomFin, fin))) {
+      return null;
+    }
+    final debut = prenomDebut > _fenetreMotPrecedent
+        ? prenomDebut - _fenetreMotPrecedent
+        : 0;
+    final head = text.substring(debut, prenomDebut);
+    final match = _nomVirgule.firstMatch(head);
+    if (match == null) return null;
+    final word = match.group(1)!;
+    if (_isExcludedAcronym(word) ||
+        RegExp('^(?:$_avantVirgule)\$').hasMatch(word)) {
+      return null;
+    }
     return _WordSpan(debut + match.start, debut + match.start + word.length);
   }
 

@@ -574,6 +574,7 @@ String? _genderBefore(String text, int start) {
 /// produisent le même ensemble.
 Set<String> _nameSegments(String value) => value
     .toLowerCase()
+    .replaceAll(',', ' ')
     .split(RegExp(r'\s+'))
     .where((segment) => segment.isNotEmpty)
     .toSet();
