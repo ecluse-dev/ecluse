@@ -149,6 +149,23 @@ tâches copiées ici sont prises par l'agent.
 | P2-84 | code | `ecluse_redact` : valeurs « vides » d'un champ étiqueté (`Prénom : Non renseigné`, `Néant`, `Idem`…) jamais prises pour un nom | P2-82 | fusionnée |
 | P2-85 | code | Coûts superlinéaires trouvés par relecture : chiffre + blancs, minuscules + point, `sk-` répété, `restore` avec valeur `[at]` | P2-84 | fusionnée |
 | P2-83 | code | `ecluse_redact` : date de naissance — mois abrégés (`janv.`, `déc.`…), libellés `Naiss.` / `Naissance le/du`, date compacte à 8 chiffres | P2-82 | fusionnée |
+| P2-86 | spec | Fiche des modèles NER candidats (licence des poids et des données, taille, labels) | — | fusionnée |
+| P2-87 | humain | Valider les seuils de P2-01 § 7 et nommer la machine de référence | — | humain |
+| P2-88 | code | `bench/ner_predictions.md` : format des prédictions attendu par `score_flou.py`, correspondance des labels, commande de mesure | P2-86 | à faire |
+| P2-89 | humain | Produire et scorer les prédictions du modèle sur les trois corpus flous, sur le poste du mainteneur | P2-87, P2-88 | humain |
+| P2-90 | humain | Décision GO/STOP du NER dans `DECISIONS.md` | P2-89 | humain |
+| P2-91 | code | Rapport de risque : suggestions de généralisation positionnées (QI, offsets, niveau, F avant/après), texte inchangé | — | à faire |
+| P2-92 | code | Application explicite des suggestions choisies par l'appelant (irréversible, refus si périmée) | P2-91 | à faire |
+| P2-93 | mesure | Généralisation appliquée : avant/après sur le corpus de QI (`score_qi.py`) | P2-92 | à faire |
+| P2-94 | humain | Source et licence de la table pathologie → catégorie | — | humain |
+| P2-95 | spec | Branchement d'`ecluse_audit` dans `Ecluse.redact` | — | fusionnée |
+| P2-96 | code | Implémentation de P2-95 selon les décisions du mainteneur | P2-95, P2-96a | à faire |
+| P2-96a | humain | Trancher les quatre décisions de P2-95 § 7 | P2-95 | humain |
+| P2-97 | humain | Lire le gabarit AIPD de la CNIL et solliciter l'avis d'un DPO | — | humain |
+| P2-98 | mesure | Rappel des détecteurs sur un texte de style transcrit (sans audio) | — | à faire |
+| P2-99 | humain | Accepter ou non une dépendance native (whisper.cpp) dans le monorepo | P2-98 | humain |
+| P2-100 | code | Tests de coût : rapport de temps entre deux tailles au lieu d'une borne en millisecondes | — | à faire |
+| P2-101 | code | Migration vers Melos 7 et plus (configuration dans `pubspec.yaml`) | — | humain |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1871,3 +1888,32 @@ Source : relecture indépendante du 1er novembre 2026 (sage « robustesse »), r
 - `Ecluse.restore` avec un courriel obfusqué `jean[at]example.fr` : repli séquentiel (10 000 jetons : 9,2 s) : le repli ne vaut plus que pour une valeur qui peut recréer un jeton (barre oblique inversée, crochet isolé, segment `[...]` confondu avec un jeton).
 - Mesure après : chiffre + 20 000 blancs 77 ms ; 100 000 minuscules + point sous 3 s ; `sk-ant-` ×100 000 sous 3 s ; restore 10 000 jetons sous 3 s. 4 000 textes tirés + 1 000 de corpus : 0 changement. `ecluse_core` : une borne de regex.
 - **Fini quand** : `format`, `analyze`, `test` passent et `LIMITES.md` est à jour.
+
+### P2-86 à P2-101 — Fin de la phase 2
+
+Découpage : `agent/specs/P2-decoupage-fin.md` (fusionné le 2 novembre 2026).
+Chaque tâche y a sa ligne, son bloc et ses bloquants ; les fiches ci-dessous
+ne reprennent que ce qui manque pour la prendre.
+
+- **P2-88** : document seulement, aucune dépendance. Repartir de
+  `agent/specs/P2-86.md` § 2.1 pour la correspondance des labels du candidat 1
+  vers les types des corpus flous. La commande finale réutilise
+  `score_flou.py --pred "NER=…"`. **Fini quand** : un tiers peut lancer la
+  mesure sans autre information.
+- **P2-91** : ajout au `RiskReport` existant, sans changer `maskedText`. Test
+  d'équivalence d'abord : sans `riskReference`, sortie inchangée octet pour
+  octet (décision P2-03 n° 2). **Fini quand** : chaque suggestion porte ses
+  offsets dans le texte d'origine et le F estimé après généralisation.
+- **P2-92** : jamais déclenchée par le moteur ; une proposition périmée est
+  refusée comme dans l'aperçu (P2-19). La généralisation n'entre pas dans la
+  table de correspondance (irréversible).
+- **P2-93** : mesurer, ne rien corriger.
+- **P2-96** : attend P2-96a.
+- **P2-98** : générer le texte transcrit à partir du corpus v3 (minuscules,
+  ponctuation retirée, nombres en lettres), graine 42. Mesurer le rappel par
+  type ; ne rien corriger.
+- **P2-100** : méthode de la PR #242 (meilleur de trois essais, deux tailles
+  dans un rapport 4, seuil 8). Un paquet par commit. **Fini quand** : plus
+  aucun test ne compare un temps à une borne absolue.
+- **P2-101** : `humain` tant que l'accord pour toucher `.github/` n'est pas
+  donné (zone interdite aux agents).
