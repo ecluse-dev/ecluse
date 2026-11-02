@@ -1,0 +1,14 @@
+{
+  "name": "ecluse-sas",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "description": "Sas Écluse pour Claude Code : pseudonymise prompts et résultats d'outils via le moteur local, restaure à l'affichage et à l'écriture, bloque tout si le moteur ne répond pas",
+  "userConfig": {
+    "endpoint": {
+      "type": "string",
+      "title": "Adresse du moteur Écluse local",
+      "description": "Doit pointer sur 127.0.0.1, localhost ou ::1",
+      "default": "http://127.0.0.1:8787"
+    }
+  }
+}
