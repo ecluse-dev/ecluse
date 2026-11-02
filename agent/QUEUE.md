@@ -154,7 +154,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-88 | code | `bench/ner_predictions.md` : format des prédictions attendu par `score_flou.py`, correspondance des labels, commande de mesure | P2-86 | PR ouverte |
 | P2-89 | humain | Produire et scorer les prédictions du modèle sur les trois corpus flous, sur le poste du mainteneur | P2-87, P2-88 | humain |
 | P2-90 | humain | Décision GO/STOP du NER dans `DECISIONS.md` | P2-89 | humain |
-| P2-91 | code | Rapport de risque : suggestions de généralisation positionnées (QI, offsets, niveau, F avant/après), texte inchangé | — | à faire |
+| P2-91 | code | Rapport de risque : suggestions de généralisation positionnées (QI, offsets, niveau, F avant/après), texte inchangé | — | PR ouverte |
 | P2-92 | code | Application explicite des suggestions choisies par l'appelant (irréversible, refus si périmée) | P2-91 | à faire |
 | P2-93 | mesure | Généralisation appliquée : avant/après sur le corpus de QI (`score_qi.py`) | P2-92 | à faire |
 | P2-94 | humain | Source et licence de la table pathologie → catégorie | — | humain |
@@ -1903,7 +1903,8 @@ ne reprennent que ce qui manque pour la prendre.
 - **P2-91** : ajout au `RiskReport` existant, sans changer `maskedText`. Test
   d'équivalence d'abord : sans `riskReference`, sortie inchangée octet pour
   octet (décision P2-03 n° 2). **Fini quand** : chaque suggestion porte ses
-  offsets dans le texte d'origine et le F estimé après généralisation.
+  offsets dans le texte masqué (celui que l'appelant généraliserait, le
+  rapport porte sur lui) et le F estimé après généralisation.
 - **P2-92** : jamais déclenchée par le moteur ; une proposition périmée est
   refusée comme dans l'aperçu (P2-19). La généralisation n'entre pas dans la
   table de correspondance (irréversible).
