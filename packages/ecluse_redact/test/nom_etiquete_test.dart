@@ -1,6 +1,8 @@
 import 'package:ecluse_redact/ecluse_redact.dart';
 import 'package:test/test.dart';
 
+import 'support/cout.dart';
+
 /// Patronyme seul derrière une étiquette de champ (P2-36). « Nom : Dupont ;
 /// Prénom : Jean » masquait le prénom (gazetteer) mais laissait le patronyme,
 /// faute d'un indice de nom propre autre que l'étiquette. « Nom » seul est
@@ -43,11 +45,12 @@ void main() {
 
   test('pas de coût cubique sur une longue ligne de « Nom » répétés', () async {
     // Une première version de l'anticipation (deux `[^\n]*` imbriqués) prenait
-    // 126 s pour 2000 répétitions ; la borne est large pour rester stable.
+    // 126 s pour 2000 répétitions. Coût mesuré par rapport de tailles (P2-100) :
+    // voir `support/cout.dart`.
     for (final motif in ['Nom ', 'Nom : ', 'Prénom : ', 'Nom : A\n']) {
-      final sw = Stopwatch()..start();
-      await Ecluse.redact(motif * 4000);
-      expect(sw.elapsed, lessThan(const Duration(seconds: 10)), reason: motif);
+      await expectCroissanceLineaire((n) async {
+        await Ecluse.redact(motif * n);
+      }, n: 1000, raison: motif);
     }
   });
 }

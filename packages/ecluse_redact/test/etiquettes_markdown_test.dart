@@ -1,6 +1,8 @@
 import 'package:ecluse_redact/ecluse_redact.dart';
 import 'package:test/test.dart';
 
+import 'support/cout.dart';
+
 /// Étiquettes décorées en Markdown ou en HTML (P2-51) : « **Date de naissance :**
 /// 12/03/1950 » n'était pas détectée, les marques de gras ou d'italique séparant
 /// l'étiquette de sa valeur. Les marques sont neutralisées dans la vue de
@@ -51,12 +53,13 @@ void main() {
 
   // Une première version de l'expression (alternatives `\*\*|\*` répétées) avait un
   // retour arrière exponentiel : 50 000 étoiles prenaient 51 s (0,1 s sans la
-  // règle). Les bornes sont larges pour l'intégration continue.
+  // règle). Coût mesuré par rapport de tailles (P2-100) : voir
+  // `support/cout.dart`.
   for (final marque in ['*', '_', '`', '*_`', '**a ', 'a** ']) {
-    test('200 000 « $marque » en moins de 10 s', () async {
-      final sw = Stopwatch()..start();
-      await Ecluse.redact(marque * 200000);
-      expect(sw.elapsed, lessThan(const Duration(seconds: 10)), reason: marque);
+    test('« $marque » répété : coût linéaire', () async {
+      await expectCroissanceLineaire((n) async {
+        await Ecluse.redact(marque * n);
+      }, n: 25000, raison: marque);
     });
   }
 }
