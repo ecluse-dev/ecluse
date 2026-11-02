@@ -16,13 +16,16 @@ import 'package:test/test.dart';
 /// Le meilleur de plusieurs essais écarte la compilation des motifs au premier
 /// passage. Sous [plancherMs] pour la grande taille, le coût est négligeable
 /// quelle que soit sa croissance et le rapport, dominé par le bruit, n'est pas
-/// évalué.
+/// évalué. Le plancher est de 250 ms : à 11 ms contre 113 ms, le résolveur a
+/// donné un rapport de 10 sans régression (CI de `main`, 3 novembre 2026), le
+/// ramasse-miettes et les caches pesant plus que l'algorithme. Les régressions
+/// visées se comptaient en secondes.
 Future<void> expectCroissanceLineaire(
   FutureOr<void> Function(int n) f, {
   required int n,
   double seuil = 8,
   int essais = 3,
-  int plancherMs = 50,
+  int plancherMs = 250,
   String raison = '',
 }) async {
   final petit = await _meilleurTemps(() => f(n), essais);
