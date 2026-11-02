@@ -120,7 +120,9 @@ Objectif : occuper le coin vide de la carte.
   ré-identification par recoupement. Mode irréversible, distinct de la
   pseudonymisation. S'appuie sur le NER + table INSEE commune/région.
 - 🟡 Score de ré-identification du texte (estimation F livrée dans
-  `ecluse_reid` pour profession/lieu/âge, non branchée dans le pipeline) : indice de risque (élevé/moyen/
+  `ecluse_reid` pour profession/lieu/âge ; branchée dans `Ecluse.redact` comme
+  rapport de risque seul, désactivé par défaut, sans généralisation appliquée —
+  P2-04, option A de `agent/specs/P2-03.md`) : indice de risque (élevé/moyen/
   faible) calculé sur l'ensemble du texte, même sans identifiant direct
   (logique k-anonymat rendue visible). Aide à la décision pour le DPO.
 - 🟡 Pseudonymes cohérents et cloisonnés (`Dossier` en mémoire, règles N1/N2 ;
