@@ -1,16 +1,24 @@
-# Revue de sécurité Écluse — s'exécute sur chaque pull request.
+# Revue de sécurité Écluse — déclenchée à la demande, par étiquette.
 # Emplacement dans le repo : .github/workflows/security-review.yml
+#
+# Déclenchement : poser l'étiquette « revue-securite » sur une pull request.
+# Pourquoi : l'analyse est facturée au token sur la clé du mainteneur, et les
+# agents ouvrent de nombreuses PR (mise à jour de la file, specs, mesures) qui
+# n'ont pas besoin d'une revue de sécurité. Le mainteneur choisit les PR
+# concernées, en pratique celles qui touchent au code de détection.
+#
+# L'action ne fait qu'une analyse par PR (marqueur en cache) : retirer puis
+# remettre l'étiquette ne relance pas d'analyse facturée sur la même PR.
 #
 # La clé N'EST PAS dans ce fichier (conforme à ta règle : jamais de secret
 # committé). Elle vit dans un secret de dépôt GitHub nommé CLAUDE_API_KEY.
-# Voir les instructions d'installation pour le créer.
 #
 # ⚠️ L'action n'est pas durcie contre l'injection de prompt : à réserver aux
 # PR de confiance. Ton repo étant public et forkable (Apache 2.0), active
 # "Require approval for all external contributors" dans Settings > Actions
-# avant d'accepter une PR externe.
+# avant d'accepter une PR externe. Les PR venant d'un fork sont ignorées ici.
 #
-# 💶 Chaque exécution envoie le diff de la PR à l'API Anthropic (facturé au
+# 💶 Chaque analyse envoie le diff de la PR à l'API Anthropic (facturé au
 # token). Ce ne sont que des diffs de code — tes fichiers internes sont
 # gitignorés, donc absents des diffs.
 
@@ -22,9 +30,17 @@ permissions:
 
 on:
   pull_request:
+    types: [labeled]
+
+concurrency:
+  group: security-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   security:
+    if: >-
+      github.event.label.name == 'revue-securite' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
