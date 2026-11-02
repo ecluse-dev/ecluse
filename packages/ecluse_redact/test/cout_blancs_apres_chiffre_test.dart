@@ -17,19 +17,22 @@ void main() {
     test(
         'chiffre + blancs (${blanc == ' ' ? 'espaces' : 'tabulations'}) : '
         'coût linéaire', () async {
-      await expectCroissanceLineaire((n) => allerRetour('1${blanc * n}'),
-          n: 5000);
+      await expectCroissanceLineaire((n) async {
+        await allerRetour('1${blanc * n}');
+      }, n: 5000);
     });
   }
 
   test('chiffre + « clé » + blancs : coût linéaire', () async {
-    await expectCroissanceLineaire((n) => allerRetour('1 clé${' ' * n}'),
-        n: 5000);
+    await expectCroissanceLineaire((n) async {
+      await allerRetour('1 clé${' ' * n}');
+    }, n: 5000);
   });
 
   test('suite de minuscules suivie d\'un point : coût linéaire', () async {
-    await expectCroissanceLineaire((n) => allerRetour('${'a' * n}.'),
-        n: 25000);
+    await expectCroissanceLineaire((n) async {
+      await allerRetour('${'a' * n}.');
+    }, n: 25000);
   });
 
   test('les points entre mots capitalisés restent des séparateurs', () async {

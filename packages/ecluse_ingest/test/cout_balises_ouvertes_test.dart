@@ -12,16 +12,17 @@ void main() {
     ('docx', 'word/document.xml'),
     ('odt', 'content.xml'),
   ]) {
-    List<int> zip(int n) => nom == 'docx'
-        ? buildStoredZip({entree: '<' * n})
-        : buildStoredZip({
-            'mimetype': 'application/vnd.oasis.opendocument.text',
-            entree: '<' * n,
-          });
+    List<int> zip(int n) {
+      if (nom == 'docx') return buildStoredZip({entree: '<' * n});
+      return buildStoredZip({
+        'mimetype': 'application/vnd.oasis.opendocument.text',
+        entree: '<' * n,
+      });
+    }
 
     // Coût mesuré par rapport de tailles (P2-100) : voir `support/cout.dart`.
     test('$nom : « < » sans « > », coût linéaire jusqu\'à 100 000', () async {
-      final cache = {for (final n in [25000, 100000]) n: zip(n)};
+      final cache = {25000: zip(25000), 100000: zip(100000)};
       await expectCroissanceLineaire((n) {
         ingestFile(cache[n]!, filename: 'f.$nom');
       }, n: 25000);
