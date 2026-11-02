@@ -151,10 +151,10 @@ tâches copiées ici sont prises par l'agent.
 | P2-83 | code | `ecluse_redact` : date de naissance — mois abrégés (`janv.`, `déc.`…), libellés `Naiss.` / `Naissance le/du`, date compacte à 8 chiffres | P2-82 | fusionnée |
 | P2-86 | spec | Fiche des modèles NER candidats (licence des poids et des données, taille, labels) | — | fusionnée |
 | P2-87 | humain | Valider les seuils de P2-01 § 7 et nommer la machine de référence | — | humain |
-| P2-88 | code | `bench/ner_predictions.md` : format des prédictions attendu par `score_flou.py`, correspondance des labels, commande de mesure | P2-86 | PR ouverte |
+| P2-88 | code | `bench/ner_predictions.md` : format des prédictions attendu par `score_flou.py`, correspondance des labels, commande de mesure | P2-86 | fusionnée |
 | P2-89 | humain | Produire et scorer les prédictions du modèle sur les trois corpus flous, sur le poste du mainteneur | P2-87, P2-88 | humain |
 | P2-90 | humain | Décision GO/STOP du NER dans `DECISIONS.md` | P2-89 | humain |
-| P2-91 | code | Rapport de risque : suggestions de généralisation positionnées (QI, offsets, niveau, F avant/après), texte inchangé | — | PR ouverte |
+| P2-91 | code | Rapport de risque : suggestions de généralisation positionnées (QI, offsets, niveau, F avant/après), texte inchangé | — | fusionnée |
 | P2-92 | code | Application explicite des suggestions choisies par l'appelant (irréversible, refus si périmée) | P2-91 | à faire |
 | P2-93 | mesure | Généralisation appliquée : avant/après sur le corpus de QI (`score_qi.py`) | P2-92 | à faire |
 | P2-94 | humain | Source et licence de la table pathologie → catégorie | — | humain |
@@ -164,7 +164,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-97 | humain | Lire le gabarit AIPD de la CNIL et solliciter l'avis d'un DPO | — | humain |
 | P2-98 | mesure | Rappel des détecteurs sur un texte de style transcrit (sans audio) | — | à faire |
 | P2-99 | humain | Accepter ou non une dépendance native (whisper.cpp) dans le monorepo | P2-98 | humain |
-| P2-100 | code | Tests de coût : rapport de temps entre deux tailles au lieu d'une borne en millisecondes | — | à faire |
+| P2-100 | code | Tests de coût : rapport de temps entre deux tailles au lieu d'une borne en millisecondes | — | fusionnée |
 | P2-101 | code | Migration vers Melos 7 et plus (configuration dans `pubspec.yaml`) | — | humain |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
