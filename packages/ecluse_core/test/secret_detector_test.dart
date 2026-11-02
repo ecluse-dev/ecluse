@@ -187,11 +187,31 @@ void main() {
     });
   });
 
-  test('« sk-ant- » répété 100 000 fois : coût borné (P2-85)', () async {
-    final texte = 'sk-ant-' * 100000;
-    final sw = Stopwatch()..start();
-    await const SecretDetector().detect(NormalizedText.identity(texte));
-    expect(sw.elapsedMilliseconds, lessThan(3000));
+  // Le défaut visé par P2-85 est une croissance quadratique. On compare donc
+  // deux tailles plutôt qu'un temps absolu : sur un serveur de CI partagé, le
+  // temps absolu varie sans régression (3 320 ms pour une borne de 3 000 ms le
+  // 2 novembre 2026). Quadrupler l'entrée doit environ quadrupler le temps
+  // (rapport ≈ 4) ; un coût quadratique le multiplierait par environ 16. Le
+  // seuil de 8 laisse passer le bruit et rattrape la régression. Le minimum de
+  // trois mesures écarte la compilation des motifs au premier passage.
+  test('« sk-ant- » répété : coût linéaire en la taille du texte (P2-85)',
+      () async {
+    Future<int> meilleurTemps(int repetitions) async {
+      final texte = NormalizedText.identity('sk-ant-' * repetitions);
+      var meilleur = -1;
+      for (var essai = 0; essai < 3; essai++) {
+        final sw = Stopwatch()..start();
+        await const SecretDetector().detect(texte);
+        final us = sw.elapsedMicroseconds;
+        if (meilleur < 0 || us < meilleur) meilleur = us;
+      }
+      return meilleur;
+    }
+
+    final petit = await meilleurTemps(10000);
+    final grand = await meilleurTemps(40000);
+    expect(grand / max(petit, 1), lessThan(8),
+        reason: '10 000 répétitions : $petit µs ; 40 000 : $grand µs');
   });
 
   test('clé OpenAI récente de 400 caractères avant le marqueur : détectée',
