@@ -4,6 +4,8 @@ import 'package:ecluse_redact/ecluse_redact.dart';
 import 'package:ecluse_redact/src/tokenizer.dart';
 import 'package:test/test.dart';
 
+import 'support/cout.dart';
+
 /// Ancien algorithme de `Ecluse.restore` (un `replaceAll` par jeton) : la
 /// référence du test différentiel de P2-64. Le nouveau parcours en un seul
 /// passage doit rendre exactement le même texte.
@@ -89,12 +91,13 @@ void main() {
     }
   });
 
-  test('10 000 jetons distincts restaurés en moins de 5 s', () {
-    final mapping = {for (var i = 1; i <= 10000; i++) '[NOM_$i]': 'Nom$i'};
-    final texte = [for (var i = 1; i <= 10000; i++) '[NOM_$i]'].join(' ');
-    final sw = Stopwatch()..start();
-    final r = Ecluse.restore(texte, mapping);
-    expect(sw.elapsed, lessThan(const Duration(seconds: 5)));
-    expect(r, [for (var i = 1; i <= 10000; i++) 'Nom$i'].join(' '));
+  // Coût mesuré par rapport de tailles (P2-100) : voir `support/cout.dart`.
+  test('jetons distincts : restauration de coût linéaire', () async {
+    await expectCroissanceLineaire((n) {
+      final mapping = {for (var i = 1; i <= n; i++) '[NOM_$i]': 'Nom$i'};
+      final texte = [for (var i = 1; i <= n; i++) '[NOM_$i]'].join(' ');
+      expect(Ecluse.restore(texte, mapping),
+          [for (var i = 1; i <= n; i++) 'Nom$i'].join(' '));
+    }, n: 2500);
   });
 }
