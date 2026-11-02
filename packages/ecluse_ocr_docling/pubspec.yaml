@@ -1,0 +1,20 @@
+name: ecluse_ocr_docling
+description: >
+  Implémentation OcrEngine via un sidecar Python Docling (IBM). Docling
+  produit du markdown structuré et des bounding boxes fiables sur PDF
+  et images. Communication en HTTP local — pas de fuite réseau externe.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.3.0
+
+dependencies:
+  ecluse_ocr:
+    path: ../ecluse_ocr
+  http: ^1.2.0
+  meta: ^1.15.0
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^4.0.0
