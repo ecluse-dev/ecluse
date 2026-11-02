@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:ecluse_core/ecluse_core.dart';
 import 'package:test/test.dart';
 
+import 'support/cout.dart';
+
 /// Coût et équivalence de `resolveOverlaps` (P2-66). Chaque candidate était
 /// comparée à toutes les entités déjà retenues : 80 000 entités (un tableau de
 /// 40 000 rangées) prenaient 18 s. Les entités retenues sont disjointes : seule
@@ -84,27 +86,36 @@ void main() {
     }
   });
 
-  test('80 000 entités disjointes en moins de 3 s', () {
-    final entites = [
-      for (var i = 0; i < 80000; i++)
+  // Coût mesuré par rapport de tailles (P2-100) : voir `support/cout.dart`.
+  List<DetectedEntity> disjointes(int n) {
+    return [
+      for (var i = 0; i < n; i++)
         _e(i * 10, i * 10 + 8, 0.7, null, EntityType.nom),
     ];
-    final sw = Stopwatch()..start();
-    final r = resolveOverlaps(entites);
-    expect(sw.elapsed, lessThan(const Duration(seconds: 3)));
-    expect(r.length, 80000);
-  });
+  }
 
-  test('80 000 entités qui se chevauchent par paires en moins de 3 s', () {
-    final entites = [
-      for (var i = 0; i < 40000; i++) ...[
+  List<DetectedEntity> parPaires(int n) {
+    return [
+      for (var i = 0; i < n; i++) ...[
         _e(i * 20, i * 20 + 12, 0.9, null, EntityType.nom),
         _e(i * 20 + 6, i * 20 + 16, 0.6, null, EntityType.adresse),
       ],
     ];
-    final sw = Stopwatch()..start();
-    final r = resolveOverlaps(entites);
-    expect(sw.elapsed, lessThan(const Duration(seconds: 3)));
-    expect(r.length, 40000);
+  }
+
+  test('entités disjointes : coût linéaire, 80 000 conservées', () async {
+    final cache = {20000: disjointes(20000), 80000: disjointes(80000)};
+    await expectCroissanceLineaire((n) {
+      resolveOverlaps(cache[n]!);
+    }, n: 20000);
+    expect(resolveOverlaps(cache[80000]!).length, 80000);
+  });
+
+  test('entités qui se chevauchent par paires : coût linéaire', () async {
+    final cache = {10000: parPaires(10000), 40000: parPaires(40000)};
+    await expectCroissanceLineaire((n) {
+      resolveOverlaps(cache[n]!);
+    }, n: 10000);
+    expect(resolveOverlaps(cache[40000]!).length, 40000);
   });
 }
