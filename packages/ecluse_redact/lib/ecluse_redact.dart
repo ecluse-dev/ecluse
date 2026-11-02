@@ -12,6 +12,7 @@
 library;
 
 export 'src/ecluse.dart';
+export 'src/generalisation.dart';
 export 'src/heuristics/adresse_detector.dart';
 export 'src/heuristics/date_naissance_detector.dart';
 export 'src/heuristics/email_detector.dart';
