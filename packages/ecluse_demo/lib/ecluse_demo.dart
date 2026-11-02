@@ -4,4 +4,5 @@ library;
 
 export 'src/llm_client.dart';
 export 'src/redact_service.dart';
+export 'src/sas_server.dart';
 export 'src/server.dart';
