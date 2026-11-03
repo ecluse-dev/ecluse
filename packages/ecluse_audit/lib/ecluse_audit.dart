@@ -11,3 +11,4 @@ export 'src/audit_export.dart';
 export 'src/audit_entry.dart';
 export 'src/audit_sink.dart';
 export 'src/audit_verifier.dart';
+export 'src/journal_audit.dart';

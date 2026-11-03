@@ -10,11 +10,23 @@ const _engine = 'ecluse_core 0.1.0 [nir,iban]';
 final _t0 = DateTime.utc(2026, 10, 25, 16, 59, 41);
 final _t1 = DateTime.utc(2026, 10, 25, 17, 3, 7);
 
-/// Vecteurs calculés indépendamment (hashlib Python sur la forme canonique).
+/// Vecteurs calculés indépendamment (hashlib Python sur la forme canonique),
+/// schéma version 2.
 const _hash0 =
-    '42930e6c0d7cdeb42519fa2d6bb5e9298154aadec2e136f861115cb7e46a22d3';
+    '163748b8de789a086373b286fa62d8401ecd99d7defdd254285ba4667803e58f';
 const _hash1 =
+    'ed7509f7ebe6499bee2bbc57c23533cfc64c6ef7cdd9d859da39a74fa74ec18a';
+
+/// Mêmes entrées en schéma version 1, écrites avant P2-96 : elles doivent
+/// rester vérifiables.
+const _hash0v1 =
+    '42930e6c0d7cdeb42519fa2d6bb5e9298154aadec2e136f861115cb7e46a22d3';
+const _hash1v1 =
     '1cd7d57526ea1e4dab283c42a1b774cf901d8abe42ed71dad6233281bbb5aa34';
+
+/// Refus de secrets (schéma 2) : `{"secret": 2}`, première entrée.
+const _hashSecrets =
+    '8b9ae6ee67517ca7ab4b71cdd9a6c76509fec5c9eb328b655d3fb12a1fde7383';
 
 AuditEntry _first() => AuditChain.next(
       at: _t0,
@@ -62,7 +74,7 @@ void main() {
         canonicalJson(e.toHashableJson()),
         '{"counts":{"iban":1,"nir":2},"engine":"ecluse_core 0.1.0 [nir,iban]",'
         '"op":"redact","prev":"${'0' * 64}","reason":null,"seq":0,'
-        '"ts":"2026-10-25T16:59:00Z","v":1}',
+        '"ts":"2026-10-25T16:59:00Z","v":2}',
       );
       expect(e.hash, _hash0);
       expect(e.prev, auditGenesisHash);
@@ -80,6 +92,49 @@ void main() {
       expect(e.seq, 1);
       expect(e.prev, _hash0);
       expect(e.hash, _hash1);
+    });
+
+    test('entrées de schéma 1 : toujours vérifiables', () {
+      final v1 = [
+        AuditEntry(
+          version: 1,
+          seq: 0,
+          ts: '2026-10-25T16:59:00Z',
+          engine: _engine,
+          op: AuditOp.redact,
+          counts: const {'nir': 2, 'iban': 1},
+          reason: null,
+          prev: auditGenesisHash,
+          hash: _hash0v1,
+        ),
+        AuditEntry(
+          version: 1,
+          seq: 1,
+          ts: '2026-10-25T17:03:00Z',
+          engine: _engine,
+          op: AuditOp.ingestRefused,
+          counts: const {},
+          reason: AuditReason.pdfImage,
+          prev: _hash0v1,
+          hash: _hash1v1,
+        ),
+      ];
+      expect(AuditVerifier.verify(v1), isA<AuditIntact>());
+      for (final e in v1) {
+        expect(AuditEntry.fromJson(e.toJson()).hash, e.hash);
+      }
+    });
+
+    test('refus de secrets : vecteur fixe, schéma 2', () {
+      final e = AuditChain.next(
+        at: _t0,
+        engine: _engine,
+        op: AuditOp.secretsRefused,
+        counts: {'secret': 2},
+      );
+      expect(e.version, 2);
+      expect(e.hash, _hashSecrets);
+      expect(e.toCanonicalJson(), contains('"op":"secrets_refused"'));
     });
 
     test('l\'horodatage est tronqué à la minute, en UTC', () {
@@ -198,6 +253,48 @@ void main() {
             at: _t0, engine: _engine, op: AuditOp.redact, counts: {'nir': -1}),
         throwsArgumentError,
       );
+    });
+
+    test('secrets_refused : un compte de secret, rien d\'autre', () {
+      for (final counts in [
+        <String, int>{},
+        {'secret': 0},
+        {'nir': 1},
+        {'secret': 1, 'nir': 1},
+      ]) {
+        expect(
+          () => AuditChain.next(
+              at: _t0,
+              engine: _engine,
+              op: AuditOp.secretsRefused,
+              counts: counts),
+          throwsArgumentError,
+          reason: '$counts',
+        );
+      }
+      expect(
+        () => AuditChain.next(
+            at: _t0,
+            engine: _engine,
+            op: AuditOp.secretsRefused,
+            counts: {'secret': 1},
+            reason: AuditReason.other),
+        throwsArgumentError,
+      );
+    });
+
+    test('lecture : schéma inconnu, ou secrets_refused en schéma 1', () {
+      final e = AuditChain.next(
+        at: _t0,
+        engine: _engine,
+        op: AuditOp.secretsRefused,
+        counts: {'secret': 1},
+      );
+      for (final v in [0, 1, 3]) {
+        final json = {...e.toJson(), 'v': v};
+        expect(() => AuditEntry.fromJson(json), throwsFormatException,
+            reason: 'v = $v');
+      }
     });
 
     test('reason : requis pour un refus, interdit pour redact', () {

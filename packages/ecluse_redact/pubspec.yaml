@@ -9,6 +9,10 @@ environment:
   sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
+  # Journal d'audit (P2-96, décision P2-96a n° 2) : tire package:crypto
+  # (BSD-3-Clause, déjà approuvé) dans le graphe de ce paquet.
+  ecluse_audit:
+    path: ../ecluse_audit
   ecluse_core:
     path: ../ecluse_core
   ecluse_reference:

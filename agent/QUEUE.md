@@ -159,7 +159,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-93 | mesure | Généralisation appliquée : avant/après sur le corpus de QI (`score_qi.py`) | P2-92 | à faire |
 | P2-94 | humain | Source et licence de la table pathologie → catégorie | — | humain |
 | P2-95 | spec | Branchement d'`ecluse_audit` dans `Ecluse.redact` | — | fusionnée |
-| P2-96 | code | Implémentation de P2-95 selon les décisions du mainteneur | P2-95, P2-96a | à faire |
+| P2-96 | code | Implémentation de P2-95 selon les décisions du mainteneur | P2-95, P2-96a | PR ouverte |
 | P2-96a | humain | Trancher les quatre décisions de P2-95 § 7 | P2-95 | fusionnée |
 | P2-97 | humain | Lire le gabarit AIPD de la CNIL et solliciter l'avis d'un DPO | — | humain |
 | P2-98 | mesure | Rappel des détecteurs sur un texte de style transcrit (sans audio) | — | à faire |
