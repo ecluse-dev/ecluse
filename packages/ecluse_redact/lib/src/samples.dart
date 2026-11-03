@@ -126,8 +126,9 @@ La séance est levée à 16h30.
 );
 
 /// Compte rendu de réunion de synthèse ESAT fictif — bénéficiaire suivi en
-/// atelier protégé, médecin du travail (RPPS), sigles métier du secteur
-/// (ESAT, MDPH, IDE) qui ne doivent jamais être masqués.
+/// atelier protégé, médecin du travail (RPPS), identifiant national de
+/// santé (INS-NIR + OID d'affectation ANS `1.2.250.1.213.1.4.8`), sigles
+/// métier du secteur (ESAT, MDPH, IDE) qui ne doivent jamais être masqués.
 const compteRenduEsatSample = DemoSample(
   title: 'Compte rendu de réunion de synthèse (ESAT)',
   instruction: 'Fais une synthèse et liste les décisions prises.',
@@ -138,9 +139,10 @@ COMPTE RENDU DE RÉUNION DE SYNTHÈSE — ESAT
 Date : 5 février 2027
 Objet : point d'étape du projet personnalisé d'accompagnement
 
-Bénéficiaire suivi :
+Bénéficiaire suivie :
 Mme Nadia Ferreira, née le 9 avril 1987, domiciliée 5 rue des Tilleuls, 44300 Nantes,
-numéro de sécurité sociale 1 87 09 44 201 033 26.
+numéro de sécurité sociale 1 87 09 44 201 033 26,
+identifiant national de santé (INS-NIR) attribué avec l'OID 1.2.250.1.213.1.4.8.
 
 Professionnels présents :
 - Dr Paul Ricard, médecin du travail, RPPS 10300765418
@@ -208,9 +210,16 @@ La séance est levée à 15h30.
 ''',
 );
 
-/// Les deux documents d'exemple chargeables depuis la démo (boutons de
-/// `ecluse_demo`), dans leur ordre d'affichage.
-const demoSamples = [contratTravailSample, compteRenduSample];
+/// Les documents d'exemple chargeables depuis la démo (boutons de
+/// `ecluse_demo`), dans leur ordre d'affichage : un contrat de travail
+/// (secteur médico-social), un compte rendu HAD/RCP (santé à domicile),
+/// et un compte rendu de synthèse ESAT (médico-social handicap, avec
+/// identifiant national de santé — INS-NIR + OID d'affectation ANS).
+const demoSamples = [
+  contratTravailSample,
+  compteRenduSample,
+  compteRenduEsatSample,
+];
 
 /// Corpus de démonstration où NIR, IBAN et RPPS sont **tous** à clé
 /// structurellement valide, générés puis revérifiés par les détecteurs

@@ -8,10 +8,21 @@ version: 0.1.0
 publish_to: none
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.5.0 <4.0.0"
 
 dependencies:
   archive: ^4.0.2
+  # Version FIXÉE exactement (décision du mainteneur, DECISIONS.md « PDF ») :
+  # paquet récent à cadence de versions majeures très rapide (10 versions en
+  # trois semaines), mainteneur unique. Aucune mise à jour automatique : une
+  # nouvelle version se relit et se rejoue sur bench/pdf avant d'être adoptée.
+  # Licences : Apache-2.0 (pdf_graphics, pdf_cos, pdf_document), MIT (bidi,
+  # image) ; dépendances de bidi non auditées. Exige Dart >= 3.5.
+  pdf_graphics: 10.0.0
+  # Importés directement par l'adaptateur (même suite, même version fixée) ;
+  # déjà transitifs de pdf_graphics, donc aucune dépendance de plus à l'arbre.
+  pdf_cos: 10.0.0
+  pdf_document: 10.0.0
 
 dev_dependencies:
   ecluse_core:

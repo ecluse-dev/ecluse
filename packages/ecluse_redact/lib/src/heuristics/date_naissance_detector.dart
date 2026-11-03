@@ -1,5 +1,7 @@
 import 'package:ecluse_core/ecluse_core.dart';
 
+import 'tableau_csv.dart';
+
 /// Détecteur heuristique de dates de naissance — **v0 de démonstration**.
 ///
 /// Une date seule (`12/03/1985`) n'indique pas qu'il s'agit d'une naissance :
@@ -8,8 +10,13 @@ import 'package:ecluse_core/ecluse_core.dart';
 /// positifs. Confiance modérée (0.7) : le contexte est un indice textuel,
 /// pas une validation structurelle.
 ///
-/// Formats couverts : `JJ/MM/AAAA`, `JJ-MM-AAAA`, `JJ.MM.AAAA`, et la forme
-/// textuelle française `12 mars 1985`.
+/// Formats couverts : `JJ/MM/AAAA`, `JJ-MM-AAAA`, `JJ.MM.AAAA` (année sur 2 ou
+/// 4 chiffres, blancs facultatifs autour des séparateurs : `12 / 03 / 1950`),
+/// blancs seuls (`12 03 1950`, contexte obligatoire), ISO `AAAA-MM-JJ`, et la
+/// forme textuelle française
+/// `12 mars 1985` (dont l'ordinal `1er mars 1985`). La date peut suivre son
+/// étiquette après un `|` ou un `;`, ou sur la ligne suivante, ou derrière une
+/// clé de données (`"date_naissance": "…"`, `<naissance>…</naissance>`, `ddn=…`).
 final class DateNaissanceDetector implements EntityDetector {
   const DateNaissanceDetector();
 
@@ -20,19 +27,96 @@ final class DateNaissanceDetector implements EntityDetector {
     'janvier', 'février', 'fevrier', 'mars', 'avril', 'mai', 'juin',
     'juillet', 'août', 'aout', 'septembre', 'octobre', 'novembre',
     'décembre', 'decembre', //
+    // Abréviations françaises (P2-83) ; le point est facultatif plus bas.
+    'janv', 'févr', 'fevr', 'fév', 'fev', 'avr', 'juil', 'déc', //
+    // Mois anglais (« DOB: 12 March 1950 »), contexte de naissance obligatoire.
+    'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august',
+    'september', 'october', 'november', 'december', 'jan', 'feb', 'mar', 'apr',
+    'jun', 'jul', 'aug', 'sept', 'sep', 'oct', 'nov', 'dec', //
   ];
 
   // `[ \t]` plutôt que `\s` partout : une date de naissance (ou son
   // contexte déclencheur « né(e) le ») ne traverse jamais un saut de
   // ligne dans un document réel — `\s` matcherait aussi le saut de ligne,
   // au risque de fusionner deux lignes sans rapport en une fausse date.
+  // Les espaces insécables (U+00A0, U+202F) comptent comme des espaces :
+  // fréquents dans les exports de traitement de texte.
+  static const String _b = '[ \\t\\u00A0\\u202F]';
+
+  /// Séparateur de mots d'une clé de données (P2-52) : blanc, `_` ou `-`
+  /// (`date_naissance`, `date-naissance`, `date naissance`).
+  static const String _s = '[ _\\-\\t\\u00A0\\u202F]';
+
+  /// Lieu de naissance facultatif entre « né(e) » et « le » (« né à Paris
+  /// le … ») : 1 à 3 mots, pour ne pas ouvrir la porte à une phrase entière.
+  static const String _lieu =
+      "(?:$_b+(?:à|au|aux|en)$_b+[\\wÀ-ÿ'’-]+(?:$_b+[\\wÀ-ÿ'’-]+){0,2}"
+      '(?:$_b*\\([^)\\n]{1,20}\\))?)?';
+
+  /// Contexte déclencheur : « né(e) [à lieu] le [:] », « date de naissance
+  /// [:] », « naissance : » (deux-points obligatoire, sinon « la naissance
+  /// du projet »), « DDN [:] », « DOB [:] ».
+  static final String _contexte =
+      '(?<![\\wÀ-ÿ])(?:né(?:e)?(?:\\(e\\))?$_lieu(?:$_b+le)?$_b*:?'
+      '|n\\.$_b+le$_b*:?'
+      '|date$_s*(?:de$_s+)?nais(?:s(?:ance)?)?\\.?$_b*:?'
+      // « âge : 87 ans (12/09/1938) » : un âge puis une date entre parenthèses.
+      '|[aâ]g[ée]e?(?:$_b+de|$_b*:)?$_b*\\d{1,3}$_b*ans$_b*(?=\\()'
+      '|D\\.?N\\.?$_b*:?'
+      '|naissance(?=["\']?$_b*[:=>])'
+      // « Naiss. 12/03/1950 », « Naiss : … », « Naissance le/du … » (P2-83).
+      '|naiss(?:\\.$_b*:?|(?=$_b*:))'
+      '|naissance$_b+(?:le|du)$_b*:?'
+      '|D\\.?D\\.?N\\.?$_b*:?'
+      '|DOB$_b*:?'
+      '|date$_s*of$_s*birth$_b*:?'
+      '|birth$_s*date$_b*:?'
+      '|born$_b+on$_b*:?)';
+
+  /// Séparation entre le contexte et la date (P2-39) : des blancs, un `|` ou un
+  /// `;` (tableau, CSV), ou **un seul** saut de ligne (étiquette seule sur sa
+  /// ligne, valeur sur la suivante). Une ligne vide ou une ligne étrangère
+  /// entre les deux interrompt la détection.
+  static const String _sepContexte =
+      '(?:[ \\t\\u00A0\\u202F"\'>=:\\u001F(]+|$_b*[|;]$_b*|$_b*\\r?\\n$_b*)';
+
+  static const String _jours =
+      '(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)$_b+';
+
+  /// Les formes de date reconnues (sans contexte).
+  static final String _formesDeDate =
+      '\\d{1,2}$_b*[\\/\\-.]$_b*\\d{1,2}$_b*[\\/\\-.]$_b*(?:\\d{4}|\\d{2}(?!\\d))'
+      '|\\d{1,2}$_b+\\d{1,2}$_b+\\d{4}(?!\\d)'
+      '|\\d{4}-\\d{2}-\\d{2}'
+      // Date compacte JJMMAAAA (exports de logiciels), bornes de jour et de mois.
+      '|(?:0[1-9]|[12]\\d|3[01])(?:0[1-9]|1[0-2])(?:19|20)\\d{2}(?!\\d)'
+      '|\\d{1,2}(?:er|ᵉʳ)?$_b+(?:${_months.join('|')})\\.?$_b+(?:\\d{4}|\\d{2}(?!\\d))';
+
   static final RegExp _pattern = RegExp(
-    r'(?:né(?:e)?(?:\(e\))?[ \t]+le|date[ \t]+de[ \t]+naissance[ \t]*:?'
-    r'|DDN[ \t]*:?)[ \t]+'
-    r'(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4}'
-    '|\\d{1,2}[ \\t]+(?:${_months.join('|')})[ \\t]+\\d{4})',
+    '$_contexte$_sepContexte(?:$_jours)?($_formesDeDate)',
     caseSensitive: false,
   );
+
+  /// Cellule entière qui est une date (colonne « Date de naissance », P2-78).
+  static final RegExp _celluleDate = RegExp(
+    '^(?:$_formesDeDate)\$',
+    caseSensitive: false,
+  );
+
+  /// Vrai si [triees] (triées par début, disjointes) chevauche `[debut, fin)`.
+  static bool _chevauche(List<DetectedEntity> triees, int debut, int fin) {
+    var lo = 0;
+    var hi = triees.length;
+    while (lo < hi) {
+      final mid = (lo + hi) >> 1;
+      if (triees[mid].start < fin) {
+        lo = mid + 1;
+      } else {
+        hi = mid;
+      }
+    }
+    return lo > 0 && triees[lo - 1].end > debut;
+  }
 
   @override
   List<DetectedEntity> detect(String text) {
@@ -46,6 +130,23 @@ final class DateNaissanceDetector implements EntityDetector {
           start: start,
           end: match.end,
           value: group,
+          confidence: 0.7,
+        ),
+      );
+    }
+    // Colonne « Date de naissance » d'un tableau à en-tête (P2-78) : l'en-tête
+    // est le contexte, la cellule doit être une date entière.
+    final deja = [...results];
+    for (final c in cellulesDeNaissance(text)) {
+      final valeur = text.substring(c.start, c.end);
+      if (!_celluleDate.hasMatch(valeur)) continue;
+      if (_chevauche(deja, c.start, c.end)) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.dateNaissance,
+          start: c.start,
+          end: c.end,
+          value: valeur,
           confidence: 0.7,
         ),
       );

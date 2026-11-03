@@ -9,12 +9,19 @@ String entityTypeLabel(EntityType type) => switch (type) {
       EntityType.rpps => 'RPPS',
       EntityType.iban => 'IBAN',
       EntityType.finess => 'FINESS',
+      EntityType.secret => 'SECRET',
+      EntityType.adeli => 'ADELI',
       EntityType.nom => 'NOM',
       EntityType.dateNaissance => 'DATE_NAISSANCE',
       EntityType.adresse => 'ADRESSE',
       EntityType.telephone => 'TELEPHONE',
       EntityType.email => 'EMAIL',
       EntityType.etablissement => 'ETABLISSEMENT',
+      EntityType.ins => 'INS',
+      EntityType.identifiant => 'IDENTIFIANT',
+      EntityType.pieceIdentite => 'PIECE_IDENTITE',
+      EntityType.vehicule => 'VEHICULE',
+      EntityType.reseau => 'RESEAU',
     };
 
 /// Construit une regex tolérante pour retrouver un jeton comme `[NOM_1]`
@@ -27,6 +34,14 @@ String entityTypeLabel(EntityType type) => switch (type) {
 /// la mauvaise valeur.
 RegExp tolerantTokenPattern(String token) {
   final inner = token.substring(1, token.length - 1);
-  final escaped = RegExp.escape(inner).replaceAll('_', '[ _]*');
-  return RegExp('\\[\\s*$escaped\\s*\\]', caseSensitive: false);
+  // Un échappement Markdown (barre oblique inversée devant un crochet ou un
+  // soulignement) est toléré : il est exact et sans perte (P2-31).
+  final escaped = RegExp.escape(inner).replaceAll('_', r'(?:\\?[ _])*');
+  // Les deux crochets échappés (Markdown), ou aucun : une barre oblique devant le
+  // seul crochet ouvrant est un séparateur de chemin Windows (`C:\\Users\\[NOM_1]`)
+  // et reste (P2-72). La fermante échappée seule reste tolérée.
+  return RegExp(
+    '\\\\\\[\\s*$escaped\\s*\\\\\\]|\\[\\s*$escaped\\s*\\\\?\\]',
+    caseSensitive: false,
+  );
 }

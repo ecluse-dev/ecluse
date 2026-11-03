@@ -13,7 +13,7 @@ import '../entity.dart';
 /// │ │  │  │  │   └───── numéro d'ordre (3 chiffres)
 /// │ │  │  │  └───────── commune ou pays de naissance (3 chiffres)
 /// │ │  │  └──────────── département (01-99, 2A, 2B)
-/// │ │  └─────────────── mois de naissance (01-12)
+/// │ │  └─────────────── mois de naissance (01-12, ou fictif 00, 20-42, 50-99)
 /// │ └────────────────── année de naissance (2 chiffres)
 /// └──────────────────── sexe / catégorie (1-8)
 /// ```
@@ -39,17 +39,17 @@ final class NirDetector implements EntityDetector {
   /// séquence de chiffres plus longue.
   static final RegExp _candidate = RegExp(
     r'(?<![0-9])'
-    r'[1-8][ .\-]?'
-    r'[0-9]{2}[ .\-]?'
-    r'[0-9]{2}[ .\-]?'
-    r'(?:[0-9]{2}|2[ABab])[ .\-]?'
-    r'[0-9]{3}[ .\-]?'
-    r'[0-9]{3}[ .\-]?'
+    r'[1-8][ .\-/]?'
+    r'[0-9]{2}[ .\-/]?'
+    r'[0-9]{2}[ .\-/]?'
+    r'(?:[0-9]{2}|2[ABab])[ .\-/]?'
+    r'[0-9]{3}[ .\-/]?'
+    r'[0-9]{3}[ .\-/]?'
     r'[0-9]{2}'
     r'(?![0-9])',
   );
 
-  static final RegExp _separators = RegExp(r'[ .\-]');
+  static final RegExp _separators = RegExp(r'[ .\-/]');
 
   @override
   List<DetectedEntity> detect(String text) {
@@ -61,16 +61,15 @@ final class NirDetector implements EntityDetector {
     final compaction = DigitCompaction(text);
 
     final results = <DetectedEntity>[];
-    for (final match in _candidate.allMatches(compaction.compact)) {
-      final start = compaction.originalStart(match.start);
-      final end = compaction.originalEnd(match.end);
+    for (final match in compaction.candidates(_candidate)) {
+      final start = match.start;
+      final end = match.end;
       final raw = text.substring(start, end);
       // Normalise depuis le match *compact* (déjà nettoyé des espaces
       // internes, quels qu'ils soient) plutôt que depuis `raw` : `raw`
       // vient du texte d'origine et peut encore contenir des séparateurs
       // que `_separators` ne connaît pas (tabulation, espace insécable).
-      final normalized =
-          match.group(0)!.replaceAll(_separators, '').toUpperCase();
+      final normalized = match.text.replaceAll(_separators, '').toUpperCase();
       if (_isValidNir(normalized)) {
         results.add(
           DetectedEntity(
@@ -86,15 +85,27 @@ final class NirDetector implements EntityDetector {
     return results;
   }
 
+  /// 01-12 réels ; `00` et `20`-`30` (mois inconnu), `31`-`42` (mois connu
+  /// codé +30) et `50`-`99` (mois inconnu), d'après la nomenclature DGFiP
+  /// (annexe 2) citée par le mainteneur — l'instruction INSEE n'a pas été
+  /// lue. 13-19 et 43-49 restent rejetés.
+  static bool _isPlausibleMonth(int month) =>
+      (month >= 0 && month <= 12) ||
+      (month >= 20 && month <= 42) ||
+      (month >= 50 && month <= 99);
+
   /// Valide un NIR normalisé (15 caractères, sans séparateurs, majuscules).
   static bool _isValidNir(String nir) {
     if (nir.length != 15) return false;
 
-    // Mois de naissance : 01 à 12.
-    // NOTE v0 : les mois fictifs attribués par l'INSEE en cas de date
-    // inconnue (20, 30-42, 50-99) ne sont pas encore acceptés.
+    // Mois de naissance : 01 à 12, ou mois fictif attribué quand la date est
+    // incomplète : 00, 20 à 42 et 50 à 99 (plages
+    // telles que rapportées par la documentation publique du NIR, à
+    // confirmer sur la source INSEE). La clé de contrôle reste exigée : la
+    // détection ne devient pas moins stricte, seul le filtre de plage
+    // s'élargit.
     final month = int.tryParse(nir.substring(3, 5));
-    if (month == null || month < 1 || month > 12) return false;
+    if (month == null || !_isPlausibleMonth(month)) return false;
 
     // Département : 01-99 ou 2A/2B (Corse).
     final dept = nir.substring(5, 7);

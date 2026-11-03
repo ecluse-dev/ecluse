@@ -107,8 +107,19 @@ Qi? _nextAgeRung(Qi qi) {
       final lo = parseAgeRange(qi.value).$1;
       return Qi(QiType.age, formatAgeRange(band10(lo)), level: 2);
     case 2:
-      final lo = parseAgeRange(qi.value).$1;
-      return Qi(QiType.age, formatAgeRange(seniorBand(lo)), level: 3);
+      final range = parseAgeRange(qi.value);
+      // La tranche de 10 ans peut chevaucher le seuil « senior » (60-69 avec
+      // un seuil à 65) : ni « 0-64 » ni « 65-130 » ne contient alors à coup
+      // sûr la personne (son âge exact n'est plus connu à ce palier). Une
+      // « généralisation » dont la classe ne contient pas la personne fausse
+      // F ; on passe donc directement au retrait.
+      if (range.$2 < seniorThreshold) {
+        return Qi(QiType.age, formatAgeRange(seniorBand(range.$1)), level: 3);
+      }
+      if (range.$1 >= seniorThreshold) {
+        return Qi(QiType.age, formatAgeRange(seniorBand(range.$1)), level: 3);
+      }
+      return const Qi(QiType.age, qiRetraitValue, level: 4);
     case 3:
       return const Qi(QiType.age, qiRetraitValue, level: 4);
     default:
@@ -206,7 +217,11 @@ const List<QiType> _tieBreakPriority = [
 List<GeneralizationCandidate> _markWinner(
   List<GeneralizationCandidate> candidates,
 ) {
-  final withResult = candidates.where((c) => c.fAfter != null).toList();
+  // Seul un candidat qui fait réellement remonter F peut gagner : une
+  // « généralisation » dont F baisse ou reste égal n'est jamais suggérée.
+  final withResult = candidates
+      .where((c) => c.fAfter != null && c.fAfter! > c.fBefore)
+      .toList();
   if (withResult.isEmpty) return candidates;
 
   GeneralizationCandidate winner = withResult.first;

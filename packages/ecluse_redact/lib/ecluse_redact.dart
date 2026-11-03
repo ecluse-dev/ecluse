@@ -12,12 +12,16 @@
 library;
 
 export 'src/ecluse.dart';
+export 'src/generalisation.dart';
 export 'src/heuristics/adresse_detector.dart';
 export 'src/heuristics/date_naissance_detector.dart';
 export 'src/heuristics/email_detector.dart';
 export 'src/heuristics/etablissement_detector.dart';
+export 'src/heuristics/identifiant_detector.dart';
 export 'src/heuristics/name_detector.dart';
+export 'src/heuristics/tableau_csv.dart' show TableauAmbiguException;
 export 'src/heuristics/telephone_detector.dart';
 export 'src/redact_result.dart';
+export 'src/risque.dart';
 export 'src/samples.dart';
 export 'src/tokenizer.dart' show entityTypeLabel;

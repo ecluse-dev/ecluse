@@ -9,9 +9,10 @@ const _mimetype = 'application/vnd.oasis.opendocument.text';
 /// Enregistrement de fin de répertoire central (EOCD) valide en
 /// apparence (signature correcte, 1 entrée annoncée) mais dont l'offset
 /// de répertoire central (999 999) dépasse toute taille de fichier de
-/// test plausible — `ZipDecoder` lève une `RangeError` en tentant de le
-/// lire, ce qui simule une archive réellement corrompue plutôt qu'une
-/// simple absence d'entrées.
+/// test plausible. Selon la version du package `archive`, `ZipDecoder`
+/// lève une exception en tentant de le lire, ou renvoie une archive vide
+/// sans erreur : dans les deux cas, `ingestOdt` doit refuser le fichier
+/// comme corrompu.
 const List<int> _eocdWithBogusOffset = [
   0x50, 0x4B, 0x05, 0x06, // signature EOCD
   0x00, 0x00, // numéro de ce disque

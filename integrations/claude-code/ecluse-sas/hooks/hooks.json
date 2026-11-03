@@ -1,0 +1,4 @@
+{
+  "description": "Sas Écluse : prompt.submit (pseudonymisation, échec = blocage) et AssistantMessage (restauration à l'affichage)",
+  "modules": ["./register.ts"]
+}
