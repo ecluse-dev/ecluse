@@ -30,6 +30,7 @@ doc/api/
 .idea/
 *.iml
 bench/corpus.jsonl
+bench/corpus_ext.jsonl
 bench/predictions_*.jsonl
 
 # Documents internes de prospection, jamais sur le repo public
@@ -46,3 +47,16 @@ pubspec_overrides.yaml
 bench/corpus_flou_*.jsonl
 bench/pred_*.jsonl
 bench/pred_redact_*.jsonl
+bench/flou/
+bench/qi/
+bench/corpus_qi_*.jsonl
+bench/dossiers/
+bench/corpus_dossiers_*.jsonl
+bench/pred_dossiers_*.jsonl
+bench/patronymes/
+
+# Fichiers locaux du mainteneur, jamais publiés
+.noms-interdits.txt
+.claude/settings.local.json
+CLAUDE.local.md
+graphify-out/

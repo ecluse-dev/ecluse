@@ -21,7 +21,7 @@ import '../luhn.dart';
 /// présence d'un indice de contexte (« FINESS » à proximité) : confiance
 /// haute si présent, basse sinon (collision SIREN assumée). Un SIREN
 /// capté par erreur à confiance basse est un sur-masquage d'un identifiant
-/// d'organisation, pas une fuite — coût acceptable (cf. `NOTES_SECURITE`).
+/// d'organisation, pas une fuite — coût acceptable (cf. `LIMITES.md` § 1).
 ///
 /// Le préfixe département (2 premiers chiffres) n'est délibérément **pas**
 /// vérifié, même comme signal doux : le format outre-mer reste incertain
@@ -68,12 +68,12 @@ final class FinessDetector implements Detector {
   static List<DetectedEntity> _detectSync(String raw) {
     final compaction = DigitCompaction(raw);
     final results = <DetectedEntity>[];
-    for (final match in _candidate.allMatches(compaction.compact)) {
-      final digits = match.group(0)!;
+    for (final match in compaction.candidates(_candidate)) {
+      final digits = match.text;
       if (!isLuhnValid(digits)) continue;
 
-      final start = compaction.originalStart(match.start);
-      final end = compaction.originalEnd(match.end);
+      final start = match.start;
+      final end = match.end;
       final hasContext = _hasContext(raw, start, end);
       results.add(
         DetectedEntity(

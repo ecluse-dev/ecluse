@@ -10,6 +10,17 @@ import 'package:archive/archive.dart';
 /// décompressée »).
 const int maxSafeZipEntryBytes = 50 * 1024 * 1024;
 
+/// Levée par [decompressBounded] quand le contenu décompressé ne correspond pas
+/// à la somme de contrôle (CRC-32) enregistrée dans l'archive : le texte lu
+/// serait altéré sans que rien ne le dise (P2-27). Le message ne cite aucun
+/// contenu.
+final class ZipCrcMismatch implements Exception {
+  const ZipCrcMismatch();
+
+  @override
+  String toString() => 'somme de contrôle (CRC-32) incohérente avec le contenu';
+}
+
 /// Levée par [decompressBounded] dès que le plafond est dépassé.
 final class ZipBombDetected implements Exception {
   const ZipBombDetected();
@@ -36,7 +47,14 @@ Uint8List decompressBounded(ArchiveFile file, int maxBytes) {
       raw: true,
     );
   }
-  return output.getBytes();
+  final bytes = output.getBytes();
+  // `package:archive` 4.x ne vérifie pas le CRC-32 (son option `verify` est
+  // sans effet) : on le fait ici, sur les octets réellement produits.
+  final attendu = file.crc32;
+  if (attendu != null && getCrc32(bytes) != attendu) {
+    throw const ZipCrcMismatch();
+  }
+  return bytes;
 }
 
 /// [OutputStream] qui refuse d'accumuler plus de [maxBytes] octets — le

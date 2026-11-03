@@ -1,17 +1,32 @@
 import 'docx_extractor.dart';
 import 'ingest_result.dart';
 import 'odt_extractor.dart';
+import 'pdf/pdf_guard.dart';
 import 'plain_text_extractor.dart';
 
-const List<String> supportedExtensions = ['txt', 'md', 'docx', 'odt'];
+const List<String> supportedExtensions = ['txt', 'md', 'docx', 'odt', 'pdf'];
 
 /// Ingère un fichier déposé par nom [filename] et contenu [bytes].
 ///
 /// Ne renvoie jamais un [IngestedText] vide pour un fichier qui n'a pas pu
-/// être lu : tout format hors périmètre (dont `.pdf`, réservé à une v2), ou
+/// être lu : tout format hors périmètre (dont le PDF image ou numérisé), ou
 /// tout contenu incohérent avec l'extension déclarée, produit un
 /// [IngestRefused] explicite.
 IngestResult ingestFile(List<int> bytes, {required String filename}) {
+  try {
+    return _ingest(bytes, filename);
+  } catch (_) {
+    // Filet de sécurité : quoi qu'il arrive dans un extracteur, l'appelant
+    // reçoit un refus explicite, jamais une exception ni un texte vide. Le
+    // message ne reprend pas l'erreur (elle pourrait citer du contenu).
+    return const IngestRefused(
+      'Fichier illisible : erreur interne pendant la lecture. Fichier '
+      'refusé.',
+    );
+  }
+}
+
+IngestResult _ingest(List<int> bytes, String filename) {
   final extension = _extensionOf(filename);
 
   switch (extension) {
@@ -19,20 +34,37 @@ IngestResult ingestFile(List<int> bytes, {required String filename}) {
       return ingestPlainText(bytes, IngestFormat.txt);
     case 'md':
       return ingestPlainText(bytes, IngestFormat.md);
+    // Formats texte structurés (P2-67) : lus comme du texte brut, mêmes
+    // garde-fous (UTF-8 strict, pas de binaire déguisé, pas de NUL). La structure
+    // (en-tête CSV, clés de données, tableaux HTML) est lue par la détection.
+    case 'csv':
+      return ingestPlainText(bytes, IngestFormat.csv);
+    case 'tsv':
+      return ingestPlainText(bytes, IngestFormat.tsv);
+    case 'json':
+      return ingestPlainText(bytes, IngestFormat.json);
+    case 'html':
+    case 'htm':
+      return ingestPlainText(bytes, IngestFormat.html);
+    case 'xml':
+      return ingestPlainText(bytes, IngestFormat.xml);
     case 'docx':
       return ingestDocx(bytes);
     case 'odt':
       return ingestOdt(bytes);
+    case 'pdf':
+      return ingestPdf(bytes);
     case null:
       return const IngestRefused(
-        'Fichier sans extension reconnaissable : formats gérés en v1 -> '
-        '.txt, .md, .docx, .odt.',
+        'Fichier sans extension reconnaissable : formats gérés -> .txt, '
+        '.md, .csv, .tsv, .json, .html, .xml, .docx, .odt, .pdf (texte natif).',
       );
     default:
       return IngestRefused(
-        'Format « .$extension » non traité en v1 (formats gérés : .txt, '
-        '.md, .docx, .odt). Écluse ne traite ni le PDF, ni l\'image, ni '
-        'le manuscrit pour le moment.',
+        'Format « .$extension » non traité (formats gérés : .txt, .md, .csv, '
+        '.tsv, .json, .html, .xml, .docx, .odt, .pdf à texte natif). Écluse '
+        'ne traite ni l\'image, '
+        'ni le scan, ni le manuscrit pour le moment.',
       );
   }
 }

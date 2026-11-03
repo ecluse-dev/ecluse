@@ -1,0 +1,231 @@
+{
+  "graine": 42,
+  "seuils_depart": {
+    "alnum_par_page": 20,
+    "pages_max": 200,
+    "taille_max_octets": 52428800
+  },
+  "fichiers": {
+    "chiffre.pdf": {
+      "nature": "RC4 40 bits, mot de passe utilisateur vide",
+      "attendu": "refuse",
+      "motif": "chiffre",
+      "note": "s'ouvre sans mot de passe mais reste chiffré : refus quand même (règle n°4)"
+    },
+    "javascript.pdf": {
+      "nature": "texte + action JavaScript à l'ouverture",
+      "attendu": "accepte",
+      "entites": [
+        {
+          "type": "nir",
+          "valeur": "103123625122991",
+          "affiche": "1 03 12 36 251 229 91"
+        },
+        {
+          "type": "rpps",
+          "valeur": "12181960019",
+          "affiche": "12181960019"
+        },
+        {
+          "type": "iban",
+          "valeur": "FR0928657304958908386379400",
+          "affiche": "FR09 2865 7304 9589 0838 6379 400"
+        }
+      ],
+      "note": "le JavaScript ne doit jamais être exécuté ; un avertissement est souhaitable (à décider)"
+    },
+    "metadonnees_annotation.pdf": {
+      "nature": "texte + /Info + annotation contenant un identifiant",
+      "attendu": "accepte_avertissement",
+      "entites": [
+        {
+          "type": "nir",
+          "valeur": "103123625122991",
+          "affiche": "1 03 12 36 251 229 91"
+        },
+        {
+          "type": "rpps",
+          "valeur": "12181960019",
+          "affiche": "12181960019"
+        },
+        {
+          "type": "iban",
+          "valeur": "FR0928657304958908386379400",
+          "affiche": "FR09 2865 7304 9589 0838 6379 400"
+        }
+      ],
+      "avertissements_attendus": [
+        "métadonnées et annotations présentes et non extraites"
+      ],
+      "note": "l'identifiant de l'annotation n'est PAS dans le texte de page : il ne doit pas être considéré comme lu"
+    },
+    "mixte.pdf": {
+      "nature": "page 1 texte, pages 2 et 3 images",
+      "attendu": "refuse",
+      "motif": "partiellement_numerise",
+      "note": "pages sans texte à lister : 2, 3 ; le document est refusé en entier"
+    },
+    "page_blanche.pdf": {
+      "nature": "texte + page blanche (ni texte ni image)",
+      "attendu": "accepte",
+      "entites": [
+        {
+          "type": "nir",
+          "valeur": "103123625122991",
+          "affiche": "1 03 12 36 251 229 91"
+        },
+        {
+          "type": "rpps",
+          "valeur": "12181960019",
+          "affiche": "12181960019"
+        },
+        {
+          "type": "iban",
+          "valeur": "FR0928657304958908386379400",
+          "affiche": "FR09 2865 7304 9589 0838 6379 400"
+        }
+      ],
+      "note": "accepté si l'extracteur sait distinguer page vide et page image ; sinon refus conservateur (spec §3)"
+    },
+    "sans_page.pdf": {
+      "nature": "catalogue valide, zéro page",
+      "attendu": "refuse",
+      "motif": "sans_texte"
+    },
+    "scan_pur.pdf": {
+      "nature": "une page, image pleine page, aucun texte",
+      "attendu": "refuse",
+      "motif": "sans_texte"
+    },
+    "texte_colonnes.pdf": {
+      "nature": "texte, deux colonnes",
+      "attendu": "accepte",
+      "entites": [
+        {
+          "type": "rpps",
+          "valeur": "12181960019",
+          "affiche": "12181960019"
+        },
+        {
+          "type": "iban",
+          "valeur": "FR0928657304958908386379400",
+          "affiche": "FR09 2865 7304 9589 0838 6379 400"
+        }
+      ],
+      "note": "l'ordre de lecture peut mélanger les colonnes ; les identifiants doivent rester intacts"
+    },
+    "texte_et_image.pdf": {
+      "nature": "texte + image de tampon",
+      "attendu": "accepte_avertissement",
+      "entites": [
+        {
+          "type": "nir",
+          "valeur": "103123625122991",
+          "affiche": "1 03 12 36 251 229 91"
+        },
+        {
+          "type": "rpps",
+          "valeur": "12181960019",
+          "affiche": "12181960019"
+        },
+        {
+          "type": "iban",
+          "valeur": "FR0928657304958908386379400",
+          "affiche": "FR09 2865 7304 9589 0838 6379 400"
+        }
+      ],
+      "avertissements_attendus": [
+        "image présente non traitée (tampon, signature, en-tête)"
+      ]
+    },
+    "texte_iban_coupe.pdf": {
+      "nature": "texte, IBAN coupé par un retour à la ligne",
+      "attendu": "accepte",
+      "entites": [
+        {
+          "type": "iban",
+          "valeur": "FR0928657304958908386379400",
+          "affiche": "FR09 2865 7304 9\\n589 0838 6379 400"
+        }
+      ],
+      "note": "limite connue (LIMITES.md) : un identifiant coupé par une fin de ligne peut échapper à la détection ; ne pas compter comme défaut de l'extraction seule"
+    },
+    "texte_illisible.pdf": {
+      "nature": "police Type0 Identity-H sans ToUnicode ni police intégrée (zone privée)",
+      "attendu": "refuse",
+      "motif": "texte_illisible",
+      "note": "texte non vide ≠ texte lu ; attrapé par le critère « zone privée > 5 % » du spec §3"
+    },
+    "texte_illisible_latin.pdf": {
+      "nature": "même police sans ToUnicode, codes rendus en lettres latines étendues",
+      "attendu": "refuse",
+      "motif": "texte_illisible",
+      "note": "LACUNE des critères du spec §3 : aucun U+FFFD ni zone privée, 100 % de lettres ; le garde-fou doit aussi examiner la part de caractères hors du jeu attendu (ASCII/Latin-1) ; à calibrer en P1-17"
+    },
+    "texte_multipage.pdf": {
+      "nature": "texte, 3 pages",
+      "attendu": "accepte",
+      "entites": [
+        {
+          "type": "nir",
+          "valeur": "103123625122991",
+          "affiche": "1 03 12 36 251 229 91"
+        },
+        {
+          "type": "rpps",
+          "valeur": "12181960019",
+          "affiche": "12181960019"
+        },
+        {
+          "type": "iban",
+          "valeur": "FR0928657304958908386379400",
+          "affiche": "FR09 2865 7304 9589 0838 6379 400"
+        }
+      ],
+      "note": "les offsets valent par rapport au texte extrait, pas au PDF"
+    },
+    "texte_quasi_vide.pdf": {
+      "nature": "image pleine page + 3 caractères de texte",
+      "attendu": "refuse",
+      "motif": "sans_texte",
+      "note": "sous le seuil de 20 caractères alphanumériques par page"
+    },
+    "texte_simple.pdf": {
+      "nature": "texte, 1 page",
+      "attendu": "accepte",
+      "entites": [
+        {
+          "type": "nir",
+          "valeur": "103123625122991",
+          "affiche": "1 03 12 36 251 229 91"
+        },
+        {
+          "type": "rpps",
+          "valeur": "12181960019",
+          "affiche": "12181960019"
+        },
+        {
+          "type": "iban",
+          "valeur": "FR0928657304958908386379400",
+          "affiche": "FR09 2865 7304 9589 0838 6379 400"
+        }
+      ]
+    },
+    "tres_long_250_pages.pdf": {
+      "nature": "250 pages de texte (plafond de départ : 200)",
+      "attendu": "refuse",
+      "motif": "plafond_pages"
+    },
+    "tronque.pdf": {
+      "nature": "texte_simple coupé à 60 % (ni xref ni trailer)",
+      "attendu": "refuse",
+      "motif": "malforme"
+    },
+    "xref_casse.pdf": {
+      "nature": "startxref pointant au mauvais endroit",
+      "attendu": "refuse",
+      "motif": "malforme",
+      "note": "des lecteurs reconstruisent la table ; la politique de P1-17 tranche (refus de la cible spec §3)"
+    }
+  }
+}

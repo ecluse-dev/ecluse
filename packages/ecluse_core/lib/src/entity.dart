@@ -19,6 +19,15 @@ enum EntityType {
   /// `FinessDetector` pour la collision structurelle assumée.
   finess,
 
+  /// Secret technique : clé d'API, jeton, clé privée PEM, mot de passe d'une
+  /// chaîne de connexion. Pas une donnée personnelle ; masqué parce que
+  /// l'envoyer à un tiers est une fuite irréversible. Voir `SecretDetector`.
+  secret,
+
+  /// Numéro ADELI — ancien identifiant des professionnels de santé. Émis
+  /// uniquement avec le mot « ADELI » accolé : voir `AdeliDetector`.
+  adeli,
+
   /// Nom de personne (détection heuristique, voir `ecluse_redact`).
   nom,
 
@@ -37,6 +46,26 @@ enum EntityType {
 
   /// Nom d'établissement (détection heuristique, voir `ecluse_redact`).
   etablissement,
+
+  /// Identite Nationale de Sante (INS) - OIDs de referentiel ANS
+  /// (1.2.250.1.213.1.4.*) et marqueurs textuels (INS-NIR, matricule INS...).
+  /// Voir InsDetector.
+  ins,
+
+  /// Identifiant administratif étiqueté : numéro de dossier, de patient,
+  /// d'adhérent, d'allocataire, de contrat, IPP/IEP (détection heuristique,
+  /// voir `ecluse_redact`).
+  identifiant,
+
+  /// Numéro d'une pièce d'identité étiquetée : passeport, CNI, permis de
+  /// conduire (détection heuristique, voir `ecluse_redact`).
+  pieceIdentite,
+
+  /// Plaque d'immatriculation (détection heuristique, voir `ecluse_redact`).
+  vehicule,
+
+  /// Adresse IP étiquetée (détection heuristique, voir `ecluse_redact`).
+  reseau,
 }
 
 /// Une entité personnelle détectée dans un texte.

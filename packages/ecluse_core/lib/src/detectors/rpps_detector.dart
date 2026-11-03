@@ -1,4 +1,5 @@
 import '../detector.dart';
+import '../digit_compaction.dart';
 import '../entity.dart';
 import '../luhn.dart';
 
@@ -20,10 +21,14 @@ final class RppsDetector implements EntityDetector {
   @override
   EntityType get type => EntityType.rpps;
 
-  /// 11 chiffres, séparés au plus par une espace, non enchâssés dans une
-  /// séquence de chiffres plus longue.
+  /// 11 chiffres, séparés au plus par un espace, un point ou un tiret, non
+  /// enchâssés dans une séquence de chiffres plus longue.
+  ///
+  /// S'applique au texte *compacté* par [DigitCompaction] : les blancs
+  /// exotiques (NBSP, espace fine insécable, tabulation, espaces multiples)
+  /// y ont déjà disparu, comme pour `NirDetector`.
   static final RegExp _candidate = RegExp(
-    r'(?<![0-9])[0-9](?: ?[0-9]){10}(?![0-9])',
+    r'(?<![0-9])[0-9](?:[ .\-]?[0-9]){10}(?![0-9])',
   );
 
   /// Forme syntaxique d'un IBAN FR (mêmes tolérances que
@@ -39,7 +44,7 @@ final class RppsDetector implements EntityDetector {
   /// `resolveOverlaps`. Se fier à la seule *forme* (pas à la validité)
   /// écarte le candidat à la source, que l'IBAN soit valide ou non.
   static final RegExp _ibanShapedContext = RegExp(
-    r'(?<![A-Za-z0-9])[Ff][Rr][0-9]{2}(?:[ \-]?[0-9A-Za-z]){23}(?![0-9A-Za-z])',
+    r'(?<![A-Za-z0-9])[Ff][Rr][0-9]{2}(?:[ \-./]?[0-9A-Za-z]){23}(?![0-9A-Za-z])',
   );
 
   @override
@@ -49,20 +54,23 @@ final class RppsDetector implements EntityDetector {
     ];
 
     final results = <DetectedEntity>[];
-    for (final match in _candidate.allMatches(text)) {
-      final raw = match.group(0)!;
-      final digits = raw.replaceAll(' ', '');
+    final compaction = DigitCompaction(text);
+    for (final match in compaction.candidates(_candidate)) {
+      // Positions déjà dans le texte d'origine (invariant d'offsets).
+      final start = match.start;
+      final end = match.end;
+      final digits = match.text.replaceAll(RegExp(r'[ .\-]'), '');
       if (!isLuhnValid(digits)) continue;
       final embeddedInIban = ibanShapedRanges.any(
-        (r) => match.start < r.$2 && r.$1 < match.end,
+        (r) => start < r.$2 && r.$1 < end,
       );
       if (embeddedInIban) continue;
       results.add(
         DetectedEntity(
           type: EntityType.rpps,
-          start: match.start,
-          end: match.end,
-          value: raw,
+          start: start,
+          end: end,
+          value: text.substring(start, end),
           confidence: 0.9,
         ),
       );

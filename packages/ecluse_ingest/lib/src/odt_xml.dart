@@ -21,12 +21,18 @@
 /// - `<text:tab/>` : tabulation -> `\t`.
 /// - `<text:line-break/>` : saut de ligne -> `\n`.
 ///
+/// - Tableaux (P2-65) : `</table:table-cell>` -> tabulation entre cellules,
+///   `</table:table-row>` -> `\n` ; dans une cellule, paragraphes, tabulations et
+///   sauts de ligne deviennent des espaces ; une cellule couverte
+///   (`table:covered-table-cell`) ou répétée (`table:number-columns-repeated`) garde
+///   le même nombre de champs ; un tableau imbriqué reste dans la cellule parente.
+///
 /// Tout le reste (styles `<style:*>`, métadonnées `<office:meta>`,
 /// balises de mise en forme inline) est ignoré : hors d'une zone de
 /// capture, aucun texte n'est copié.
 library;
 
-final RegExp _tagPattern = RegExp('<[^>]*>');
+final RegExp _tagPattern = RegExp('<[^<>]*>');
 final RegExp _entityPattern =
     RegExp('&(#x[0-9A-Fa-f]+|#[0-9]+|amp|lt|gt|quot|apos);');
 
@@ -35,36 +41,82 @@ const _paragraphEndTags = {'text:p', 'text:h'};
 
 String extractOdtPlainText(String contentXml) {
   final buffer = StringBuffer();
+  // Contenu de la cellule de tableau courante (P2-65), comme pour le docx : la
+  // rangée tient sur une ligne, cellules séparées par une tabulation.
+  final cellule = StringBuffer();
   var cursor = 0;
   var captureDepth = 0;
+  var celluleDepth = 0;
+  var repetition = 1;
+  var tabsEnAttente = 0;
 
   for (final match in _tagPattern.allMatches(contentXml)) {
     if (captureDepth > 0) {
-      buffer.write(
+      (celluleDepth > 0 ? cellule : buffer).write(
         _decodeXmlEntities(contentXml.substring(cursor, match.start)),
       );
     }
 
     final tag = match.group(0)!;
     final name = _tagName(tag);
+    final saut = celluleDepth > 0 ? ' ' : '\n';
     if (_captureTags.contains(name)) {
       if (_isOpeningTag(tag)) {
         captureDepth++;
       } else if (_isClosingTag(tag)) {
         if (captureDepth > 0) captureDepth--;
-        if (_paragraphEndTags.contains(name)) buffer.write('\n');
+        if (_paragraphEndTags.contains(name)) {
+          (celluleDepth > 0 ? cellule : buffer).write(saut);
+        }
       } else if (_paragraphEndTags.contains(name)) {
         // Paragraphe/titre auto-fermant (`<text:p/>`) : cas réel d'un
         // paragraphe vide généré par LibreOffice — ouverture et fermeture
         // atomiques, la ligne vide compte comme séparateur au même titre
         // qu'un `<text:p></text:p>`.
+        (celluleDepth > 0 ? cellule : buffer).write(saut);
+      }
+    } else if (name == 'table:table-cell' ||
+        name == 'table:covered-table-cell') {
+      if (!tag.startsWith('</')) {
+        final vide = tag.endsWith('/>');
+        if (celluleDepth == 0) {
+          buffer.write('\t' * tabsEnAttente);
+          tabsEnAttente = 0;
+          cellule.clear();
+          final n = int.tryParse(
+              RegExp(r'table:number-columns-repeated="(\d+)"')
+                      .firstMatch(tag)?[1] ??
+                  '');
+          repetition = n != null && n > 1 ? (n > 64 ? 64 : n) : 1;
+        }
+        if (vide || name == 'table:covered-table-cell' && vide) {
+          if (celluleDepth == 0) tabsEnAttente = repetition;
+        } else {
+          celluleDepth++;
+        }
+      } else if (celluleDepth > 0) {
+        if (celluleDepth == 1) {
+          buffer.write(cellule.toString().replaceAll(_blancs, ' ').trim());
+          tabsEnAttente = repetition;
+        } else {
+          cellule.write(' ');
+        }
+        celluleDepth--;
+      }
+    } else if (name == 'table:table-row' && tag.startsWith('</')) {
+      if (celluleDepth > 0) {
+        cellule.write(' ');
+      } else {
+        buffer.write('\t' * (tabsEnAttente > 0 ? tabsEnAttente - 1 : 0));
         buffer.write('\n');
+        tabsEnAttente = 0;
       }
     } else if (captureDepth > 0) {
       if (_isStandaloneTag(tag, 'text:tab')) {
-        buffer.write('\t');
+        (celluleDepth > 0 ? cellule : buffer)
+            .write(celluleDepth > 0 ? ' ' : '\t');
       } else if (_isStandaloneTag(tag, 'text:line-break')) {
-        buffer.write('\n');
+        (celluleDepth > 0 ? cellule : buffer).write(saut);
       }
     }
 
@@ -73,6 +125,9 @@ String extractOdtPlainText(String contentXml) {
 
   return buffer.toString();
 }
+
+/// Blancs d'ASCII seuls (pas l'espace insécable : une cellule garde les siennes).
+final RegExp _blancs = RegExp(r'[ \t\r\n]+');
 
 bool _isOpeningTag(String tag) => !tag.startsWith('</') && !tag.endsWith('/>');
 

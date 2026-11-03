@@ -129,4 +129,43 @@ void main() {
       });
     });
   });
+
+  group('AdresseDetector — la commune ne déborde pas sur le texte voisin', () {
+    // Le motif de commune acceptait des mots en minuscules après la commune
+    // (motif insensible à la casse) : le span avalait un email ou un nom.
+    const cas = {
+      'email après': (
+        '12 rue des Lilas, 75015 Paris et jean.dupont@example.fr',
+        '12 rue des Lilas, 75015 Paris',
+      ),
+      'nom après': (
+        '12 rue des Lilas, 75015 Paris et Mme Sophie Lambert',
+        '12 rue des Lilas, 75015 Paris',
+      ),
+      'texte courant après': (
+        '12 rue des Lilas, 75015 Paris est la ville',
+        '12 rue des Lilas, 75015 Paris',
+      ),
+      'code postal + commune seul': (
+        'Habite 75015 Paris puis a rencontré Dr Nadia Costa',
+        '75015 Paris',
+      ),
+      'commune composée conservée': (
+        '3 rue Haute, 57100 Saint-Rémy en Comté',
+        '3 rue Haute, 57100 Saint-Rémy en Comté',
+      ),
+      'majuscules conservées': (
+        '12 RUE DES LILAS, 75015 PARIS',
+        '12 RUE DES LILAS, 75015 PARIS',
+      ),
+    };
+    cas.forEach((nom, c) {
+      test(nom, () {
+        final entities = detector.detect(c.$1);
+        expect(entities, hasLength(1), reason: c.$1);
+        final e = entities.single;
+        expect(c.$1.substring(e.start, e.end), c.$2);
+      });
+    });
+  });
 }
