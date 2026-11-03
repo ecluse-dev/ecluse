@@ -5,7 +5,12 @@ import 'package:crypto/crypto.dart';
 /// Opérations journalisées — énumération fermée (spec §1).
 enum AuditOp {
   redact('redact'),
-  ingestRefused('ingest_refused');
+  ingestRefused('ingest_refused'),
+
+  /// Envoi refusé parce que le texte contenait au moins un secret
+  /// (`Ecluse.redact(refuseSecrets: true)`). Ajouté au schéma version 2
+  /// (décision P2-96a n° 3) ; seul compte admis : `secret`.
+  secretsRefused('secrets_refused');
 
   const AuditOp(this.wire);
 
@@ -31,7 +36,11 @@ enum AuditReason {
 
 /// Version du schéma des entrées. Toute évolution du format canonique
 /// l'incrémente : la canonicalisation est figée par version.
-const int auditSchemaVersion = 1;
+///
+/// Version 2 (P2-96) : opération `secrets_refused`. La forme canonique ne
+/// change pas ; une entrée de version 1 reste vérifiable telle quelle, car sa
+/// version fait partie de ce qui est haché.
+const int auditSchemaVersion = 2;
 
 /// Valeur de `prev` de la première entrée (`seq` 0) : 64 zéros hexadécimaux.
 final String auditGenesisHash = '0' * 64;
@@ -98,8 +107,15 @@ final class AuditEntry {
       if (found.isEmpty) throw const FormatException('champ invalide : reason');
       reason = found.single;
     }
+    final version = field<int>('v');
+    if (version < 1 || version > auditSchemaVersion) {
+      throw const FormatException('version de schéma inconnue');
+    }
+    if (op.single == AuditOp.secretsRefused && version < 2) {
+      throw const FormatException('secrets_refused avant le schéma 2');
+    }
     return AuditEntry(
-      version: field<int>('v'),
+      version: version,
       seq: field<int>('seq'),
       ts: field<String>('ts'),
       engine: field<String>('engine'),
@@ -129,7 +145,8 @@ final class AuditEntry {
   /// Nombre d'entités par type (`EntityType.name`), jamais de valeur.
   final Map<String, int> counts;
 
-  /// Code de motif, pour `ingest_refused` uniquement.
+  /// Code de motif, pour `ingest_refused` uniquement (`secrets_refused` porte
+  /// son motif dans l'opération elle-même).
   final AuditReason? reason;
 
   /// `hash` de l'entrée précédente ; [auditGenesisHash] pour `seq` 0.
