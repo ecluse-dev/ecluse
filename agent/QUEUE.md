@@ -150,7 +150,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-85 | code | Coûts superlinéaires trouvés par relecture : chiffre + blancs, minuscules + point, `sk-` répété, `restore` avec valeur `[at]` | P2-84 | fusionnée |
 | P2-83 | code | `ecluse_redact` : date de naissance — mois abrégés (`janv.`, `déc.`…), libellés `Naiss.` / `Naissance le/du`, date compacte à 8 chiffres | P2-82 | fusionnée |
 | P2-86 | spec | Fiche des modèles NER candidats (licence des poids et des données, taille, labels) | — | fusionnée |
-| P2-87 | humain | Valider les seuils de P2-01 § 7 et nommer la machine de référence | — | humain |
+| P2-87 | humain | Valider les seuils de P2-01 § 7 et nommer la machine de référence | — | fusionnée |
 | P2-88 | code | `bench/ner_predictions.md` : format des prédictions attendu par `score_flou.py`, correspondance des labels, commande de mesure | P2-86 | fusionnée |
 | P2-89 | humain | Produire et scorer les prédictions du modèle sur les trois corpus flous, sur le poste du mainteneur | P2-87, P2-88 | humain |
 | P2-90 | humain | Décision GO/STOP du NER dans `DECISIONS.md` | P2-89 | humain |
@@ -160,7 +160,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-94 | humain | Source et licence de la table pathologie → catégorie | — | humain |
 | P2-95 | spec | Branchement d'`ecluse_audit` dans `Ecluse.redact` | — | fusionnée |
 | P2-96 | code | Implémentation de P2-95 selon les décisions du mainteneur | P2-95, P2-96a | à faire |
-| P2-96a | humain | Trancher les quatre décisions de P2-95 § 7 | P2-95 | humain |
+| P2-96a | humain | Trancher les quatre décisions de P2-95 § 7 | P2-95 | fusionnée |
 | P2-97 | humain | Lire le gabarit AIPD de la CNIL et solliciter l'avis d'un DPO | — | humain |
 | P2-98 | mesure | Rappel des détecteurs sur un texte de style transcrit (sans audio) | — | à faire |
 | P2-99 | humain | Accepter ou non une dépendance native (whisper.cpp) dans le monorepo | P2-98 | humain |
