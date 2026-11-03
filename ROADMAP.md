@@ -87,8 +87,8 @@ Objectif : qu'un premier design partner l'utilise en production.
 - 🟢 Harnais de benchmark reproductible vs Presidio
 - 🟢 `ecluse_redact` — pseudonymisation réversible, map jamais sérialisée
 - 🟢 `ecluse_demo` — trajet complet en 4 panneaux, réversibilité prouvée
-- 🟢 `ecluse_audit` — journal chaîné horodaté (version minimale, non branché)
-  (`agent/specs/P1-08-audit.md`)
+- 🟢 `ecluse_audit` — journal chaîné horodaté, branché en option sur
+  `Ecluse.redact` (P2-96 ; `agent/specs/P1-08-audit.md`, `agent/specs/P2-95.md`)
 - 🟡 Détecteurs prioritaires : 🟢 FINESS (collision SIREN assumée), 🟢 INS,
   🟢 téléphone FR et email durcis (octobre 2026) ; 🟢 ADELI (`AdeliDetector`,
   avec le mot « ADELI » accolé ; algorithme de clé non vérifié, voir
@@ -114,15 +114,17 @@ Objectif : occuper le coin vide de la carte.
 - ⚪ NER local embarqué (GLiNER/ONNX) pour noms et adresses — confiance
   graduée. Remplace les détecteurs heuristiques v0 de `ecluse_redact`.
 - 🟡 Généralisation géographique (bibliothèque `ecluse_reid` livrée : commune
-  → département → France ; régions non calculées, non branchée dans le
-  pipeline — voir `LIMITES.md` § 7) : remplacer un lieu trop précis par une
+  → département → France ; régions non calculées ; proposée par le rapport de
+  risque et appliquée seulement sur demande de l'application, P2-91 et P2-92 —
+  voir `LIMITES.md` § 7) : remplacer un lieu trop précis par une
   zone large (ville → région → Nord/Sud/Est/Ouest) pour réduire la
   ré-identification par recoupement. Mode irréversible, distinct de la
   pseudonymisation. S'appuie sur le NER + table INSEE commune/région.
 - 🟡 Score de ré-identification du texte (estimation F livrée dans
   `ecluse_reid` pour profession/lieu/âge ; branchée dans `Ecluse.redact` comme
-  rapport de risque seul, désactivé par défaut, sans généralisation appliquée —
-  P2-04, option A de `agent/specs/P2-03.md`) : indice de risque (élevé/moyen/
+  rapport de risque, désactivé par défaut, avec suggestions de généralisation
+  appliquées seulement sur demande — P2-04, P2-91, P2-92, option A puis B de
+  `agent/specs/P2-03.md`) : indice de risque (élevé/moyen/
   faible) calculé sur l'ensemble du texte, même sans identifiant direct
   (logique k-anonymat rendue visible). Aide à la décision pour le DPO.
 - 🟡 Pseudonymes cohérents et cloisonnés (`Dossier` en mémoire, règles N1/N2 ;

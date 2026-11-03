@@ -31,11 +31,12 @@ absence de protection connue.
 5. **Une seule entorse à la fidélité** : quand une même personne est nommée
    de deux façons, la re-mention est harmonisée sur la forme la plus
    complète à la restauration. Aucun caractère n'est perdu.
-6. **Hors périmètre v0** : dictée vocale. Le journal d'audit existe comme
-   bibliothèque (`ecluse_audit`, voir § 8) mais **n'est pas branché** dans
-   `Ecluse.redact`. L'estimation de ré-identification et la généralisation
-   existent comme bibliothèque (`ecluse_reid`) mais **ne sont pas branchées**
-   dans `Ecluse.redact` ; leurs limites sont au § 7.
+6. **Hors périmètre v0** : dictée vocale. Le journal d'audit (`ecluse_audit`,
+   § 8) se branche **en option** sur `Ecluse.redact` (`journal:`, P2-96) ;
+   sans journal, rien n'est tracé. L'estimation de ré-identification produit
+   un rapport **en option** (`riskReference:`, P2-04) avec des suggestions de
+   généralisation (P2-91) ; la généralisation n'est appliquée que si
+   l'application appelle `appliquerGeneralisations` (P2-92). Limites au § 7.
 
 Le détail de chaque point suit.
 
@@ -1213,11 +1214,12 @@ contient un. `Apercu.risque`, qui copie l'état du dossier, coûte environ 3 ms 
 
 ## 6. Hors périmètre v0
 
-- Généralisation appliquée au texte envoyé (le rapport de risque de
-  `Ecluse.redact(riskReference: …)` existe depuis P2-04, voir § 7 ; la
-  réécriture du texte est irréversible et reste à la charge de l'appelant).
+- Généralisation **automatique** du texte envoyé : le moteur ne généralise
+  jamais de lui-même. L'application peut appliquer les suggestions du rapport
+  de risque (`appliquerGeneralisations`, P2-92) ; c'est irréversible, voir § 7.
 - Dictée vocale.
-- Branchement du journal d'audit (`ecluse_audit`) dans les applications.
+- Journal de l'aperçu : `Apercu.applique` ne laisse aucune entrée dans le
+  journal d'audit (décision P2-08 n° 5) ; seul `Ecluse.redact` en laisse.
 - Le mode par défaut est automatique et invisible ; l'aperçu avec validation
   manuelle avant envoi est une option de confort, pas une garantie de
   contrôle a priori sur chaque détection.
@@ -1315,6 +1317,24 @@ pas une garantie d'anonymat. Limites connues :
   avis juridique extérieur. La date de téléchargement d'origine des assets n'a pas
   été enregistrée.
 
+### Généralisation appliquée (P2-91, P2-92)
+
+- **Suggestions** : `RiskReport.suggestions` liste les paliers d'un cran qui
+  font remonter F, positionnés dans le **texte masqué**. Ce sont des
+  propositions ; rien n'est appliqué sans appel explicite.
+- **Irréversible** : `appliquerGeneralisations` remplace le QI par son palier
+  (« département 57 », « 70-74 ans », « médecin (toute spécialité) »). La
+  valeur d'origine n'entre pas dans la table : la restauration rend la forme
+  généralisée. Les jetons et la table ne changent pas.
+- **Libellés envoyés tels quels** : un retrait s'écrit « (âge retiré) » ou
+  « (profession retirée) » dans le texte qui part chez le tiers.
+- **F recalculé, pas garanti** : le rapport est recalculé sur le texte
+  généralisé, mais l'extracteur ne reconnaît pas toujours la forme
+  généralisée comme un QI ; le F affiché peut alors différer du F simulé
+  (`fAfter`). Écart non mesuré (P2-93).
+- **Rien n'est signalé dans `warnings`** : c'est l'application qui sait
+  qu'elle a généralisé.
+
 ## 8. Journal d'audit (`ecluse_audit` v0)
 
 Le paquet fabrique et vérifie des entrées chaînées par SHA-256 ; il **n'écrit
@@ -1336,6 +1356,18 @@ détecte pas** (un test l'affirme) :
   externe sont hors v0) ;
 - la **justesse de l'horloge** : l'horodatage vient de l'appareil. Ce n'est
   pas un horodatage qualifié (RFC 3161 / eIDAS).
+
+**Branchement (P2-96, décisions P2-96a)** : `Ecluse.redact(journal: …)` écrit une
+entrée par appel avant de rendre le résultat, et avant tout changement d'un
+`Dossier` ; si l'écriture échoue, l'exception remonte et rien n'est masqué. La
+description du moteur est construite par Écluse (version et noms des détecteurs
+actifs). `JournalAudit` sérialise les écritures : la chaîne reste linéaire sous
+appels concurrents, et un échec d'écriture ne la fait pas avancer. Un refus de
+secrets (`refuseSecrets`) laisse une entrée `secrets_refused` avec le nombre de
+secrets : c'est la **version 2** du schéma ; les entrées de version 1 restent
+vérifiables. Ce que le branchement ne fait pas : journaliser l'aperçu, les
+appels à `restore`, ni les refus d'`ecluse_ingest` (l'application peut les
+écrire elle-même avec `enregistrerRefusIngestion`).
 
 `AuditExporter.agrege` (P2-15) produit un agrégat de ce journal pour alimenter un
 registre ou une analyse d'impact : matière première factuelle, comptes de faible

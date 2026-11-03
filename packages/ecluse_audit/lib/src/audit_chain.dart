@@ -16,8 +16,9 @@ abstract final class AuditChain {
   ///
   /// [at] est converti en UTC et tronqué à la minute. Lève [ArgumentError]
   /// si [engine] est mal formé, si [counts] contient un type inconnu ou un
-  /// compte négatif, ou si [reason] est incohérent avec [op] (obligatoire
-  /// pour `ingestRefused`, interdit pour `redact`).
+  /// compte négatif, si [reason] est incohérent avec [op] (obligatoire pour
+  /// `ingestRefused`, interdit sinon), ou si un `secretsRefused` porte
+  /// autre chose qu'un compte de `secret` d'au moins 1.
   static AuditEntry next({
     AuditEntry? previous,
     required DateTime at,
@@ -41,8 +42,8 @@ abstract final class AuditChain {
     if (op == AuditOp.ingestRefused && reason == null) {
       throw ArgumentError.value(reason, 'reason', 'requis pour ingest_refused');
     }
-    if (op == AuditOp.redact && reason != null) {
-      throw ArgumentError.value(reason, 'reason', 'interdit pour redact');
+    if (op != AuditOp.ingestRefused && reason != null) {
+      throw ArgumentError.value(reason, 'reason', 'interdit pour ${op.wire}');
     }
 
     // Les comptes nuls sont omis : une seule écriture canonique par contenu.
@@ -50,6 +51,11 @@ abstract final class AuditChain {
       for (final e in counts.entries)
         if (e.value > 0) e.key: e.value,
     };
+    final secretSeul =
+        cleaned.length == 1 && cleaned.containsKey(EntityType.secret.name);
+    if (op == AuditOp.secretsRefused && !secretSeul) {
+      throw ArgumentError.value(counts, 'counts', 'un compte de secret requis');
+    }
     final hashable = AuditEntry(
       seq: previous == null ? 0 : previous.seq + 1,
       ts: _minuteStamp(at),

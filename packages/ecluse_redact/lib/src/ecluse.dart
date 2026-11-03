@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ecluse_audit/ecluse_audit.dart' show AuditChain, JournalAudit;
 import 'package:ecluse_core/ecluse_core.dart';
 import 'package:ecluse_reference/ecluse_reference.dart' show EcluseReference;
 
@@ -97,6 +98,13 @@ abstract final class Ecluse {
   /// d'un autre document reçoit un nouveau jeton, jamais une fusion par
   /// patronyme. Les appels d'un même dossier sont sérialisés. Sans [dossier],
   /// la sortie est exactement celle d'avant.
+  ///
+  /// **Journal d'audit** (P2-96) : avec [journal], chaque appel laisse une
+  /// entrée chaînée (comptes par type, jamais de valeur), écrite **avant** que
+  /// le résultat soit rendu et avant tout changement du [dossier] : un texte
+  /// rendu a toujours sa trace. Un refus de secrets laisse une entrée
+  /// `secrets_refused`. Si l'écriture échoue, l'exception du journal remonte et
+  /// rien n'est masqué. Sans [journal], la sortie est exactement celle d'avant.
   static Future<RedactResult> redact(
     String text, {
     List<Detector>? detectors,
@@ -104,18 +112,38 @@ abstract final class Ecluse {
     bool refuseSecrets = false,
     EcluseReference? riskReference,
     Dossier? dossier,
+    JournalAudit? journal,
   }) {
-    if (dossier == null) {
-      return _redact(text, _Etat(), detectors, restoreSecrets, refuseSecrets,
-          riskReference);
-    }
+    final options = _Options(
+        detectors, restoreSecrets, refuseSecrets, riskReference, journal);
+    if (dossier == null) return _redact(text, _Etat(), options);
     return dossier._serialise(() {
       final etat = dossier._etat;
       if (etat == null) throw const DossierFermeException();
-      return _redact(
-          text, etat, detectors, restoreSecrets, refuseSecrets, riskReference);
+      return _redact(text, etat, options);
     });
   }
+
+  /// Version du moteur écrite dans le journal d'audit. Tenue égale à la
+  /// version de `pubspec.yaml` par un test.
+  static const String versionMoteur = 'ecluse_redact 0.1.0';
+
+  /// Description du moteur pour le journal (décision P2-96a n° 4) : version et
+  /// noms des détecteurs actifs, construite ici plutôt que fournie par
+  /// l'application, pour qu'elle soit toujours exacte. Un nom hors de la forme
+  /// admise par le journal devient `autre` ; au-delà de 200 caractères, seul
+  /// le nombre de détecteurs est donné.
+  static String descriptionMoteur([List<Detector>? detectors]) {
+    final noms = [
+      for (final d in detectors ?? defaultDetectors)
+        _nomDetecteurSur.hasMatch(d.name) ? d.name : 'autre',
+    ];
+    final complete = '$versionMoteur [${noms.join(',')}]';
+    if (complete.length <= 200) return complete;
+    return '$versionMoteur [${noms.length} detecteurs]';
+  }
+
+  static final RegExp _nomDetecteurSur = RegExp(r'^[A-Za-z0-9_.+\-]{1,40}$');
 
   /// Détecte les entités de [text] **sans rien masquer** (P2-16, préalable de
   /// l'aperçu de `agent/specs/P2-08.md`). Renvoie exactement les entités que
@@ -182,19 +210,26 @@ abstract final class Ecluse {
   static Future<RedactResult> _redact(
     String text,
     _Etat etat,
-    List<Detector>? detectors,
-    bool restoreSecrets,
-    bool refuseSecrets,
-    EcluseReference? riskReference,
+    _Options options,
   ) async {
-    final resolved = await _detecter(text, etat, detectors);
+    final resolved = await _detecter(text, etat, options.detectors);
 
     final secretCount =
         resolved.where((e) => e.type == EntityType.secret).length;
-    if (refuseSecrets && secretCount > 0) {
+    final journal = options.journal;
+    final moteur = journal == null ? '' : descriptionMoteur(options.detectors);
+    if (options.refuseSecrets && secretCount > 0) {
+      await journal?.enregistrerRefusSecrets(
+          moteur: moteur, nombre: secretCount);
       throw SecretsRefusedException(secretCount);
     }
-    return _appliquer(text, resolved, etat, restoreSecrets, riskReference);
+    // Le journal est écrit avant l'application, qui seule modifie l'état du
+    // dossier : si l'écriture échoue, rien n'est masqué ni attribué. Les
+    // comptes sont ceux des entités détectées, secrets compris.
+    await journal?.enregistrerMasquage(
+        moteur: moteur, comptes: AuditChain.countsOf(resolved));
+    return _appliquer(
+        text, resolved, etat, options.restoreSecrets, options.riskReference);
   }
 
   /// Masque [resolved] (entités triées, sans chevauchement) dans [text] et
@@ -789,6 +824,19 @@ final class SecretsRefusedException implements Exception {
   @override
   String toString() => 'SecretsRefusedException: $count secret(s) détecté(s) ; '
       'envoi refusé (mode strict).';
+}
+
+/// Options d'un appel à [Ecluse.redact], regroupées pour ne pas les passer
+/// une à une entre les étapes.
+final class _Options {
+  const _Options(this.detectors, this.restoreSecrets, this.refuseSecrets,
+      this.riskReference, this.journal);
+
+  final List<Detector>? detectors;
+  final bool restoreSecrets;
+  final bool refuseSecrets;
+  final EcluseReference? riskReference;
+  final JournalAudit? journal;
 }
 
 /// État de masquage : jetons attribués, identités de noms, compteurs et carte.
