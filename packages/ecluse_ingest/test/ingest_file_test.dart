@@ -93,21 +93,23 @@ void main() {
     });
   });
 
-  group('ingestFile — hors périmètre v1', () {
+  group('ingestFile — hors périmètre', () {
     test(
-        '.pdf est refusé explicitement, même avec un contenu texte '
-        'plausible', () {
+        'un faux .pdf (en-tête seul, sans structure) est refusé comme '
+        'malformé, jamais lu comme un texte', () {
       final pdfLikeBytes = [
         0x25, 0x50, 0x44, 0x46, 0x2D, 0x31, 0x2E, 0x34, // %PDF-1.4
         ...utf8.encode(' du texte qui pourrait faire illusion'),
       ];
       final result = ingestFile(pdfLikeBytes, filename: 'contrat.pdf');
       expect(result, isA<IngestRefused>());
-      final refused = result as IngestRefused;
-      expect(refused.reason, contains('non traité'));
-      // Garde-fou non négociable : jamais de texte, même vide, sur un
-      // format non lu.
+      expect((result as IngestRefused).code, 'malforme');
       expect(result, isNot(isA<IngestedText>()));
+    });
+
+    test('.xlsx reste hors périmètre', () {
+      final result = ingestFile(utf8.encode('x'), filename: 'budget.xlsx');
+      expect((result as IngestRefused).reason, contains('non traité'));
     });
 
     test('extension inconnue -> refus explicite', () {

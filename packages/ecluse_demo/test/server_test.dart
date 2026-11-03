@@ -43,7 +43,7 @@ void main() {
       expect(await response.readAsString(), contains('<title>ok</title>'));
     });
 
-    test('GET /api/samples renvoie les deux documents d\'exemple', () async {
+    test('GET /api/samples renvoie les trois documents d\'exemple', () async {
       final handler = buildHandler(
         redactService: RedactService(_EchoClient()),
         webDirectory: tempWebDir,
@@ -53,7 +53,7 @@ void main() {
       final body = jsonDecode(await response.readAsString()) as List<dynamic>;
 
       expect(response.statusCode, 200);
-      expect(body, hasLength(2));
+      expect(body, hasLength(3));
       expect((body[0] as Map<String, dynamic>)['title'], isNotEmpty);
     });
 
@@ -65,6 +65,7 @@ void main() {
       final request = Request(
         'POST',
         Uri.parse('http://l/api/process'),
+        headers: {'content-type': 'application/json'},
         body: jsonEncode({
           'text': 'M. Jean Dupont est arrivé.',
           'instruction': 'Résume.',
@@ -88,6 +89,7 @@ void main() {
       final request = Request(
         'POST',
         Uri.parse('http://l/api/process'),
+        headers: {'content-type': 'application/json'},
         body: jsonEncode({'text': 'Un texte.', 'instruction': 'Résume.'}),
       );
       final response = await handler(request);
@@ -106,6 +108,7 @@ void main() {
       final request = Request(
         'POST',
         Uri.parse('http://l/api/process'),
+        headers: {'content-type': 'application/json'},
         body: jsonEncode({'instruction': 'Résume.'}),
       );
       final response = await handler(request);

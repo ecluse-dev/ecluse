@@ -169,9 +169,11 @@ Merci de votre confiance
 70160 PORT SUR SAONE
 ''';
       final r = await Ecluse.redact(texte);
-      // Le span est interrompu : au plus un jeton, jamais un span traversant
-      // la ligne vide.
-      expect(tokensOfType(r.mapping, 'ADRESSE').length, lessThanOrEqualTo(1));
+      // Le span est interrompu : jamais un span traversant la ligne vide. Depuis
+      // P2-56 la voie (sans code postal) et la commune sont deux adresses
+      // distinctes, séparées par la ligne vide conservée.
+      expect(tokensOfType(r.mapping, 'ADRESSE').length, 2);
+      expect(r.maskedText, contains('\n\n'));
       await expectRoundTrip(texte);
     });
 

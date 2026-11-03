@@ -131,4 +131,108 @@ void main() {
       expect(detector.detect(''), isEmpty);
     });
   });
+
+  group('NirDetector — identifiant adjacent à un nombre', () {
+    // Un nombre séparé par un blanc ne doit pas empêcher la détection : la
+    // normalisation des espaces internes ne doit pas coller le voisin.
+    const nir = '1 85 05 78 006 084 91';
+    const cas = {
+      'nombre après': 'NIR $nir 12 ans',
+      'nombre avant': 'Dossier 12 $nir',
+      'nombre des deux côtés': 'Page 3 $nir 12 ans',
+      'tabulation avant le nombre': 'NIR $nir\t12',
+    };
+    cas.forEach((nom, texte) {
+      test('détecte : $nom', () {
+        final entities = detector.detect(texte);
+        expect(entities, hasLength(1), reason: texte);
+        final e = entities.single;
+        expect(e.start, texte.indexOf(nir));
+        expect(texte.substring(e.start, e.end), nir);
+      });
+    });
+
+    test('un NIR collé à un chiffre reste rejeté', () {
+      expect(detector.detect('1850578006084912'), isEmpty);
+    });
+  });
+
+  group('NirDetector — mois fictifs et séparateurs supplémentaires', () {
+    // Mois fictifs INSEE (personnes dont la date de naissance est incomplète) :
+    // 20 (inconnu), 30 à 42 et 50 à 99. Clé de contrôle calculée, donc la
+    // détection reste « stricte » : seule la plage de mois est élargie.
+    const valides = {
+      '20': '1 85 20 78 006 084 40',
+      '30': '1 85 30 78 006 084 06',
+      '42': '1 85 42 78 006 084 04',
+      '50': '1 85 50 78 006 084 35',
+      '99': '1 85 99 78 006 084 43',
+    };
+    valides.forEach((mois, nir) {
+      test('mois fictif $mois détecté', () {
+        final texte = 'NIR $nir.';
+        final e = detector.detect(texte).single;
+        expect(texte.substring(e.start, e.end), nir);
+      });
+    });
+
+    const invalides = {
+      '13': '1 85 13 78 006 084 25',
+      '19': '1 85 19 78 006 084 24',
+      '43': '1 85 43 78 006 084 20',
+      '49': '1 85 49 78 006 084 19',
+    };
+    invalides.forEach((mois, nir) {
+      test('mois $mois toujours rejeté (clé valide mais mois impossible)', () {
+        expect(detector.detect('NIR $nir'), isEmpty);
+      });
+    });
+
+    test('espace fine U+2009 entre les groupes', () {
+      const nir = '1\u200985\u200905\u200978\u2009006\u2009084\u200991';
+      final texte = 'NIR $nir.';
+      final e = detector.detect(texte).single;
+      expect(texte.substring(e.start, e.end), nir);
+    });
+
+    test('barre oblique entre les groupes', () {
+      const nir = '1/85/05/78/006/084/91';
+      final texte = 'NIR $nir.';
+      final e = detector.detect(texte).single;
+      expect(texte.substring(e.start, e.end), nir);
+    });
+  });
+
+  group('NirDetector — mois 00 et 21 à 29 (nomenclature DGFiP)', () {
+    // Source citée par le mainteneur : mois inconnu = 00 et 20 à 30. La clé
+    // mod 97 reste exigée, donc la détection n'est pas moins stricte.
+    const valides = {
+      '00': '1 85 00 78 006 084 11',
+      '21': '1 85 21 78 006 084 56',
+      '25': '1 85 25 78 006 084 23',
+      '29': '1 85 29 78 006 084 87',
+    };
+    valides.forEach((mois, nir) {
+      test('mois $mois détecté', () {
+        final texte = 'NIR $nir.';
+        final e = detector.detect(texte).single;
+        expect(texte.substring(e.start, e.end), nir);
+      });
+    });
+
+    test('mois 13-19 et 43-49 toujours rejetés', () {
+      for (final nir in [
+        '1 85 13 78 006 084 25',
+        '1 85 19 78 006 084 24',
+        '1 85 43 78 006 084 20',
+        '1 85 49 78 006 084 19',
+      ]) {
+        expect(detector.detect('NIR $nir'), isEmpty, reason: nir);
+      }
+    });
+
+    test('mois 00 à clé invalide rejeté', () {
+      expect(detector.detect('NIR 1 85 00 78 006 084 12'), isEmpty);
+    });
+  });
 }

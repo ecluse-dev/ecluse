@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'ingest_result.dart';
 import 'magic_bytes.dart';
 
-/// Extrait le texte d'un fichier `.txt`/`.md`.
+/// Extrait le texte d'un fichier `.txt`/`.md` (et, depuis P2-67, `.csv`, `.tsv`,
+/// `.json`, `.html`, `.xml`, lus comme du texte brut).
 ///
 /// Aucun rendu Markdown : la syntaxe brute est déjà le texte que le
 /// pipeline doit voir, et interpréter la syntaxe n'ajoute rien à la
@@ -37,6 +38,17 @@ IngestResult ingestPlainText(List<int> bytes, IngestFormat format) {
     return const IngestRefused(
       'Encodage non reconnu (ni UTF-8 ni UTF-16) : ré-enregistrez le '
       'fichier en UTF-8 avant de le déposer.',
+    );
+  }
+
+  // Un NUL n'a rien à faire dans un fichier texte : c'est presque toujours
+  // de l'UTF-16 sans BOM (un octet nul entre chaque lettre), que le décodage
+  // UTF-8 accepte sans erreur. Les détecteurs ne trouveraient alors rien.
+  if (text.contains('\u0000')) {
+    return const IngestRefused(
+      'Le fichier contient des caractères NUL : probablement de l\'UTF-16 '
+      'sans BOM ou un fichier binaire. Ré-enregistrez-le en UTF-8 avant de '
+      'le déposer.',
     );
   }
 

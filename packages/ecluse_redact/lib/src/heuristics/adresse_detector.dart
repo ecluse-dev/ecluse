@@ -40,6 +40,38 @@ final class AdresseDetector implements EntityDetector {
     'passage',
     'cours',
     'lotissement',
+    'chaussée',
+    'chaussee',
+    'faubourg',
+    'esplanade',
+    'villa',
+    'hameau',
+    'cité',
+    'cite',
+    // Abréviations courantes (point facultatif, voir [_voieMotif]).
+    'av',
+    'ave',
+    'bd',
+    'bvd',
+    'rte',
+    'fbg',
+    'r',
+    'pl',
+    'ch',
+    'imp',
+    'all',
+    'sq',
+    'crs',
+    // Autres types de voie (P2-49).
+    'sentier',
+    'ruelle',
+    'traverse',
+    'venelle',
+    'parvis',
+    'promenade',
+    'montée',
+    'montee',
+    'clos',
   ];
 
   /// `code postal (5 chiffres) + commune`, réutilisé tel quel comme fin du
@@ -56,9 +88,29 @@ final class AdresseDetector implements EntityDetector {
   ///   code postal et sa commune sont toujours sur la **même ligne** dans
   ///   un document réel ; `\s` matche aussi le saut de ligne, ce qui
   ///   laissait un span avaler la ligne suivante en entier.
-  static const _codePostalCommune =
-      "(?<!\\d)\\d{5}[ \\t]+(?<commune>[A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*)"
-      "(?:[ -][A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*){0,3}";
+  static const _codePostalCommune = '(?<!\\d)\\d{5}$_h+(?<commune>$_motCommune)'
+      '(?:[ \\u00A0\\u202F-]$_connecteurs*(?!$_titres\\b)$_motCommune){0,3}';
+
+  /// Blanc horizontal : espace, tabulation, espace insécable (U+00A0), espace
+  /// fine insécable (U+202F). Jamais un saut de ligne.
+  static const _h = '[ \\t\\u00A0\\u202F]';
+
+  /// Mot de commune : majuscule initiale (le motif est sensible à la casse,
+  /// voir [_pattern]).
+  static const _motCommune = "[A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*";
+
+  /// Petits mots **en minuscules** qui lient les parties d'un nom de commune
+  /// (« Saint-Rémy en Comté », « Neuilly sur Seine », « Villeneuve d'Ascq »).
+  /// Tout autre mot en minuscules arrête la commune : sinon le span avale le
+  /// texte qui suit (un email, un nom) et la résolution des chevauchements
+  /// supprime l'entité voisine au lieu de la masquer (fuite).
+  static const _connecteurs =
+      "(?:(?:de|du|des|la|le|les|en|sur|sous|lès|lez|aux)[ -]|[dl]['’])";
+
+  /// Civilités et titres qui ne sont jamais le dernier mot d'une commune :
+  /// ils annoncent un nom de personne, détecté à part.
+  static const _titres =
+      '(?:Mme|Mlle|Mr|Madame|Monsieur|Mademoiselle|Dr|Docteur|Pr|Professeur|Me|Maître|M)';
 
   /// Sépare le nom de voie du `CP_COMMUNE` qui suit : soit sur la **même
   /// ligne** (virgule optionnelle, comportement historique), soit via **un
@@ -67,19 +119,85 @@ final class AdresseDetector implements EntityDetector {
   /// naturellement échouer les deux alternatives : `\d{5}` ne suit alors
   /// plus immédiatement (aux espaces horizontaux près), donc le span
   /// s'interrompt — pas de logique de garde séparée à écrire.
-  static const _voieVersCpCommune = '(?:,?[ \\t]*|[ \\t]*\\r?\\n[ \\t]*)';
+  static const _voieVersCpCommune =
+      '(?:,?[ \\t\\u00A0\\u202F]*|[ \\t]*\\r?\\n[ \\t]*)';
+
+  /// Rend une chaîne insensible à la casse lettre par lettre (`rue` devient
+  /// `[Rr][Uu][Ee]`). Dart ne propose pas de drapeau local : le motif entier
+  /// ne peut pas être `caseSensitive: false` sans rendre la commune
+  /// insensible à la casse aussi.
+  static String _ci(String word) => word.split('').map((c) {
+        final up = c.toUpperCase();
+        final low = c.toLowerCase();
+        return up == low ? c : '[$up$low]';
+      }).join();
+
+  /// Type de voie, avec point facultatif pour les abréviations (`av.`, `bd.`).
+  static final String _voieMotif = '(?:${_voies.map(_ci).join('|')})\\.?';
+
+  /// Numéro de voie : 1 à 4 chiffres, suffixe facultatif `bis`, `ter`… ou une
+  /// lettre majuscule A-F (« 12 bis rue », « 12bis rue », « 12 B rue »). La
+  /// lettre doit être majuscule et isolée : le type de voie qui suit reste
+  /// obligatoire, ce qui écarte « Annexe 12 B : voir page 3 ».
+  static final String _numero = '\\d{1,4}(?:$_h*(?:${[
+    'bis',
+    'ter',
+    'quater',
+    'quinquies'
+  ].map(_ci).join('|')}|[A-F](?![A-Za-zÀ-ÿ])))?';
+
+  /// Nom de voie borné à 80 caractères : le quantificateur paresseux non
+  /// borné rendait le motif quadratique quand « N rue » se répète sans code
+  /// postal (16 Ko = plus de 5 s). Un nom de voie plus long n'est plus
+  /// reconnu en entier : seul « code postal + commune » est alors masqué.
+  static const String _nomVoie = "[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]{1,80}?";
 
   static final RegExp _pattern = RegExp(
-    "\\d{1,4}[ \\t]*,?[ \\t]*(?:${_voies.join('|')})"
-    "[ \\t]+[A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9'’\\- ]+?"
+    '$_numero$_h*(?:,$_h*)?$_voieMotif'
+    '$_h+$_nomVoie'
     '$_voieVersCpCommune'
     '$_codePostalCommune',
-    caseSensitive: false,
   );
 
-  static final RegExp _codePostalCommuneOnly = RegExp(
-    _codePostalCommune,
-    caseSensitive: false,
+  /// Variante sans numéro (« rue des Lilas, 75015 Paris ») : exige que le
+  /// type de voie ne soit pas collé à un mot qui précède, et un code postal
+  /// + commune derrière. Confiance plus faible (0.6) que la forme numérotée.
+  static final RegExp _patternSansNumero = RegExp(
+    '(?<![\\wÀ-ÿ])$_voieMotif'
+    '$_h+$_nomVoie'
+    '$_voieVersCpCommune'
+    '$_codePostalCommune',
+  );
+
+  static final RegExp _codePostalCommuneOnly = RegExp(_codePostalCommune);
+
+  /// Types de voie reconnus **sans code postal** (P2-56) : en toutes lettres
+  /// ou abréviations d'au moins deux lettres sans autre sens courant. « r »,
+  /// « pl », « ch », « all », « sq », « crs », « imp » en sont exclus : après un
+  /// nombre, ils désignent des chambres, des places ou des chapitres.
+  static const _voiesSansCodePostal = [
+    'rue', 'avenue', 'boulevard', 'chemin', 'impasse', 'allée', 'allee',
+    'place', 'route', 'quai', 'square', 'passage', 'cours', 'lotissement',
+    'chaussée', 'chaussee', 'faubourg', 'esplanade', 'villa', 'hameau', //
+    'cité', 'cite', 'av', 'bd', 'bvd', 'rte', 'fbg', 'sentier', 'ruelle',
+    'traverse', 'venelle', 'parvis', 'promenade', 'montée', 'montee', 'clos',
+  ];
+
+  /// Mot d'un nom de voie : majuscule initiale ou nombre (« rue du 8 Mai »).
+  static const String _motVoie = "(?:[A-ZÀ-ÖØ-Þ][\\wÀ-ÿ'’-]*|\\d{1,4})";
+
+  static const String _particuleVoie =
+      "(?:(?:de|du|des|la|le|les|aux|sur|en|von|van)[ \\t]+|[dl]['’])";
+
+  /// Adresse sans code postal : numéro + type de voie + nom de voie de 1 à 5
+  /// mots en majuscule initiale (particules en minuscules tolérées). Le nom en
+  /// minuscules (« 12 place disponible », « 3 chemin de fer ») n'est jamais une
+  /// adresse. Confiance 0.55 : aucune validation possible.
+  static final RegExp _patternSansCodePostal = RegExp(
+    '(?<![\\wÀ-ÿ])$_numero$_h*(?:,$_h*)?'
+    '(?:${_voiesSansCodePostal.map(_ci).join('|')})\\.?$_h+'
+    '(?:$_particuleVoie)*$_motVoie'
+    '(?:[ \\t-]+(?:$_particuleVoie)*$_motVoie){0,4}',
   );
 
   /// Unités de mesure courantes (SI et posologie clinique) — un nombre à 5
@@ -114,6 +232,22 @@ final class AdresseDetector implements EntityDetector {
     return commune != null && _uppercaseFirstLetter.hasMatch(commune);
   }
 
+  static bool _chevauche(List<_Range> tries, int start, int end) {
+    var lo = 0;
+    var hi = tries.length;
+    while (lo < hi) {
+      final mid = (lo + hi) >> 1;
+      if (tries[mid].start < end) {
+        lo = mid + 1;
+      } else {
+        hi = mid;
+      }
+    }
+    // `lo` : premier intervalle commençant à `end` ou après ; les précédents
+    // sont disjoints et triés, seul le dernier peut déborder sur `start`.
+    return lo > 0 && tries[lo - 1].end > start;
+  }
+
   @override
   List<DetectedEntity> detect(String text) {
     final results = <DetectedEntity>[];
@@ -134,6 +268,44 @@ final class AdresseDetector implements EntityDetector {
         ),
       );
       claimed.add(_Range(start, end));
+    }
+
+    // Voie sans numéro : après la forme numérotée (qui la contient), pour
+    // ne pas produire deux entités sur la même adresse.
+    for (final match in _patternSansNumero.allMatches(text)) {
+      if (_looksLikeUnit(match)) continue;
+      if (!_communeStartsWithUppercase(match)) continue;
+      final start = match.start;
+      final end = match.end;
+      if (claimed.any((r) => r.overlaps(start, end))) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.adresse,
+          start: start,
+          end: end,
+          value: match.group(0)!,
+          confidence: 0.6,
+        ),
+      );
+      claimed.add(_Range(start, end));
+    }
+
+    // Adresse sans code postal (P2-56), en dernier : une adresse complète déjà
+    // reconnue la contient. Intervalles déjà retenus triés (disjoints par
+    // construction), recherche dichotomique plutôt que balayage.
+    final retenus = [...claimed]..sort((a, b) => a.start - b.start);
+    for (final match in _patternSansCodePostal.allMatches(text)) {
+      if (_chevauche(retenus, match.start, match.end)) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.adresse,
+          start: match.start,
+          end: match.end,
+          value: match.group(0)!,
+          confidence: 0.55,
+        ),
+      );
+      claimed.add(_Range(match.start, match.end));
     }
 
     for (final match in _codePostalCommuneOnly.allMatches(text)) {

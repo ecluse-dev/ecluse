@@ -31,7 +31,7 @@ Photos, scans, PDF-image, écriture manuscrite : **non traités**.
   textuels** — signature, tampon, en-tête, logo d'établissement, visage —
   qu'aucun pipeline OCR ne « lit ». Couvrir l'image sans les traiter
   produit un faux sentiment de sécurité, la faille n°1 de
-  `NOTES_SECURITE.md`.
+  `LIMITES.md`.
 - **Raison prospection.** Besoin non validé : 1 confirmation (#1), 1 « je
   ne sais pas » (#2). Et aucun des deux chantiers concrets nommés par #2
   — retranscription de réunions, contrats RH — n'est manuscrit.
@@ -87,35 +87,50 @@ Objectif : qu'un premier design partner l'utilise en production.
 - 🟢 Harnais de benchmark reproductible vs Presidio
 - 🟢 `ecluse_redact` — pseudonymisation réversible, map jamais sérialisée
 - 🟢 `ecluse_demo` — trajet complet en 4 panneaux, réversibilité prouvée
-- ⚪ `ecluse_audit` — journal chaîné horodaté (version minimale)
-- ⚪ Détecteurs prioritaires : FINESS, ADELI, téléphone FR, email
-  (heuristiques v0 en place, à durcir)
-- ⚪ Secret scanning (clés API, tokens) — parité avec les gateways génériques
-- ⚪ Publication de l'article de benchmark
-- ⚪ **Import de fichiers texte natifs** (PDF texte, docx) + garde-fou
-  PDF-image. Seule exception discutable à la règle « rien avant un signal
-  de paiement » : quelques jours de travail, aucune recherche, et rend la
-  démo de rentrée nettement plus concrète — « déposez votre compte rendu,
-  regardez ce qui ressort ».
+- 🟢 `ecluse_audit` — journal chaîné horodaté (version minimale, non branché)
+  (`agent/specs/P1-08-audit.md`)
+- 🟡 Détecteurs prioritaires : 🟢 FINESS (collision SIREN assumée), 🟢 INS,
+  🟢 téléphone FR et email durcis (octobre 2026) ; 🟢 ADELI (`AdeliDetector`,
+  avec le mot « ADELI » accolé ; algorithme de clé non vérifié, voir
+  `LIMITES.md` § 2 et `agent/specs/P1-06-adeli.md`)
+- 🟢 Secret scanning (clés API, tokens) — parité avec les gateways génériques
+  (`SecretDetector`, spec `agent/specs/P1-07-secrets.md`)
+- 🟡 Publication de l'article de benchmark — brouillon `bench/ARTICLE.md`,
+  relecture du mainteneur attendue
+- 🟢 **Import de fichiers texte natifs** — `ecluse_ingest` livré pour
+  txt, md, docx, odt et PDF à texte natif avec garde-fou PDF-image
+  (`agent/specs/P1-09-pdf.md`, limites dans `LIMITES.md` § 4). Rend la
+  démo nettement plus concrète — « déposez votre compte rendu, regardez ce
+  qui ressort ».
 
 ## Phase 2 — La profondeur qui rend seul
 
 Objectif : occuper le coin vide de la carte.
 
-- ⚪ Export AIPD aux normes CNIL (registre de traitement pré-rempli)
+- 🟡 Export AIPD aux normes CNIL (registre de traitement pré-rempli) :
+  agrégat factuel du journal d'audit livré (`AuditExporter.agrege`, seuil
+  « moins de 5 », mentions d'honnêteté). **Matière première, pas un registre** :
+  gabarit de la CNIL non lu, avis d'un DPO non sollicité (`agent/specs/P2-09.md`)
 - ⚪ NER local embarqué (GLiNER/ONNX) pour noms et adresses — confiance
   graduée. Remplace les détecteurs heuristiques v0 de `ecluse_redact`.
-- ⚪ Généralisation géographique : remplacer un lieu trop précis par une
+- 🟡 Généralisation géographique (bibliothèque `ecluse_reid` livrée : commune
+  → département → France ; régions non calculées, non branchée dans le
+  pipeline — voir `LIMITES.md` § 7) : remplacer un lieu trop précis par une
   zone large (ville → région → Nord/Sud/Est/Ouest) pour réduire la
   ré-identification par recoupement. Mode irréversible, distinct de la
   pseudonymisation. S'appuie sur le NER + table INSEE commune/région.
-- ⚪ Score de ré-identification du texte : indice de risque (élevé/moyen/
+- 🟡 Score de ré-identification du texte (estimation F livrée dans
+  `ecluse_reid` pour profession/lieu/âge ; branchée dans `Ecluse.redact` comme
+  rapport de risque seul, désactivé par défaut, sans généralisation appliquée —
+  P2-04, option A de `agent/specs/P2-03.md`) : indice de risque (élevé/moyen/
   faible) calculé sur l'ensemble du texte, même sans identifiant direct
   (logique k-anonymat rendue visible). Aide à la décision pour le DPO.
-- ⚪ Pseudonymes cohérents et cloisonnés : même entité → même jeton au sein
+- 🟡 Pseudonymes cohérents et cloisonnés (`Dossier` en mémoire, règles N1/N2 ;
+  voir `LIMITES.md` § 5) : même entité → même jeton au sein
   d'un dossier (le LLM garde le fil), jeton différent d'un dossier à l'autre
   (aucun recoupement possible entre dossiers).
-- ⚪ Généralisation multi-dimensions : étendre le principe géographique aux
+- 🟡 Généralisation multi-dimensions (échelle de dates de naissance et âge
+  dérivé livrés dans `ecluse_reid`, non branchés dans le pipeline) : étendre le principe géographique aux
   autres indices (date de naissance → tranche d'âge, âge exact → palier,
   pathologie rare → catégorie). Bibliothèque de généralisation française.
 - ⚪ Routage on-device / cloud selon la sensibilité
@@ -124,7 +139,8 @@ Objectif : occuper le coin vide de la carte.
   les conditions non négociables du périmètre d'entrée ci-dessus. Débloque
   le cas d'usage n°1 identifié en entretien : la retranscription de
   réunions, y compris CA et CSE.
-- ⚪ Mode « aperçu + validation en un clic » : avant l'envoi à l'IA,
+- 🟡 Mode « aperçu + validation en un clic » (composant `Apercu` livré,
+  bibliothèque seulement, sans interface ni test utilisateur) : avant l'envoi à l'IA,
   l'utilisateur voit ce qui a été détecté et sera masqué (« 2 noms,
   1 NIR repérés »), et valide d'un clic.
   **⚠️ C'est une OPTION de confort, PAS le mode par défaut** (arbitrage
@@ -174,8 +190,11 @@ Objectif : transformer les concurrents en canaux, étendre la douve.
   permanent ; à chaque entité ajoutée, réétendre la comparaison. Chaque
   format dégradé rencontré rejoint le corpus.
 - **Les design partners guident les priorités.** Un client qui paie
-  réordonne cette liste mieux que la liste elle-même. Rien d'avancé ne se
-  code avant un signal de paiement.
+  réordonne cette liste mieux que la liste elle-même. La règle « rien
+  d'avancé avant un signal de paiement » a été levée en septembre 2026,
+  de façon proportionnée : les garde-fous de sécurité restent (critère
+  GO/STOP avant toute ouverture à l'image, mesure avant correction,
+  manuscrit exclu).
 - **Deux modes, pas un.** *Pseudonymiser* (réversible, pour les
   identifiants : on restaure la valeur dans la réponse) et
   *généraliser* (irréversible, pour les indices contextuels comme un

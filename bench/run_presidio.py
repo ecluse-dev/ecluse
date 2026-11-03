@@ -7,6 +7,9 @@ Seules les entités comparables sont conservées (mapping ci-dessous).
 Le seuil de score par défaut (0.35) correspond à l'usage conventionnel
 de Presidio ; il est ajustable via --threshold.
 
+`--recognizers simple|validated` ajoute deux reconnaisseurs NIR et RPPS écrits
+à la main (sans nouvelle dépendance) : voir `french_recognizers`.
+
 Par défaut, utilise le modèle spaCy en_core_web_lg (configuration
 out-of-the-box de Presidio). Si --blank est passé, utilise un pipeline
 spaCy vierge : suffisant pour les recognizers à motifs (IBAN, etc.),
@@ -21,10 +24,85 @@ warnings.filterwarnings("ignore")
 
 # Entités Presidio -> types du corpus. Tout le reste est ignoré
 # (on ne pénalise pas Presidio pour ses détections hors périmètre).
-MAPPING = {"IBAN_CODE": "iban"}
+MAPPING = {"IBAN_CODE": "iban", "FR_NIR": "nir", "FR_RPPS": "rpps"}
+
+# Séparateurs tolérés entre groupes de chiffres : espaces (dont insécable,
+# tabulation, espaces multiples) et points. Volontairement généreux : on
+# mesure le meilleur reconnaisseur raisonnable qu'un utilisateur de Presidio
+# écrirait à la main, pas un reconnaisseur affaibli.
+_SEP = r"[\s.]*"
+_NIR_PATTERN = (
+    rf"(?<!\d)[12]{_SEP}\d{{2}}{_SEP}\d{{2}}{_SEP}(?:\d{{2}}|2[AB]){_SEP}"
+    rf"\d{{3}}{_SEP}\d{{3}}{_SEP}\d{{2}}(?!\d)"
+)
+_RPPS_PATTERN = r"(?<!\d)\d{5}[\s.]?\d{5}[\s.]?\d(?!\d)"
 
 
-def build_engine(blank: bool):
+def _luhn_ok(digits: str) -> bool:
+    total, double = 0, False
+    for ch in reversed(digits):
+        v = int(ch)
+        if double:
+            v *= 2
+            if v > 9:
+                v -= 9
+        total += v
+        double = not double
+    return total % 10 == 0
+
+
+def _nir_key_ok(raw: str) -> bool:
+    compact = "".join(ch for ch in raw if ch.isalnum()).upper()
+    if len(compact) != 15:
+        return False
+    body = compact[:13].replace("2A", "19", 1).replace("2B", "18", 1)
+    if not body.isdigit() or not compact[13:].isdigit():
+        return False
+    return 97 - (int(body) % 97) == int(compact[13:])
+
+
+def french_recognizers(validated: bool):
+    """Deux reconnaisseurs écrits à la main, sans dépendance supplémentaire.
+
+    `validated=False` : regex seule (ce que fait la plupart des intégrateurs).
+    `validated=True` : la même regex + vérification de la clé (mod 97 pour le
+    NIR, Luhn pour le RPPS) via `validate_result`, ce qui est la meilleure
+    pratique documentée de Presidio. Les clés fausses sont alors écartées.
+    """
+    from presidio_analyzer import Pattern, PatternRecognizer
+
+    class _Nir(PatternRecognizer):
+        def validate_result(self, pattern_text):
+            return _nir_key_ok(pattern_text) if validated else None
+
+    class _Rpps(PatternRecognizer):
+        def validate_result(self, pattern_text):
+            digits = "".join(ch for ch in pattern_text if ch.isdigit())
+            return _luhn_ok(digits) if validated else None
+
+    return [
+        _Nir(
+            supported_entity="FR_NIR",
+            patterns=[Pattern("nir", _NIR_PATTERN, 0.6)],
+            supported_language="en",
+        ),
+        _Rpps(
+            supported_entity="FR_RPPS",
+            patterns=[Pattern("rpps", _RPPS_PATTERN, 0.4)],
+            supported_language="en",
+        ),
+    ]
+
+
+def build_engine(blank: bool, recognizers: str = "none"):
+    engine = _base_engine(blank)
+    if recognizers != "none":
+        for rec in french_recognizers(validated=(recognizers == "validated")):
+            engine.registry.add_recognizer(rec)
+    return engine
+
+
+def _base_engine(blank: bool):
     from presidio_analyzer import AnalyzerEngine
 
     if not blank:
@@ -53,9 +131,13 @@ def main() -> None:
     parser.add_argument("--threshold", type=float, default=0.35)
     parser.add_argument("--blank", action="store_true",
                         help="pipeline spaCy vierge (recognizers à motifs uniquement)")
+    parser.add_argument(
+        "--recognizers", choices=["none", "simple", "validated"], default="none",
+        help="none = Presidio tel que livré ; simple = + NIR/RPPS par regex ; "
+             "validated = + NIR/RPPS par regex et clé vérifiée (P1-35)")
     args = parser.parse_args()
 
-    engine = build_engine(args.blank)
+    engine = build_engine(args.blank, args.recognizers)
 
     n_docs = 0
     n_ents = 0
