@@ -447,6 +447,55 @@ inventé. L'annotation d'une profession ou d'un âge « en toutes lettres » est
 choix de convention. Aucune vérité terrain n'existe pour la **taille d'une classe
 d'équivalence** (F) : ce profil mesure l'extraction, pas la justesse de F.
 
+#### Généralisation appliquée : avant et après (P2-93)
+
+Mesure de `appliquerGeneralisations` (P2-92) sur les corpus de QI. Rien n'est
+corrigé. `Ecluse.redact(texte, riskReference: ref)` donne le rapport « avant » ;
+deux politiques d'appelant sont simulées : `retenue` (seule la première
+suggestion) et `toutes` (toutes les suggestions). Seuls les documents ayant au
+moins une suggestion sont comparés.
+
+```bash
+(cd packages/ecluse_redact && for c in realiste adversarial temoin; do
+  dart run bin/run_generalisation_bench.dart ../../bench/qi/corpus_qi_$c.jsonl
+done)
+```
+
+Graine 42, 400 documents par corpus, une seule graine (aucune variance mesurée).
+
+| Corpus | Docs avec suggestion | Politique | Bande avant (élevé / moyen / faible) | Bande après | Refus | F monte / baisse |
+|---|---:|---|---|---|---:|---|
+| Réaliste | 170 | retenue = toutes | 18 / 50 / 102 | 0 / 5 / 165 | 0 | 164 / 6 |
+| Adversarial | 109 | retenue | 63 / 8 / 38 | 7 / 0 / 70 (+ 32 non évaluables) | 0 | 70 / 1 |
+| Adversarial | 109 | toutes | 63 / 8 / 38 | 0 / 0 / 77 (+ 32 non évaluables) | 0 | 77 / 0 |
+| Témoin | 0 | — | — | — | — | — |
+
+Lecture, sans l'arrondir :
+
+- **La généralisation fait baisser la bande** : sur le réaliste, les 18 documents
+  « élevé » passent tous en « moyen » ou « faible ». Les F moyens (229 → 48 880
+  réaliste) sont tirés par quelques valeurs très hautes et ne se lisent pas.
+- **32 documents adversariaux (sur 109) deviennent non évaluables** après
+  généralisation : la profession est remplacée par « médecin (toute
+  spécialité) », que l'extraction ne relit pas comme profession ; il reste un
+  lieu sans population (Marseille) et F ne peut plus être estimé. Un texte
+  généralisé peut donc sortir du périmètre d'évaluation : à examiner (la
+  fiche P2-93 interdit de corriger ici).
+- **F baisse dans 6 documents du réaliste et 1 de l'adversarial (politique
+  `retenue`)** alors que chaque suggestion est proposée parce que `fAfter >
+  fBefore` : l'estimation sur le texte généralisé ne reproduit pas la
+  simulation de la suggestion. Cause non analysée.
+- **Les lieux ne sont jamais généralisés dans le réaliste** (170 lieux sur 170
+  encore en clair) : aucune suggestion ne les concerne. Un QI de lieu seul
+  reste donc en clair même quand la bande finale est « faible ».
+- Le compte « encore en clair » est une recherche de sous-chaîne du texte
+  annoté ; il n'est qu'indicatif (réaliste : 85 âges et 170 lieux sur 425 QI ;
+  adversarial `toutes` : 11 âges et 58 lieux sur 218).
+- La restauration (`Ecluse.restore`) ne laisse aucun jeton `[` résiduel (0
+  cas) : la généralisation n'altère pas les entités masquées.
+- Témoin : aucune suggestion, rien à comparer. `score_qi.py` n'est pas utilisé
+  ici : les positions annotées ne valent plus après remplacement du texte.
+
 ## Dossiers (P2-05a)
 
 Corpus multi-documents et scoreur pour mesurer la cohérence des jetons d'un
