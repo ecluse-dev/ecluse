@@ -31,24 +31,27 @@ void main() {
     final verif = AuditVerifier.verify(sink.entries);
     expect(verif, isA<AuditIntact>());
     expect((verif as AuditIntact).count, 100);
-    expect([for (final e in sink.entries) e.seq], List.generate(100, (i) => i));
+    final seqs = [for (final e in sink.entries) e.seq];
+    expect(seqs, List.generate(100, (i) => i));
     expect(journal.derniere, same(sink.entries.last));
   });
 
   test('l\'ordre des appels est l\'ordre de la chaîne', () async {
     final sink = InMemoryAuditSink();
     final journal = JournalAudit(sink: sink, horloge: _horloge);
+    const motif = AuditReason.pdfImage;
     await Future.wait([
       journal.enregistrerMasquage(moteur: _moteur, comptes: {'nir': 1}),
       journal.enregistrerRefusSecrets(moteur: _moteur, nombre: 2),
-      journal.enregistrerRefusIngestion(
-          moteur: _moteur, motif: AuditReason.pdfImage),
+      journal.enregistrerRefusIngestion(moteur: _moteur, motif: motif),
     ]);
-    expect([for (final e in sink.entries) e.op], [
+    final ops = [for (final e in sink.entries) e.op];
+    const attendus = [
       AuditOp.redact,
       AuditOp.secretsRefused,
       AuditOp.ingestRefused,
-    ]);
+    ];
+    expect(ops, attendus);
     expect(sink.entries[1].counts, {'secret': 2});
   });
 
@@ -62,9 +65,8 @@ void main() {
     );
     expect(journal.derniere, isNull);
     sink.echoue = false;
-    final e = await journal.enregistrerMasquage(
-        moteur: _moteur, comptes: {'nir': 1});
-    expect(e.seq, 0);
+    await journal.enregistrerMasquage(moteur: _moteur, comptes: {'nir': 1});
+    expect(journal.derniere!.seq, 0);
     expect(AuditVerifier.verify(sink.entrees), isA<AuditIntact>());
   });
 
