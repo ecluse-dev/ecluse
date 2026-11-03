@@ -369,3 +369,28 @@ sources et niveaux de vérification dans `agent/specs/P2-10.md`.
 - **Aucun code vocal sur `main`** sans le critère GO/STOP du § 7 de la spec
   (test d'absence de réseau, licences lues, rappel et fuite des chiffres mesurés
   sur audio synthétique) validé par le mainteneur.
+
+## 2026-11 — Arbitrages du mainteneur du 3 novembre (P2-87, P2-96a)
+Réponses données par le mainteneur lui-même, le 3 novembre 2026.
+
+### P2-87 — Seuils du critère GO/STOP du NER (`agent/specs/P2-01.md` § 7)
+- Seuils **validés tels que proposés** : baisse de la fuite au caractère d'au
+  moins 5 points, au plus 1 % des documents du corpus témoin avec une
+  détection, modèle quantifié d'au plus 300 Mo sur disque, au plus 2 s au
+  95e centile pour un document de 1 000 mots.
+- **Machine de référence** : le PC de développement du mainteneur (MSI,
+  Windows). Les mesures de latence et de mémoire s'y font.
+- La condition STOP n° 2 (licence des poids ou des données illisible) reste
+  entière : voir `agent/specs/P2-86.md` § 2.2.
+
+### P2-96a — Branchement d'`ecluse_audit` (`agent/specs/P2-95.md` § 7)
+1. **Option A** : un objet `JournalAudit` (paquet `ecluse_audit`) passé en
+   option à `Ecluse.redact`, qui écrit après le masquage et avant de rendre
+   le résultat. Sans journal, la sortie ne change pas.
+2. **`package:crypto` accepté** dans le graphe d'`ecluse_redact`, par la
+   dépendance interne à `ecluse_audit` (licence BSD-3-Clause déjà approuvée).
+3. **Refus de secrets journalisé** : nouvelle opération `secrets_refused`,
+   donc **schéma version 2**. Les entrées de version 1 restent vérifiables
+   telles quelles.
+4. **Description du moteur construite par Écluse** à partir des détecteurs
+   actifs, pas fournie par l'application.
