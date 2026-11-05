@@ -426,10 +426,11 @@ Réponses du mainteneur aux décisions de `agent/specs/P2-104.md` § 6 et de
 
 ## 2026-11 — P2-94 : source de la table pathologie → catégorie (5 novembre)
 Décision du mainteneur sur la proposition de `agent/specs/P2-94.md` § 4.
-- **Maladies rares : Orphadata Science** (CC BY 4.0), sous deux conditions
-  restant à remplir : licence lue sur le site d'Orphadata, et libellés
-  disponibles en français. La session de travail ne peut pas atteindre ce
-  site ; le mainteneur fournira la page ou le fichier.
+- **Maladies rares : Orphadata Science** (CC BY 4.0), sous deux conditions :
+  licence lue sur le site d'Orphadata (**remplie le 5 novembre 2026**, voir
+  `agent/specs/P2-94.md` § 7) et libellés disponibles en français (à
+  vérifier sur le fichier). La session de travail ne peut pas télécharger
+  les données ; le mainteneur fournira le fichier.
 - **Pathologies fréquentes : table écrite par le projet**, à partir des
   intitulés de la liste des ALD, avec validation clinique par le mainteneur
   (proposition : `agent/specs/P2-94-table.md`).
