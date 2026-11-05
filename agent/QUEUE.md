@@ -158,7 +158,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-91 | code | Rapport de risque : suggestions de généralisation positionnées (QI, offsets, niveau, F avant/après), texte inchangé | — | fusionnée |
 | P2-92 | code | Application explicite des suggestions choisies par l'appelant (irréversible, refus si périmée) | P2-91 | fusionnée |
 | P2-93 | mesure | Généralisation appliquée : avant/après sur le corpus de QI (`score_qi.py`) | P2-92 | fusionnée |
-| P2-94 | humain | Source et licence de la table pathologie → catégorie | — | humain |
+| P2-94 | humain | Source et licence de la table pathologie → catégorie | — | fusionnée |
 | P2-95 | spec | Branchement d'`ecluse_audit` dans `Ecluse.redact` | — | fusionnée |
 | P2-96 | code | Implémentation de P2-95 selon les décisions du mainteneur | P2-95, P2-96a | fusionnée |
 | P2-96a | humain | Trancher les quatre décisions de P2-95 § 7 | P2-95 | fusionnée |
@@ -176,6 +176,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-107 | code | `bench/verificateur_predictions.md` : produire les prédictions du vérificateur (modèle local, prompt de `ecluse_llm`, format de `score_semantique.py`) | P2-105, P2-106 | fusionnée |
 | P2-108 | humain | Lancer le vérificateur sur les trois corpus sémantiques sur le poste du mainteneur, scorer, décider GO/STOP | P2-90, P2-107 | humain |
 | P2-109 | humain | Branche `feat/llm-scaffold` : statut explicite « non vérifié » dans `VerificationResult` (échec d'analyse, troncature) au lieu d'une liste vide | P2-104 | humain |
+| P2-110 | humain | Valider cliniquement la table maison des pathologies (`agent/specs/P2-94-table.md` § 4) | P2-94 | humain |
+| P2-111 | humain | Fournir la page de licence d'Orphadata et le fichier de nomenclature en français (site inaccessible à la session) | P2-94 | humain |
+| P2-112 | code | Générateur d'un corpus de pathologies annoté (mentions de la table maison, témoin avec faux amis), graine fixe | P2-110 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1960,3 +1963,9 @@ ne reprennent que ce qui manque pour la prendre.
   et `isClean` vaut `true`, contraire à la condition D de P2-104. Le
   prompt `v1` tronque aussi le texte à 4 000 caractères sans changer le
   statut. Le mainteneur décide quand et comment corriger la branche.
+- **P2-112** : Python, dans `bench/`, comme `generate_corpus_semantique.py`.
+  Mentions tirées de `agent/specs/P2-94-table.md` § 3 avec leur catégorie et
+  leur système ; témoin avec des faux amis (« SEP » en dehors de la
+  neurologie, « cancer » au sens figuré, « dialyse » d'un appareil).
+  **Fini quand** : corpus reproductible à graine égale, offsets exacts,
+  tests passés.
