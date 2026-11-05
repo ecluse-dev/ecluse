@@ -170,9 +170,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-102 | code | Relire au bon palier les tranches d'âge et les professions généralisées (défauts mesurés par P2-93) | P2-93 | fusionnée |
 | P2-103 | mesure | Généralisation du lieu : effet de « département N » non relu sur F et sur l'évaluation | P2-102 | à faire |
 | P2-104 | spec | Critère GO/STOP du vérificateur LLM local | — | fusionnée |
-| P2-104a | humain | Trancher les trois décisions de P2-104 § 6 (seuils, signaler ou masquer, ordre) | P2-104 | humain |
+| P2-104a | humain | Trancher les décisions de P2-104 § 6 (seuils, signaler ou masquer, ordre) et de P2-106 § 4 (licence des données d'un LLM) | P2-104 | humain |
 | P2-105 | code | Générateur du corpus de fuites sémantiques (indices annotés, témoin, jeu injection), graine fixe | P2-104a | à faire |
-| P2-106 | spec | Fiche des petits LLM locaux candidats (licences des poids et des données lues, taille, français, sortie JSON) | P2-104 | à faire |
+| P2-106 | spec | Fiche des petits LLM locaux candidats (licences des poids et des données lues, taille, français, sortie JSON) | P2-104 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
