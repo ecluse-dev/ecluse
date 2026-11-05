@@ -177,7 +177,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-108 | humain | Lancer le vérificateur sur les trois corpus sémantiques sur le poste du mainteneur, scorer, décider GO/STOP | P2-90, P2-107 | humain |
 | P2-109 | humain | Branche `feat/llm-scaffold` : statut explicite « non vérifié » dans `VerificationResult` (échec d'analyse, troncature) au lieu d'une liste vide | P2-104 | humain |
 | P2-110 | humain | Valider cliniquement la table maison des pathologies (`agent/specs/P2-94-table.md` § 4) | P2-94 | humain |
-| P2-111 | humain | Fournir la page de licence d'Orphadata et le fichier de nomenclature en français (site inaccessible à la session) | P2-94 | humain |
+| P2-111 | humain | Fournir la page de licence d'Orphadata et le fichier de nomenclature en français (site inaccessible à la session) | P2-94 | fusionnée |
 | P2-112 | code | Générateur d'un corpus de pathologies annoté (mentions de la table maison, témoin avec faux amis), graine fixe | P2-110 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
