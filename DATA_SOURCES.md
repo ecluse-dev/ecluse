@@ -144,3 +144,19 @@ Reste ouvert : la date de téléchargement d'origine des assets, irrécupérable
 enregistrer à la prochaine régénération.
 
 `LIMITES.md` § 7 renvoie à ce fichier.
+
+## Orphanet : nomenclature des maladies rares (CC BY 4.0)
+
+| Fichier embarqué | Fichier brut (script) | Producteur | Page | Version | Licence |
+|---|---|---|---|---|---|
+| `patho_orphanet.tsv.gz` (`ORPHAcode`, catégorie, nom, mentions) | `Orphanet_Nomenclature_Pack_FR.zip` → `ORPHAnomenclature_fr_2026.xml`, `ORPHAlinearisation_fr_2026.xml` (`tools/build_orphanet_asset.py`) | Orphanet / INSERM, pack de nomenclature FR | `https://www.orphacode.org/pack-nomenclature/` | pack 2026, `ExtractionDate` 2026-06-23 | **CC BY 4.0**, lue dans la balise `<Licence>` de chaque XML et dans la notice PDF du pack ; conditions d'Orphadata lues sur `https://www.orphadata.com/legal-notice` (voir `agent/specs/P2-94.md` § 7) |
+
+- **Vérification** : le mainteneur a téléchargé le pack et l'a joint à la
+  session le 5 novembre 2026 (la session ne peut pas joindre le site).
+  SHA-256 du ZIP : `809461ba5e085382e9256895b6ed58d907fc5feb749c104874267e88f10b0b5a`.
+  Le script refuse un pack dont la licence n'est pas `CC-BY-4.0`.
+- **Contenu** : 7 834 entités, 32 catégories ; 1 079 mentions courtes
+  retirées (décision P2-113, `DECISIONS.md`). Les alignements CIM-10 et
+  CIM-11 du pack ne sont **pas** utilisés.
+- **Mise à jour** : pack annuel (juillet). Rejouer le script sur le nouveau
+  ZIP ; la sortie est déterministe (gzip, `mtime` 0).

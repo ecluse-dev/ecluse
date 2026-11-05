@@ -438,3 +438,18 @@ Décision du mainteneur sur la proposition de `agent/specs/P2-94.md` § 4.
 - **CIM-10 française exclue** (CC BY-NC-ND) ; CIM-11 non retenue sans lecture
   de ses conditions détaillées.
 
+## 2026-11 — P2-113 : intégration d'Orphanet (5 novembre)
+Décisions prises **par délégation** (« je te laisse prendre les meilleures
+décisions »), sur la proposition de `agent/specs/P2-113.md` § 6. Le
+mainteneur peut les revoir ; la liste blanche relève de son jugement
+clinique.
+- **Sigles : option B.** Les mentions de quatre caractères ou moins sont
+  retirées, sauf une liste blanche réduite à **« SLA »**. Toute autre entrée
+  dans la liste demande un cas de corpus qui montre le besoin (règle 5).
+- **Priorité : la table maison prime** sur Orphanet pour ses propres
+  mentions (mucoviscidose, drépanocytose, tuberculose…), parce qu'elle
+  reflète la fréquence en France.
+- **Extraction : feu vert.** `tools/build_orphanet_asset.py` produit
+  `patho_orphanet.tsv.gz` dans `ecluse_reference/assets`, sous CC BY 4.0 avec
+  attribution (`NOTICE`, `DATA_SOURCES.md`). Le chargement côté Dart et
+  l'appariement sont une tâche à part (P2-115).

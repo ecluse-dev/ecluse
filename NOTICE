@@ -19,5 +19,29 @@ https://www.etalab.gouv.fr/licence-ouverte-open-licence
   jeu modifié le 2 juillet 2026.
   https://data.drees.solidarites-sante.gouv.fr
 
+Exception : `patho_orphanet.tsv.gz` relève d'une autre licence, ci-dessous.
+
 Les producteurs ne cautionnent pas cette réutilisation. URL de chaque jeu et
 détail des vérifications : DATA_SOURCES.md.
+
+Données Orphanet (CC BY 4.0)
+----------------------------
+
+`packages/ecluse_reference/assets/patho_orphanet.tsv.gz` est dérivé du pack
+de nomenclature Orphanet en français, version 2026, par
+`tools/build_orphanet_asset.py`. Il est distribué sous la licence Creative
+Commons Attribution 4.0 International :
+https://creativecommons.org/licenses/by/4.0/legalcode
+
+Orphadata: Free access data from Orphanet. © INSERM 1999. Available on
+https://sciences.orphadata.com/. Data version (XML data version) : extraction
+du 23 juin 2026 (pack de nomenclature FR 2026).
+
+Modifications apportées par Écluse : seules les entités ayant un parent
+préférentiel (linéarisation) sont gardées ; la classification est aplatie
+à ce parent ; les mentions de quatre caractères ou moins sont retirées, sauf
+une liste blanche ; les doublons de mention sont retirés.
+
+Écluse s'appuie sur ces données pour signaler et généraliser des mentions de
+maladies rares. Ses résultats peuvent ne pas refléter fidèlement les données
+Orphanet, et Orphanet n'est pas responsable de la qualité de ces résultats.
