@@ -53,7 +53,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-33 | code | `DATA_SOURCES.md` : URL, date et licence (lue sur la page) de chaque jeu de données embarqué | — | fusionnée |
 | P1-34 | code | README du benchmark : résultats des entités floues dans un tableau séparé | — | fusionnée |
 | P1-35 | mesure | Presidio avec reconnaisseurs NIR/RPPS écrits à la main (objection prévisible à l'article) | P1-01 | fusionnée |
-| P1-36 | mesure | Rejouer les chiffres Écluse de l'article ([C2], [C5]) avec les détecteurs actuels | — | à faire |
+| P1-36 | mesure | Rejouer les chiffres Écluse de l'article ([C2], [C5]) avec les détecteurs actuels | — | fusionnée |
 
 ## Phase 2 — La profondeur qui rend seul
 
