@@ -428,9 +428,10 @@ Réponses du mainteneur aux décisions de `agent/specs/P2-104.md` § 6 et de
 Décision du mainteneur sur la proposition de `agent/specs/P2-94.md` § 4.
 - **Maladies rares : Orphadata Science** (CC BY 4.0), sous deux conditions :
   licence lue sur le site d'Orphadata (**remplie le 5 novembre 2026**, voir
-  `agent/specs/P2-94.md` § 7) et libellés disponibles en français (à
-  vérifier sur le fichier). La session de travail ne peut pas télécharger
-  les données ; le mainteneur fournira le fichier.
+  `agent/specs/P2-94.md` § 7) et libellés disponibles en français
+  (**remplie le 5 novembre 2026** sur le pack de nomenclature français 2026
+  fourni par le mainteneur, voir `agent/specs/P2-94.md` § 8). Le fichier
+  n'est pas versionné ; son intégration reste une tâche à part.
 - **Pathologies fréquentes : table écrite par le projet**, à partir des
   intitulés de la liste des ALD, avec validation clinique par le mainteneur
   (proposition : `agent/specs/P2-94-table.md`).
