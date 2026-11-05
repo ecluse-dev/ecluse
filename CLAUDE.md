@@ -82,8 +82,14 @@ prévoie explicitement. S'il en faut une, il s'arrête et le signale.
    en une phrase (« 3 PR en attente de revue, arrêt »). S'il est impossible
    de compter les PR ouvertes, s'arrêter aussi.
 2. **Choisir une seule tâche** dans `agent/QUEUE.md` : la première ligne au
-   statut `à faire` dont toutes les dépendances sont `fusionnée`, et qui
-   n'est pas marquée `humain`. Aucune tâche éligible → s'arrêter.
+   statut `à faire` dont toutes les dépendances sont `fusionnée`, qui
+   n'est pas marquée `humain`, et dont l'identifiant (`P2-93`, etc.)
+   n'apparaît dans le **titre d'aucune PR ouverte**. Le statut `PR ouverte`
+   n'existe que sur la branche de la PR tant qu'elle n'est pas fusionnée :
+   sur `main`, la tâche paraît encore `à faire` (P2-93 a été faite deux nuits
+   de suite, PR #261 et #262). Lister les titres avec
+   `gh api 'repos/ecluse-dev/ecluse/pulls?state=open&per_page=100' --jq '.[].title'`.
+   Aucune tâche éligible → s'arrêter.
 3. **Lire la fiche de la tâche** (section détaillée sous le tableau) et les
    fichiers qu'elle cite.
 4. **Travailler sur une branche** `claude/<id-tâche>-<slug>` partie de `main`.
@@ -94,8 +100,9 @@ prévoie explicitement. S'il en faut une, il s'arrête et le signale.
    - `mesure` : exécuter, mesurer, rapporter ; ne rien corriger.
 6. **Mettre à jour la ligne de statut** de la tâche dans `agent/QUEUE.md`
    à `PR ouverte`, dans le même commit que le travail.
-7. **Ouvrir une PR** vers `main` avec : ce qui a été fait, les mesures
-   avant/après le cas échéant, ce qui reste incertain, et ce que le
+7. **Ouvrir une PR** vers `main`, dont le **titre contient l'identifiant de
+   la tâche** (la règle du point 2 en dépend), avec : ce qui a été fait, les
+   mesures avant/après le cas échéant, ce qui reste incertain, et ce que le
    mainteneur doit vérifier. Ne jamais la fusionner.
 8. **S'arrêter.** Une tâche par exécution, même s'il reste du temps.
 
