@@ -53,6 +53,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-33 | code | `DATA_SOURCES.md` : URL, date et licence (lue sur la page) de chaque jeu de données embarqué | — | fusionnée |
 | P1-34 | code | README du benchmark : résultats des entités floues dans un tableau séparé | — | fusionnée |
 | P1-35 | mesure | Presidio avec reconnaisseurs NIR/RPPS écrits à la main (objection prévisible à l'article) | P1-01 | fusionnée |
+| P1-36 | mesure | Rejouer les chiffres Écluse de l'article ([C2], [C5]) avec les détecteurs actuels | — | à faire |
 
 ## Phase 2 — La profondeur qui rend seul
 
@@ -1928,3 +1929,9 @@ ne reprennent que ce qui manque pour la prendre.
   généralisait jamais le lieu ; construire au besoin des cas où la
   suggestion retenue porte sur le lieu, puis comparer F simulé (`fAfter`) et
   F recalculé après `appliquerGeneralisations`.
+- **P1-36** : mesurer, ne rien corriger. Rejouer les commandes [C1], [C2],
+  [C4] et [C5] de `bench/ARTICLE.md` sur `main` et rapporter le tableau
+  Écluse (précision, rappel, F1 par type, faux positifs par type) et le
+  résultat de [C5], à côté des chiffres de l'article. Contexte :
+  `agent/specs/P1-12-relecture.md`. Ne pas modifier `bench/ARTICLE.md` ni
+  `bench/requirements.txt` : signaler les écarts dans la PR.
