@@ -1329,9 +1329,13 @@ pas une garantie d'anonymat. Limites connues :
 - **Libellés envoyés tels quels** : un retrait s'écrit « (âge retiré) » ou
   « (profession retirée) » dans le texte qui part chez le tiers.
 - **F recalculé, pas garanti** : le rapport est recalculé sur le texte
-  généralisé, mais l'extracteur ne reconnaît pas toujours la forme
-  généralisée comme un QI ; le F affiché peut alors différer du F simulé
-  (`fAfter`). Écart non mesuré (P2-93).
+  généralisé. Depuis P2-102, les tranches d'âge (« 70-74 ans ») et les
+  professions généralisées (« médecin (toute spécialité) ») se relisent à
+  leur palier ; avant, la mesure P2-93 trouvait F inchangé ou en baisse dans
+  6 documents sur 170 (réaliste), 32 documents adversariaux devenus non
+  évaluables, et un bouclage sur les âges de 100 ans et plus. **Le lieu
+  généralisé (« département 57 ») n'est toujours pas relu** : le lieu
+  disparaît alors de l'estimation, effet non mesuré (P2-103).
 - **Rien n'est signalé dans `warnings`** : c'est l'application qui sait
   qu'elle a généralisé.
 

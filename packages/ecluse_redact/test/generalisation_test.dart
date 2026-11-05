@@ -17,6 +17,21 @@ void main() {
     await ref.preload();
   });
 
+  test('généralisation répétée : pas de bouclage à 104 ans', () async {
+    // Mesure P2-93 (#262) : « 104 ans » devenait « 100-104 ans », relu
+    // « 104 ans », puis « 100-100-104 ans », etc. Corrigé par P2-102.
+    const texte = 'Mme Odile Marchetti, 104 ans, vit à Thionville.';
+    var r = await Ecluse.redact(texte, riskReference: ref);
+    var tours = 0;
+    while (r.risque!.suggestions.isNotEmpty && tours < 10) {
+      final retenue = r.risque!.suggestions.first;
+      r = appliquerGeneralisations(r, [retenue], reference: ref);
+      tours++;
+    }
+    expect(tours, lessThan(10), reason: r.maskedText);
+    expect(r.maskedText, isNot(matches(RegExp(r'\d+-\d+-\d+'))));
+  });
+
   test('sans rapport de risque : refus explicite', () async {
     final r = await Ecluse.redact(_texte);
     expect(() => appliquerGeneralisations(r, const [], reference: ref),
