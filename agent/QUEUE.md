@@ -169,6 +169,10 @@ tâches copiées ici sont prises par l'agent.
 | P2-101 | code | Migration vers Melos 7 et plus (configuration dans `pubspec.yaml`) | — | humain |
 | P2-102 | code | Relire au bon palier les tranches d'âge et les professions généralisées (défauts mesurés par P2-93) | P2-93 | fusionnée |
 | P2-103 | mesure | Généralisation du lieu : effet de « département N » non relu sur F et sur l'évaluation | P2-102 | à faire |
+| P2-104 | spec | Critère GO/STOP du vérificateur LLM local | — | fusionnée |
+| P2-104a | humain | Trancher les trois décisions de P2-104 § 6 (seuils, signaler ou masquer, ordre) | P2-104 | humain |
+| P2-105 | code | Générateur du corpus de fuites sémantiques (indices annotés, témoin, jeu injection), graine fixe | P2-104a | à faire |
+| P2-106 | spec | Fiche des petits LLM locaux candidats (licences des poids et des données lues, taille, français, sortie JSON) | P2-104 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1935,3 +1939,10 @@ ne reprennent que ce qui manque pour la prendre.
   résultat de [C5], à côté des chiffres de l'article. Contexte :
   `agent/specs/P1-12-relecture.md`. Ne pas modifier `bench/ARTICLE.md` ni
   `bench/requirements.txt` : signaler les écarts dans la PR.
+- **P2-105** : Python, dans `bench/`, comme les autres générateurs ; aucun
+  LLM appelé. Partir de textes passés dans `Ecluse.redact` et annoter dans
+  le générateur les indices restants (rôle unique, événement daté, rareté
+  locale, coréférence). Voir `agent/specs/P2-104.md` § 3. **Fini quand** :
+  trois jeux (indices, témoin, injection) reproductibles à graine égale.
+- **P2-106** : comme `agent/specs/P2-86.md`. Si une page n'est pas joignable,
+  le dire ; ne jamais supposer une licence.
