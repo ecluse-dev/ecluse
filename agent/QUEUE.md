@@ -166,6 +166,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-99 | humain | Accepter ou non une dépendance native (whisper.cpp) dans le monorepo | P2-98 | humain |
 | P2-100 | code | Tests de coût : rapport de temps entre deux tailles au lieu d'une borne en millisecondes | — | fusionnée |
 | P2-101 | code | Migration vers Melos 7 et plus (configuration dans `pubspec.yaml`) | — | humain |
+| P2-102 | code | Relire au bon palier les tranches d'âge et les professions généralisées (défauts mesurés par P2-93) | P2-93 | PR ouverte |
+| P2-103 | mesure | Généralisation du lieu : effet de « département N » non relu sur F et sur l'évaluation | P2-102 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1918,3 +1920,11 @@ ne reprennent que ce qui manque pour la prendre.
   aucun test ne compare un temps à une borne absolue.
 - **P2-101** : `humain` tant que l'accord pour toucher `.github/` n'est pas
   donné (zone interdite aux agents).
+- **P2-102** : défauts mesurés par P2-93 (#262) : « 104 ans » relu dans
+  « 100-104 ans », profession généralisée non relue. **Fini quand** : chaque
+  palier d'âge et de profession produit par `nextRung` se relit tel quel
+  (`qiValueLabel` puis `extractQiSpans`).
+- **P2-103** : mesurer, ne rien corriger. Le corpus réaliste de P2-93 ne
+  généralisait jamais le lieu ; construire au besoin des cas où la
+  suggestion retenue porte sur le lieu, puis comparer F simulé (`fAfter`) et
+  F recalculé après `appliquerGeneralisations`.

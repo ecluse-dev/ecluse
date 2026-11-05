@@ -1,5 +1,6 @@
 import 'package:ecluse_reference/ecluse_reference.dart';
 
+import 'age_bands.dart' show seniorMaxAgeCap;
 import 'qi.dart';
 
 /// Extraction texte -> QI (spec §2). Couche mince et déterministe (pas de
@@ -9,15 +10,47 @@ import 'qi.dart';
 
 final RegExp _agePattern = RegExp(r'\b(\d{1,3})\s*ans\b', caseSensitive: false);
 
-/// Motif « N ans » (spec §2), âges plausibles 0-120.
-List<Qi> extractAge(String text) {
-  final qis = <Qi>[];
-  for (final match in _agePattern.allMatches(text)) {
-    final age = int.parse(match.group(1)!);
-    if (age <= 120) qis.add(Qi(QiType.age, age.toString()));
-  }
-  return qis;
+/// Tranche d'âge telle que l'écrit `qiValueLabel` après généralisation
+/// (« 100-104 ans »), relue comme une tranche (P2-102). Sans ce motif, « 104
+/// ans » était relu dans « 100-104 ans » comme un âge exact : F pouvait
+/// baisser après une généralisation censée le faire monter, et une
+/// généralisation répétée bouclait (« 100-100-104 ans », mesure P2-93).
+const String _tranche = r'\b(\d{1,3})\s*-\s*(\d{1,3})\s*ans\b';
+final RegExp _tranchePattern = RegExp(_tranche, caseSensitive: false);
+
+/// QI d'une tranche lue dans le texte. Le palier suit la largeur, comme
+/// l'échelle de `generalizer.dart` : 5 ans au plus (palier 1), 10 au plus
+/// (palier 2), au-delà (tranche senior, palier 3). `null` si la tranche est
+/// incohérente ou hors des âges de l'échelle.
+Qi? _trancheQi(RegExpMatch m) {
+  final lo = int.parse(m.group(1)!);
+  final hi = int.parse(m.group(2)!);
+  if (lo > hi || hi > seniorMaxAgeCap) return null;
+  final largeur = hi - lo + 1;
+  final level = largeur <= 5 ? 1 : (largeur <= 10 ? 2 : 3);
+  return Qi(QiType.age, '$lo-$hi', level: level);
 }
+
+/// Âges du texte, dans l'ordre : tranches (« 70-74 ans ») et âges exacts
+/// (« N ans », 0 à 120) qui ne sont pas la borne d'une tranche.
+List<(RegExpMatch, Qi)> _ages(String text) {
+  final tranches = _tranchePattern.allMatches(text).toList();
+  final trouves = <(RegExpMatch, Qi)>[
+    for (final t in tranches)
+      if (_trancheQi(t) case final qi?) (t, qi),
+  ];
+  for (final m in _agePattern.allMatches(text)) {
+    if (tranches.any((t) => m.start < t.end && t.start < m.end)) continue;
+    final age = int.parse(m.group(1)!);
+    if (age <= 120) trouves.add((m, Qi(QiType.age, age.toString())));
+  }
+  trouves.sort((a, b) => a.$1.start - b.$1.start);
+  return trouves;
+}
+
+/// Motif « N ans » (spec §2), âges plausibles 0-120, et tranches écrites
+/// par la généralisation (P2-102).
+List<Qi> extractAge(String text) => [for (final (_, qi) in _ages(text)) qi];
 
 /// Un nom de commune porté par plusieurs communes (« Saint-Denis », ~3 700
 /// communes concernées sur ~35 000). Rendu à l'appelant pour qu'il sache
@@ -130,12 +163,26 @@ const Map<String, String> _professionKeywords = {
   'pédicure-podologue': 'pedicure-podologue',
 };
 
+/// Libellés écrits par `qiValueLabel` pour une profession généralisée, relus
+/// à leur palier (P2-102). Sans eux, « médecin (toute spécialité) » n'était
+/// plus une profession : F passait du Cas A au Cas B et pouvait baisser, ou
+/// l'évaluation devenait impossible (mesure P2-93).
+const Map<String, Qi> _libellesGeneralises = {
+  'médecin (toute spécialité)':
+      Qi(QiType.profession, professionToutesSpecialites, level: 1),
+  'professionnel de santé (toute profession)':
+      Qi(QiType.profession, professionnelDeSante, level: 2),
+};
+
 /// Petite liste de mots-clés des 14 spécialités + professions (spec §2),
 /// recherche insensible à la casse sur le texte brut (les clés couvrent les
 /// variantes accentuées usuelles).
 List<Qi> extractProfession(EcluseReference ref, String text) {
   final lower = text.toLowerCase();
   final qis = <Qi>[];
+  for (final entry in _libellesGeneralises.entries) {
+    if (lower.contains(entry.key)) qis.add(entry.value);
+  }
   for (final entry in _specialtyKeywords.entries) {
     if (lower.contains(entry.key)) qis.add(Qi(QiType.profession, entry.value));
   }
@@ -266,6 +313,18 @@ List<QiSpan> _professionSpans(String text) {
 
   parcourt(_specialtyKeywords);
   parcourt(_professionKeywords);
+  for (final entry in _libellesGeneralises.entries) {
+    final motif = RegExp(RegExp.escape(entry.key), caseSensitive: false);
+    for (final m in motif.allMatches(text)) {
+      candidats.add(QiSpan(
+        type: QiType.profession,
+        start: m.start,
+        end: m.end,
+        text: m.group(0)!,
+        qi: entry.value,
+      ));
+    }
+  }
   return _sansChevauchement(candidats);
 }
 
@@ -317,21 +376,16 @@ List<QiSpan> _lieuSpans(EcluseReference ref, String text) {
 
 /// Même règle que [extractAge] (« N ans », 0 à 120), avec positions : le span
 /// couvre les chiffres, l'espace éventuel (insécable compris) et « ans ».
-List<QiSpan> _ageSpans(String text) {
-  final spans = <QiSpan>[];
-  for (final m in _agePattern.allMatches(text)) {
-    final age = int.parse(m.group(1)!);
-    if (age > 120) continue;
-    spans.add(QiSpan(
-      type: QiType.age,
-      start: m.start,
-      end: m.end,
-      text: m.group(0)!,
-      qi: Qi(QiType.age, age.toString()),
-    ));
-  }
-  return spans;
-}
+List<QiSpan> _ageSpans(String text) => [
+      for (final (m, qi) in _ages(text))
+        QiSpan(
+          type: QiType.age,
+          start: m.start,
+          end: m.end,
+          text: m.group(0)!,
+          qi: qi,
+        ),
+    ];
 
 /// Extrait les QI du texte **avec leur position**, sans exception pour une
 /// entrée quelconque.
