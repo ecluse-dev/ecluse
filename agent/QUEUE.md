@@ -170,9 +170,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-102 | code | Relire au bon palier les tranches d'âge et les professions généralisées (défauts mesurés par P2-93) | P2-93 | fusionnée |
 | P2-103 | mesure | Généralisation du lieu : effet de « département N » non relu sur F et sur l'évaluation | P2-102 | à faire |
 | P2-104 | spec | Critère GO/STOP du vérificateur LLM local | — | fusionnée |
-| P2-104a | humain | Trancher les décisions de P2-104 § 6 (seuils, signaler ou masquer, ordre) et de P2-106 § 4 (licence des données d'un LLM) | P2-104 | humain |
-| P2-105 | code | Générateur du corpus de fuites sémantiques (indices annotés, témoin, jeu injection), graine fixe | P2-104a | à faire |
+| P2-104a | humain | Trancher les décisions de P2-104 § 6 (seuils, signaler ou masquer, ordre) et de P2-106 § 4 (licence des données d'un LLM) | P2-104 | fusionnée |
+| P2-105 | code | Générateur du corpus de fuites sémantiques (indices annotés, témoin, jeu injection), graine fixe | P2-104a | fusionnée |
 | P2-106 | spec | Fiche des petits LLM locaux candidats (licences des poids et des données lues, taille, français, sortie JSON) | P2-104 | fusionnée |
+| P2-107 | code | `bench/verificateur_predictions.md` : produire les prédictions du vérificateur (modèle local, prompt de `ecluse_llm`, format de `score_semantique.py`) | P2-105, P2-106 | à faire |
+| P2-108 | humain | Lancer le vérificateur sur les trois corpus sémantiques sur le poste du mainteneur, scorer, décider GO/STOP | P2-90, P2-107 | humain |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1946,3 +1948,8 @@ ne reprennent que ce qui manque pour la prendre.
   trois jeux (indices, témoin, injection) reproductibles à graine égale.
 - **P2-106** : comme `agent/specs/P2-86.md`. Si une page n'est pas joignable,
   le dire ; ne jamais supposer une licence.
+- **P2-107** : document seulement, aucune dépendance, sur le modèle de
+  `bench/ner_predictions.md`. Candidat de départ : SmolLM3-3B
+  (`agent/specs/P2-106.md`). Partir du prompt versionné et du parseur de la
+  branche `feat/llm-scaffold`, sans fusionner la branche. Dire comment
+  obtenir le statut « non vérifié » sur un échec.

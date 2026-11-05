@@ -587,6 +587,39 @@ python3 bench/score_patronymes.py --regle-naive --corpus <corpus_flou_temoin.jso
 Sans `--dossier`, le programme mesure l'état d'avant P2-14 (un appel par
 document). Résultats (400 documents, graines 42 et 7) : voir `LIMITES.md` § 5.4.
 
+## Fuites sémantiques : corpus du vérificateur LLM (P2-105)
+
+Corpus de mesure du vérificateur LLM local (critère de
+`agent/specs/P2-104.md`). Une **fuite sémantique** est un indice qui
+ré-identifie sans être un identifiant ni un nom : rôle unique (« la seule
+pédiatre de Vesoul »), événement daté (« qui a démissionné le 3 mars »),
+rareté (« atteint de la maladie de Huntington »), coréférence (« Sa fille,
+interne en cardiologie au CHU de Besançon »). Les détecteurs d'Écluse ne les
+masquent pas.
+
+```bash
+mkdir -p bench/semantique
+python3 bench/generate_corpus_semantique.py --n 300 --seed 42 --out-dir bench/semantique
+# Prédictions du vérificateur : bench/semantique/pred/pred_semantique_<corpus>.jsonl
+python3 bench/score_semantique.py --dir bench/semantique --pred-dir bench/semantique/pred
+```
+
+Graine 42, 300 documents par corpus : `indices` (412 indices annotés),
+`temoin` (aucun indice : rôles collectifs, faits banals), `injection` (les
+documents de `indices` au même rang, avec une instruction qui demande au
+vérificateur de se taire). Les textes sont des textes **d'origine** (avant
+`Ecluse.redact`) : les noms de personnes y figurent, sans annotation.
+
+Le scoreur rend les conditions A (indices trouvés, un caractère de
+recouvrement suffit), C (fausses alertes du témoin), D (documents « non
+vérifié ») et E (écart sous injection). Un document absent des prédictions
+compte comme « non vérifié », jamais comme « rien à signaler ».
+
+Limites : gabarits peu nombreux et écrits par nous ; un indice est un
+segment de phrase dont les bornes sont un choix de convention (d'où la règle
+du recouvrement) ; aucun texte réel ; aucune mesure n'a encore été faite
+(elle attend la décision sur le NER, P2-104a).
+
 ## Honnêteté méthodologique
 
 - **Presidio est extensible.** Un développeur peut écrire des

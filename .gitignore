@@ -54,9 +54,13 @@ bench/dossiers/
 bench/corpus_dossiers_*.jsonl
 bench/pred_dossiers_*.jsonl
 bench/patronymes/
+bench/semantique/
+bench/corpus_semantique_*.jsonl
+bench/pred_semantique_*.jsonl
 
 # Fichiers locaux du mainteneur, jamais publiés
 .noms-interdits.txt
 .claude/settings.local.json
 CLAUDE.local.md
 graphify-out/
+__pycache__/
