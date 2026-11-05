@@ -166,7 +166,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-99 | humain | Accepter ou non une dépendance native (whisper.cpp) dans le monorepo | P2-98 | humain |
 | P2-100 | code | Tests de coût : rapport de temps entre deux tailles au lieu d'une borne en millisecondes | — | fusionnée |
 | P2-101 | code | Migration vers Melos 7 et plus (configuration dans `pubspec.yaml`) | — | humain |
-| P2-102 | code | Relire au bon palier les tranches d'âge et les professions généralisées (défauts mesurés par P2-93) | P2-93 | PR ouverte |
+| P2-102 | code | Relire au bon palier les tranches d'âge et les professions généralisées (défauts mesurés par P2-93) | P2-93 | fusionnée |
 | P2-103 | mesure | Généralisation du lieu : effet de « département N » non relu sur F et sur l'évaluation | P2-102 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
