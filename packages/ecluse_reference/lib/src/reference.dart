@@ -2,6 +2,7 @@ import 'age_rarity.dart';
 import 'asset_bytes.dart';
 import 'first_name_gazetteer.dart';
 import 'geo_hierarchy.dart';
+import 'rare_disease_catalog.dart';
 import 'rarity_source.dart';
 
 /// Façade des données de référence Écluse.
@@ -18,6 +19,11 @@ class EcluseReference {
   late final RaritySource rarity = RaritySource(_assets);
   late final AgeRarity age = AgeRarity(_assets);
   late final FirstNameGazetteer firstNames = FirstNameGazetteer(_assets);
+
+  /// Maladies rares Orphanet. Hors de [preload] tant qu'aucun module ne
+  /// s'en sert : son chargement ne doit pas ralentir ceux qui n'en ont pas
+  /// besoin (P2-115).
+  late final RareDiseaseCatalog rareDiseases = RareDiseaseCatalog(_assets);
 
   /// Réchauffe tous les assets (à appeler au démarrage sur mobile).
   Future<void> preload() async {
