@@ -447,6 +447,50 @@ inventé. L'annotation d'une profession ou d'un âge « en toutes lettres » est
 choix de convention. Aucune vérité terrain n'existe pour la **taille d'une classe
 d'équivalence** (F) : ce profil mesure l'extraction, pas la justesse de F.
 
+#### Généralisation appliquée : avant/après (P2-93)
+
+Mesure seulement, rien n'est corrigé. `run_generalisation_bench.dart` exécute
+`Ecluse.redact` avec référence, puis applique la suggestion retenue
+(`appliquerGeneralisations`, P2-92), à répéter tant qu'une suggestion reste (10
+tours au plus). Corpus de QI, graine 42, 400 documents chacun.
+
+```bash
+for c in realiste adversarial temoin; do
+  (cd packages/ecluse_redact && dart run bin/run_generalisation_bench.dart \
+     ../../bench/qi/corpus_qi_$c.jsonl)
+done
+```
+
+| Corpus | Avec suggestion | Refus | F médian avant → après 1er tour | Bande après 1er tour |
+|---|---:|---:|---|---|
+| Réaliste | 170 | 0 | 74,0 → 2978,7 | faible 165, moyen 5 |
+| Adversarial | 109 | 0 | 6,0 → 142346,0 | faible 70, élevé 7, non évaluable 32 |
+| Témoin | 0 | 0 | n/a | n/a |
+
+Invariants tenus sur les trois corpus : table et entités inchangées, texte
+inchangé quand il n'y a rien à appliquer, restauration des entités masquées
+exacte (0 écart).
+
+Défauts constatés, **non corrigés** (à traiter par une tâche `code`) :
+
+- **F ne monte pas après une généralisation censée le faire monter** : 6
+  documents sur 170 (réaliste) et 7 sur 109 (adversarial) à F **inchangé ou en
+  baisse** au premier tour. Exemples : « 103 ans » → « 100-104 ans » (F 8,5 →
+  4,8) ; « médecin généraliste » → « médecin (toute spécialité) » (F 379 → 96).
+  Le texte généralisé n'est pas relu comme l'a simulé `ReidLoop`.
+- **Bouclage sur les âges de 100 ans et plus** : « 104 ans » devient « 100-104
+  ans », dont l'extraction relit « 104 ans » ; une nouvelle suggestion donne
+  « 100-100-104 ans », etc. 7 documents de l'adversarial atteignent le plafond de
+  10 tours (« 100-100-…-104 ans »). Un appelant qui boucle sans plafond ne
+  s'arrête pas.
+- **Généraliser fait parfois perdre l'évaluation** : 32 documents de
+  l'adversarial passent à « non évaluable » (profession généralisée en « médecin
+  (toute spécialité) » avec un lieu sans population, p. ex. Marseille).
+
+Limites : corpus synthétique, une graine, F médian sur les seuls documents
+évaluables ; la mesure ne dit pas si la généralisation protège réellement une
+personne (aucune vérité terrain sur la taille d'une classe).
+
 ## Dossiers (P2-05a)
 
 Corpus multi-documents et scoreur pour mesurer la cohérence des jetons d'un
