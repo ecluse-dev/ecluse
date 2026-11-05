@@ -136,7 +136,6 @@ Objectif : occuper le coin vide de la carte.
   autres indices (date de naissance → tranche d'âge, âge exact → palier,
   pathologie rare → catégorie). Bibliothèque de généralisation française.
 - ⚪ Routage on-device / cloud selon la sensibilité
-- ⚪ SDK Python (là où sont les devs IA)
 - ⚪ **Transcription vocale locale** (Vosk ou whisper.cpp embarqué) — voir
   les conditions non négociables du périmètre d'entrée ci-dessus. Débloque
   le cas d'usage n°1 identifié en entretien : la retranscription de
@@ -150,7 +149,6 @@ Objectif : occuper le coin vide de la carte.
   transparent… on ne se pose pas de questions, et go »). Le défaut est
   invisible et automatique. À fournir comme composant que les apps
   clientes intègrent ; une interface Écluse autonome relève de la phase 3.
-- ⚪ Chatbot de support « propulsé par Écluse » (dogfooding = démo vivante)
 
 ## Phase 3 — Distribution et élargissement européen
 
@@ -159,7 +157,12 @@ Objectif : transformer les concurrents en canaux, étendre la douve.
 - ⚪ Adaptateurs : recognizer Presidio-compatible, middleware LiteLLM, plugin Gravitee
 - ⚪ Identifiants européens : NISS (BE), AVS (CH), Steuer-ID (DE)
 - ⚪ SDK JS/TS
+- ⚪ SDK Python (là où sont les devs IA) — reporté de la phase 2 le
+  5 novembre 2026 (distribution, comme le SDK JS/TS)
 - ⚪ Offre cloud managée (dashboard d'audit, Stripe, SLA)
+- ⚪ Chatbot de support « propulsé par Écluse » (dogfooding = démo vivante) —
+  reporté de la phase 2 le 5 novembre 2026 : il dépend d'un LLM tiers et
+  n'apporte rien avant l'offre
 - ⚪ Vitrine grand public (extension navigateur gratuite devant ChatGPT) :
   alerte l'internaute qui s'apprête à envoyer des données sensibles
   (ex. résultats d'analyses médicales). Répond au problème réel de la
