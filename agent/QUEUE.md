@@ -181,7 +181,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-112 | code | Générateur d'un corpus de pathologies annoté (mentions de la table maison, témoin avec faux amis), graine fixe | P2-110 | à faire |
 | P2-113 | humain | Décider l'intégration d'Orphanet : traitement des sigles, priorité avec la table maison (`agent/specs/P2-113.md` § 6) | P2-94 | fusionnée |
 | P2-114 | code | Script d'extraction Orphanet et asset `patho_orphanet.tsv.gz` (`tools/build_orphanet_asset.py`) | P2-113 | fusionnée |
-| P2-115 | code | `ecluse_reference` : charger `patho_orphanet.tsv.gz` (ORPHAcode → catégorie, mentions) avec ses tests ; aucun appariement dans le texte | P2-114 | à faire |
+| P2-115 | code | `ecluse_reference` : charger `patho_orphanet.tsv.gz` (ORPHAcode → catégorie, mentions) avec ses tests ; aucun appariement dans le texte | P2-114 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 

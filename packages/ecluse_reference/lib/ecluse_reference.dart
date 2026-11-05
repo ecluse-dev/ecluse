@@ -11,5 +11,6 @@ export 'src/file_assets.dart';
 export 'src/first_name_gazetteer.dart';
 export 'src/geo_hierarchy.dart';
 export 'src/normalize.dart';
+export 'src/rare_disease_catalog.dart';
 export 'src/rarity_source.dart';
 export 'src/reference.dart';
