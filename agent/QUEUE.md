@@ -173,8 +173,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-104a | humain | Trancher les décisions de P2-104 § 6 (seuils, signaler ou masquer, ordre) et de P2-106 § 4 (licence des données d'un LLM) | P2-104 | fusionnée |
 | P2-105 | code | Générateur du corpus de fuites sémantiques (indices annotés, témoin, jeu injection), graine fixe | P2-104a | fusionnée |
 | P2-106 | spec | Fiche des petits LLM locaux candidats (licences des poids et des données lues, taille, français, sortie JSON) | P2-104 | fusionnée |
-| P2-107 | code | `bench/verificateur_predictions.md` : produire les prédictions du vérificateur (modèle local, prompt de `ecluse_llm`, format de `score_semantique.py`) | P2-105, P2-106 | à faire |
+| P2-107 | code | `bench/verificateur_predictions.md` : produire les prédictions du vérificateur (modèle local, prompt de `ecluse_llm`, format de `score_semantique.py`) | P2-105, P2-106 | fusionnée |
 | P2-108 | humain | Lancer le vérificateur sur les trois corpus sémantiques sur le poste du mainteneur, scorer, décider GO/STOP | P2-90, P2-107 | humain |
+| P2-109 | humain | Branche `feat/llm-scaffold` : statut explicite « non vérifié » dans `VerificationResult` (échec d'analyse, troncature) au lieu d'une liste vide | P2-104 | humain |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1953,3 +1954,9 @@ ne reprennent que ce qui manque pour la prendre.
   (`agent/specs/P2-106.md`). Partir du prompt versionné et du parseur de la
   branche `feat/llm-scaffold`, sans fusionner la branche. Dire comment
   obtenir le statut « non vérifié » sur un échec.
+- **P2-109** : `humain` parce que le travail se fait sur la branche
+  `feat/llm-scaffold`, pas sur une branche partie de `main` (règle 7). Constat
+  (P2-107) : sur un échec d'analyse, `LlmRedactVerifier` rend une liste vide
+  et `isClean` vaut `true`, contraire à la condition D de P2-104. Le
+  prompt `v1` tronque aussi le texte à 4 000 caractères sans changer le
+  statut. Le mainteneur décide quand et comment corriger la branche.
