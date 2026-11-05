@@ -92,12 +92,30 @@ void main() {
   });
 
   // Coût mesuré par rapport de tailles (P2-100) : voir `support/cout.dart`.
+  // Seule la restauration est chronométrée : construire la table et le texte,
+  // puis comparer le résultat, ajoutait du travail mémoire au chrono (rapport
+  // de 8,8 mesuré en CI le 5 novembre 2026, sans régression). `restore`
+  // compile un motif par jeton : le seuil est porté à 10, un coût quadratique
+  // (rapport d'environ 16) reste détecté.
   test('jetons distincts : restauration de coût linéaire', () async {
+    Map<String, String> table(int n) {
+      return {for (var i = 1; i <= n; i++) '[NOM_$i]': 'Nom$i'};
+    }
+
+    String texte(int n) {
+      return [for (var i = 1; i <= n; i++) '[NOM_$i]'].join(' ');
+    }
+
+    final entrees = {
+      2500: (table(2500), texte(2500)),
+      10000: (table(10000), texte(10000)),
+    };
+    final sorties = <int, String>{};
     await expectCroissanceLineaire((n) {
-      final mapping = {for (var i = 1; i <= n; i++) '[NOM_$i]': 'Nom$i'};
-      final texte = [for (var i = 1; i <= n; i++) '[NOM_$i]'].join(' ');
-      expect(Ecluse.restore(texte, mapping),
-          [for (var i = 1; i <= n; i++) 'Nom$i'].join(' '));
-    }, n: 2500);
+      final (t, x) = entrees[n]!;
+      sorties[n] = Ecluse.restore(x, t);
+    }, n: 2500, seuil: 10);
+    final attendu = [for (var i = 1; i <= 10000; i++) 'Nom$i'].join(' ');
+    expect(sorties[10000], attendu);
   });
 }
