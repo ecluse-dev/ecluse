@@ -163,7 +163,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-96 | code | Implémentation de P2-95 selon les décisions du mainteneur | P2-95, P2-96a | fusionnée |
 | P2-96a | humain | Trancher les quatre décisions de P2-95 § 7 | P2-95 | fusionnée |
 | P2-97 | humain | Lire le gabarit AIPD de la CNIL et solliciter l'avis d'un DPO | — | humain |
-| P2-98 | mesure | Rappel des détecteurs sur un texte de style transcrit (sans audio) | — | à faire |
+| P2-98 | mesure | Rappel des détecteurs sur un texte de style transcrit (sans audio) | — | fusionnée |
 | P2-99 | humain | Accepter ou non une dépendance native (whisper.cpp) dans le monorepo | P2-98 | humain |
 | P2-100 | code | Tests de coût : rapport de temps entre deux tailles au lieu d'une borne en millisecondes | — | fusionnée |
 | P2-101 | code | Migration vers Melos 7 et plus (configuration dans `pubspec.yaml`) | — | humain |

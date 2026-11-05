@@ -57,6 +57,7 @@ bench/patronymes/
 bench/semantique/
 bench/corpus_semantique_*.jsonl
 bench/pred_semantique_*.jsonl
+bench/corpus_transcrit_*.jsonl
 
 # Fichiers locaux du mainteneur, jamais publiés
 .noms-interdits.txt
