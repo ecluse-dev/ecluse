@@ -179,7 +179,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-110 | humain | Valider cliniquement la table maison des pathologies (`agent/specs/P2-94-table.md` § 4) | P2-94 | humain |
 | P2-111 | humain | Fournir la page de licence d'Orphadata et le fichier de nomenclature en français (site inaccessible à la session) | P2-94 | fusionnée |
 | P2-112 | code | Générateur d'un corpus de pathologies annoté (mentions de la table maison, témoin avec faux amis), graine fixe | P2-110 | à faire |
-| P2-113 | humain | Décider l'intégration d'Orphanet : traitement des sigles, priorité avec la table maison (`agent/specs/P2-113.md` § 6) | P2-94 | humain |
+| P2-113 | humain | Décider l'intégration d'Orphanet : traitement des sigles, priorité avec la table maison (`agent/specs/P2-113.md` § 6) | P2-94 | fusionnée |
+| P2-114 | code | Script d'extraction Orphanet et asset `patho_orphanet.tsv.gz` (`tools/build_orphanet_asset.py`) | P2-113 | fusionnée |
+| P2-115 | code | `ecluse_reference` : charger `patho_orphanet.tsv.gz` (ORPHAcode → catégorie, mentions) avec ses tests ; aucun appariement dans le texte | P2-114 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1940,6 +1942,16 @@ ne reprennent que ce qui manque pour la prendre.
   généralisait jamais le lieu ; construire au besoin des cas où la
   suggestion retenue porte sur le lieu, puis comparer F simulé (`fAfter`) et
   F recalculé après `appliquerGeneralisations`.
+- **P2-115** : lecture seule de l'asset, sur le modèle de
+  `first_name_gazetteer.dart` (gzip, chargement paresseux). Ignorer la
+  ligne d'en-tête « # ». API minimale : catégorie d'un ORPHAcode, et
+  ensemble des mentions normalisées avec leur ORPHAcode. Tests : l'asset
+  réel (« Sclérose latérale amyotrophique » → « Maladie neurologique
+  rare », « SLA » présent, « ALD » absent), plus un asset synthétique pour
+  les cas de refus (fichier vide, colonne manquante). **Pas** d'appariement
+  dans du texte ni de branchement dans `ecluse_reid` : ce sera une tâche
+  suivante, après P2-110 et P2-112 (corpus pour mesurer). Ne pas modifier
+  l'asset ni le script.
 - **P1-36** : mesurer, ne rien corriger. Rejouer les commandes [C1], [C2],
   [C4] et [C5] de `bench/ARTICLE.md` sur `main` et rapporter le tableau
   Écluse (précision, rappel, F1 par type, faux positifs par type) et le
