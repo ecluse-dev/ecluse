@@ -407,3 +407,20 @@ Décision du mainteneur, sur proposition de `agent/specs/P2-decoupage-fin.md`
   appliquée, le journal d'audit branché, le vocal (GO ou STOP) et le
   routage on-device / cloud.
 
+## 2026-11 — Vérificateur LLM : arbitrages P2-104a (5 novembre)
+Réponses du mainteneur aux décisions de `agent/specs/P2-104.md` § 6 et de
+`agent/specs/P2-106.md` § 4.
+- **Seuils validés tels que proposés** : au moins 50 % des indices trouvés,
+  au plus 2 % de fausses alertes sur le témoin, au plus 1 % de documents
+  « non vérifié », au plus 10 points d'écart sous injection, modèle quantifié
+  d'au plus 2 Go, au plus 10 s au 95e centile pour 1 000 mots.
+- **Un indice trouvé par le vérificateur est signalé, pas masqué d'office** :
+  il s'affiche dans l'aperçu et l'utilisateur décide.
+- **Licence des données d'un LLM : règle de transparence.** Poids sous
+  licence permissive lue chez l'éditeur, et liste publique des jeux
+  d'entraînement, chaque jeu consultable. La règle stricte de P2-01 (licence
+  de chaque jeu lue) reste celle du NER tant que le mainteneur n'en décide
+  pas autrement.
+- **Ordre** : le corpus de fuites sémantiques se construit maintenant
+  (P2-105) ; la mesure attend la décision sur le NER (P2-90).
+
