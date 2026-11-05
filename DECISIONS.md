@@ -424,3 +424,15 @@ Réponses du mainteneur aux décisions de `agent/specs/P2-104.md` § 6 et de
 - **Ordre** : le corpus de fuites sémantiques se construit maintenant
   (P2-105) ; la mesure attend la décision sur le NER (P2-90).
 
+## 2026-11 — P2-94 : source de la table pathologie → catégorie (5 novembre)
+Décision du mainteneur sur la proposition de `agent/specs/P2-94.md` § 4.
+- **Maladies rares : Orphadata Science** (CC BY 4.0), sous deux conditions
+  restant à remplir : licence lue sur le site d'Orphadata, et libellés
+  disponibles en français. La session de travail ne peut pas atteindre ce
+  site ; le mainteneur fournira la page ou le fichier.
+- **Pathologies fréquentes : table écrite par le projet**, à partir des
+  intitulés de la liste des ALD, avec validation clinique par le mainteneur
+  (proposition : `agent/specs/P2-94-table.md`).
+- **CIM-10 française exclue** (CC BY-NC-ND) ; CIM-11 non retenue sans lecture
+  de ses conditions détaillées.
+
