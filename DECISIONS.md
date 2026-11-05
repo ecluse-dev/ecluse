@@ -394,3 +394,16 @@ Réponses données par le mainteneur lui-même, le 3 novembre 2026.
    telles quelles.
 4. **Description du moteur construite par Écluse** à partir des détecteurs
    actifs, pas fournie par l'application.
+
+## 2026-11 — Fin de la phase 2 : SDK Python et chatbot reportés (5 novembre)
+Décision du mainteneur, sur proposition de `agent/specs/P2-decoupage-fin.md`
+§ 3 et § 5 (question 1).
+- Le **SDK Python** passe en phase 3, avec le SDK JS/TS et les adaptateurs
+  Presidio et LiteLLM : il relève de la distribution, pas de la profondeur
+  de détection.
+- Le **chatbot de support « propulsé par Écluse »** passe en phase 3, après
+  l'offre cloud : il dépend d'un LLM tiers et n'apporte rien avant.
+- La phase 2 se termine donc avec le NER (GO ou STOP), la généralisation
+  appliquée, le journal d'audit branché, le vocal (GO ou STOP) et le
+  routage on-device / cloud.
+
