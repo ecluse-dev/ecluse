@@ -156,7 +156,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-90 | humain | Décision GO/STOP du NER dans `DECISIONS.md` | P2-89 | humain |
 | P2-91 | code | Rapport de risque : suggestions de généralisation positionnées (QI, offsets, niveau, F avant/après), texte inchangé | — | fusionnée |
 | P2-92 | code | Application explicite des suggestions choisies par l'appelant (irréversible, refus si périmée) | P2-91 | fusionnée |
-| P2-93 | mesure | Généralisation appliquée : avant/après sur le corpus de QI (`score_qi.py`) | P2-92 | PR ouverte |
+| P2-93 | mesure | Généralisation appliquée : avant/après sur le corpus de QI (`score_qi.py`) | P2-92 | fusionnée |
 | P2-94 | humain | Source et licence de la table pathologie → catégorie | — | humain |
 | P2-95 | spec | Branchement d'`ecluse_audit` dans `Ecluse.redact` | — | fusionnée |
 | P2-96 | code | Implémentation de P2-95 selon les décisions du mainteneur | P2-95, P2-96a | fusionnée |
