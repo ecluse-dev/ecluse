@@ -32,6 +32,31 @@ void main() {
     expect(r.maskedText, isNot(matches(RegExp(r'\d+-\d+-\d+'))));
   });
 
+  group('préposition devant un département (P2-132)', () {
+    Future<RedactResult> lieuGeneralise(String texte) async {
+      final r = await Ecluse.redact(texte, riskReference: ref);
+      final lieu = r.risque!.suggestions
+          .firstWhere((s) => s.candidat.to?.type == QiType.lieu);
+      return appliquerGeneralisations(r, [lieu], reference: ref);
+    }
+
+    test('« à Rioz » → « dans le département 70 »', () async {
+      final g = await lieuGeneralise('Elle a 103 ans et habite à Rioz.');
+      expect(g.maskedText, 'Elle a 103 ans et habite dans le département 70.');
+    });
+
+    test('« de Rioz » → « du département 70 »', () async {
+      final g = await lieuGeneralise('Elle a 103 ans et vient de Rioz.');
+      expect(g.maskedText, 'Elle a 103 ans et vient du département 70.');
+    });
+
+    test('département relu après réécriture', () async {
+      final g = await lieuGeneralise('Elle a 103 ans et habite à Rioz.');
+      expect(g.risque!.evaluation.spans.where((s) => s.type == QiType.lieu),
+          isNotEmpty);
+    });
+  });
+
   test('sans rapport de risque : refus explicite', () async {
     final r = await Ecluse.redact(_texte);
     expect(() => appliquerGeneralisations(r, const [], reference: ref),

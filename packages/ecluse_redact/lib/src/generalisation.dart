@@ -72,7 +72,8 @@ RedactResult appliquerGeneralisations(
         throw const GeneralisationException(
             'position qui couvre un jeton : refusée');
       }
-      remplacements.add((p.start, p.end, libelle));
+      remplacements
+          .add(_avecPreposition(texte, p.start, p.end, cible, libelle));
     }
   }
 
@@ -101,4 +102,32 @@ RedactResult appliquerGeneralisations(
     risque: evaluerRisque(reference, generalise),
     manuelles: resultat.manuelles,
   );
+}
+
+/// Un lieu généralisé en département garde la préposition de la commune :
+/// « habite à Thionville » devenait « habite à département 57 » (P2-103,
+/// P2-116). La préposition qui précède immédiatement est réécrite avec lui
+/// (P2-132) : « à » → « dans le », « de » / « d' » → « du ». Rien d'autre
+/// n'est touché ; sans préposition reconnue, seul le QI est remplacé.
+(int, int, String) _avecPreposition(
+    String texte, int debut, int fin, Qi cible, String libelle) {
+  if (cible.type != QiType.lieu || !libelle.startsWith('département ')) {
+    return (debut, fin, libelle);
+  }
+  final avant = texte.substring(0, debut);
+  for (final (prep, remplacement) in const [
+    ('à ', 'dans le '),
+    ('À ', 'Dans le '),
+    ('de ', 'du '),
+    ('De ', 'Du '),
+    ("d'", 'du '),
+    ('d’', 'du '),
+  ]) {
+    if (!avant.endsWith(prep)) continue;
+    final d = debut - prep.length;
+    final mot = d == 0 ||
+        !RegExp(r'[\p{L}\p{N}]', unicode: true).hasMatch(texte[d - 1]);
+    if (mot) return (d, fin, '$remplacement$libelle');
+  }
+  return (debut, fin, libelle);
 }
