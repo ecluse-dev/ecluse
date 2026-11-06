@@ -327,10 +327,17 @@ abstract final class Ecluse {
   /// majuscule initiale ; sur un texte en minuscules, leur fuite passe à
   /// 100 %. Sans ce message, le résultat ressemblait à un texte sans donnée
   /// nominative (règle 4 : pas d'échec silencieux).
+  ///
+  /// Depuis P2-119, P2-120 et P2-131, des détecteurs dédiés rattrapent une
+  /// partie de ces entités (fuite globale du corpus réaliste en minuscules :
+  /// 0,6 %, adversarial : 13,4 %) : le message ne dit plus « ne sont pas
+  /// détectés », ce qui serait faux, mais que la détection y est moins sûre
+  /// (P2-133). Il reste nécessaire : patronyme seul, voie sans indice, faux
+  /// amis hors liste.
   static const String _avertissementSansMajuscule =
-      'Le texte ne contient aucune majuscule : les noms, adresses et '
-      'établissements écrits en minuscules ne sont pas détectés. Relisez le '
-      'texte avant de l\'envoyer.';
+      'Le texte ne contient aucune majuscule : la détection des noms, '
+      'adresses et établissements y est moins sûre (un nom de famille seul, '
+      'par exemple, peut passer). Relisez le texte avant de l\'envoyer.';
 
   /// Au moins trois mots de deux lettres ou plus, et aucune lettre
   /// majuscule. En deçà (« ok merci », un numéro seul), le message serait du

@@ -411,7 +411,8 @@ intacte, la fuite au caractère est de 100 % pour les noms, les adresses et les
 le texte d'origine : ces détecteurs reposent sur la majuscule initiale. Cela
 vaut pour une dictée transcrite comme pour un message tapé tout en minuscules.
 Depuis P2-118, `Ecluse.redact` le **signale** dans `warnings` (texte d'au
-moins trois mots et sans aucune majuscule). Depuis P2-119, un détecteur
+moins trois mots et sans aucune majuscule ; message ajusté par P2-133 : la
+détection y est « moins sûre », plus « absente »). Depuis P2-119, un détecteur
 dédié (`NomMinusculesDetector`, actif seulement sans aucune majuscule)
 rattrape les **noms** : civilité suivie d'un nom, ou prénom connu suivi d'un
 mot (P2-124 : pas si ce mot est un adjectif et le prénom un mot courant,
