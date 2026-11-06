@@ -186,6 +186,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-117 | mesure | Entités floues sur texte sans majuscules ni ponctuation (corpus flou réaliste) | P2-98 | fusionnée |
 | P2-118 | code | Avertir dans `warnings` d'un texte sans aucune majuscule (défaut mesuré par P2-117) | P2-117 | fusionnée |
 | P2-119 | code | Détecter les noms dans un texte sans aucune majuscule (`NomMinusculesDetector`, mesuré sur les corpus flous en minuscules) | P2-117 | fusionnée |
+| P2-120 | code | Adresses et établissements dans un texte sans aucune majuscule (même principe que P2-119) | P2-119 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1946,6 +1947,18 @@ ne reprennent que ce qui manque pour la prendre.
   généralisait jamais le lieu ; construire au besoin des cas où la
   suggestion retenue porte sur le lieu, puis comparer F simulé (`fAfter`) et
   F recalculé après `appliquerGeneralisations`.
+- **P2-120** : sur le modèle de `NomMinusculesDetector` (P2-119) : un
+  détecteur actif **seulement** si le texte n'a aucune majuscule, qui
+  rattrape les adresses (numéro + type de voie : « 7 impasse des
+  charmilles », code postal + commune) et les établissements (mot-clé de
+  `etablissement_keywords.dart` suivi de son nom, arrêté par un mot outil).
+  Mesure avant/après obligatoire sur `corpus_flou_{realiste,adversarial}`
+  mis en minuscules (`text.lower()`, offsets inchangés) : fuite au caractère
+  par type (`score_flou.py`) ; **budget : 0 faux positif** sur
+  `corpus_flou_temoin` en minuscules, et sorties **identiques** sur les
+  corpus d'origine. Commandes et chiffres de départ : `agent/specs/P2-117.md`
+  (adresse et établissement : 100 % de fuite). Ne pas toucher aux
+  détecteurs existants.
 - **P2-115** : lecture seule de l'asset, sur le modèle de
   `first_name_gazetteer.dart` (gzip, chargement paresseux). Ignorer la
   ligne d'en-tête « # ». API minimale : catégorie d'un ORPHAcode, et
