@@ -135,6 +135,18 @@ Objectif : occuper le coin vide de la carte.
   dérivé livrés dans `ecluse_reid`, non branchés dans le pipeline) : étendre le principe géographique aux
   autres indices (date de naissance → tranche d'âge, âge exact → palier,
   pathologie rare → catégorie). Bibliothèque de généralisation française.
+  **Pathologies** : nomenclature Orphanet (CC BY 4.0) embarquée et lue
+  (`RareDiseaseCatalog`), table maison des pathologies fréquentes
+  **provisoire** (validation clinique en attente), repérage avec
+  rattachement à une personne et négation, signalé dans le rapport de risque
+  **sans être compté ni généralisé** (P2-111 à P2-128, `LIMITES.md` § 3).
+- 🟡 Textes sans casse ordinaire (P2-117 à P2-124) : un texte tout en
+  minuscules (dictée transcrite, message tapé vite) ou tout en capitales
+  laissait fuir noms, adresses et établissements. Détecteurs dédiés,
+  mesurés sur corpus synthétiques : fuite globale en minuscules 64 % →
+  0,6 %, en capitales 14,8 % → 0,6 % (corpus réaliste) ; avertissement si le
+  texte n'a aucune majuscule. Voies sans code postal en minuscules non
+  couvertes (`LIMITES.md` § 5).
 - ⚪ Routage on-device / cloud selon la sensibilité
 - ⚪ **Transcription vocale locale** (Vosk ou whisper.cpp embarqué) — voir
   les conditions non négociables du périmètre d'entrée ci-dessus. Débloque
