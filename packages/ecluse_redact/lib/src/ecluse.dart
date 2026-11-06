@@ -10,6 +10,7 @@ import 'heuristics/email_detector.dart';
 import 'heuristics/etablissement_detector.dart';
 import 'heuristics/identifiant_detector.dart';
 import 'heuristics/name_detector.dart';
+import 'heuristics/casse.dart';
 import 'heuristics/minuscules_recapitalise_detector.dart';
 import 'heuristics/nom_minuscules_detector.dart';
 import 'heuristics/telephone_detector.dart';
@@ -310,7 +311,10 @@ abstract final class Ecluse {
           'Un secret a été masqué ($secretCount occurrence'
               '${secretCount > 1 ? 's' : ''}) : pensez à le révoquer s\'il a '
               'déjà été partagé ailleurs.',
-        if (_sansMajuscule(text)) _avertissementSansMajuscule,
+        if (_sansMajuscule(text))
+          _avertissementSansMajuscule
+        else if (_casseDePhrase(text, resolved))
+          _avertissementCasseDePhrase,
         for (final token in litteraux)
           'Le texte contient en clair $token (littéral), jeton déjà attribué '
               'dans ce dossier : il sera remplacé à la restauration, qui ne '
@@ -342,6 +346,28 @@ abstract final class Ecluse {
   /// Au moins trois mots de deux lettres ou plus, et aucune lettre
   /// majuscule. En deçà (« ok merci », un numéro seul), le message serait du
   /// bruit ; un texte entièrement en MAJUSCULES n'est pas concerné ici.
+  /// Casse de phrase (P2-138) : des majuscules, mais seulement en début de
+  /// phrase, de ligne ou dans un sigle ; mêmes détecteurs dédiés qu'un texte
+  /// sans majuscule, même réserve.
+  static const String _avertissementCasseDePhrase =
+      'Les noms propres du texte ne portent pas de majuscule : la détection '
+      'des noms, adresses et établissements y est moins sûre (un nom de '
+      'famille seul, par exemple, peut passer). Relisez le texte avant de '
+      'l\'envoyer.';
+
+  ///
+  /// Émis seulement si un nom, une adresse ou un établissement y a été
+  /// trouvé : une phrase ordinaire sans nom propre (« Le patient va bien. »)
+  /// est aussi en casse de phrase, et l'avertir serait du bruit. Un patronyme
+  /// seul, sans civilité ni prénom, peut donc passer sans avertissement ici
+  /// (`LIMITES.md` § 5).
+  static bool _casseDePhrase(String text, List<DetectedEntity> trouvees) =>
+      casseDuTexte(text) == CasseTexte.minuscules &&
+      trouvees.any((e) =>
+          e.type == EntityType.nom ||
+          e.type == EntityType.adresse ||
+          e.type == EntityType.etablissement);
+
   static bool _sansMajuscule(String text) {
     if (text.contains(RegExp(r'\p{Lu}', unicode: true))) return false;
     return RegExp(r'\p{Ll}{2,}', unicode: true).allMatches(text).length >= 3;

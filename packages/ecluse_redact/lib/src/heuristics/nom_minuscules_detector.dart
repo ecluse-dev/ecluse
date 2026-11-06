@@ -1,5 +1,6 @@
 import 'package:ecluse_core/ecluse_core.dart';
 
+import 'casse.dart';
 import 'french_first_names.dart';
 
 /// Noms de personnes dans un texte **sans aucune majuscule** (P2-119), ou
@@ -32,7 +33,6 @@ final class NomMinusculesDetector implements EntityDetector {
   @override
   EntityType get type => EntityType.nom;
 
-  static final RegExp _majuscule = RegExp(r'\p{Lu}', unicode: true);
   static final RegExp _mot =
       RegExp(r"\p{Ll}[\p{Ll}'’-]*\p{Ll}|\p{Ll}", unicode: true);
   static final RegExp _blancs = RegExp(r'^[ \t  ]+$');
@@ -206,19 +206,15 @@ final class NomMinusculesDetector implements EntityDetector {
   static String _plie(String mot) =>
       mot.split('').map((c) => _accents[c] ?? c).join();
 
-  static final RegExp _minuscule = RegExp(r'\p{Ll}', unicode: true);
-
-  /// Texte analysé : l'original s'il n'a aucune majuscule ; sa version en
-  /// minuscules s'il n'a aucune minuscule (texte en capitales, P2-123 :
+  /// Texte analysé, en minuscules, s'il est sans majuscule ou en casse de
+  /// phrase (P2-138, voir `casse.dart`) ou sans minuscule (P2-123 :
   /// « M. JULIEN CHEVRIER » fuyait à 35,6 %, mesure P2-121) ; `null` en casse
   /// ordinaire, laissée à `NameDetector`. Même longueur exigée : les
   /// positions valent pour l'original.
-  static String? _base(String text) {
-    if (!_majuscule.hasMatch(text)) return text;
-    if (_minuscule.hasMatch(text)) return null;
-    final bas = text.toLowerCase();
-    return bas.length == text.length ? bas : null;
-  }
+  static String? _base(String text) => switch (casseDuTexte(text)) {
+        CasseTexte.ordinaire => null,
+        CasseTexte.minuscules || CasseTexte.capitales => enMinuscules(text),
+      };
 
   @override
   List<DetectedEntity> detect(String original) {

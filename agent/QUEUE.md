@@ -205,6 +205,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-135 | code | Généraliser une pathologie sur demande (catégorie → générique), sans F ; éponyme accolé absorbé | P2-127 | fusionnée |
 | P2-136 | code | QI : durées (« pour 9 ans ») et communes-mots courants (« Tours de garde ») écartés ; témoin 412 → 57 | P2-130 | fusionnée |
 | P2-137 | code | Démo : texte et consigne masqués séparément dans un `Dossier` (la consigne « Résume. » désactivait les détecteurs de casse), avertissements affichés | P2-133 | fusionnée |
+| P2-138 | code | Texte en casse de phrase (majuscule en début de phrase seulement) : détecteurs de casse et avertissement ; fuite 64 % → 0,6 % | P2-120 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
