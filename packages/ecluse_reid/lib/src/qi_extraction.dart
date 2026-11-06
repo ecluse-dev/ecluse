@@ -79,6 +79,27 @@ class LieuAmbigu {
   }
 }
 
+/// Département tel que l'écrit `qiValueLabel` après généralisation du lieu
+/// (« département 57 », « département 2A », « département 971 »), relu au
+/// palier 1 (P2-116). Sans ce motif, le lieu généralisé disparaissait de
+/// l'estimation : F était recalculé comme si aucun lieu n'était donné (×157 en
+/// médiane, mesure P2-103) et le rapport rassurait à tort, alors que le
+/// département restait dans le texte envoyé.
+final RegExp _departementPattern = RegExp(
+  r'(?<![\p{L}\p{N}])département\s+(\d{2,3}|2[AB])(?![\p{L}\p{N}])',
+  unicode: true,
+  caseSensitive: false,
+);
+
+/// Départements écrits du texte, connus de la géographie de référence. Un
+/// code inconnu (« département 00 ») n'est pas relu : il ne désigne aucun
+/// territoire dont on connaisse la population.
+List<(RegExpMatch, Qi)> _departements(EcluseReference ref, String text) => [
+      for (final m in _departementPattern.allMatches(text))
+        if (ref.geo.regionOfDep(m.group(1)!.toUpperCase()) != null)
+          (m, Qi(QiType.lieu, m.group(1)!.toUpperCase(), level: 1)),
+    ];
+
 /// Gazetteer des communes (spec §2) : scanne des séquences de 1 à 3 tokens
 /// capitalisés et teste chacune contre `GeoHierarchy.communesByName`.
 ///
@@ -87,7 +108,9 @@ class LieuAmbigu {
 /// [LieuAmbigu.plusPetite]) et est listé par [extractLieuAmbigu]. L'entrée
 /// structurée reste recommandée quand l'ambiguïté compte.
 List<Qi> extractLieu(EcluseReference ref, String text) {
-  final qis = <Qi>[];
+  final qis = <Qi>[
+    for (final (_, qi) in _departements(ref, text)) qi,
+  ];
   for (final found in _scanCommunes(ref, text)) {
     if (found.length == 1) {
       qis.add(Qi(QiType.lieu, found.single.code));
@@ -396,7 +419,17 @@ List<QiSpan> _ageSpans(String text) => [
 /// vocabulaires, mêmes règles d'âge et de commune ambiguë (la plus petite
 /// commune homonyme, par prudence). Le **rappel** n'est pas élargi ici.
 QiSpanExtraction extractQiSpans(EcluseReference ref, String text) {
-  final lieux = _lieuSpans(ref, text);
+  final lieux = _sansChevauchement([
+    ..._lieuSpans(ref, text),
+    for (final (m, qi) in _departements(ref, text))
+      QiSpan(
+        type: QiType.lieu,
+        start: m.start,
+        end: m.end,
+        text: m.group(0)!,
+        qi: qi,
+      ),
+  ]);
   final avertissements = <String>[
     for (final l in lieux.where((l) => l.ambigu)) _avertissementLieuAmbigu(l),
   ];
