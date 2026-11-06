@@ -170,6 +170,7 @@ Future<Response> _handleProcess(
       'maskedInstruction': result.maskedInstruction,
       'llmResponse': result.llmResponse,
       'restoredText': result.restoredText,
+      'warnings': result.warnings,
     });
   } on LlmError catch (error) {
     stdout.writeln("Écluse démo : erreur LLM ('${error.message}').");

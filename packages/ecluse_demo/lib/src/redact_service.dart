@@ -13,6 +13,7 @@ final class ProcessResult {
     required this.maskedInstruction,
     required this.llmResponse,
     required this.restoredText,
+    this.warnings = const [],
   });
 
   final String originalText;
@@ -24,6 +25,11 @@ final class ProcessResult {
   final String maskedInstruction;
   final String llmResponse;
   final String restoredText;
+
+  /// Avertissements du moteur (secret masqué, texte sans majuscule…), à
+  /// montrer à l'utilisateur : ils disent ce que le masquage n'a pas pu
+  /// garantir (P2-137).
+  final List<String> warnings;
 }
 
 /// Orchestre le trajet complet : masquage local, appel LLM, restauration
@@ -38,51 +44,46 @@ final class RedactService {
     String text, {
     required String instruction,
   }) async {
-    // La consigne est masquée avec le texte, en un seul passage : mêmes
-    // jetons pour la même personne, aucune collision de numérotation. Le
-    // séparateur NUL ne peut appartenir à aucune entité détectée.
+    // Le texte et la consigne sont masqués séparément, dans un même
+    // `Dossier` : une personne citée dans la consigne (« résume le cas de
+    // M. Dupont ») reçoit le jeton du texte (règle d'inclusion), et chacun
+    // est analysé avec sa propre casse. Avant P2-137, les deux étaient
+    // concaténés : un texte en minuscules suivi de la consigne « Résume. »
+    // n'était plus « sans majuscule », les détecteurs dédiés (P2-119,
+    // P2-120) restaient muets et les noms partaient en clair.
     const separator = '\u0000';
     if (text.contains(separator) || instruction.contains(separator)) {
       throw const LlmError(
         'Texte ou consigne contenant un caractère NUL : requête refusée.',
       );
     }
-    final combined = '$instruction$separator$text';
-    final redacted = await Ecluse.redact(combined);
-    final cut = redacted.maskedText.indexOf(separator);
-    final maskedInstruction = redacted.maskedText.substring(0, cut);
-    final maskedText = redacted.maskedText.substring(cut + 1);
+    final dossier = Dossier(regle: RegleNoms.inclusion);
+    try {
+      final redacted = await Ecluse.redact(text, dossier: dossier);
+      final consigne = await Ecluse.redact(instruction, dossier: dossier);
+      final maskedText = redacted.maskedText;
+      final maskedInstruction = consigne.maskedText;
 
-    // Seules les entités du texte sont rendues à l'interface, positions
-    // ramenées au texte d'origine (la consigne précède le texte).
-    final offset = instruction.length + 1;
-    final entities = [
-      for (final e in redacted.entities)
-        if (e.start >= offset)
-          DetectedEntity(
-            type: e.type,
-            start: e.start - offset,
-            end: e.end - offset,
-            value: e.value,
-            confidence: e.confidence,
-            tier: e.tier,
-          ),
-    ];
+      final llmResponse = await _llmClient.complete(
+        maskedText,
+        instruction: maskedInstruction,
+      );
 
-    final llmResponse = await _llmClient.complete(
-      maskedText,
-      instruction: maskedInstruction,
-    );
+      final restoredText = dossier.restore(llmResponse);
+      final warnings = {...redacted.warnings, ...consigne.warnings}.toList();
 
-    final restoredText = Ecluse.restore(llmResponse, redacted.mapping);
-
-    return ProcessResult(
-      originalText: text,
-      entities: entities,
-      maskedText: maskedText,
-      maskedInstruction: maskedInstruction,
-      llmResponse: llmResponse,
-      restoredText: restoredText,
-    );
+      return ProcessResult(
+        originalText: text,
+        entities: redacted.entities,
+        maskedText: maskedText,
+        maskedInstruction: maskedInstruction,
+        llmResponse: llmResponse,
+        restoredText: restoredText,
+        warnings: warnings,
+      );
+    } finally {
+      // La table de correspondance ne survit pas à la requête.
+      dossier.fermer();
+    }
   }
 }
