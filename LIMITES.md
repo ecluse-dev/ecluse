@@ -422,6 +422,13 @@ détecté. Un texte entièrement en MAJUSCULES n'est pas concerné ; relire
 avant envoi. Dates et
 téléphones ne sont pas touchés tant que les chiffres restent des chiffres.
 
+**Texte entièrement en MAJUSCULES (P2-121).** Fuite globale doublée par
+rapport à la casse ordinaire (corpus flou réaliste : 7,5 % → 14,8 % ;
+établissements 0 % → 27,2 %, noms 27,7 % → 35,6 %), et faux positifs
+d'adresse sur des montants ou des références (« 70000 EUROS », « 75015 POUR
+L'ANTENNE ») : 194 sur le témoin. Aucun avertissement n'est émis pour ce
+cas.
+
 **Lettres hors du jeu français usuel dans un nom (P2-33).** La majuscule initiale d'un mot de
 nom ne couvrait que A-Z et quelques lettres françaises : un nom commençant par Á, Ó, Ñ, Œ,
 Ł, Ş, Ž… ou contenant des lettres vietnamiennes n'était masqué qu'en partie (« François Œil »

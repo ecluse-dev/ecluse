@@ -187,6 +187,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-118 | code | Avertir dans `warnings` d'un texte sans aucune majuscule (défaut mesuré par P2-117) | P2-117 | fusionnée |
 | P2-119 | code | Détecter les noms dans un texte sans aucune majuscule (`NomMinusculesDetector`, mesuré sur les corpus flous en minuscules) | P2-117 | fusionnée |
 | P2-120 | code | Adresses et établissements dans un texte sans aucune majuscule (même principe que P2-119) | P2-119 | fusionnée |
+| P2-121 | mesure | Entités floues sur texte entièrement en majuscules (corpus flous) | P2-117 | fusionnée |
+| P2-122 | code | Adresses et établissements dans un texte sans aucune minuscule ; 0 faux positif sur le témoin en majuscules (`agent/specs/P2-121.md`) | P2-121 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1947,6 +1949,17 @@ ne reprennent que ce qui manque pour la prendre.
   généralisait jamais le lieu ; construire au besoin des cas où la
   suggestion retenue porte sur le lieu, puis comparer F simulé (`fAfter`) et
   F recalculé après `appliquerGeneralisations`.
+- **P2-122** : sur le modèle de `MinusculesRecapitaliseDetector` (P2-120,
+  à lire d'abord) : un texte **sans aucune minuscule** reçoit un texte
+  d'ombre de même longueur en casse de titre (mots outils, unités et noms de
+  comptage en minuscules, sigles d'établissement gardés en capitales),
+  passé à `AdresseDetector` et `EtablissementDetector`. Actif seulement sans
+  aucune minuscule. Mesure avant/après obligatoire (commandes et chiffres de
+  départ : `agent/specs/P2-121.md`) : fuite par type sur les corpus flous
+  réaliste et adversarial en majuscules ; **budget : 0 faux positif** sur
+  le témoin en majuscules (194 aujourd'hui) ; sorties **identiques** sur les
+  corpus d'origine, en minuscules et v3. Les noms ne sont pas dans le
+  périmètre. Ne pas modifier les détecteurs existants.
 - **P2-120** : sur le modèle de `NomMinusculesDetector` (P2-119) : un
   détecteur actif **seulement** si le texte n'a aucune majuscule, qui
   rattrape les adresses (numéro + type de voie : « 7 impasse des
