@@ -183,6 +183,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-114 | code | Script d'extraction Orphanet et asset `patho_orphanet.tsv.gz` (`tools/build_orphanet_asset.py`) | P2-113 | fusionnée |
 | P2-115 | code | `ecluse_reference` : charger `patho_orphanet.tsv.gz` (ORPHAcode → catégorie, mentions) avec ses tests ; aucun appariement dans le texte | P2-114 | fusionnée |
 | P2-116 | code | Relire « département N » après généralisation du lieu (défaut mesuré par P2-103) | P2-103 | fusionnée |
+| P2-117 | mesure | Entités floues sur texte sans majuscules ni ponctuation (corpus flou réaliste) | P2-98 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
