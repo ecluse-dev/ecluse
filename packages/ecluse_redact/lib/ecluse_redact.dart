@@ -19,6 +19,7 @@ export 'src/heuristics/email_detector.dart';
 export 'src/heuristics/etablissement_detector.dart';
 export 'src/heuristics/identifiant_detector.dart';
 export 'src/heuristics/name_detector.dart';
+export 'src/heuristics/minuscules_recapitalise_detector.dart';
 export 'src/heuristics/nom_minuscules_detector.dart';
 export 'src/heuristics/tableau_csv.dart' show TableauAmbiguException;
 export 'src/heuristics/telephone_detector.dart';
