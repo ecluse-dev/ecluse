@@ -9,6 +9,7 @@ final class RiskReport {
     required this.evaluation,
     required this.limites,
     this.suggestions = const [],
+    this.pathologies = const [],
   });
 
   /// Évaluation des quasi-identifiants restés dans le **texte masqué** (c'est
@@ -26,6 +27,15 @@ final class RiskReport {
   /// remonter F. **Ce sont des propositions** : rien n'est appliqué au texte
   /// (décision P2-03 n° 1, le moteur ne généralise jamais de lui-même).
   final List<SuggestionPositionnee> suggestions;
+
+  /// Pathologies **rattachées à une personne** restées dans le texte masqué
+  /// (P2-127), positions dans `maskedText`. **Information seulement** : elles
+  /// ne comptent pas dans l'estimation (aucune prévalence ne permet de
+  /// chiffrer F) et rien n'est généralisé. Sans elles, un rapport « risque
+  /// faible » se taisait sur « atteinte de la maladie de Huntington ». Les
+  /// maladies rares ne sont repérées que si `reference.rareDiseases` a été
+  /// chargé par l'appelant.
+  final List<PathologieMention> pathologies;
 }
 
 /// Une généralisation proposée et les occurrences du QI concerné dans le
@@ -76,11 +86,42 @@ RiskReport evaluerRisque(EcluseReference reference, String texteMasque) {
       notes: honestyNotes(upperBound: false),
     );
   }
+  final pathologies = _pathologies(reference, texteMasque);
   return RiskReport(
     evaluation: evaluation,
-    limites: limitesSansNer,
+    limites: [
+      ...limitesSansNer,
+      if (pathologies.isNotEmpty) _limitePathologies(pathologies),
+    ],
     suggestions: _suggestions(reference, evaluation),
+    pathologies: pathologies,
   );
+}
+
+/// Pathologies rattachées à une personne (P2-127). Ne lève jamais.
+List<PathologieMention> _pathologies(
+    EcluseReference reference, String texteMasque) {
+  try {
+    final catalogue =
+        reference.rareDiseases.isLoaded ? reference.rareDiseases : null;
+    return [
+      for (final m in extrairePathologies(texteMasque, catalogue: catalogue))
+        if (m.rattachee) m,
+    ];
+  } catch (_) {
+    return const [];
+  }
+}
+
+String _limitePathologies(List<PathologieMention> pathologies) {
+  final cites = [
+    for (final m in pathologies) '« ${m.text} » (${m.categorie})',
+  ].join(', ');
+  final n = pathologies.length;
+  return '$n pathologie${n > 1 ? 's' : ''} rattachée${n > 1 ? 's' : ''} à une '
+      'personne reste${n > 1 ? 'nt' : ''} en clair : $cites. '
+      '${n > 1 ? 'Elles ne sont pas comptées' : 'Elle n\'est pas comptée'} '
+      "dans l'estimation ; une maladie rare peut suffire à désigner quelqu'un.";
 }
 
 /// Propositions de généralisation d'un cran (P2-91). Ne lève jamais : si la
