@@ -404,7 +404,9 @@ Depuis P2-118, `Ecluse.redact` le **signale** dans `warnings` (texte d'au
 moins trois mots et sans aucune majuscule). Depuis P2-119, un détecteur
 dédié (`NomMinusculesDetector`, actif seulement sans aucune majuscule)
 rattrape les **noms** : civilité suivie d'un nom, ou prénom connu suivi d'un
-mot. Fuite des noms sur le corpus réaliste en minuscules : 100 % → 2,2 % ;
+mot (P2-124 : pas si ce mot est un adjectif et le prénom un mot courant,
+« rose pâle » ; 280 → 0 faux positif sur un témoin de faux amis écrit par le
+projet). Fuite des noms sur le corpus réaliste en minuscules : 100 % → 2,2 % ;
 adversarial : 100 % → 27 % ; 0 faux positif sur le témoin en minuscules.
 Depuis P2-120, adresses et établissements y sont rattrapés aussi
 (`MinusculesRecapitaliseDetector` : les détecteurs habituels lisent un texte
