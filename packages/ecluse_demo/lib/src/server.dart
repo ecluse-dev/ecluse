@@ -171,6 +171,7 @@ Future<Response> _handleProcess(
       'llmResponse': result.llmResponse,
       'restoredText': result.restoredText,
       'warnings': result.warnings,
+      'risque': _encodeRisque(result.risque),
     });
   } on LlmError catch (error) {
     stdout.writeln("Écluse démo : erreur LLM ('${error.message}').");
@@ -234,3 +235,25 @@ Response _jsonResponse(Object payload) => Response.ok(
       jsonEncode(payload),
       headers: {'content-type': 'application/json; charset=utf-8'},
     );
+
+/// Résumé du rapport de risque pour l'interface (P2-141) : statut, bande et F
+/// s'ils existent, motifs, pathologies signalées. Jamais les valeurs
+/// d'origine : tout vient du texte **masqué**.
+Object? _encodeRisque(RiskReport? r) {
+  if (r == null) return null;
+  final e = r.evaluation;
+  return {
+    'statut': e.statut.name,
+    'bande': e.estimate?.band.name,
+    'f': e.estimate?.f,
+    'bornee': e.estimate?.upperBound,
+    'motifs': e.motifs,
+    'qis': [
+      for (final s in e.spans) {'type': s.type.name, 'texte': s.text}
+    ],
+    'pathologies': [
+      for (final m in r.pathologies) {'texte': m.text, 'categorie': m.categorie}
+    ],
+    'suggestions': r.suggestions.length + r.suggestionsPathologie.length,
+  };
+}
