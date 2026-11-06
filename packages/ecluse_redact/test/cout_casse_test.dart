@@ -16,6 +16,15 @@ void main() {
           '70160 PORT SUR SAONE, PUIS EHPAD MARIE CURIE. '
     ),
     ('faux amis', 'la plaie est rose pâle et 70000 euros hors taxes '),
+    (
+      'casse de phrase (P2-138)',
+      'Rdv avec m. julien chevrier au ssiad de gray. Suivi par perrot '
+          'olivier. '
+    ),
+    (
+      'casse ordinaire longue sans nom propre (P2-138)',
+      'Le patient va bien. La nuit a été calme. '
+    ),
   ]) {
     test('texte $nom : coût linéaire', () async {
       await expectCroissanceLineaire(
