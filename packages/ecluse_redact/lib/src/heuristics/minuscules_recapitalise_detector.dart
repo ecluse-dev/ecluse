@@ -53,6 +53,17 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
       r"(?<!\d)\d{5}[ \t\u00A0\u202F]+([\p{L}'’\- \t\u00A0\u202F]+)",
       unicode: true);
 
+  /// Indice d'adresse suivi de ce qui le suit sur la même ligne (P2-131) :
+  /// « située 30 boulevard aristide briand », « demeurant 3 route de
+  /// vellexon », « adresse du chantier : 8 chemin des vignes ». Après un tel
+  /// indice, le nom de voie est recapitalisé même sans code postal ; sans
+  /// lui, « 3 chemin de fer » reste intact (`adresse_sans_code_postal_test`).
+  static final RegExp _indiceAdresse = RegExp(
+      r'(?<![\p{L}])(?:situ[ée]e?s?|sise?s?|demeurant|domicili[ée]e?s?|'
+      r'r[ée]sidant|adresse[^:\n]{0,30}:)[ \t\u00A0\u202F]*(?:\n[ \t]*)?'
+      r'(\d{1,4}[^\n,.;]{0,60})',
+      unicode: true);
+
   @override
   EntityType get type => interne.type;
 
@@ -117,8 +128,18 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
                 _motEntier, (w) => _recapitalise(w.group(0)!));
       });
     }
+    var v = t;
+    if (seulementCommunes) {
+      v = v.replaceAllMapped(_indiceAdresse, (m) {
+        final voie = m.group(1)!;
+        final tete = m.group(0)!.substring(0, m.group(0)!.length - voie.length);
+        return tete +
+            voie.replaceAllMapped(
+                _motEntier, (w) => _recapitalise(w.group(0)!));
+      });
+    }
     final u =
-        t.replaceAllMapped(_elisionCommune, (m) => m.group(0)!.toUpperCase());
+        v.replaceAllMapped(_elisionCommune, (m) => m.group(0)!.toUpperCase());
     return u.length == text.length ? u : null;
   }
 

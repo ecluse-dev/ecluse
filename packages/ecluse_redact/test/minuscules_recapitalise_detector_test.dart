@@ -47,6 +47,27 @@ void main() {
     });
   });
 
+  group('voie sans code postal après un indice (P2-131)', () {
+    test('« située », « demeurant », « adresse … : »', () {
+      for (final (texte, voie) in [
+        (
+          'la clinique, située 30 boulevard aristide briand, ouvre',
+          '30 boulevard aristide briand'
+        ),
+        ('domicilié 3 route de vellexon depuis mai', '3 route de vellexon'),
+        ('adresse du chantier :\n8 chemin des vignes', '8 chemin des vignes'),
+      ]) {
+        expect(_trouve(_adresse, texte).join(' | '), contains(voie),
+            reason: texte);
+      }
+    });
+
+    test('sans indice, « 3 chemin de fer » reste intact', () {
+      expect(_trouve(_adresse, '3 chemin de fer'), isEmpty);
+      expect(_trouve(_adresse, '12 place disponible'), isEmpty);
+    });
+  });
+
   group('établissements', () {
     test('mot-clé suivi de son nom', () {
       expect(_trouve(_etab, "réunion tenue à l'ehpad marie curie. à revoir"),
