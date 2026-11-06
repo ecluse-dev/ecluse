@@ -186,7 +186,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-117 | mesure | Entités floues sur texte sans majuscules ni ponctuation (corpus flou réaliste) | P2-98 | fusionnée |
 | P2-118 | code | Avertir dans `warnings` d'un texte sans aucune majuscule (défaut mesuré par P2-117) | P2-117 | fusionnée |
 | P2-119 | code | Détecter les noms dans un texte sans aucune majuscule (`NomMinusculesDetector`, mesuré sur les corpus flous en minuscules) | P2-117 | fusionnée |
-| P2-120 | code | Adresses et établissements dans un texte sans aucune majuscule (même principe que P2-119) | P2-119 | à faire |
+| P2-120 | code | Adresses et établissements dans un texte sans aucune majuscule (même principe que P2-119) | P2-119 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
