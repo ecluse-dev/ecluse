@@ -430,8 +430,11 @@ L'ANTENNE ») : 194 sur le témoin. Depuis P2-122 : `AdresseDetector`
 écarte en capitales une commune qui commence par un mot neutre, et les
 établissements passent par le texte d'ombre de P2-120 ; fuite globale
 14,8 % → 9,7 % (réaliste), établissements 27,2 % → 0 %, **0 faux positif** sur
-le témoin. **Les noms en capitales restent à 35,6 %** (contre 27,7 % en casse
-ordinaire), et aucun avertissement n'est émis pour ce cas.
+le témoin. Depuis P2-123, les noms en capitales passent par `NomMinusculesDetector`
+(texte mis en minuscules, même longueur) : 35,6 % → 2,2 % (réaliste),
+23,7 % → 18,7 % (adversarial) ; fuite globale réaliste en capitales 9,7 % →
+0,6 % ; 0 faux positif sur le témoin. Aucun avertissement n'est émis pour un
+texte en capitales.
 
 **Lettres hors du jeu français usuel dans un nom (P2-33).** La majuscule initiale d'un mot de
 nom ne couvrait que A-Z et quelques lettres françaises : un nom commençant par Á, Ó, Ñ, Œ,

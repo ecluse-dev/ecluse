@@ -40,7 +40,7 @@ void main() {
   });
 
   group('rejetés', () {
-    test('texte avec une majuscule : rien, NameDetector s\'en charge', () {
+    test('casse ordinaire : rien, NameDetector s\'en charge', () {
       expect(_noms('Rdv avec m. julien chevrier'), isEmpty);
     });
 
@@ -59,6 +59,20 @@ void main() {
 
     test('pas de nom à travers une ponctuation', () {
       expect(_noms('vu par julien. chevrier passera'), isEmpty);
+    });
+  });
+
+  group('texte en capitales (P2-123)', () {
+    test('civilité + prénom + nom, valeur relue dans l\'original', () {
+      const texte = 'RDV AVEC M. JULIEN CHEVRIER AU SSIAD DE GRAY';
+      final e = const NomMinusculesDetector().detect(texte).single;
+      expect(texte.substring(e.start, e.end), 'M. JULIEN CHEVRIER');
+      expect(e.value, 'M. JULIEN CHEVRIER');
+    });
+
+    test('mots outils et sigle de soin : rien', () {
+      expect(_noms('MADAME LA DIRECTRICE A VALIDÉ'), isEmpty);
+      expect(_noms('SCORE EVA INCHANGÉ DEPUIS HIER'), isEmpty);
     });
   });
 
