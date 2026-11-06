@@ -188,7 +188,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-119 | code | Détecter les noms dans un texte sans aucune majuscule (`NomMinusculesDetector`, mesuré sur les corpus flous en minuscules) | P2-117 | fusionnée |
 | P2-120 | code | Adresses et établissements dans un texte sans aucune majuscule (même principe que P2-119) | P2-119 | fusionnée |
 | P2-121 | mesure | Entités floues sur texte entièrement en majuscules (corpus flous) | P2-117 | fusionnée |
-| P2-122 | code | Adresses et établissements dans un texte sans aucune minuscule ; 0 faux positif sur le témoin en majuscules (`agent/specs/P2-121.md`) | P2-121 | à faire |
+| P2-122 | code | Adresses et établissements dans un texte sans aucune minuscule ; 0 faux positif sur le témoin en majuscules (`agent/specs/P2-121.md`) | P2-121 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
