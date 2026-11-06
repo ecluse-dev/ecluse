@@ -177,6 +177,35 @@ final class NomMinusculesDetector implements EntityDetector {
 
   static bool _outil(String mot) => _motsOutils.contains(mot);
 
+  /// Prénoms du gazetteer qui sont aussi des mots courants (P2-124, corpus
+  /// témoin `generate_corpus_faux_amis_prenoms.py`). Seuls, suivis d'un
+  /// adjectif ou d'un participe, ils ne sont pas masqués. Formes sans
+  /// accents, comme le gazetteer.
+  static const Set<String> _fauxAmis = {
+    'aimee', 'ambre', 'aurore', 'blanche', 'capucine', 'celeste', 'claire', //
+    'constance', 'fleur', 'hortense', 'iris', 'marguerite', 'marine', //
+    'noel', 'pierre', 'rose', 'victoire', 'violette', //
+  };
+
+  /// Terminaisons d'adjectif ou de participe qui ne finissent presque jamais
+  /// un patronyme. « -al » n'y est pas (Duval, Laval), « -ale » si ; « -eux »
+  /// non plus (Mérieux : mesure P2-124 sur le corpus adversarial).
+  static final RegExp _suffixeQualificatif =
+      RegExp(r'(?:ée|ées|é|és|ante?s?|ive|ives|ifs?|inte|intes|ale|ales|aux)$');
+
+  /// Adjectifs courts de couleur ou d'état, sans terminaison reconnaissable.
+  static const Set<String> _adjectifs = {
+    'pâle', 'vif', 'vive', 'clair', 'claire', 'foncé', 'sombre', 'net', //
+    'nette', 'sèche', 'sec', 'blanc', 'noir', 'rouge', 'vert', 'bleu', //
+    'jaune', 'gris', 'grise', 'beige', 'fine', 'fin', 'pur', 'pure', //
+  };
+
+  static bool _qualificatif(String mot) =>
+      _adjectifs.contains(mot) || _suffixeQualificatif.hasMatch(mot);
+
+  static String _plie(String mot) =>
+      mot.split('').map((c) => _accents[c] ?? c).join();
+
   static final RegExp _minuscule = RegExp(r'\p{Ll}', unicode: true);
 
   /// Texte analysé : l'original s'il n'a aucune majuscule ; sa version en
@@ -240,7 +269,17 @@ final class NomMinusculesDetector implements EntityDetector {
           contigu(i, i + 1) &&
           !_outil(mots[i + 1].group(0)!) &&
           !_civilites.contains(mots[i + 1].group(0)!)) {
-        ajoute(i, i + 1, 0.5);
+        final suivant = mots[i + 1].group(0)!;
+        if (!_qualificatif(suivant)) {
+          ajoute(i, i + 1, 0.5);
+          i += 2;
+          continue;
+        }
+        // Prénom suivi d'un adjectif ou d'un participe (« rose pâle »,
+        // « blanche agitée ») : pas un patronyme. Un faux ami (« rose ») est
+        // alors un mot courant ; un autre prénom (« julien agité ») reste
+        // masqué, seul.
+        if (!_fauxAmis.contains(_plie(mot))) ajoute(i, i, 0.5);
         i += 2;
         continue;
       }
