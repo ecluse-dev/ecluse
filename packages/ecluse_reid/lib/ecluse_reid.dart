@@ -16,6 +16,7 @@ export 'src/generalizer.dart';
 export 'src/honesty.dart';
 export 'src/labels.dart';
 export 'src/lieu_population.dart';
+export 'src/pathologie_extraction.dart';
 export 'src/profession_rarity.dart';
 export 'src/qi.dart';
 export 'src/qi_extraction.dart';
