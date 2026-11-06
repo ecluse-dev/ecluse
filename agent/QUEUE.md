@@ -207,6 +207,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-137 | code | Démo : texte et consigne masqués séparément dans un `Dossier` (la consigne « Résume. » désactivait les détecteurs de casse), avertissements affichés | P2-133 | fusionnée |
 | P2-138 | code | Texte en casse de phrase (majuscule en début de phrase seulement) : détecteurs de casse et avertissement ; fuite 64 % → 0,6 % | P2-120 | fusionnée |
 | P2-139 | code | Noms en minuscules : initiale, ordre « nom prénom », particules ; adversarial 27 % → 5,9 % | P2-138 | fusionnée |
+| P2-140 | mesure | Dossiers en minuscules et en casse de phrase : cohérence des jetons, collisions, fausses fusions (corpus dossiers × variantes de casse) | P2-139 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1967,6 +1968,17 @@ ne reprennent que ce qui manque pour la prendre.
   généralisait jamais le lieu ; construire au besoin des cas où la
   suggestion retenue porte sur le lieu, puis comparer F simulé (`fAfter`) et
   F recalculé après `appliquerGeneralisations`.
+- **P2-140** : **mesure seulement.** Les détecteurs de casse (P2-119 à
+  P2-139) n'ont été mesurés que document par document. Appliquer
+  `bench/variantes_casse.py` aux trois corpus de dossiers
+  (`generate_corpus_dossiers.py --n 400 --seed 42`), puis
+  `run_dossiers_bench.dart --dossier` et `score_dossiers.py` sur chaque
+  variante (`_minuscules`, `_phrase`, `_majuscules`). Rapporter dans
+  `agent/specs/P2-140.md`, à côté des chiffres en casse ordinaire
+  (`bench/ETAT.md`) : cohérence, collisions, fausses fusions, restaurations
+  non identiques, mentions non détectées. Signaler en particulier si une
+  même personne reçoit deux jetons selon la casse de ses mentions. Aucun
+  code de production.
 - **P2-129** : **mesure seulement, ne rien corriger.** Ajouter à
   `bench/generate_corpus_pathologies.py` un corpus `formes_libres` (graine
   fixe, préfixe stable, corpus existants inchangés : le vérifier par
