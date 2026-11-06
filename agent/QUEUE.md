@@ -193,6 +193,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-124 | code | Faux amis prénoms en minuscules (« rose pâle ») : corpus témoin et correction mesurée | P2-119 | fusionnée |
 | P2-125 | code | Repérer les pathologies (table maison provisoire + Orphanet, rattachement à une personne), mesuré sur le corpus P2-112, non branché | P2-112 | fusionnée |
 | P2-126 | code | Pathologies : négations (« pas de diabète connu ») et formes adjectivales (« diabétique »), corpus `variantes` | P2-125 | fusionnée |
+| P2-127 | code | Signaler les pathologies rattachées dans le rapport de risque (information, hors estimation) | P2-126 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 

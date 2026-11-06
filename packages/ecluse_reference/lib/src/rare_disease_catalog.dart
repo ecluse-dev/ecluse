@@ -83,6 +83,10 @@ class RareDiseaseCatalog {
     return _version;
   }
 
+  /// Vrai une fois [load] terminé. Permet à un appelant synchrone (rapport
+  /// de risque) de n'utiliser le catalogue que s'il a été chargé.
+  bool get isLoaded => _entities != null;
+
   /// Nombre d'entités chargées.
   int get length => _e.length;
 
