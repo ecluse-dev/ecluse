@@ -1391,10 +1391,11 @@ pas une garantie d'anonymat. Limites connues :
   évaluables, et un bouclage sur les âges de 100 ans et plus. Le lieu
   généralisé (« département 57 ») n'était pas relu non plus (P2-103 : F
   surestimé, médiane ×157, bande « faible » au lieu de « moyen ») ; il l'est
-  depuis P2-116 : sur les 24 cas mesurés, F recalculé = F simulé. **Reste** :
-  le libellé se lit « habite à département 57 » (préposition d'origine
-  conservée), et le palier France n'est pas relu, ce qui revient à l'absence
-  de lieu.
+  depuis P2-116 : sur les 24 cas mesurés, F recalculé = F simulé. Depuis P2-132,
+  la préposition qui précède est réécrite avec le lieu (« habite à Rioz » →
+  « habite dans le département 70 », « vient de Rioz » → « vient du
+  département 70 ») ; une autre tournure garde le libellé seul. **Reste** : le
+  palier France n'est pas relu, ce qui revient à l'absence de lieu.
 - **Rien n'est signalé dans `warnings`** : c'est l'application qui sait
   qu'elle a généralisé.
 
