@@ -131,7 +131,9 @@ const List<EntreePathologie> tablePathologiesProvisoire = [
   (
     'métabolique',
     'diabète de type 1 et de type 2',
-    ['diabète', 'diabète de type 1', 'diabète de type 2'],
+    // « DT1 », « DT2 » : sigles courants, sans autre sens dans un écrit de
+    // soin (P2-134 ; mesure P2-129 : 30 « DT2 » sur 30 manqués).
+    ['diabète', 'diabète de type 1', 'diabète de type 2', 'DT1', 'DT2'],
   ),
   (
     'métabolique',
@@ -194,6 +196,7 @@ const List<String> _tournures = [
   'SOUFFRE DE', 'SOUFFRE D', 'SOUFFRANT DE', 'SOUFFRANTE DE', //
   'PORTEUR DE', 'PORTEUSE DE', 'PORTEUR D', 'PORTEUSE D', //
   'ANTECEDENT', 'ANTECEDENTS', 'DIAGNOSTIC DE', 'DIAGNOSTIC D', //
+  'ATCD', 'ATCDS', // abréviation courante d'« antécédents » (P2-134)
   'CONNU POUR', 'CONNUE POUR', 'PRESENTE UN', 'PRESENTE UNE', //
 ];
 
@@ -205,6 +208,19 @@ const List<String> _negations = [
   'NI', 'JAMAIS DE', 'JAMAIS D', 'EXCLU', 'ECARTE', //
 ];
 const int _porteeNegation = 5;
+
+/// Négation placée **après** la mention (P2-134, mesure P2-129) : « Diabète :
+/// non. », « Tuberculose exclue au dernier bilan », « BPCO ? à éliminer ».
+/// « non » n'y compte que suivi d'une ponctuation ou d'une fin de texte :
+/// « diabète non insulinodépendant » reste une pathologie. Le « non » placé
+/// juste **avant** (« non diabétique ») est traité à part : seul le mot qui
+/// précède immédiatement compte, pour ne pas nier « non fumeur, atteint de
+/// diabète ».
+final RegExp _negationApres = RegExp(
+    r'^[ \t]*(?::[ \t]*non[ \t]*(?:[.,;!?)]|$)|non[ \t]*(?:[.,;!?)]|$)|'
+    r'(?:exclue?s?|écartée?s?)(?![\p{L}])|\?[ \t]*à éliminer)',
+    caseSensitive: false,
+    unicode: true);
 
 /// Formes adjectivales qui qualifient une personne (« Mme X, diabétique »),
 /// rattachées à la mention de la table dont elles relèvent (P2-126).
@@ -318,7 +334,12 @@ PathologieMention _mention(String text, int start, int end, String categorie,
   final mots = avant.isEmpty ? const <String>[] : avant.split(' ');
   final proches = mots.sublist(
       mots.length > _porteeNegation ? mots.length - _porteeNegation : 0);
-  final niee = _negations.any((n) => ' ${proches.join(' ')} '.contains(' $n '));
+  final apres =
+      text.substring(end, end + 40 > text.length ? text.length : end + 40);
+  final niee =
+      _negations.any((n) => ' ${proches.join(' ')} '.contains(' $n ')) ||
+          (mots.isNotEmpty && mots.last == 'NON') ||
+          _negationApres.hasMatch(apres);
   final rattachee =
       !niee && (adjectif || _tournures.any((t) => ' $avant '.contains(' $t ')));
   return PathologieMention(

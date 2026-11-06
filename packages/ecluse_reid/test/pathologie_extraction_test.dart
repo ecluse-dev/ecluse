@@ -112,4 +112,40 @@ void main() {
           extrait('La salle de dialyse est fermée.').single.rattachee, isFalse);
     });
   });
+
+  group('formes libres (P2-134, mesure P2-129)', () {
+    test('« non » juste avant une forme adjectivale : niée', () {
+      final m = extrait('M. Rémi Faure, non diabétique.').single;
+      expect(m.niee, isTrue);
+      expect(m.rattachee, isFalse);
+    });
+
+    test('« non » plus loin ne nie pas : « non fumeur, atteint de »', () {
+      final m = extrait('Patient non fumeur, atteint de diabète.').single;
+      expect(m.rattachee, isTrue);
+    });
+
+    test('« DT2 » et « ATCD : »', () {
+      expect(extrait('Atteinte de DT2.').single.rattachee, isTrue);
+      expect(extrait('ATCD : diabète de type 2.').single.rattachee, isTrue);
+    });
+
+    test('négation après la mention, même après « ATCD : »', () {
+      for (final texte in [
+        'ATCD : diabète : non.',
+        'Antécédents : tuberculose exclue au dernier bilan.',
+        'ATCD : BPCO ? à éliminer.',
+      ]) {
+        final m = extrait(texte).single;
+        expect(m.niee, isTrue, reason: texte);
+        expect(m.rattachee, isFalse, reason: texte);
+      }
+    });
+
+    test('« diabète non insulinodépendant » reste une pathologie', () {
+      final m = extrait('Atteint de diabète non insulinodépendant.').single;
+      expect(m.niee, isFalse);
+      expect(m.rattachee, isTrue);
+    });
+  });
 }
