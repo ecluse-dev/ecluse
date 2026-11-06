@@ -10,6 +10,7 @@ final class RiskReport {
     required this.limites,
     this.suggestions = const [],
     this.pathologies = const [],
+    this.suggestionsPathologie = const [],
   });
 
   /// Évaluation des quasi-identifiants restés dans le **texte masqué** (c'est
@@ -36,6 +37,31 @@ final class RiskReport {
   /// maladies rares ne sont repérées que si `reference.rareDiseases` a été
   /// chargé par l'appelant.
   final List<PathologieMention> pathologies;
+
+  /// Généralisations proposées pour [pathologies] (P2-135), un palier par
+  /// suggestion, du plus précis au plus général. **Suggestions de dernier
+  /// recours, sans F** : aucune prévalence ne dit si elles suffisent. Rien
+  /// n'est appliqué ; l'application choisit et appelle
+  /// `appliquerGeneralisationsPathologie`.
+  final List<SuggestionPathologie> suggestionsPathologie;
+}
+
+/// Une pathologie du texte masqué et le libellé qui la remplacerait (P2-135).
+final class SuggestionPathologie {
+  const SuggestionPathologie({
+    required this.mention,
+    required this.libelle,
+    required this.palier,
+  });
+
+  /// La mention, positions dans le texte masqué.
+  final PathologieMention mention;
+
+  /// Libellé de remplacement, sans article (« maladie neurologique rare »).
+  final String libelle;
+
+  /// 1 = catégorie ou système, 2 = « maladie rare » / « maladie chronique ».
+  final int palier;
 }
 
 /// Une généralisation proposée et les occurrences du QI concerné dans le
@@ -95,6 +121,11 @@ RiskReport evaluerRisque(EcluseReference reference, String texteMasque) {
     ],
     suggestions: _suggestions(reference, evaluation),
     pathologies: pathologies,
+    suggestionsPathologie: [
+      for (final m in pathologies)
+        for (final (i, libelle) in paliersPathologie(m).indexed)
+          SuggestionPathologie(mention: m, libelle: libelle, palier: i + 1),
+    ],
   );
 }
 

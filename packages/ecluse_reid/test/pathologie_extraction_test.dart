@@ -148,4 +148,16 @@ void main() {
       expect(m.rattachee, isTrue);
     });
   });
+
+  group('éponyme accolé (P2-135)', () {
+    test('« myopathie de Duchenne » : mention entière', () {
+      final m = extrait('Antécédents : myopathie de Duchenne.').single;
+      expect(m.text, 'myopathie de Duchenne');
+    });
+
+    test('civilité après « de » : pas un éponyme', () {
+      final m = extrait('Antécédents : diabète de Mme Verdier.').single;
+      expect(m.text, 'diabète');
+    });
+  });
 }

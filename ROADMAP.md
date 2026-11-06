@@ -139,7 +139,8 @@ Objectif : occuper le coin vide de la carte.
   (`RareDiseaseCatalog`), table maison des pathologies fréquentes
   **provisoire** (validation clinique en attente), repérage avec
   rattachement à une personne et négation, signalé dans le rapport de risque
-  **sans être compté ni généralisé** (P2-111 à P2-128, `LIMITES.md` § 3).
+  **sans être compté**, généralisable en catégorie sur demande de
+  l'application (P2-111 à P2-135, `LIMITES.md` § 3).
 - 🟡 Textes sans casse ordinaire (P2-117 à P2-124) : un texte tout en
   minuscules (dictée transcrite, message tapé vite) ou tout en capitales
   laissait fuir noms, adresses et établissements. Détecteurs dédiés,

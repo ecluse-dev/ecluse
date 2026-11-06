@@ -131,3 +131,69 @@ RedactResult appliquerGeneralisations(
   }
   return (debut, fin, libelle);
 }
+
+/// Applique au texte masqué de [resultat] les généralisations de pathologie
+/// [choisies] par l'appelant (P2-135), sur le modèle de
+/// [appliquerGeneralisations] : **irréversible** (la mention d'origine
+/// n'entre pas dans la table), jetons et table inchangés, refus en bloc
+/// ([GeneralisationException]) d'une suggestion étrangère au résultat,
+/// périmée, qui couvre un jeton, ou de deux suggestions sur la même mention.
+/// Le rapport de risque est recalculé sur le texte rendu.
+RedactResult appliquerGeneralisationsPathologie(
+  RedactResult resultat,
+  List<SuggestionPathologie> choisies, {
+  required EcluseReference reference,
+}) {
+  final rapport = resultat.risque;
+  if (rapport == null) {
+    throw const GeneralisationException(
+        'aucun rapport de risque : appeler Ecluse.redact avec riskReference');
+  }
+  if (choisies.isEmpty) return resultat;
+  final texte = resultat.maskedText;
+  final remplacements = <(int, int, String)>[];
+  for (final s in choisies) {
+    if (!rapport.suggestionsPathologie.any((r) => identical(r, s))) {
+      throw const GeneralisationException(
+          'suggestion étrangère à ce résultat (périmée ou d\'un autre texte)');
+    }
+    final m = s.mention;
+    if (m.start < 0 || m.end > texte.length || m.start >= m.end) {
+      throw const GeneralisationException('position hors du texte masqué');
+    }
+    if (texte.substring(m.start, m.end) != m.text) {
+      throw const GeneralisationException(
+          'position périmée : le texte masqué a changé');
+    }
+    if (m.text.contains('[') || m.text.contains(']')) {
+      throw const GeneralisationException(
+          'position qui couvre un jeton : refusée');
+    }
+    remplacements.add((m.start, m.end, s.libelle));
+  }
+  remplacements.sort((a, b) => a.$1.compareTo(b.$1));
+  for (var i = 1; i < remplacements.length; i++) {
+    if (remplacements[i].$1 < remplacements[i - 1].$2) {
+      throw const GeneralisationException(
+          'deux suggestions sur la même mention, ou qui se chevauchent');
+    }
+  }
+  final sortie = StringBuffer();
+  var curseur = 0;
+  for (final (debut, fin, libelle) in remplacements) {
+    sortie
+      ..write(texte.substring(curseur, debut))
+      ..write(libelle);
+    curseur = fin;
+  }
+  sortie.write(texte.substring(curseur));
+  final generalise = sortie.toString();
+  return RedactResult(
+    maskedText: generalise,
+    mapping: resultat.mapping,
+    entities: resultat.entities,
+    warnings: resultat.warnings,
+    risque: evaluerRisque(reference, generalise),
+    manuelles: resultat.manuelles,
+  );
+}

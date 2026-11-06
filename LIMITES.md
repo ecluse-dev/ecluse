@@ -40,7 +40,8 @@ absence de protection connue.
 7. **Pathologies : signalées, jamais masquées ni comptées.** Le rapport de
    risque liste les pathologies rattachées à une personne (« atteinte de la
    maladie de Huntington ») mais elles **restent en clair** et n'entrent pas
-   dans l'estimation (§ 3). La table des pathologies fréquentes est
+   dans l'estimation (§ 3) ; une généralisation est proposée, appliquée
+   seulement sur demande. La table des pathologies fréquentes est
    provisoire.
 8. **Textes tout en minuscules ou tout en capitales** : des détecteurs
    dédiés rattrapent noms, adresses et établissements, avec une fiabilité
@@ -176,7 +177,11 @@ provisoire et Orphanet), leur rattachement à une personne et leur négation.
 Depuis P2-127, le rapport de risque **liste** les pathologies rattachées
 (`RiskReport.pathologies`, et une ligne dans `limites`), mais elles **ne
 comptent pas dans l'estimation** (aucune prévalence ne permet de chiffrer F)
-et **restent en clair** : rien n'est masqué ni généralisé. Les maladies rares
+et **restent en clair** : rien n'est masqué. Depuis P2-135, le rapport
+propose des généralisations (catégorie, puis « maladie rare » ou « maladie
+chronique ») que l'application applique **sur demande**
+(`appliquerGeneralisationsPathologie`), sans F chiffré ; les formes
+adjectivales (« diabétique ») n'en reçoivent pas. Les maladies rares
 ne sont repérées que si l'appelant a chargé `reference.rareDiseases`. La
 table des pathologies fréquentes n'est pas validée cliniquement.
 

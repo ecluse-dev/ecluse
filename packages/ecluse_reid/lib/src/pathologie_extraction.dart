@@ -33,6 +33,7 @@ class PathologieMention {
     required this.source,
     required this.rattachee,
     this.niee = false,
+    this.adjectif = false,
   });
 
   final int start;
@@ -57,6 +58,11 @@ class PathologieMention {
   /// la mention de peu : la pathologie est citée pour dire qu'elle est
   /// absente (P2-126). Jamais rattachée.
   final bool niee;
+
+  /// Forme adjectivale (« diabétique ») : elle qualifie la personne et ne se
+  /// remplace pas par un nom de catégorie sans réécrire la phrase ; aucune
+  /// généralisation n'est proposée pour elle (P2-135).
+  final bool adjectif;
 
   @override
   String toString() =>
@@ -256,6 +262,13 @@ Map<String, (String, String)> _adjectifs() => _indexAdjectifs ??= {
 /// longue sans point perd le rattachement de ses derniers éléments.
 const int _fenetre = 300;
 
+/// « de » ou « d' » suivi d'un nom propre, juste après une mention.
+final RegExp _eponyme = RegExp(
+    r"[ \t\u00A0]+(?:de[ \t\u00A0]+|d['’])"
+    r'(?!(?:Mme|Mlle|Monsieur|Madame|Mademoiselle|Dr|Pr|M)(?![\p{L}]))'
+    r"\p{Lu}[\p{L}'’-]*",
+    unicode: true);
+
 const int _longueurMax = 10;
 
 final RegExp _jeton = RegExp(r'[\p{L}\p{N}]+', unicode: true);
@@ -296,7 +309,20 @@ List<PathologieMention> extrairePathologies(
         meilleure = _mention(text, debut, finCar, adj.$2, adj.$1, 'table',
             adjectif: true);
       } else if (t != null) {
-        meilleure = _mention(text, debut, finCar, t.$2, t.$1, 'table');
+        // Éponyme accolé (« myopathie de Duchenne ») : absorbé dans la
+        // mention. Sans cela, généraliser « myopathie » laissait « maladie
+        // neurologique de Duchenne » : le nom propre restait visible (P2-135).
+        final e = _eponyme.matchAsPrefix(text, finCar);
+        final finMention = e == null ? finCar : e.end;
+        meilleure = _mention(text, debut, finMention, t.$2, t.$1, 'table');
+        if (e != null) {
+          var k = i + n - 1;
+          while (k + 1 < jetons.length && jetons[k + 1].end <= finMention) {
+            k++;
+          }
+          fin = k;
+          break;
+        }
       } else if (catalogue != null) {
         final codes = catalogue.codesForMention(cle);
         if (codes.isNotEmpty) {
@@ -351,5 +377,48 @@ PathologieMention _mention(String text, int start, int end, String categorie,
     source: source,
     rattachee: rattachee,
     niee: niee,
+    adjectif: adjectif,
   );
+}
+
+/// Libellés de systèmes, au féminin ou au genre de leur nom, pour la
+/// généralisation d'une pathologie fréquente (P2-135).
+const Map<String, String> _libellesSystemes = {
+  'neurologique': 'maladie neurologique',
+  'psychiatrique': 'trouble psychiatrique',
+  'cardio-vasculaire': 'maladie cardio-vasculaire',
+  'respiratoire': 'maladie respiratoire',
+  'digestif et hépatique': 'maladie digestive ou hépatique',
+  'métabolique': 'maladie métabolique',
+  'rénal': 'maladie rénale',
+  'hématologique': 'maladie hématologique',
+  'immunitaire et infectieux': 'maladie immunitaire ou infectieuse',
+  'rhumatologique': 'maladie rhumatologique',
+  'ostéo-articulaire': 'affection ostéo-articulaire',
+  'oncologique': 'maladie oncologique',
+  'génétique': 'maladie génétique',
+  'transplantation': 'suites de greffe',
+};
+
+/// Paliers de généralisation d'une pathologie, du plus précis au plus
+/// général, **sans article** pour s'insérer à la place de la mention
+/// (« atteinte de la maladie de Huntington » → « atteinte de la maladie
+/// neurologique rare » → « atteinte de la maladie rare ») (P2-135,
+/// `agent/specs/P2-07.md` § 2.3).
+///
+/// Maladie rare : catégorie Orphanet, puis « maladie rare ». Pathologie
+/// fréquente : système de la table, puis « maladie chronique ». Forme
+/// adjectivale ou niée : aucun palier. **Aucun F n'est associé** : sans
+/// prévalence, ces paliers sont des suggestions de dernier recours.
+List<String> paliersPathologie(PathologieMention m) {
+  if (m.adjectif || m.niee) return const [];
+  if (m.source == 'orphanet') {
+    final c = m.categorie;
+    return [
+      if (!c.startsWith('maladie rare (')) c[0].toLowerCase() + c.substring(1),
+      'maladie rare',
+    ];
+  }
+  final systeme = _libellesSystemes[m.systeme];
+  return [if (systeme != null) systeme, 'maladie chronique'];
 }
