@@ -37,6 +37,15 @@ absence de protection connue.
    un rapport **en option** (`riskReference:`, P2-04) avec des suggestions de
    généralisation (P2-91) ; la généralisation n'est appliquée que si
    l'application appelle `appliquerGeneralisations` (P2-92). Limites au § 7.
+7. **Pathologies : signalées, jamais masquées ni comptées.** Le rapport de
+   risque liste les pathologies rattachées à une personne (« atteinte de la
+   maladie de Huntington ») mais elles **restent en clair** et n'entrent pas
+   dans l'estimation (§ 3). La table des pathologies fréquentes est
+   provisoire.
+8. **Textes tout en minuscules ou tout en capitales** : des détecteurs
+   dédiés rattrapent noms, adresses et établissements, avec une fiabilité
+   moindre qu'en casse ordinaire ; un texte sans majuscule produit un
+   avertissement (§ 5).
 
 Le détail de chaque point suit.
 
