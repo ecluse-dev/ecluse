@@ -92,6 +92,34 @@ void main() {
     });
   });
 
+  group('formes de noms (P2-139)', () {
+    test('initiale et patronyme après un champ ou un indice', () {
+      expect(_noms('présent : t. lefèvre, excusé'), ['t. lefèvre']);
+      expect(_noms('dossier suivi par j. martin'), ['j. martin']);
+    });
+
+    test('énumération en tête de ligne : pas un nom', () {
+      expect(_noms('à faire :\na. vérifier le dossier\nb. appeler la cpam'),
+          isEmpty);
+    });
+
+    test('ordre « nom prénom » après un indice', () {
+      expect(_noms('dossier suivi par perrot olivier depuis mai'),
+          ['perrot olivier']);
+    });
+
+    test('ordre « nom prénom » avec un faux ami : rien', () {
+      expect(_noms('transmission : humeur claire et stable'), isEmpty);
+    });
+
+    test('particules après le prénom', () {
+      expect(_noms('excusé : monsieur jean de la fontaine, retenu'),
+          ['monsieur jean de la fontaine']);
+      expect(
+          _noms('vu monsieur jean de la part du service'), ['monsieur jean']);
+    });
+  });
+
   group('texte en capitales (P2-123)', () {
     test('civilité + prénom + nom, valeur relue dans l\'original', () {
       const texte = 'RDV AVEC M. JULIEN CHEVRIER AU SSIAD DE GRAY';

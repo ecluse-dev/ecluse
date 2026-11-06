@@ -29,14 +29,14 @@ Fuite au caractère (part des caractères annotés restés en clair).
 | adversarial | 18,3 % | 1,9 % | 0 % | **9,3 %** | | 61 |
 | témoin | | | | | **0** | 0 |
 | réaliste en minuscules | 2,2 % | 0 % | 0 % | **0,6 %** | | 0 |
-| adversarial en minuscules | 27,0 % | 1,9 % | 0 % | **13,4 %** | | 6 |
+| adversarial en minuscules | 5,9 % (P2-139) | 1,9 % | 0 % | **3,3 %** | | 6 |
 | témoin en minuscules | | | | | **0** | 0 |
 | réaliste en capitales | 2,2 % | 0 % | 0 % | **0,6 %** | | 0 |
-| adversarial en capitales | 18,7 % | 1,9 % | 0 % | **9,5 %** | | 52 |
+| adversarial en capitales | 5,9 % (P2-139) | 1,9 % | 0 % | **3,3 %** | | 52 |
 | témoin en capitales | | | | | **0** | 0 |
 | faux amis prénoms (P2-124) | | | | | **0** | 0 |
 | réaliste en casse de phrase (P2-138) | 2,2 % | 0 % | 0 % | **0,6 %** | | — |
-| adversarial en casse de phrase (P2-138) | 28,9 % | 1,9 % | 0 % | **14,4 %** | | — |
+| adversarial en casse de phrase (P2-138) | 9,0 % (P2-139) | 1,9 % | 0 % | **4,8 %** | | — |
 | témoin en casse de phrase (P2-138) | | | | | **0** | — |
 
 ¹ Harmonisation des re-mentions à la restauration (`LIMITES.md` § 5.3, point 5
