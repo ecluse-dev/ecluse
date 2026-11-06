@@ -27,9 +27,11 @@ final class RedactResult {
   /// sans chevauchement (voir `resolveOverlaps`).
   final List<DetectedEntity> entities;
 
-  /// Avertissements à montrer à l'utilisateur (hors texte envoyé). Pour
-  /// l'instant : un secret technique a été masqué et doit être considéré
-  /// comme compromis s'il a déjà quitté la machine.
+  /// Avertissements à montrer à l'utilisateur (hors texte envoyé) : un
+  /// secret technique a été masqué et doit être considéré comme compromis
+  /// s'il a déjà quitté la machine ; un jeton du dossier figure en clair ; le
+  /// texte n'a aucune majuscule, et les noms n'ont donc pas pu être détectés
+  /// (P2-118).
   final List<String> warnings;
 
   /// Rapport de risque de ré-identification, seulement si l'appelant a fourni

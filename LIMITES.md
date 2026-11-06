@@ -400,7 +400,10 @@ intacte, la fuite au caractère est de 100 % pour les noms, les adresses et les
 établissements (corpus flou réaliste, 400 documents), contre 27,7 % et 0 % sur
 le texte d'origine : ces détecteurs reposent sur la majuscule initiale. Cela
 vaut pour une dictée transcrite comme pour un message tapé tout en minuscules.
-**Aucun avertissement n'est émis aujourd'hui** ; relire avant envoi. Dates et
+Depuis P2-118, `Ecluse.redact` le **signale** dans `warnings` (texte d'au
+moins trois mots et sans aucune majuscule) ; il ne le corrige pas. Un texte
+plus court, ou entièrement en MAJUSCULES, n'est pas signalé ; relire avant
+envoi. Dates et
 téléphones ne sont pas touchés tant que les chiffres restent des chiffres.
 
 **Lettres hors du jeu français usuel dans un nom (P2-33).** La majuscule initiale d'un mot de
