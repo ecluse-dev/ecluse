@@ -54,6 +54,7 @@ tâche `à faire` dont toutes les dépendances sont `fusionnée`.
 | P1-34 | code | README du benchmark : résultats des entités floues dans un tableau séparé | — | fusionnée |
 | P1-35 | mesure | Presidio avec reconnaisseurs NIR/RPPS écrits à la main (objection prévisible à l'article) | P1-01 | fusionnée |
 | P1-36 | mesure | Rejouer les chiffres Écluse de l'article ([C2], [C5]) avec les détecteurs actuels | — | fusionnée |
+| P1-37 | code | `bench/ARTICLE.md` [C5] : écrire `\u00a0` au lieu d'une espace insécable littérale | P1-36 | fusionnée |
 
 ## Phase 2 — La profondeur qui rend seul
 
