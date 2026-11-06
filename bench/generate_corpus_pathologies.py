@@ -10,6 +10,10 @@ fusionnes :
             categorie et son systeme
   temoin  : memes cadres, mots de pathologie employes SANS personne malade
             (nom d'un service ou d'un reseau, sens figure) -> faux positifs
+  formes_libres : formes que P2-125/126 ne couvrent pas (« non
+            diabetique », « DT2 », « diabete : non », « BPCO ? a eliminer »,
+            fautes), une forme par document, nommee dans le champ « forme »
+            (P2-129, mesure seulement)
   variantes : une forme adjectivale annotee (« diabetique », « dialysee »)
             et souvent une negation NON annotee (« pas de BPCO connu »,
             « aucun antecedent d'epilepsie ») (P2-126)
@@ -128,6 +132,8 @@ ENTREES = [(s, c, m) for s, c, ms in TABLE for m in ms] + \
 class Doc:
     """Construit un texte en enregistrant les offsets a l'insertion."""
 
+    forme = None
+
     def __init__(self):
         self.parts, self.pathologies, self.length = [], [], 0
 
@@ -234,8 +240,72 @@ def doc_variantes(rng):
     return d
 
 
+# P2-129. (forme, annotee) : une pathologie DE LA PERSONNE est annotee ; une
+# negation, une suspicion ou une exclusion ne l'est pas. Les documents
+# tournent sur cette liste (document i -> forme i % len) : chaque forme a le
+# meme poids et ajouter des documents ne decale pas les premiers.
+FORMES_LIBRES = [
+    "non_adjectif", "sigle_dt2", "deux_points_non", "a_eliminer",
+    "suspicion", "atcd_deux_points", "faute_diabete", "faute_epilepsie",
+    "exclu_apres", "ni_apres",
+]
+# Formes annotees : (forme, mention ecrite, mention de la table).
+FORMES_LIBRES_ANNOTEES = {
+    "sigle_dt2": ("DT2", "diabète de type 2"),
+    "atcd_deux_points": ("diabète de type 2", "diabète de type 2"),
+    "faute_diabete": ("diabete", "diabète"),
+    "faute_epilepsie": ("épilépsie", "épilepsie"),
+}
+
+
+def doc_formes_libres(rng, i):
+    forme = FORMES_LIBRES[i % len(FORMES_LIBRES)]
+    d = Doc()
+    d.forme = forme
+    feminin = rng.random() < 0.5
+    prenom = rng.choice(PRENOMS_F if feminin else PRENOMS_H)
+    civ = "Mme" if feminin else "M."
+    d.add(rng.choice(CADRES)).add(f"{civ} {prenom} {rng.choice(NOMS)}")
+    atteint = "atteinte" if feminin else "atteint"
+    if forme == "non_adjectif":
+        d.add(", non " + rng.choice(["diabétique", "épileptique",
+                                     "dialysé" if not feminin else "dialysée"])
+              + ".")
+    elif forme == "deux_points_non":
+        d.add(". " + rng.choice(["Diabète", "BPCO", "Épilepsie"]) + " : non.")
+    elif forme == "a_eliminer":
+        d.add(". " + rng.choice(["BPCO", "Tuberculose", "Lupus"])
+              + " ? à éliminer.")
+    elif forme == "suspicion":
+        d.add(". Suspicion de " + rng.choice(["BPCO", "cirrhose", "lupus"])
+              + ", examens en cours.")
+    elif forme == "exclu_apres":
+        d.add(". " + rng.choice(["Diabète", "Tuberculose", "Cirrhose"])
+              + " exclu" + rng.choice(["", "e"]) + " au dernier bilan.")
+    elif forme == "ni_apres":
+        d.add(". Ni " + rng.choice(["diabète", "cirrhose"]) + " ni "
+              + rng.choice(["BPCO", "lupus"]) + " connus.")
+    else:
+        ecrit, de_table = FORMES_LIBRES_ANNOTEES[forme]
+        systeme, categorie = _categorie(de_table)
+        if forme == "sigle_dt2":
+            d.add(f", {atteint} de ").pathologie(systeme, categorie, ecrit)
+            d.add(".")
+        elif forme == "atcd_deux_points":
+            d.add(". ATCD : ").pathologie(systeme, categorie, ecrit).add(".")
+        elif forme == "faute_diabete":
+            d.add(f", {atteint} de ").pathologie(systeme, categorie, ecrit)
+            d.add(".")
+        else:
+            d.add(f", suivi{'e' if feminin else ''} pour ")
+            d.pathologie(systeme, categorie, ecrit).add(" depuis 2019.")
+    d.add(rng.choice(SUITES_F if feminin else SUITES_H))
+    return d
+
+
 FABRIQUES = [("indices", doc_indices), ("temoin", doc_temoin),
-             ("variantes", doc_variantes)]
+             ("variantes", doc_variantes),
+             ("formes_libres", doc_formes_libres)]
 
 
 def construit(nom, n, seed):
@@ -245,9 +315,11 @@ def construit(nom, n, seed):
     fabrique = dict(FABRIQUES)[nom]
     sortie = []
     for i in range(n):
-        d = fabrique(rng)
-        sortie.append({"id": i, "text": d.text(),
-                       "pathologies": d.pathologies})
+        d = fabrique(rng, i) if nom == "formes_libres" else fabrique(rng)
+        doc = {"id": i, "text": d.text(), "pathologies": d.pathologies}
+        if d.forme:
+            doc["forme"] = d.forme
+        sortie.append(doc)
     return sortie
 
 
