@@ -62,6 +62,32 @@ void main() {
     });
   });
 
+  group('faux amis prénoms (P2-124)', () {
+    test('prénom-mot courant suivi d\'un adjectif : rien', () {
+      for (final texte in [
+        'la plaie est rose pâle ce matin',
+        'nuit blanche agitée dans le couloir',
+        'infusion de violette proposée au goûter',
+        'parle de la victoire finale de son équipe',
+        'chambre blanche repeinte avant son retour',
+      ]) {
+        expect(_noms(texte), isEmpty, reason: texte);
+      }
+    });
+
+    test('autre prénom suivi d\'un adjectif : le prénom seul', () {
+      expect(_noms('julien agité ce matin au réveil'), ['julien']);
+    });
+
+    test('patronyme en -eux : toujours un nom', () {
+      expect(_noms('appeler camille mérieux demain'), ['camille mérieux']);
+    });
+
+    test('faux ami avec civilité : toujours un nom', () {
+      expect(_noms('vu mme rose vasseur hier'), ['mme rose vasseur']);
+    });
+  });
+
   group('texte en capitales (P2-123)', () {
     test('civilité + prénom + nom, valeur relue dans l\'original', () {
       const texte = 'RDV AVEC M. JULIEN CHEVRIER AU SSIAD DE GRAY';
