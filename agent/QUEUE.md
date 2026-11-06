@@ -196,6 +196,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-127 | code | Signaler les pathologies rattachées dans le rapport de risque (information, hors estimation) | P2-126 | fusionnée |
 | P2-128 | code | Coût linéaire du repérage des pathologies (fenêtre bornée) et tests de coût des détecteurs de casse | P2-125 | fusionnée |
 | P2-131 | code | Texte en minuscules : voie sans code postal après un indice d'adresse (« située », « demeurant ») | P2-120 | fusionnée |
+| P2-132 | code | Généralisation en département : réécrire la préposition (« habite dans le département 70 ») | P2-116 | fusionnée |
 | P2-129 | mesure | Pathologies : formes non couvertes (« non diabétique », « DT2 », négation après la mention), corpus `formes_libres` | P2-128 | à faire |
 | P2-130 | mesure | Tableau de bord des mesures : rejouer tous les corpus du dépôt sur `main` et consigner les chiffres dans `bench/ETAT.md` | P2-128 | à faire |
 
