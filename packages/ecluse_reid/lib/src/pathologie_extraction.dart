@@ -234,6 +234,12 @@ Map<String, (String, String)> _adjectifs() => _indexAdjectifs ??= {
         forme: _table()[normName(mention)]!,
     };
 
+/// Caractères lus au plus avant une mention pour y chercher une tournure de
+/// rattachement ou une négation, dans la même phrase. Comme la fenêtre de la
+/// fiche « Prénom » de `NameDetector` : 300. Une liste d'antécédents plus
+/// longue sans point perd le rattachement de ses derniers éléments.
+const int _fenetre = 300;
+
 const int _longueurMax = 10;
 
 final RegExp _jeton = RegExp(r'[\p{L}\p{N}]+', unicode: true);
@@ -300,9 +306,13 @@ List<PathologieMention> extrairePathologies(
 PathologieMention _mention(String text, int start, int end, String categorie,
     String systeme, String source,
     {bool adjectif = false}) {
-  var debutPhrase = 0;
-  for (final m in _finDePhrase.allMatches(text.substring(0, start))) {
-    debutPhrase = m.end;
+  // Fenêtre bornée avant la mention : sans elle, chaque mention relisait
+  // tout le texte qui la précède, et le coût devenait quadratique (P2-128 :
+  // 2,7 s pour 2 000 mentions, 46 s pour 8 000).
+  final base = start > _fenetre ? start - _fenetre : 0;
+  var debutPhrase = base;
+  for (final m in _finDePhrase.allMatches(text.substring(base, start))) {
+    debutPhrase = base + m.end;
   }
   final avant = normName(text.substring(debutPhrase, start));
   final mots = avant.isEmpty ? const <String>[] : avant.split(' ');
