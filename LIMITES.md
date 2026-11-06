@@ -395,6 +395,14 @@ script jetable, 371 donnaient autant de jetons qu'en forme composée ; après P2
 U+FE20 à U+FE2F) sont retirés de la vue des détecteurs et rattachés à leur lettre quand une
 entité est ramenée au texte d'origine.
 
+**Texte sans majuscules (P2-117).** Sur un texte mis en minuscules, ponctuation
+intacte, la fuite au caractère est de 100 % pour les noms, les adresses et les
+établissements (corpus flou réaliste, 400 documents), contre 27,7 % et 0 % sur
+le texte d'origine : ces détecteurs reposent sur la majuscule initiale. Cela
+vaut pour une dictée transcrite comme pour un message tapé tout en minuscules.
+**Aucun avertissement n'est émis aujourd'hui** ; relire avant envoi. Dates et
+téléphones ne sont pas touchés tant que les chiffres restent des chiffres.
+
 **Lettres hors du jeu français usuel dans un nom (P2-33).** La majuscule initiale d'un mot de
 nom ne couvrait que A-Z et quelques lettres françaises : un nom commençant par Á, Ó, Ñ, Œ,
 Ł, Ş, Ž… ou contenant des lettres vietnamiennes n'était masqué qu'en partie (« François Œil »
