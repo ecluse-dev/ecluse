@@ -199,8 +199,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-131 | code | Texte en minuscules : voie sans code postal après un indice d'adresse (« située », « demeurant ») | P2-120 | fusionnée |
 | P2-132 | code | Généralisation en département : réécrire la préposition (« habite dans le département 70 ») | P2-116 | fusionnée |
 | P2-133 | code | Message d'un texte sans majuscule ajusté après P2-119/120/131 (« moins sûre », plus « non détectés ») | P2-118 | fusionnée |
-| P2-129 | mesure | Pathologies : formes non couvertes (« non diabétique », « DT2 », négation après la mention), corpus `formes_libres` | P2-128 | PR ouverte |
+| P2-129 | mesure | Pathologies : formes non couvertes (« non diabétique », « DT2 », négation après la mention), corpus `formes_libres` | P2-128 | fusionnée |
 | P2-130 | mesure | Tableau de bord des mesures : rejouer tous les corpus du dépôt sur `main` et consigner les chiffres dans `bench/ETAT.md` | P2-128 | à faire |
+| P2-134 | code | Pathologies : « non » devant un adjectif, sigles DT1/DT2, « ATCD », négation après la mention (défauts mesurés par P2-129) | P2-129 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
