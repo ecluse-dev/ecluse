@@ -32,6 +32,7 @@ class PathologieMention {
     required this.systeme,
     required this.source,
     required this.rattachee,
+    this.niee = false,
   });
 
   final int start;
@@ -48,8 +49,14 @@ class PathologieMention {
   final String source;
 
   /// Une tournure de rattachement à une personne précède la mention dans la
-  /// même phrase.
+  /// même phrase, ou la mention est une forme adjectivale (« diabétique »),
+  /// et elle n'est pas niée.
   final bool rattachee;
+
+  /// Une négation (« pas de », « aucun », « absence de », « sans ») précède
+  /// la mention de peu : la pathologie est citée pour dire qu'elle est
+  /// absente (P2-126). Jamais rattachée.
+  final bool niee;
 
   @override
   String toString() =>
@@ -190,6 +197,43 @@ const List<String> _tournures = [
   'CONNU POUR', 'CONNUE POUR', 'PRESENTE UN', 'PRESENTE UNE', //
 ];
 
+/// Négations, normalisées par [normName], cherchées dans les
+/// [_porteeNegation] mots qui précèdent la mention (P2-126 : « aucun
+/// antécédent de BPCO » était rattaché par « antécédent »).
+const List<String> _negations = [
+  'PAS DE', 'PAS D', 'AUCUN', 'AUCUNE', 'ABSENCE DE', 'ABSENCE D', 'SANS', //
+  'NI', 'JAMAIS DE', 'JAMAIS D', 'EXCLU', 'ECARTE', //
+];
+const int _porteeNegation = 5;
+
+/// Formes adjectivales qui qualifient une personne (« Mme X, diabétique »),
+/// rattachées à la mention de la table dont elles relèvent (P2-126).
+/// Liste écrite par le projet, provisoire comme la table. Comparées en
+/// minuscules **avec** leurs accents.
+const Map<String, String> formesAdjectivalesProvisoires = {
+  'diabétique': 'diabète', 'épileptique': 'épilepsie', //
+  'parkinsonien': 'maladie de Parkinson', //
+  'parkinsonienne': 'maladie de Parkinson', //
+  'hémophile': 'hémophilie', 'schizophrène': 'schizophrénie', //
+  'paraplégique': 'paraplégie', 'tétraplégique': 'tétraplégie', //
+  'dialysé': 'dialyse', 'dialysée': 'dialyse', //
+  'cirrhotique': 'cirrhose', 'drépanocytaire': 'drépanocytose', //
+  'séropositif': 'séropositivité', 'séropositive': 'séropositivité', //
+  'bipolaire': 'trouble bipolaire', //
+  'insuffisant cardiaque': 'insuffisance cardiaque', //
+  'insuffisante cardiaque': 'insuffisance cardiaque', //
+  'insuffisant rénal': 'insuffisance rénale chronique', //
+  'insuffisante rénale': 'insuffisance rénale chronique', //
+};
+
+Map<String, (String, String)>? _indexAdjectifs;
+
+Map<String, (String, String)> _adjectifs() => _indexAdjectifs ??= {
+      for (final MapEntry(key: forme, value: mention)
+          in formesAdjectivalesProvisoires.entries)
+        forme: _table()[normName(mention)]!,
+    };
+
 const int _longueurMax = 10;
 
 final RegExp _jeton = RegExp(r'[\p{L}\p{N}]+', unicode: true);
@@ -222,8 +266,14 @@ List<PathologieMention> extrairePathologies(
       final debut = jetons[i].start;
       final finCar = jetons[i + n - 1].end;
       final cle = normName(text.substring(debut, finCar));
-      final t = table[cle];
-      if (t != null) {
+      // Forme adjectivale d'abord, accents compris : « dialysé » et
+      // « dialyse » ont la même forme normalisée (P2-126).
+      final adj = _adjectifs()[text.substring(debut, finCar).toLowerCase()];
+      final t = adj == null ? table[cle] : null;
+      if (adj != null) {
+        meilleure = _mention(text, debut, finCar, adj.$2, adj.$1, 'table',
+            adjectif: true);
+      } else if (t != null) {
         meilleure = _mention(text, debut, finCar, t.$2, t.$1, 'table');
       } else if (catalogue != null) {
         final codes = catalogue.codesForMention(cle);
@@ -248,13 +298,19 @@ List<PathologieMention> extrairePathologies(
 }
 
 PathologieMention _mention(String text, int start, int end, String categorie,
-    String systeme, String source) {
+    String systeme, String source,
+    {bool adjectif = false}) {
   var debutPhrase = 0;
   for (final m in _finDePhrase.allMatches(text.substring(0, start))) {
     debutPhrase = m.end;
   }
   final avant = normName(text.substring(debutPhrase, start));
-  final rattachee = _tournures.any((t) => ' $avant '.contains(' $t '));
+  final mots = avant.isEmpty ? const <String>[] : avant.split(' ');
+  final proches = mots.sublist(
+      mots.length > _porteeNegation ? mots.length - _porteeNegation : 0);
+  final niee = _negations.any((n) => ' ${proches.join(' ')} '.contains(' $n '));
+  final rattachee =
+      !niee && (adjectif || _tournures.any((t) => ' $avant '.contains(' $t ')));
   return PathologieMention(
     start: start,
     end: end,
@@ -263,5 +319,6 @@ PathologieMention _mention(String text, int start, int end, String categorie,
     systeme: systeme,
     source: source,
     rattachee: rattachee,
+    niee: niee,
   );
 }

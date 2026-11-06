@@ -75,4 +75,41 @@ void main() {
   test('texte sans pathologie : rien', () {
     expect(extrait('Rendez-vous avec la direction demain matin.'), isEmpty);
   });
+
+  group('négations et formes adjectivales (P2-126)', () {
+    test('négation : repérée, niée, jamais rattachée', () {
+      for (final texte in [
+        'Aucun antécédent de BPCO.',
+        'Pas de diabète connu.',
+        'Absence de tuberculose.',
+        "Sans antécédent d'épilepsie dans la famille.",
+      ]) {
+        final m = extrait(texte).single;
+        expect(m.niee, isTrue, reason: texte);
+        expect(m.rattachee, isFalse, reason: texte);
+      }
+    });
+
+    test('la négation ne porte pas au-delà de sa phrase', () {
+      final ms = extrait('Pas de fièvre. Antécédents : BPCO.');
+      expect(ms.single.rattachee, isTrue);
+    });
+
+    test('forme adjectivale : rattachée, catégorie de la table', () {
+      final m = extrait('Mme Odile Benali, diabétique, est arrivée.').single;
+      expect(m.text, 'diabétique');
+      expect(m.categorie, 'diabète de type 1 et de type 2');
+      expect(m.rattachee, isTrue);
+    });
+
+    test('« dialysé » (adjectif) et « dialyse » (nom) distingués', () {
+      expect(
+          extrait('M. Rémi Faure, dialysé, sollicite un rendez-vous.')
+              .single
+              .rattachee,
+          isTrue);
+      expect(
+          extrait('La salle de dialyse est fermée.').single.rattachee, isFalse);
+    });
+  });
 }

@@ -10,6 +10,9 @@ fusionnes :
             categorie et son systeme
   temoin  : memes cadres, mots de pathologie employes SANS personne malade
             (nom d'un service ou d'un reseau, sens figure) -> faux positifs
+  variantes : une forme adjectivale annotee (« diabetique », « dialysee »)
+            et souvent une negation NON annotee (« pas de BPCO connu »,
+            « aucun antecedent d'epilepsie ») (P2-126)
 
 **Provisoire** : les mentions, categories et systemes viennent de la table
 maison `agent/specs/P2-94-table.md` § 3, PAS ENCORE VALIDEE cliniquement
@@ -109,6 +112,15 @@ TEMOINS = [
     "Colloque régional sur la mucoviscidose le mois prochain.",
 ]
 
+ENTREES_TABLE = [(s, c, m) for s, c, ms in TABLE for m in ms] + [
+    # Mentions de la table de P2-94 absentes des indices, utiles aux
+    # variantes (P2-126).
+    ("métabolique", "diabète de type 1 et de type 2", "diabète"),
+    ("rénal", "néphropathie chronique grave", "dialyse"),
+    ("immunitaire et infectieux",
+     "déficit immunitaire primitif grave, infection par le VIH",
+     "séropositivité"),
+]
 ENTREES = [(s, c, m) for s, c, ms in TABLE for m in ms] + \
     [("maladie rare", "maladie rare", m) for m in RARES]
 
@@ -166,7 +178,64 @@ def doc_temoin(rng):
     return d
 
 
-FABRIQUES = [("indices", doc_indices), ("temoin", doc_temoin)]
+# Formes adjectivales : (masculin, feminin, mention de la table dont elles
+# relevent). P2-126.
+ADJECTIFS = [
+    ("diabétique", "diabétique", "diabète"),
+    ("épileptique", "épileptique", "épilepsie"),
+    ("parkinsonien", "parkinsonienne", "maladie de Parkinson"),
+    ("hémophile", "hémophile", "hémophilie"),
+    ("schizophrène", "schizophrène", "schizophrénie"),
+    ("paraplégique", "paraplégique", "paraplégie"),
+    ("tétraplégique", "tétraplégique", "tétraplégie"),
+    ("dialysé", "dialysée", "dialyse"),
+    ("cirrhotique", "cirrhotique", "cirrhose"),
+    ("drépanocytaire", "drépanocytaire", "drépanocytose"),
+    ("séropositif", "séropositive", "séropositivité"),
+    ("bipolaire", "bipolaire", "trouble bipolaire"),
+]
+
+# Negations : la pathologie est citee pour dire qu'elle est ABSENTE. Rien a
+# annoter : ce n'est pas un indice sur la personne.
+NEGATIONS = [
+    "Pas de {m} connu.", "Aucun antécédent de {m}.", "Absence de {m}.",
+    "Sans antécédent de {m} dans la famille.", "Pas d'argument pour une {m}.",
+]
+NEGATIONS_MENTIONS = ["diabète", "épilepsie", "BPCO", "tuberculose",
+                      "cirrhose", "drépanocytose"]
+
+
+def _categorie(mention):
+    for s, c, m in ENTREES_TABLE:
+        if m == mention:
+            return s, c
+    raise KeyError(mention)
+
+
+def doc_variantes(rng):
+    """Une forme adjectivale annotee, et parfois une negation non annotee."""
+    d = Doc()
+    feminin = rng.random() < 0.5
+    prenom = rng.choice(PRENOMS_F if feminin else PRENOMS_H)
+    civ = "Mme" if feminin else "M."
+    d.add(rng.choice(CADRES)).add(f"{civ} {prenom} {rng.choice(NOMS)}, ")
+    masc, fem, mention = rng.choice(ADJECTIFS)
+    systeme, categorie = _categorie(mention)
+    d.pathologie(systeme, categorie, fem if feminin else masc)
+    d.add(rng.choice([", est arrivé" + ("e" if feminin else "") +
+                      " ce matin.", ", sollicite un rendez-vous."]))
+    if rng.random() < 0.7:
+        neg = rng.choice(NEGATIONS_MENTIONS)
+        gabarit = rng.choice(NEGATIONS)
+        if "une {m}" in gabarit and neg in ("diabète", "BPCO"):
+            gabarit = "Pas de {m} connu."
+        phrase = gabarit.format(m=neg).replace(" de é", " d'é")
+        d.add(" ").add(phrase)
+    return d
+
+
+FABRIQUES = [("indices", doc_indices), ("temoin", doc_temoin),
+             ("variantes", doc_variantes)]
 
 
 def construit(nom, n, seed):
