@@ -204,6 +204,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-134 | code | Pathologies : « non » devant un adjectif, sigles DT1/DT2, « ATCD », négation après la mention (défauts mesurés par P2-129) | P2-129 | fusionnée |
 | P2-135 | code | Généraliser une pathologie sur demande (catégorie → générique), sans F ; éponyme accolé absorbé | P2-127 | fusionnée |
 | P2-136 | code | QI : durées (« pour 9 ans ») et communes-mots courants (« Tours de garde ») écartés ; témoin 412 → 57 | P2-130 | fusionnée |
+| P2-137 | code | Démo : texte et consigne masqués séparément dans un `Dossier` (la consigne « Résume. » désactivait les détecteurs de casse), avertissements affichés | P2-133 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 

@@ -440,6 +440,23 @@
     font-weight: 700;
   }
 
+  /* Avertissements du moteur (P2-137) : ce que le masquage n'a pas pu
+     garantir. Même encadré que le statut, pour rester lisible dans les deux
+     thèmes. */
+  .warnings {
+    border: 1px solid var(--status-border, var(--border));
+    background: var(--status-bg, var(--panel-bg));
+    color: var(--text);
+    border-radius: 8px;
+    padding: 0.45rem 0.7rem;
+    margin-bottom: 0.7rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+  .warnings[hidden] { display: none; }
+  .warnings p { margin: 0; }
+  .warnings p + p { margin-top: 0.3rem; }
+
   .panel-content {
     flex: 1;
     overflow: auto;
@@ -577,6 +594,7 @@
         </svg>
         <div class="counter" id="counter"></div>
       </div>
+      <div class="warnings" id="warnings" role="status" hidden></div>
       <div class="panel-content empty" id="panel-masked">
         Le texte masqué apparaîtra ici.
       </div>
@@ -746,6 +764,10 @@
     setPanel('panel-restored', highlightByValues(data.restoredText, data.entities), false);
     document.getElementById('counter').textContent =
       data.entities.length > 0 ? countsSentence(data.entities) : 'Aucun élément détecté.';
+    const warnings = document.getElementById('warnings');
+    const liste = Array.isArray(data.warnings) ? data.warnings : [];
+    warnings.innerHTML = liste.map((w) => '<p>⚠ ' + escapeHtml(w) + '</p>').join('');
+    warnings.hidden = liste.length === 0;
   }
 
   async function loadSamples() {

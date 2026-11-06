@@ -53,6 +53,27 @@ void main() {
       expect(result.maskedText, isNot(contains('julien.vasseur')));
     });
 
+    test('texte en minuscules, consigne capitalisée : noms masqués (P2-137)',
+        () async {
+      final client = _EchoClient();
+      final service = RedactService(client);
+      const text = 'rdv avec m. julien chevrier au ssiad de gray demain';
+      final result = await service.process(text, instruction: 'Résume.');
+      expect(client.lastReceivedText, isNot(contains('chevrier')));
+      expect(result.warnings.join(), contains('aucune majuscule'));
+      expect(result.restoredText, text);
+    });
+
+    test('une personne citée dans la consigne garde le jeton du texte',
+        () async {
+      final client = _EchoClient();
+      final service = RedactService(client);
+      await service.process('M. Jean Dupont est arrivé.',
+          instruction: 'Résume le cas de M. Dupont.');
+      expect(client.lastReceivedInstruction, isNot(contains('Dupont')));
+      expect(client.lastReceivedInstruction, contains('[NOM_1]'));
+    });
+
     test('une erreur LLM se propage sans planter (LlmError typée)', () async {
       final service = RedactService(_FailingClient());
       await expectLater(

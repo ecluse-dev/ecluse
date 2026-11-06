@@ -77,6 +77,7 @@ void main() {
 
       expect(response.statusCode, 200);
       expect(body['maskedText'], contains('[NOM_1]'));
+      expect(body['warnings'], isA<List<dynamic>>());
       expect(body['restoredText'], 'M. Jean Dupont est arrivé.');
       expect(body.containsKey('mapping'), isFalse);
     });
