@@ -1,5 +1,6 @@
 import 'package:ecluse_core/ecluse_core.dart';
 import 'package:ecluse_redact/ecluse_redact.dart';
+import 'package:ecluse_reference/ecluse_reference.dart';
 
 import 'llm_client.dart';
 
@@ -14,6 +15,7 @@ final class ProcessResult {
     required this.llmResponse,
     required this.restoredText,
     this.warnings = const [],
+    this.risque,
   });
 
   final String originalText;
@@ -30,15 +32,23 @@ final class ProcessResult {
   /// montrer à l'utilisateur : ils disent ce que le masquage n'a pas pu
   /// garantir (P2-137).
   final List<String> warnings;
+
+  /// Rapport de risque du texte masqué, si la démo a une référence (P2-141).
+  final RiskReport? risque;
 }
 
 /// Orchestre le trajet complet : masquage local, appel LLM, restauration
 /// locale. La table de correspondance jeton ↔ valeur réelle (`mapping`)
 /// ne sort jamais de cette méthode.
 final class RedactService {
-  const RedactService(this._llmClient);
+  const RedactService(this._llmClient, {this.reference});
 
   final LlmClient _llmClient;
+
+  /// Référence publique chargée (communes, professions, Orphanet). Avec elle,
+  /// la démo affiche le rapport de risque de ré-identification et les
+  /// pathologies signalées (P2-141) ; sans elle, rien n'est évalué.
+  final EcluseReference? reference;
 
   Future<ProcessResult> process(
     String text, {
@@ -59,7 +69,8 @@ final class RedactService {
     }
     final dossier = Dossier(regle: RegleNoms.inclusion);
     try {
-      final redacted = await Ecluse.redact(text, dossier: dossier);
+      final redacted =
+          await Ecluse.redact(text, dossier: dossier, riskReference: reference);
       final consigne = await Ecluse.redact(instruction, dossier: dossier);
       final maskedText = redacted.maskedText;
       final maskedInstruction = consigne.maskedText;
@@ -80,6 +91,7 @@ final class RedactService {
         llmResponse: llmResponse,
         restoredText: restoredText,
         warnings: warnings,
+        risque: redacted.risque,
       );
     } finally {
       // La table de correspondance ne survit pas à la requête.

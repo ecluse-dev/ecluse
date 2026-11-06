@@ -1,4 +1,5 @@
 import 'package:ecluse_demo/ecluse_demo.dart';
+import 'package:ecluse_reference/ecluse_reference.dart';
 import 'package:test/test.dart';
 
 /// Client LLM factice : renvoie le texte reçu tel quel, et enregistre ce
@@ -72,6 +73,28 @@ void main() {
           instruction: 'Résume le cas de M. Dupont.');
       expect(client.lastReceivedInstruction, isNot(contains('Dupont')));
       expect(client.lastReceivedInstruction, contains('[NOM_1]'));
+    });
+
+    test('avec référence : rapport de risque et pathologie (P2-141)', () async {
+      final ref =
+          EcluseReference(fileAssets(assetsDir: '../ecluse_reference/assets'));
+      await ref.preload();
+      await ref.rareDiseases.load();
+      final service = RedactService(_EchoClient(), reference: ref);
+      final r = await service.process(
+          'Mme Sophie Verdier, 74 ans, pneumologue à Thionville, atteinte de '
+          'la maladie de Huntington.',
+          instruction: 'Résume.');
+      expect(r.risque, isNotNull);
+      expect(r.risque!.evaluation.spans, isNotEmpty);
+      expect([for (final p in r.risque!.pathologies) p.text],
+          ['maladie de Huntington']);
+    });
+
+    test('sans référence : aucun rapport', () async {
+      final r = await RedactService(_EchoClient())
+          .process('M. Jean Dupont, 74 ans.', instruction: 'Résume.');
+      expect(r.risque, isNull);
     });
 
     test('une erreur LLM se propage sans planter (LlmError typée)', () async {

@@ -595,6 +595,7 @@
         <div class="counter" id="counter"></div>
       </div>
       <div class="warnings" id="warnings" role="status" hidden></div>
+      <div class="warnings" id="risque" role="status" hidden></div>
       <div class="panel-content empty" id="panel-masked">
         Le texte masqué apparaîtra ici.
       </div>
@@ -768,6 +769,39 @@
     const liste = Array.isArray(data.warnings) ? data.warnings : [];
     warnings.innerHTML = liste.map((w) => '<p>⚠ ' + escapeHtml(w) + '</p>').join('');
     warnings.hidden = liste.length === 0;
+    renderRisque(data.risque);
+  }
+
+  // Rapport de risque de ré-identification (P2-141). Tout vient du texte
+  // masqué : ce qui reste visible une fois les identifiants retirés.
+  const BANDES = { eleve: 'élevé', moyen: 'moyen', faible: 'faible' };
+  const TYPES_QI = { age: 'âge', lieu: 'lieu', profession: 'profession' };
+  function renderRisque(r) {
+    const el = document.getElementById('risque');
+    if (!r) { el.hidden = true; el.innerHTML = ''; return; }
+    const lignes = [];
+    if (r.statut === 'evalue' && r.bande) {
+      const f = r.f >= 1000 ? Math.round(r.f).toLocaleString('fr-FR') : (Math.round(r.f * 10) / 10).toLocaleString('fr-FR');
+      lignes.push('<strong>Risque de ré-identification : ' + escapeHtml(BANDES[r.bande] || r.bande) +
+        '</strong> (environ ' + escapeHtml(f) + ' personne(s) partagent ces indices' +
+        (r.bornee ? ', estimation haute' : '') + ').');
+    } else if (r.statut === 'aucunQi') {
+      lignes.push('<strong>Risque de ré-identification :</strong> aucun indice repéré (âge, lieu, profession). Ce n\'est pas une garantie.');
+    } else {
+      lignes.push('<strong>Risque de ré-identification : non évaluable.</strong> ' + escapeHtml((r.motifs || []).join(' ; ')));
+    }
+    if (r.qis && r.qis.length) {
+      lignes.push('Indices restés visibles : ' + r.qis.map((q) => escapeHtml((TYPES_QI[q.type] || q.type) + ' « ' + q.texte + ' »')).join(', ') + '.');
+    }
+    if (r.pathologies && r.pathologies.length) {
+      lignes.push('Pathologies restées visibles (non comptées dans l\'estimation) : ' +
+        r.pathologies.map((p) => escapeHtml('« ' + p.texte + ' » (' + p.categorie + ')')).join(', ') + '.');
+    }
+    if (r.suggestions > 0) {
+      lignes.push(r.suggestions + ' généralisation(s) possible(s), non appliquée(s).');
+    }
+    el.innerHTML = lignes.map((l) => '<p>' + l + '</p>').join('');
+    el.hidden = false;
   }
 
   async function loadSamples() {
