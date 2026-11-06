@@ -1333,11 +1333,13 @@ pas une garantie d'anonymat. Limites connues :
   professions généralisées (« médecin (toute spécialité) ») se relisent à
   leur palier ; avant, la mesure P2-93 trouvait F inchangé ou en baisse dans
   6 documents sur 170 (réaliste), 32 documents adversariaux devenus non
-  évaluables, et un bouclage sur les âges de 100 ans et plus. **Le lieu
-  généralisé (« département 57 ») n'est toujours pas relu** : le lieu
-  disparaît alors de l'estimation : F est surestimé (médiane ×157 sur 24 cas
-  mesurés) et la bande recalculée est « faible » alors que la simulation
-  annonçait « moyen » (P2-103, `agent/specs/P2-103.md`).
+  évaluables, et un bouclage sur les âges de 100 ans et plus. Le lieu
+  généralisé (« département 57 ») n'était pas relu non plus (P2-103 : F
+  surestimé, médiane ×157, bande « faible » au lieu de « moyen ») ; il l'est
+  depuis P2-116 : sur les 24 cas mesurés, F recalculé = F simulé. **Reste** :
+  le libellé se lit « habite à département 57 » (préposition d'origine
+  conservée), et le palier France n'est pas relu, ce qui revient à l'absence
+  de lieu.
 - **Rien n'est signalé dans `warnings`** : c'est l'application qui sait
   qu'elle a généralisé.
 
