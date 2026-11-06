@@ -36,4 +36,13 @@ void main() {
     expect(r.maskedText, isNot(contains('06 12 34 56 78')));
     expect(r.mapping.values, contains('06 12 34 56 78'));
   });
+
+  test('le message ne prétend plus que rien n\'est détecté (P2-133)', () async {
+    final r = await Ecluse.redact(
+        'rdv avec m. julien chevrier au ssiad de gray demain matin');
+    final w = r.warnings.firstWhere((w) => w.contains('aucune majuscule'));
+    expect(w, contains('moins sûre'));
+    expect(w, isNot(contains('ne sont pas détectés')));
+    expect(r.maskedText, isNot(contains('chevrier')));
+  });
 }
