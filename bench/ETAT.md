@@ -88,9 +88,9 @@ Repérage, mentions rattachées à une personne :
    corrigé les défauts que P2-93 mesurait. Le README garde les chiffres de
    P2-93 comme mesure d'époque.
 2. **Restaurations non identiques du flou adversarial** : 61, contre 59 dans
-   `bench/README.md`. **Non expliqué** : l'écart n'est pas analysé ici (même
-   corpus, graine 42) ; il date d'une évolution des détecteurs postérieure au
-   chiffre du README, sans que la mesure ait été refaite. À examiner par une
-   tâche dédiée.
+   `bench/README.md`. **Pas une régression du code** : le code du commit
+   `46b0f11` (celui qui a écrit « 59 ») donne lui aussi **61** sur le corpus
+   généré aujourd'hui (même graine). L'écart vient du corpus, non du moteur ;
+   le README est corrigé à 61.
 
 Tous les autres chiffres sont identiques à ceux des rapports cités.

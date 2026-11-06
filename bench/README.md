@@ -309,7 +309,7 @@ sensibles restent en clair** : surtout des prénoms hors gazetteer
 (« S. Vasseur ») et des adresses atypiques. Un NER local (phase 2) est la
 réponse prévue, pas ces heuristiques.
 
-**Restauration.** Le runner signale 59 documents du corpus adversarial dont
+**Restauration.** Le runner signale 61 documents du corpus adversarial dont
 la restauration n'est pas octet pour octet (0 sur le corpus réaliste). Ce
 sont les variantes d'ordre ou de casse d'une même personne
 (« PERROT Olivier », « Olivier Perrot », « OLIVIER PERROT »), harmonisées sur
