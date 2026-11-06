@@ -298,6 +298,7 @@ abstract final class Ecluse {
           'Un secret a été masqué ($secretCount occurrence'
               '${secretCount > 1 ? 's' : ''}) : pensez à le révoquer s\'il a '
               'déjà été partagé ailleurs.',
+        if (_sansMajuscule(text)) _avertissementSansMajuscule,
         for (final token in litteraux)
           'Le texte contient en clair $token (littéral), jeton déjà attribué '
               'dans ce dossier : il sera remplacé à la restauration, qui ne '
@@ -307,6 +308,24 @@ abstract final class Ecluse {
           ? null
           : evaluerRisque(riskReference, maskedText),
     );
+  }
+
+  /// Avertissement d'un texte sans aucune majuscule (P2-118). Mesure P2-117 :
+  /// les détecteurs de noms, d'adresses et d'établissements reposent sur la
+  /// majuscule initiale ; sur un texte en minuscules, leur fuite passe à
+  /// 100 %. Sans ce message, le résultat ressemblait à un texte sans donnée
+  /// nominative (règle 4 : pas d'échec silencieux).
+  static const String _avertissementSansMajuscule =
+      'Le texte ne contient aucune majuscule : les noms, adresses et '
+      'établissements écrits en minuscules ne sont pas détectés. Relisez le '
+      'texte avant de l\'envoyer.';
+
+  /// Au moins trois mots de deux lettres ou plus, et aucune lettre
+  /// majuscule. En deçà (« ok merci », un numéro seul), le message serait du
+  /// bruit ; un texte entièrement en MAJUSCULES n'est pas concerné ici.
+  static bool _sansMajuscule(String text) {
+    if (text.contains(RegExp(r'\p{Lu}', unicode: true))) return false;
+    return RegExp(r'\p{Ll}{2,}', unicode: true).allMatches(text).length >= 3;
   }
 
   /// Remplace chaque jeton présent dans [text] par sa valeur réelle depuis
