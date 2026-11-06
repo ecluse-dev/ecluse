@@ -646,6 +646,12 @@
     etablissement: 'établissements',
   };
 
+  // Singulier des libellés du compteur (« 1 nom », pas « 1 noms »).
+  const TYPE_LABELS_UN = {
+    nom: 'nom', dateNaissance: 'date de naissance', adresse: 'adresse',
+    telephone: 'téléphone', email: 'email', etablissement: 'établissement',
+  };
+
   let samples = [];
 
   function escapeHtml(s) {
@@ -742,7 +748,7 @@
     for (const e of entities) counts[e.type] = (counts[e.type] || 0) + 1;
     const total = entities.length;
     const parts = Object.entries(counts).map(
-      ([type, n]) => `${n} ${TYPE_LABELS[type] || type}`,
+      ([type, n]) => `${n} ${(n === 1 && TYPE_LABELS_UN[type]) || TYPE_LABELS[type] || type}`,
     );
     const plural = total > 1 ? 's' : '';
     return `${total} élément${plural} protégé${plural} : ${parts.join(', ')}`;
@@ -783,7 +789,7 @@
     if (r.statut === 'evalue' && r.bande) {
       const f = r.f >= 1000 ? Math.round(r.f).toLocaleString('fr-FR') : (Math.round(r.f * 10) / 10).toLocaleString('fr-FR');
       lignes.push('<strong>Risque de ré-identification : ' + escapeHtml(BANDES[r.bande] || r.bande) +
-        '</strong> (environ ' + escapeHtml(f) + ' personne(s) partagent ces indices' +
+        '</strong> (environ ' + escapeHtml(f) + (r.f < 2 ? ' personne partage' : ' personnes partagent') + ' ces indices' +
         (r.bornee ? ', estimation haute' : '') + ').');
     } else if (r.statut === 'aucunQi') {
       lignes.push('<strong>Risque de ré-identification :</strong> aucun indice repéré (âge, lieu, profession). Ce n\'est pas une garantie.');
@@ -798,7 +804,9 @@
         r.pathologies.map((p) => escapeHtml('« ' + p.texte + ' » (' + p.categorie + ')')).join(', ') + '.');
     }
     if (r.suggestions > 0) {
-      lignes.push(r.suggestions + ' généralisation(s) possible(s), non appliquée(s).');
+      lignes.push(r.suggestions > 1
+        ? r.suggestions + ' généralisations possibles, non appliquées.'
+        : '1 généralisation possible, non appliquée.');
     }
     el.innerHTML = lignes.map((l) => '<p>' + l + '</p>').join('');
     el.hidden = false;
