@@ -90,7 +90,10 @@ Repérage, mentions rattachées à une personne :
 2. **Restaurations non identiques du flou adversarial** : 61, contre 59 dans
    `bench/README.md`. **Pas une régression du code** : le code du commit
    `46b0f11` (celui qui a écrit « 59 ») donne lui aussi **61** sur le corpus
-   généré aujourd'hui (même graine). L'écart vient du corpus, non du moteur ;
-   le README est corrigé à 61.
+   généré aujourd'hui (même graine), et le générateur n'a pas changé depuis.
+   Le chiffre 59 ne se reproduit donc pas au commit qui l'a écrit : il venait
+   d'un état antérieur, que l'historique (repris à `46b0f11`) ne permet plus
+   de rejouer. Le moteur actuel n'a pas régressé sur ce point ; le README est
+   corrigé à 61.
 
 Tous les autres chiffres sont identiques à ceux des rapports cités.
