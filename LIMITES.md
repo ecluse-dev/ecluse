@@ -161,12 +161,15 @@ Il **ne change pas le texte envoyé** : le lieu reste en clair tant que
 l'application n'agit pas (la généralisation appliquée est prévue ensuite, à la
 demande de l'appelant). Sans référence, rien n'est évalué et `risque` est nul.
 
-**Pathologies : repérées, pas évaluées (P2-125).** `extrairePathologies`
-repère les mentions de pathologie (table maison provisoire et Orphanet) et
-leur rattachement à une personne, mais **n'est branché ni sur le rapport de
-risque ni sur le masquage** : « atteinte de la maladie de Huntington » reste
-en clair et ne compte pas dans le risque. La table des pathologies fréquentes
-n'est pas validée cliniquement.
+**Pathologies : signalées, pas évaluées (P2-125 à P2-127).**
+`extrairePathologies` repère les mentions de pathologie (table maison
+provisoire et Orphanet), leur rattachement à une personne et leur négation.
+Depuis P2-127, le rapport de risque **liste** les pathologies rattachées
+(`RiskReport.pathologies`, et une ligne dans `limites`), mais elles **ne
+comptent pas dans l'estimation** (aucune prévalence ne permet de chiffrer F)
+et **restent en clair** : rien n'est masqué ni généralisé. Les maladies rares
+ne sont repérées que si l'appelant a chargé `reference.rareDiseases`. La
+table des pathologies fréquentes n'est pas validée cliniquement.
 
 ## 4. Fichiers pris en charge (`ecluse_ingest`)
 
