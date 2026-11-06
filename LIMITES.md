@@ -426,8 +426,12 @@ téléphones ne sont pas touchés tant que les chiffres restent des chiffres.
 rapport à la casse ordinaire (corpus flou réaliste : 7,5 % → 14,8 % ;
 établissements 0 % → 27,2 %, noms 27,7 % → 35,6 %), et faux positifs
 d'adresse sur des montants ou des références (« 70000 EUROS », « 75015 POUR
-L'ANTENNE ») : 194 sur le témoin. Aucun avertissement n'est émis pour ce
-cas.
+L'ANTENNE ») : 194 sur le témoin. Depuis P2-122 : `AdresseDetector`
+écarte en capitales une commune qui commence par un mot neutre, et les
+établissements passent par le texte d'ombre de P2-120 ; fuite globale
+14,8 % → 9,7 % (réaliste), établissements 27,2 % → 0 %, **0 faux positif** sur
+le témoin. **Les noms en capitales restent à 35,6 %** (contre 27,7 % en casse
+ordinaire), et aucun avertissement n'est émis pour ce cas.
 
 **Lettres hors du jeu français usuel dans un nom (P2-33).** La majuscule initiale d'un mot de
 nom ne couvrait que A-Z et quelques lettres françaises : un nom commençant par Á, Ó, Ñ, Œ,

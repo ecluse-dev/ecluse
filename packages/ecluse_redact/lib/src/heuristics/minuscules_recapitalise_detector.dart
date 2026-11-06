@@ -1,6 +1,7 @@
 import 'package:ecluse_core/ecluse_core.dart';
 
 import 'etablissement_keywords.dart';
+import 'mots_neutres.dart';
 
 /// Rend aux adresses et aux établissements d'un texte **sans aucune
 /// majuscule** la casse que leurs détecteurs attendent (P2-120).
@@ -16,8 +17,10 @@ import 'etablissement_keywords.dart';
 /// **la même longueur** que l'original : les positions rendues valent pour
 /// l'original, et la valeur est relue dans l'original.
 ///
-/// Actif **seulement** si le texte n'a aucune majuscule : sur un texte
-/// ordinaire il ne rend rien, et le comportement d'Écluse y est inchangé.
+/// Actif **seulement** si le texte n'a aucune majuscule, ou aucune minuscule
+/// (texte en capitales, P2-122 : il est d'abord mis en minuscules) : sur un
+/// texte en casse ordinaire il ne rend rien, et le comportement d'Écluse y
+/// est inchangé.
 /// Si une mise en capitale changeait la longueur (cas d'écriture rares), le
 /// détecteur ne rend rien plutôt que des positions fausses.
 ///
@@ -26,7 +29,12 @@ import 'etablissement_keywords.dart';
 /// détecteur dédié, `NomMinusculesDetector` (P2-119).
 final class MinusculesRecapitaliseDetector implements EntityDetector {
   const MinusculesRecapitaliseDetector(this.interne,
-      {this.communesSeules = false});
+      {this.communesSeules = false, this.capitales = true});
+
+  /// Traiter aussi un texte sans aucune minuscule. Faux pour les adresses :
+  /// `AdresseDetector` lit déjà un texte en capitales (1,9 % de fuite sur
+  /// l'adversarial, P2-121) et en écarte lui-même les mots neutres (P2-122).
+  final bool capitales;
 
   /// Détecteur appliqué au texte d'ombre.
   final EntityDetector interne;
@@ -52,33 +60,26 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
 
   static final RegExp _motEntier = RegExp(r'\p{L}+', unicode: true);
 
-  /// Mots laissés en minuscules dans le texte d'ombre : mots outils, unités,
-  /// monnaie. Capitalisés, « 70000 euros » ou « 75015 pour l'antenne »
-  /// prendraient la forme d'un code postal suivi d'une commune (mesure
-  /// P2-120 sur le corpus témoin) ; laissés tels quels, les connecteurs des
-  /// noms de commune (« port sur saone » → « Port sur Saone ») restent
-  /// corrects.
-  static const Set<String> _neutres = {
-    'le', 'la', 'les', 'l', 'de', 'du', 'des', 'd', 'au', 'aux', 'et', //
-    'ou', 'à', 'en', 'sur', 'sous', 'pour', 'par', 'avec', 'sans', 'chez', //
-    'vers', 'dans', 'un', 'une', 'ce', 'cet', 'cette', 'ces', 'son', 'sa', //
-    'ses', 'leur', 'leurs', 'qui', 'que', 'est', 'sont', //
-    'euro', 'euros', 'eur', 'centimes', 'habitants', 'personnes', //
-    'patients', 'ans', 'mois', 'jours', 'heures', 'minutes', //
-    // Noms de comptage courants après un grand nombre (« 21000 dossiers »,
-    // « 39100 numéros », ponctuation perdue) : mesure P2-120, témoin sans
-    // ponctuation.
-    'dossier', 'dossiers', 'numéro', 'numéros', 'lits', 'places', //
-    'agents', 'salariés', 'résidents', 'appels', 'actes', //
-    'ui', 'iu', 'mg', 'mcg', 'ng', 'pg', 'ml', 'cl', 'dl', 'kg', 'mol', //
-    'mmol', 'meq', 'cm', 'mm', 'km', 'kcal', //
-  };
+  /// Mots laissés en minuscules dans le texte d'ombre : laissés tels quels,
+  /// les connecteurs des noms de commune (« port sur saone » → « Port sur
+  /// Saone ») restent corrects, et « 70000 euros » ne devient pas une
+  /// adresse. Voir [motsNeutres].
+  static const Set<String> _neutres = motsNeutres;
 
   /// Sigles d'établissement entièrement en capitales dans la liste partagée.
+  /// « CEDEX » s'écrit en capitales dans une adresse ; « Cedex 9 » n'est
+  /// pas reconnu jusqu'au numéro (mesure P2-122).
   static final Set<String> _sigles = {
     for (final k in etablissementKeywords)
       if (k.length > 1 && k == k.toUpperCase()) k.toLowerCase(),
+    'cedex',
   };
+
+  /// Élision en tête de commune (« 25250 l'isle-sur-le-doubs ») : « l » et
+  /// « d » y prennent la majuscule, alors qu'ils restent neutres ailleurs.
+  static final RegExp _elisionCommune = RegExp(
+      r"(?<!\d)(\d{5}[ \t\u00A0\u202F]+)([ld])(?=['’]\p{L})",
+      unicode: true);
 
   static String _recapitalise(String mot) {
     if (_sigles.contains(mot)) return mot.toUpperCase();
@@ -98,7 +99,16 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
     } else {
       t = text.replaceAllMapped(_cpCommune, (m) {
         final commune = m.group(1)!;
-        final premier = _motEntier.firstMatch(commune)?.group(0);
+        // « l'isle » : l'élision ne décide pas, c'est le mot qui la suit.
+        final mots = [
+          for (final w in _motEntier.allMatches(commune)) w.group(0)!
+        ];
+        final premier = mots.length > 1 &&
+                (mots[0] == 'l' || mots[0] == 'd') &&
+                commune.trimLeft().length > 1 &&
+                "'’".contains(commune.trimLeft()[1])
+            ? mots[1]
+            : (mots.isEmpty ? null : mots[0]);
         if (premier == null || _neutres.contains(premier)) return m.group(0)!;
         final debut =
             m.group(0)!.substring(0, m.group(0)!.length - commune.length);
@@ -107,13 +117,35 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
                 _motEntier, (w) => _recapitalise(w.group(0)!));
       });
     }
-    return t.length == text.length ? t : null;
+    final u =
+        t.replaceAllMapped(_elisionCommune, (m) => m.group(0)!.toUpperCase());
+    return u.length == text.length ? u : null;
+  }
+
+  static final RegExp _minuscule = RegExp(r'\p{Ll}', unicode: true);
+
+  /// Texte de départ du texte d'ombre : le texte lui-même s'il n'a aucune
+  /// majuscule ; sa version en minuscules s'il n'a aucune minuscule (texte
+  /// entièrement en capitales, P2-122) ; `null` sinon (casse ordinaire, les
+  /// détecteurs habituels suffisent).
+  static String? _base(String text) {
+    if (!_majuscule.hasMatch(text)) return text;
+    if (_minuscule.hasMatch(text)) return null;
+    final bas = text.toLowerCase();
+    return bas.length == text.length ? bas : null;
   }
 
   @override
   List<DetectedEntity> detect(String text) {
-    if (_majuscule.hasMatch(text)) return const [];
-    final t = ombre(text, seulementCommunes: communesSeules);
+    final base = _base(text);
+    if (base == null || (!capitales && !identical(base, text))) {
+      return const [];
+    }
+    // [communesSeules] ne vaut que pour un texte en minuscules : en
+    // capitales, `AdresseDetector` reconnaissait déjà les voies sans code
+    // postal (« 3 ROUTE DE VELLEXON ») avant P2-122, on ne les perd pas.
+    final t =
+        ombre(base, seulementCommunes: communesSeules && identical(base, text));
     if (t == null) return const [];
     return [
       for (final e in interne.detect(t))
