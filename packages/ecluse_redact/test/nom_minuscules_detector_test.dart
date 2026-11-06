@@ -41,7 +41,11 @@ void main() {
 
   group('rejetés', () {
     test('casse ordinaire : rien, NameDetector s\'en charge', () {
-      expect(_noms('Rdv avec m. julien chevrier'), isEmpty);
+      expect(_noms('Rdv avec M. Julien Chevrier'), isEmpty);
+    });
+
+    test('casse de phrase (P2-138) : comme un texte en minuscules', () {
+      expect(_noms('Rdv avec m. julien chevrier'), ['m. julien chevrier']);
     });
 
     test('civilité suivie d\'un mot outil', () {

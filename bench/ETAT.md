@@ -35,6 +35,9 @@ Fuite au caractère (part des caractères annotés restés en clair).
 | adversarial en capitales | 18,7 % | 1,9 % | 0 % | **9,5 %** | | 52 |
 | témoin en capitales | | | | | **0** | 0 |
 | faux amis prénoms (P2-124) | | | | | **0** | 0 |
+| réaliste en casse de phrase (P2-138) | 2,2 % | 0 % | 0 % | **0,6 %** | | — |
+| adversarial en casse de phrase (P2-138) | 28,9 % | 1,9 % | 0 % | **14,4 %** | | — |
+| témoin en casse de phrase (P2-138) | | | | | **0** | — |
 
 ¹ Harmonisation des re-mentions à la restauration (`LIMITES.md` § 5.3, point 5
 de l'essentiel) : compromis documenté, pas une corruption.

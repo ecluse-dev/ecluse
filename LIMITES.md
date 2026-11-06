@@ -43,7 +43,8 @@ absence de protection connue.
    dans l'estimation (§ 3) ; une généralisation est proposée, appliquée
    seulement sur demande. La table des pathologies fréquentes est
    provisoire.
-8. **Textes tout en minuscules ou tout en capitales** : des détecteurs
+8. **Textes tout en minuscules, tout en capitales ou en casse de phrase**
+   (majuscule en début de phrase seulement) : des détecteurs
    dédiés rattrapent noms, adresses et établissements, avec une fiabilité
    moindre qu'en casse ordinaire ; un texte sans majuscule produit un
    avertissement (§ 5).
@@ -418,6 +419,15 @@ script jetable, 371 donnaient autant de jetons qu'en forme composée ; après P2
 397. Les diacritiques combinants (U+0300 à U+036F, U+1DC0 à U+1DFF, U+20D0 à U+20FF,
 U+FE20 à U+FE2F) sont retirés de la vue des détecteurs et rattachés à leur lettre quand une
 entité est ramenée au texte d'origine.
+
+**Casse de phrase (P2-138).** Un texte dont les seules majuscules ouvrent
+les phrases (« Rdv avec m. julien chevrier ») est traité comme un texte sans
+majuscule : fuite globale du corpus réaliste 64,2 % → 0,6 %, adversarial
+82,7 % → 14,4 %, 0 faux positif. Une majuscule après « M. » ou une initiale
+compte comme celle d'un nom propre. L'avertissement n'est émis que si un nom,
+une adresse ou un établissement a été trouvé ; un patronyme seul (« rdv avec
+chevrier ») passe donc sans avertissement. L'ordre « nom prénom » en
+minuscules (« perrot olivier ») n'est pas couvert.
 
 **Texte sans majuscules (P2-117).** Sur un texte mis en minuscules, ponctuation
 intacte, la fuite au caractère est de 100 % pour les noms, les adresses et les

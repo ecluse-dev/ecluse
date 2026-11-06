@@ -30,7 +30,7 @@ echo "## flou (entités floues) et variantes de casse"
 python3 "$B/generate_corpus_flou.py" --n 400 --seed 42 --out-dir "$B/flou" > /dev/null
 python3 "$B/variantes_casse.py" "$B"/flou/corpus_flou_{realiste,adversarial,temoin}.jsonl > /dev/null
 python3 "$R/bench/generate_corpus_faux_amis_prenoms.py" --n 400 --seed 42 --out "$B/flou/corpus_flou_fauxamis.jsonl" > /dev/null
-for c in realiste adversarial temoin realiste_minuscules adversarial_minuscules temoin_minuscules realiste_majuscules adversarial_majuscules temoin_majuscules fauxamis; do
+for c in realiste adversarial temoin realiste_minuscules adversarial_minuscules temoin_minuscules realiste_majuscules adversarial_majuscules temoin_majuscules realiste_phrase adversarial_phrase temoin_phrase fauxamis; do
   n=$(redact run_redact_bench.dart "../../bench/flou/corpus_flou_$c.jsonl" "../../bench/flou/etat_$c.jsonl" 2>&1 > /dev/null | grep -c ALERTE || true)
   echo "# $c"
   echo "  restaurations non identiques (harmonisation, LIMITES 5.3) : $n"
