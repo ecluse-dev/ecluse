@@ -48,9 +48,11 @@ clair volontairement (`bench/leak_hors_civilite.py`, P2-12).
 |---|---|---|---|---|
 | réaliste | 100 / 100 % | 88,2 / 100 % | 100 / 100 % | 0 / 0 / 0 % |
 | adversarial | 100 / 95,5 % | 92,3 / 100 % | 100 / 96,2 % | 12,7 / 0 / 2,0 % |
-| témoin | 412 extractions à tort, 337 documents sur 400 | | | |
+| témoin | 412 extractions à tort, 337 documents sur 400 ; **57 / 57 après P2-136** | | | |
 
-Identique à `bench/README.md` (P2-03b).
+Identique à `bench/README.md` (P2-03b) au commit `d85fb84` ; témoin corrigé
+ensuite par P2-136 (durées, communes-mots courants), réaliste et
+adversarial inchangés.
 
 ## Généralisation appliquée (P2-92, P2-102, P2-116, P2-132)
 
