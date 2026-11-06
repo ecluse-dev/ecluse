@@ -491,6 +491,22 @@ Limites : corpus synthétique, une graine, F médian sur les seuls documents
 évaluables ; la mesure ne dit pas si la généralisation protège réellement une
 personne (aucune vérité terrain sur la taille d'une classe).
 
+#### Généralisation du lieu (P2-103)
+
+Mesure seulement. Le corpus de P2-93 ne généralisait jamais le lieu ;
+`run_generalisation_lieu_bench.dart` construit 810 documents synthétiques
+déterministes et applique la suggestion de lieu.
+
+```bash
+(cd packages/ecluse_redact && dart run bin/run_generalisation_lieu_bench.dart)
+```
+
+Résultat : 24 documents (lieu + âge extrême) ont une suggestion de lieu. Après
+application, « département N » n'est pas relu (0 QI lieu sur 24) : F recalculé
+est en médiane 157 fois le F simulé et la bande passe à « faible » dans les 24
+cas, alors que la simulation annonçait « moyen » dans 20. Détails et limites :
+`agent/specs/P2-103.md`.
+
 ## Dossiers (P2-05a)
 
 Corpus multi-documents et scoreur pour mesurer la cohérence des jetons d'un

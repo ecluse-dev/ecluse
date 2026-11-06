@@ -168,7 +168,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-100 | code | Tests de coût : rapport de temps entre deux tailles au lieu d'une borne en millisecondes | — | fusionnée |
 | P2-101 | code | Migration vers Melos 7 et plus (configuration dans `pubspec.yaml`) | — | humain |
 | P2-102 | code | Relire au bon palier les tranches d'âge et les professions généralisées (défauts mesurés par P2-93) | P2-93 | fusionnée |
-| P2-103 | mesure | Généralisation du lieu : effet de « département N » non relu sur F et sur l'évaluation | P2-102 | à faire |
+| P2-103 | mesure | Généralisation du lieu : effet de « département N » non relu sur F et sur l'évaluation | P2-102 | PR ouverte |
 | P2-104 | spec | Critère GO/STOP du vérificateur LLM local | — | fusionnée |
 | P2-104a | humain | Trancher les décisions de P2-104 § 6 (seuils, signaler ou masquer, ordre) et de P2-106 § 4 (licence des données d'un LLM) | P2-104 | fusionnée |
 | P2-105 | code | Générateur du corpus de fuites sémantiques (indices annotés, témoin, jeu injection), graine fixe | P2-104a | fusionnée |

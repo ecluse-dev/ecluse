@@ -1335,7 +1335,9 @@ pas une garantie d'anonymat. Limites connues :
   6 documents sur 170 (réaliste), 32 documents adversariaux devenus non
   évaluables, et un bouclage sur les âges de 100 ans et plus. **Le lieu
   généralisé (« département 57 ») n'est toujours pas relu** : le lieu
-  disparaît alors de l'estimation, effet non mesuré (P2-103).
+  disparaît alors de l'estimation : F est surestimé (médiane ×157 sur 24 cas
+  mesurés) et la bande recalculée est « faible » alors que la simulation
+  annonçait « moyen » (P2-103, `agent/specs/P2-103.md`).
 - **Rien n'est signalé dans `warnings`** : c'est l'application qui sait
   qu'elle a généralisé.
 
