@@ -185,6 +185,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-116 | code | Relire « département N » après généralisation du lieu (défaut mesuré par P2-103) | P2-103 | fusionnée |
 | P2-117 | mesure | Entités floues sur texte sans majuscules ni ponctuation (corpus flou réaliste) | P2-98 | fusionnée |
 | P2-118 | code | Avertir dans `warnings` d'un texte sans aucune majuscule (défaut mesuré par P2-117) | P2-117 | fusionnée |
+| P2-119 | code | Détecter les noms dans un texte sans aucune majuscule (`NomMinusculesDetector`, mesuré sur les corpus flous en minuscules) | P2-117 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
