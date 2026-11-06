@@ -134,7 +134,7 @@ tot, ok = {'nir': 0, 'iban': 0}, {'nir': 0, 'iban': 0}
 for d in C:
     pred = {(e['type'], e['start'], e['end']) for e in P[d['id']]['entities']}
     for g in d['entities']:
-        if g['type'] in tot and re.search(r'  |\t| ', d['text'][g['start']:g['end']]):
+        if g['type'] in tot and re.search(r'  |\t|\u00a0', d['text'][g['start']:g['end']]):
             tot[g['type']] += 1
             ok[g['type']] += (g['type'], g['start'], g['end']) in pred
 print(tot, ok)
