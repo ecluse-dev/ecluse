@@ -2,7 +2,8 @@ import 'package:ecluse_core/ecluse_core.dart';
 
 import 'french_first_names.dart';
 
-/// Noms de personnes dans un texte **sans aucune majuscule** (P2-119).
+/// Noms de personnes dans un texte **sans aucune majuscule** (P2-119), ou
+/// **sans aucune minuscule** (texte en capitales, P2-123).
 ///
 /// Pourquoi un détecteur à part : [NameDetector] repère un nom à sa majuscule
 /// initiale. Sur un texte tout en minuscules (dictée transcrite, message tapé
@@ -176,9 +177,24 @@ final class NomMinusculesDetector implements EntityDetector {
 
   static bool _outil(String mot) => _motsOutils.contains(mot);
 
+  static final RegExp _minuscule = RegExp(r'\p{Ll}', unicode: true);
+
+  /// Texte analysé : l'original s'il n'a aucune majuscule ; sa version en
+  /// minuscules s'il n'a aucune minuscule (texte en capitales, P2-123 :
+  /// « M. JULIEN CHEVRIER » fuyait à 35,6 %, mesure P2-121) ; `null` en casse
+  /// ordinaire, laissée à `NameDetector`. Même longueur exigée : les
+  /// positions valent pour l'original.
+  static String? _base(String text) {
+    if (!_majuscule.hasMatch(text)) return text;
+    if (_minuscule.hasMatch(text)) return null;
+    final bas = text.toLowerCase();
+    return bas.length == text.length ? bas : null;
+  }
+
   @override
-  List<DetectedEntity> detect(String text) {
-    if (_majuscule.hasMatch(text)) return const [];
+  List<DetectedEntity> detect(String original) {
+    final text = _base(original);
+    if (text == null) return const [];
     final mots = _mot.allMatches(text).toList();
     final trouves = <DetectedEntity>[];
 
@@ -196,7 +212,7 @@ final class NomMinusculesDetector implements EntityDetector {
         type: EntityType.nom,
         start: mots[debut].start,
         end: mots[fin].end,
-        value: text.substring(mots[debut].start, mots[fin].end),
+        value: original.substring(mots[debut].start, mots[fin].end),
         confidence: confiance,
       ));
     }
