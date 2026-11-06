@@ -177,6 +177,15 @@ final class NomMinusculesDetector implements EntityDetector {
 
   static bool _outil(String mot) => _motsOutils.contains(mot);
 
+  /// Particules d'un nom (« de la fontaine »), sous-ensemble des mots outils.
+  static const Set<String> _particules = {'de', 'du', 'des', 'la', 'le'};
+
+  /// Mots qui introduisent une personne juste avant son nom (P2-139).
+  static const Set<String> _indicesPersonne = {
+    'par', 'avec', 'chez', 'pour', 'contacter', 'appeler', 'rappeler', //
+    'voir', 'prévenir', 'informer', 'référent', 'référente', //
+  };
+
   /// Prénoms du gazetteer qui sont aussi des mots courants (P2-124, corpus
   /// témoin `generate_corpus_faux_amis_prenoms.py`). Seuls, suivis d'un
   /// adjectif ou d'un participe, ils ne sont pas masqués. Formes sans
@@ -232,6 +241,17 @@ final class NomMinusculesDetector implements EntityDetector {
       return _blancs.hasMatch(entre);
     }
 
+    /// Le mot [i] suit-il un champ (« : », « , ») ou un mot qui introduit
+    /// une personne (« par », « avec »…), sur la même ligne ?
+    bool apresIndice(int i) {
+      if (i == 0) return false;
+      final entre = text.substring(mots[i - 1].end, mots[i].start);
+      if (entre.contains('\n')) return false;
+      if (entre.contains(':') || entre.contains(',')) return true;
+      return _blancs.hasMatch(entre) &&
+          _indicesPersonne.contains(mots[i - 1].group(0)!);
+    }
+
     void ajoute(int debut, int fin, double confiance) {
       trouves.add(DetectedEntity(
         type: EntityType.nom,
@@ -251,14 +271,65 @@ final class NomMinusculesDetector implements EntityDetector {
         var fin = i + 1;
         if (_prenom(mots[fin].group(0)!)) {
           for (var k = 0; k < 2; k++) {
-            if (!contigu(fin, fin + 1) || _outil(mots[fin + 1].group(0)!)) {
+            if (!contigu(fin, fin + 1)) break;
+            final suivant = mots[fin + 1].group(0)!;
+            if (!_outil(suivant)) {
+              fin++;
+              continue;
+            }
+            // Particule (« jean de la fontaine », P2-139) : gardée si un mot
+            // non outil la suit, deux particules au plus.
+            var j = fin + 1;
+            var particules = 0;
+            while (j < mots.length &&
+                particules < 2 &&
+                _particules.contains(mots[j].group(0)!) &&
+                contigu(j - 1, j)) {
+              j++;
+              particules++;
+            }
+            if (particules == 0 ||
+                j >= mots.length ||
+                !contigu(j - 1, j) ||
+                _outil(mots[j].group(0)!) ||
+                // « de la part du service » n'est pas une particule.
+                mots[j].group(0)! == 'part') {
               break;
             }
-            fin++;
+            fin = j;
+            break; // un seul groupe de particules
           }
         }
         ajoute(i, fin, 0.7);
         i = fin + 1;
+        continue;
+      }
+      // Initiale et patronyme après un champ ou un indice (« présent : t.
+      // lefèvre », « suivi par j. martin ») (P2-139). Pas en tête de ligne :
+      // « a. vérifier » est une énumération.
+      if (mot.length == 1 &&
+          i + 1 < mots.length &&
+          contigu(i, i + 1, pointAdmis: true) &&
+          text.substring(mots[i].end, mots[i + 1].start).startsWith('.') &&
+          !_outil(mots[i + 1].group(0)!) &&
+          apresIndice(i)) {
+        ajoute(i, i + 1, 0.5);
+        i += 2;
+        continue;
+      }
+      // Ordre « nom prénom » après un indice (« dossier suivi par perrot
+      // olivier ») (P2-139). Pas avec un faux ami : « humeur claire » après
+      // « transmission : » (123 faux positifs au premier essai).
+      if (!_prenom(mot) &&
+          !_outil(mot) &&
+          mot.length > 1 &&
+          i + 1 < mots.length &&
+          contigu(i, i + 1) &&
+          _prenom(mots[i + 1].group(0)!) &&
+          !_fauxAmis.contains(_plie(mots[i + 1].group(0)!)) &&
+          apresIndice(i)) {
+        ajoute(i, i + 1, 0.5);
+        i += 2;
         continue;
       }
       if (_prenom(mot) &&
