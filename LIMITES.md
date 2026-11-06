@@ -426,8 +426,11 @@ majuscule : fuite globale du corpus réaliste 64,2 % → 0,6 %, adversarial
 82,7 % → 14,4 %, 0 faux positif. Une majuscule après « M. » ou une initiale
 compte comme celle d'un nom propre. L'avertissement n'est émis que si un nom,
 une adresse ou un établissement a été trouvé ; un patronyme seul (« rdv avec
-chevrier ») passe donc sans avertissement. L'ordre « nom prénom » en
-minuscules (« perrot olivier ») n'est pas couvert.
+chevrier ») passe donc sans avertissement. Depuis P2-139, l'ordre « nom prénom » (« suivi par perrot olivier »),
+l'initiale (« présent : t. lefèvre ») et les particules (« monsieur jean de la
+fontaine ») sont couverts après un champ ou un mot qui introduit une personne :
+adversarial en minuscules, fuite des noms 27 % → 5,9 %. Un prénom absent du
+gazetteer n'est pas reconnu.
 
 **Texte sans majuscules (P2-117).** Sur un texte mis en minuscules, ponctuation
 intacte, la fuite au caractère est de 100 % pour les noms, les adresses et les
