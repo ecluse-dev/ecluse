@@ -1,5 +1,7 @@
 import 'package:ecluse_core/ecluse_core.dart';
 
+import 'mots_neutres.dart';
+
 /// Détecteur heuristique d'adresses postales simples — **v0 de
 /// démonstration**.
 ///
@@ -212,6 +214,19 @@ final class AdresseDetector implements EntityDetector {
     'cm', 'mm', 'km', 'kcal', //
   };
 
+  static final RegExp _minuscule = RegExp(r'\p{Ll}', unicode: true);
+  static final RegExp _majuscule = RegExp(r'\p{Lu}', unicode: true);
+
+  static bool _sansMinuscule(String text) =>
+      !_minuscule.hasMatch(text) && _majuscule.hasMatch(text);
+
+  static bool _communeNeutre(RegExpMatch match) {
+    final commune = match.namedGroup('commune');
+    if (commune == null) return false;
+    final premier = RegExp(r"^[^ \t\u00A0\u202F'’-]+").stringMatch(commune);
+    return premier != null && motsNeutres.contains(premier.toLowerCase());
+  }
+
   static bool _looksLikeUnit(RegExpMatch match) {
     final commune = match.namedGroup('commune');
     return commune != null && _measurementUnits.contains(commune.toLowerCase());
@@ -250,12 +265,18 @@ final class AdresseDetector implements EntityDetector {
 
   @override
   List<DetectedEntity> detect(String text) {
+    // Texte sans aucune minuscule : la règle « la commune commence par une
+    // majuscule » ne filtre plus rien (« 70000 EUROS HORS TAXES » devenait
+    // une adresse : 194 faux positifs sur le témoin, mesure P2-121). On y
+    // écarte une commune qui commence par un mot neutre (P2-122).
+    final capitales = _sansMinuscule(text);
     final results = <DetectedEntity>[];
     final claimed = <_Range>[];
 
     for (final match in _pattern.allMatches(text)) {
       if (_looksLikeUnit(match)) continue;
       if (!_communeStartsWithUppercase(match)) continue;
+      if (capitales && _communeNeutre(match)) continue;
       final start = match.start;
       final end = match.end;
       results.add(
@@ -275,6 +296,7 @@ final class AdresseDetector implements EntityDetector {
     for (final match in _patternSansNumero.allMatches(text)) {
       if (_looksLikeUnit(match)) continue;
       if (!_communeStartsWithUppercase(match)) continue;
+      if (capitales && _communeNeutre(match)) continue;
       final start = match.start;
       final end = match.end;
       if (claimed.any((r) => r.overlaps(start, end))) continue;
@@ -311,6 +333,7 @@ final class AdresseDetector implements EntityDetector {
     for (final match in _codePostalCommuneOnly.allMatches(text)) {
       if (_looksLikeUnit(match)) continue;
       if (!_communeStartsWithUppercase(match)) continue;
+      if (capitales && _communeNeutre(match)) continue;
       final start = match.start;
       final end = match.end;
       // Déjà couvert par une adresse complète (numéro + voie) ci-dessus :

@@ -7,8 +7,8 @@ List<String> _trouve(MinusculesRecapitaliseDetector d, String texte) => [
       for (final e in d.detect(texte)) texte.substring(e.start, e.end),
     ];
 
-const _adresse =
-    MinusculesRecapitaliseDetector(AdresseDetector(), communesSeules: true);
+const _adresse = MinusculesRecapitaliseDetector(AdresseDetector(),
+    communesSeules: true, capitales: false);
 const _etab = MinusculesRecapitaliseDetector(EtablissementDetector());
 
 void main() {
@@ -59,6 +59,37 @@ void main() {
     expect(
         _trouve(_adresse, 'Demeurant 12 rue des Lilas, 70000 Vesoul'), isEmpty);
     expect(_trouve(_etab, "Réunion à l'EHPAD Marie Curie"), isEmpty);
+  });
+
+  group('texte entièrement en capitales (P2-122)', () {
+    test('montant et référence : pas une adresse', () async {
+      for (final texte in [
+        "LE DEVIS S'ÉLÈVE À 70000 EUROS HORS TAXES.",
+        "LA RÉFÉRENCE EST 75015 POUR L'ANTENNE PARISIENNE.",
+      ]) {
+        final r = await Ecluse.redact(texte);
+        expect(r.entities, isEmpty, reason: texte);
+      }
+    });
+
+    test('adresse en capitales : lue par AdresseDetector lui-même', () {
+      const texte = '12 RUE DES LILAS, 75015 PARIS';
+      expect(_adresse.detect(texte), isEmpty);
+      expect(const AdresseDetector().detect(texte), hasLength(1));
+      expect(const AdresseDetector().detect('70000 EUROS HORS TAXES'), isEmpty);
+    });
+
+    test('élision en tête de commune dans le texte d\'ombre', () {
+      expect(
+          MinusculesRecapitaliseDetector.ombre("25250 l'isle-sur-le-doubs",
+              seulementCommunes: true),
+          "25250 L'Isle-sur-le-Doubs");
+    });
+
+    test('établissement en capitales', () {
+      expect(_trouve(_etab, "RÉUNION À L'EHPAD MARIE CURIE."),
+          ['EHPAD MARIE CURIE']);
+    });
   });
 
   test('Ecluse.redact masque adresse et établissement en minuscules', () async {
