@@ -195,6 +195,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-126 | code | Pathologies : négations (« pas de diabète connu ») et formes adjectivales (« diabétique »), corpus `variantes` | P2-125 | fusionnée |
 | P2-127 | code | Signaler les pathologies rattachées dans le rapport de risque (information, hors estimation) | P2-126 | fusionnée |
 | P2-128 | code | Coût linéaire du repérage des pathologies (fenêtre bornée) et tests de coût des détecteurs de casse | P2-125 | fusionnée |
+| P2-129 | mesure | Pathologies : formes non couvertes (« non diabétique », « DT2 », négation après la mention), corpus `formes_libres` | P2-128 | à faire |
+| P2-130 | mesure | Tableau de bord des mesures : rejouer tous les corpus du dépôt sur `main` et consigner les chiffres dans `bench/ETAT.md` | P2-128 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1955,6 +1957,24 @@ ne reprennent que ce qui manque pour la prendre.
   généralisait jamais le lieu ; construire au besoin des cas où la
   suggestion retenue porte sur le lieu, puis comparer F simulé (`fAfter`) et
   F recalculé après `appliquerGeneralisations`.
+- **P2-129** : **mesure seulement, ne rien corriger.** Ajouter à
+  `bench/generate_corpus_pathologies.py` un corpus `formes_libres` (graine
+  fixe, préfixe stable, corpus existants inchangés : le vérifier par
+  comparaison des sorties) avec des formes que P2-125/126 ne couvrent pas :
+  « non diabétique », « DT2 », « diabète : non », « BPCO ? à éliminer »,
+  « suspicion de », « ATCD : », fautes courantes (« diabete »,
+  « épilépsie »). Annoter ce qui est une pathologie de la personne, ne pas
+  annoter les négations. Mesurer avec `bin/run_pathologies_bench.dart`
+  (brut et rattachées) et rapporter dans `agent/specs/P2-129.md`, par forme,
+  ce qui est trouvé, manqué, ou rattaché à tort. Tests Python du nouveau
+  corpus.
+- **P2-130** : **mesure seulement.** Rejouer sur `main` tous les corpus
+  documentés dans `bench/README.md` et les rapports `agent/specs/P1-36.md`,
+  `P2-98.md`, `P2-117.md`, `P2-121.md`, `P2-124.md`, `P2-125.md` (mêmes
+  commandes, mêmes graines), et consigner dans un nouveau `bench/ETAT.md` un
+  tableau unique : corpus, commit, précision, rappel, fuite au caractère,
+  faux positifs du témoin. Signaler tout écart avec les chiffres des
+  rapports. Aucun code de production.
 - **P2-122** : sur le modèle de `MinusculesRecapitaliseDetector` (P2-120,
   à lire d'abord) : un texte **sans aucune minuscule** reçoit un texte
   d'ombre de même longueur en casse de titre (mots outils, unités et noms de
