@@ -22,6 +22,7 @@ Variables d'environnement :
 | `ANTHROPIC_API_KEY` | oui | — | Clé API Anthropic, jamais en dur dans le code. |
 | `ECLUSE_LLM_MODEL` | non | `claude-sonnet-5` | Modèle Claude utilisé. |
 | `PORT` | non | `8080` | Port d'écoute local. |
+| `ECLUSE_REFERENCE` | non | `../ecluse_reference/assets` | Dossier des données publiques (communes, professions, Orphanet). Présent : la démo affiche le rapport de risque ; absent : la démo tourne sans. |
 
 Si vous préférez un fichier `.env`, il est déjà couvert par le
 `.gitignore` racine (`.env*`) — ne jamais le committer.
@@ -37,7 +38,15 @@ Si vous préférez un fichier `.env`, il est déjà couvert par le
    une consigne système lui demandant explicitement de préserver les
    jetons tels quels, puis restaure les vraies valeurs dans la réponse
    (`Ecluse.restore`) — toujours localement.
-4. Quatre panneaux affichent le trajet complet : document d'origine
+4. Dans le panneau « Ce qui part vers l'IA », deux encadrés peuvent
+   s'ajouter au compteur : les **avertissements** du moteur (texte sans
+   majuscule, secret masqué…) et le **rapport de risque de
+   ré-identification** (bande, nombre approximatif de personnes qui
+   partagent les indices restés visibles — âge, lieu, profession —,
+   pathologies signalées, généralisations possibles). Ce rapport porte sur
+   le texte masqué ; il ne modifie rien et n'est pas une garantie
+   (`LIMITES.md` § 3 et § 7).
+5. Quatre panneaux affichent le trajet complet : document d'origine
    (entités surlignées), texte envoyé à l'IA (jetons + compteur), réponse
    brute de l'IA, résultat final restauré.
 
