@@ -34,5 +34,21 @@ class CorpusPathologiesTest(unittest.TestCase):
                             g.construit("indices", 50, 7))
 
 
+class VariantesTest(unittest.TestCase):
+    def test_une_forme_adjectivale_annotee_par_document(self):
+        formes = {f for m, fe, _ in g.ADJECTIFS for f in (m, fe)}
+        for d in g.construit("variantes", 200, 42):
+            self.assertEqual(len(d["pathologies"]), 1)
+            p = d["pathologies"][0]
+            self.assertEqual(d["text"][p["start"]:p["end"]], p["mention"])
+            self.assertIn(p["mention"], formes)
+
+    def test_negations_presentes_non_annotees(self):
+        docs = g.construit("variantes", 200, 42)
+        avec = [d for d in docs if any(m in d["text"]
+                                      for m in g.NEGATIONS_MENTIONS)]
+        self.assertGreater(len(avec), 100)
+
+
 if __name__ == "__main__":
     unittest.main()
