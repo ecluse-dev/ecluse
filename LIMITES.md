@@ -424,9 +424,11 @@ d'ombre recapitalisé, de même longueur). Fuite sur le corpus réaliste en
 minuscules : adresses 100 % → 0 %, établissements 87 % → 0 % ; adversarial :
 94 % → 26,6 % et 47 % → 0 % ; 0 faux positif sur le témoin en minuscules et
 sans ponctuation. Pour les adresses, seule la commune après un code postal
-est recapitalisée : **une voie sans code postal (« 3 route de vellexon »)
-reste non détectée** en minuscules, pour ne pas masquer « 3 chemin de fer »
-ou « 12 place disponible ». Les mots outils, unités et noms de comptage
+est recapitalisée, et le nom de voie seulement après un indice d'adresse
+(« située », « demeurant », « domicilié », « adresse … : », P2-131 ;
+adversarial 26,6 % → 1,9 %) : **une voie sans code postal ni indice
+(« rdv au 3 route de vellexon ») reste non détectée** en minuscules, pour ne
+pas masquer « 3 chemin de fer » ou « 12 place disponible ». Les mots outils, unités et noms de comptage
 (« 70000 euros », « 21000 dossiers ») ne sont pas recapitalisés ; un autre
 nom commun après un code postal peut être pris pour une commune
 (sur-masquage). Un patronyme seul sans civilité ni prénom connu n'est pas
