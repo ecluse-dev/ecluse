@@ -1,7 +1,9 @@
 # État des mesures — tableau de bord (P2-130)
 
 Toutes les mesures du dépôt rejouées d'un coup sur `main` au commit
-**`d85fb84`** (6 novembre 2026), graine 42 partout, par :
+**`d85fb84`** (6 novembre 2026), graine 42 partout, puis rejouées au commit
+**`a263a83`** (7 novembre, après P2-136 à P2-141) ; les lignes modifiées le
+disent. Commande :
 
 ```bash
 bash bench/etat.sh > etat.log 2>&1   # depuis la racine, Dart et Python requis
@@ -29,18 +31,23 @@ Fuite au caractère (part des caractères annotés restés en clair).
 | adversarial | 18,3 % | 1,9 % | 0 % | **9,3 %** | | 61 |
 | témoin | | | | | **0** | 0 |
 | réaliste en minuscules | 2,2 % | 0 % | 0 % | **0,6 %** | | 0 |
-| adversarial en minuscules | 5,9 % (P2-139) | 1,9 % | 0 % | **3,3 %** | | 6 |
+| adversarial en minuscules | 5,9 % (P2-139) | 1,9 % | 0 % | **3,3 %** | | 58³ |
 | témoin en minuscules | | | | | **0** | 0 |
 | réaliste en capitales | 2,2 % | 0 % | 0 % | **0,6 %** | | 0 |
 | adversarial en capitales | 5,9 % (P2-139) | 1,9 % | 0 % | **3,3 %** | | 52 |
 | témoin en capitales | | | | | **0** | 0 |
 | faux amis prénoms (P2-124) | | | | | **0** | 0 |
-| réaliste en casse de phrase (P2-138) | 2,2 % | 0 % | 0 % | **0,6 %** | | — |
-| adversarial en casse de phrase (P2-138) | 9,0 % (P2-139) | 1,9 % | 0 % | **4,8 %** | | — |
-| témoin en casse de phrase (P2-138) | | | | | **0** | — |
+| réaliste en casse de phrase (P2-138) | 2,2 % | 0 % | 0 % | **0,6 %** | | 0 |
+| adversarial en casse de phrase (P2-138) | 9,0 % (P2-139) | 1,9 % | 0 % | **4,8 %** | | 58³ |
+| témoin en casse de phrase (P2-138) | | | | | **0** | 0 |
 
 ¹ Harmonisation des re-mentions à la restauration (`LIMITES.md` § 5.3, point 5
 de l'essentiel) : compromis documenté, pas une corruption.
+³ 6 avant P2-139 : les noms en ordre « nom prénom » désormais détectés en
+minuscules (« perrot olivier » puis « olivier perrot ») reçoivent un seul
+jeton et sont restaurés sous la première graphie, comme en casse ordinaire
+(61). Vérifié document par document le 7 novembre : seul l'ordre des mots
+change, longueur et contenu identiques.
 
 Sur le réaliste d'origine, les 27,7 % des noms sont la civilité laissée en
 clair volontairement (`bench/leak_hors_civilite.py`, P2-12).
