@@ -31,6 +31,19 @@ Qi? _trancheQi(RegExpMatch m) {
   return Qi(QiType.age, '$lo-$hi', level: level);
 }
 
+/// Tournure de **durée** juste avant « N ans » : « signé pour 9 ans », « il y
+/// a 3 ans », « existe depuis 23 ans ». Ce n'est pas un âge (P2-136 : 222
+/// des 412 extractions à tort du corpus témoin de QI). « a 74 ans », « âgé
+/// de 74 ans » ne sont pas concernés.
+final RegExp _dureeAvant = RegExp(
+  r'(?:^|[^\p{L}])(?:pour|depuis|pendant|durant|dans|il y a|voici|'
+  r'en|sur|tous les|toutes les|chaque|après|avant)'
+  r'(?:[ \t\u00A0]+(?:plus de|moins de|près de|environ|presque|bientôt|'
+  r'déjà|au moins))?[ \t\u00A0]+$',
+  unicode: true,
+  caseSensitive: false,
+);
+
 /// Âges du texte, dans l'ordre : tranches (« 70-74 ans ») et âges exacts
 /// (« N ans », 0 à 120) qui ne sont pas la borne d'une tranche.
 List<(RegExpMatch, Qi)> _ages(String text) {
@@ -41,6 +54,10 @@ List<(RegExpMatch, Qi)> _ages(String text) {
   ];
   for (final m in _agePattern.allMatches(text)) {
     if (tranches.any((t) => m.start < t.end && t.start < m.end)) continue;
+    if (_dureeAvant
+        .hasMatch(text.substring(m.start > 40 ? m.start - 40 : 0, m.start))) {
+      continue;
+    }
     final age = int.parse(m.group(1)!);
     if (age <= 120) trouves.add((m, Qi(QiType.age, age.toString())));
   }
@@ -146,7 +163,14 @@ List<(String, List<Commune>)> _scanCommunesNommees(
       final candidate =
           text.substring(tokens[i].start, tokens[i + span - 1].end);
       final matches = ref.geo.communesByName(candidate);
-      if (matches.isNotEmpty) found.add((candidate, matches));
+      if (matches.isEmpty) continue;
+      final debut = tokens[i].start;
+      if (_homonymesCourants.contains(candidate.toLowerCase()) &&
+          !_locatifAvant
+              .hasMatch(text.substring(debut > 30 ? debut - 30 : 0, debut))) {
+        continue;
+      }
+      found.add((candidate, matches));
     }
   }
   return found;
@@ -355,6 +379,25 @@ List<QiSpan> _professionSpans(String text) {
 /// avec positions. Deux mots ne sont réunis que s'ils ne sont séparés que
 /// d'espaces : un nom de lieu ne traverse pas une ponctuation ou un saut de
 /// ligne (« Dole. Belfort » n'est pas un candidat).
+/// Communes dont le nom est aussi un mot courant (« Tours de garde »,
+/// « Nuits de garde », « Orange », « Sens »). Elles ne comptent comme lieu
+/// qu'après une préposition ou un verbe de lieu (« à Tours », « habite
+/// Orange ») (P2-136 : 190 extractions de lieu à tort sur le corpus témoin
+/// de QI, toutes de ce type). Liste écrite par le projet ; elle recoupe en
+/// partie les leurres du corpus témoin.
+const Set<String> _homonymesCourants = {
+  'tours', 'nuits', 'orange', 'plaine', 'pont', 'ville', 'mer', 'sens', //
+  'bar', 'ham', 'vic', 'lit', 'mars', 'mai', 'août', 'sète', 'condé', //
+  'gap', 'bourg', 'port', 'puy', 'roche', 'rive', 'lac', 'val', 'bois', //
+};
+
+final RegExp _locatifAvant = RegExp(
+  r"(?:^|[^\p{L}])(?:à|a|de|d'|d’|en|vers|près de|habite|vit|né|née|"
+  r'originaire de|domicilié|domiciliée|résidant|réside)[ \t\u00A0]*$',
+  unicode: true,
+  caseSensitive: false,
+);
+
 List<QiSpan> _lieuSpans(EcluseReference ref, String text) {
   final mots = RegExp(r"[A-ZÀ-Ý][\wÀ-ÿ'-]*").allMatches(text).toList();
   final seulementEspaces = RegExp('^[  ]+\$');
@@ -377,6 +420,11 @@ List<QiSpan> _lieuSpans(EcluseReference ref, String text) {
       final nom = text.substring(start, end);
       final communes = ref.geo.communesByName(nom);
       if (communes.isEmpty) continue;
+      if (_homonymesCourants.contains(nom.toLowerCase()) &&
+          !_locatifAvant
+              .hasMatch(text.substring(start > 30 ? start - 30 : 0, start))) {
+        continue;
+      }
       Qi? qi;
       if (communes.length == 1) {
         qi = Qi(QiType.lieu, communes.single.code);

@@ -1339,6 +1339,13 @@ Voir `ROADMAP.md` pour le calendrier de ces briques.
 
 ## 7. Estimation de ré-identification (`ecluse_reid`, `ecluse_reference`)
 
+**Faux quasi-identifiants (P2-136).** Une durée (« signé pour 9 ans »,
+« il y a 3 ans ») n'est plus lue comme un âge, et une commune homonyme d'un
+mot courant (« Tours de garde ») ne compte comme lieu qu'après une
+préposition de lieu. Corpus témoin de QI : 412 extractions à tort → 57.
+**Reste** : un lieu réel sans lien avec une personne (« la réunion aura lieu
+à Brest ») est encore compté.
+
 Bibliothèque, **utilisée par `Ecluse.redact` seulement si l'appelant fournit
 `riskReference`** (rapport seul, désactivé par défaut) : elle estime la
 taille F de la classe d'équivalence d'une combinaison de quasi-identifiants
