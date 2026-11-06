@@ -10,6 +10,7 @@ import 'heuristics/email_detector.dart';
 import 'heuristics/etablissement_detector.dart';
 import 'heuristics/identifiant_detector.dart';
 import 'heuristics/name_detector.dart';
+import 'heuristics/minuscules_recapitalise_detector.dart';
 import 'heuristics/nom_minuscules_detector.dart';
 import 'heuristics/telephone_detector.dart';
 import 'redact_result.dart';
@@ -69,6 +70,14 @@ abstract final class Ecluse {
     LegacyDetectorAdapter(EmailDetector(), DetectorTier.pattern, name: 'email'),
     LegacyDetectorAdapter(EtablissementDetector(), DetectorTier.pattern,
         name: 'etablissement'),
+    LegacyDetectorAdapter(
+        MinusculesRecapitaliseDetector(AdresseDetector(), communesSeules: true),
+        DetectorTier.pattern,
+        name: 'adresse_minuscules'),
+    LegacyDetectorAdapter(
+        MinusculesRecapitaliseDetector(EtablissementDetector()),
+        DetectorTier.pattern,
+        name: 'etablissement_minuscules'),
     LegacyDetectorAdapter(IdentifiantDetector(), DetectorTier.pattern,
         name: 'identifiant'),
     SecretDetector(),

@@ -406,8 +406,18 @@ dédié (`NomMinusculesDetector`, actif seulement sans aucune majuscule)
 rattrape les **noms** : civilité suivie d'un nom, ou prénom connu suivi d'un
 mot. Fuite des noms sur le corpus réaliste en minuscules : 100 % → 2,2 % ;
 adversarial : 100 % → 27 % ; 0 faux positif sur le témoin en minuscules.
-**Adresses et établissements restent à 100 % de fuite** sur un texte en
-minuscules. Un patronyme seul sans civilité ni prénom connu n'est pas
+Depuis P2-120, adresses et établissements y sont rattrapés aussi
+(`MinusculesRecapitaliseDetector` : les détecteurs habituels lisent un texte
+d'ombre recapitalisé, de même longueur). Fuite sur le corpus réaliste en
+minuscules : adresses 100 % → 0 %, établissements 87 % → 0 % ; adversarial :
+94 % → 26,6 % et 47 % → 0 % ; 0 faux positif sur le témoin en minuscules et
+sans ponctuation. Pour les adresses, seule la commune après un code postal
+est recapitalisée : **une voie sans code postal (« 3 route de vellexon »)
+reste non détectée** en minuscules, pour ne pas masquer « 3 chemin de fer »
+ou « 12 place disponible ». Les mots outils, unités et noms de comptage
+(« 70000 euros », « 21000 dossiers ») ne sont pas recapitalisés ; un autre
+nom commun après un code postal peut être pris pour une commune
+(sur-masquage). Un patronyme seul sans civilité ni prénom connu n'est pas
 détecté. Un texte entièrement en MAJUSCULES n'est pas concerné ; relire
 avant envoi. Dates et
 téléphones ne sont pas touchés tant que les chiffres restent des chiffres.
