@@ -1,5 +1,6 @@
 import 'package:ecluse_core/ecluse_core.dart';
 
+import 'casse.dart';
 import 'etablissement_keywords.dart';
 import 'mots_neutres.dart';
 
@@ -66,8 +67,6 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
 
   @override
   EntityType get type => interne.type;
-
-  static final RegExp _majuscule = RegExp(r'\p{Lu}', unicode: true);
 
   static final RegExp _motEntier = RegExp(r'\p{L}+', unicode: true);
 
@@ -143,30 +142,20 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
     return u.length == text.length ? u : null;
   }
 
-  static final RegExp _minuscule = RegExp(r'\p{Ll}', unicode: true);
-
-  /// Texte de départ du texte d'ombre : le texte lui-même s'il n'a aucune
-  /// majuscule ; sa version en minuscules s'il n'a aucune minuscule (texte
-  /// entièrement en capitales, P2-122) ; `null` sinon (casse ordinaire, les
-  /// détecteurs habituels suffisent).
-  static String? _base(String text) {
-    if (!_majuscule.hasMatch(text)) return text;
-    if (_minuscule.hasMatch(text)) return null;
-    final bas = text.toLowerCase();
-    return bas.length == text.length ? bas : null;
-  }
-
   @override
   List<DetectedEntity> detect(String text) {
-    final base = _base(text);
-    if (base == null || (!capitales && !identical(base, text))) {
-      return const [];
-    }
+    // Sans majuscule ou en casse de phrase (P2-138, `casse.dart`) : mode
+    // minuscules ; sans minuscule : mode capitales ; casse ordinaire : rien.
+    final casse = casseDuTexte(text);
+    if (casse == CasseTexte.ordinaire) return const [];
+    if (casse == CasseTexte.capitales && !capitales) return const [];
+    final base = enMinuscules(text);
+    if (base == null) return const [];
     // [communesSeules] ne vaut que pour un texte en minuscules : en
     // capitales, `AdresseDetector` reconnaissait déjà les voies sans code
     // postal (« 3 ROUTE DE VELLEXON ») avant P2-122, on ne les perd pas.
-    final t =
-        ombre(base, seulementCommunes: communesSeules && identical(base, text));
+    final t = ombre(base,
+        seulementCommunes: communesSeules && casse == CasseTexte.minuscules);
     if (t == null) return const [];
     return [
       for (final e in interne.detect(t))
