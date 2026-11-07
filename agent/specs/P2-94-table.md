@@ -63,6 +63,10 @@ classification primera pour elles.
 
 ## 4. Points à valider par le mainteneur
 
+**Validés le 7 novembre 2026 (P2-110)** : 1. systèmes suffisants ;
+2. « AVC » et « BPCO » gardés, « SEP » écarté ; 3. pathologies hors ALD
+laissées hors table ; 4. seuil *Standard*. Voir `DECISIONS.md`.
+
 1. **Regroupement en systèmes** : les douze systèmes ci-dessus sont-ils
    cliniquement justes, et suffisants pour le médico-social ?
 2. **Mentions** : abréviations (AVC, SEP, BPCO) à garder malgré le risque de

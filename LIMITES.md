@@ -41,8 +41,8 @@ absence de protection connue.
    risque liste les pathologies rattachées à une personne (« atteinte de la
    maladie de Huntington ») mais elles **restent en clair** et n'entrent pas
    dans l'estimation (§ 3) ; une généralisation est proposée, appliquée
-   seulement sur demande. La table des pathologies fréquentes est
-   provisoire.
+   seulement sur demande. La table des pathologies fréquentes a été
+   validée cliniquement par le mainteneur (P2-110).
 8. **Textes tout en minuscules, tout en capitales ou en casse de phrase**
    (majuscule en début de phrase seulement) : des détecteurs
    dédiés rattrapent noms, adresses et établissements, avec une fiabilité
@@ -174,7 +174,7 @@ demande de l'appelant). Sans référence, rien n'est évalué et `risque` est nu
 
 **Pathologies : signalées, pas évaluées (P2-125 à P2-127).**
 `extrairePathologies` repère les mentions de pathologie (table maison
-provisoire et Orphanet), leur rattachement à une personne et leur négation.
+validée, P2-110, et Orphanet), leur rattachement à une personne et leur négation.
 Depuis P2-127, le rapport de risque **liste** les pathologies rattachées
 (`RiskReport.pathologies`, et une ligne dans `limites`), mais elles **ne
 comptent pas dans l'estimation** (aucune prévalence ne permet de chiffrer F)
