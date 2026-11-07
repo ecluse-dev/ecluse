@@ -458,6 +458,25 @@ fontaine ») sont couverts après un champ ou un mot qui introduit une personne 
 adversarial en minuscules, fuite des noms 27 % → 5,9 %. Un prénom absent du
 gazetteer n'est pas reconnu.
 
+**Patronyme repris seul et casse mixte (P2-144, P2-145).** Un patronyme établi
+par une mention sûre (« mme aurélie hautecoeur », « julien chevrier ») est
+ensuite reconnu seul (« compte rendu : hautecoeur a confirmé »), dans le même
+texte et dans les documents suivants d'un dossier : sur les dossiers en
+minuscules, noms non détectés 116 → 4 (réaliste), 47 → 10 (adversarial), en
+capitales 104 → 28 ; 0 faux positif sur les témoins. Un mot courant égal à un
+patronyme établi est masqué (même sur-masquage que § 5.4). Depuis P2-145, la
+**civilité de genre reste en clair** en minuscules et en capitales, comme en
+casse ordinaire (point 4 de l'essentiel) : la fuite des noms mesurée passe
+donc de 2,2 % à 30 % sur le réaliste en minuscules, **uniquement par la
+civilité** (hors civilité : 185 caractères avant comme après,
+`leak_hors_civilite.py`). Effet recherché : une même personne citée en casses
+différentes dans un dossier (« M. Antoine Lacombe », puis « m. antoine
+lacombe ») reçoit le même jeton, et une civilité n'est plus ajoutée à la
+restauration. **Restauration en casse mixte** : un jeton ne garde qu'une
+graphie par dossier ; sur le corpus réaliste à casse mixte (une casse par
+document), 95 documents sur 397 sont restaurés avec une autre casse que
+l'original (vérifié : la casse seule diffère).
+
 **Texte sans majuscules (P2-117).** Sur un texte mis en minuscules, ponctuation
 intacte, la fuite au caractère est de 100 % pour les noms, les adresses et les
 établissements (corpus flou réaliste, 400 documents), contre 27,7 % et 0 % sur
@@ -486,7 +505,7 @@ pas masquer « 3 chemin de fer » ou « 12 place disponible ». Les mots outils,
 (« 70000 euros », « 21000 dossiers ») ne sont pas recapitalisés ; un autre
 nom commun après un code postal peut être pris pour une commune
 (sur-masquage). Un patronyme seul sans civilité ni prénom connu n'est pas
-détecté. Un texte entièrement en MAJUSCULES n'est pas concerné ; relire
+détecté, sauf s'il a été établi plus haut ou dans le dossier (P2-144). Un texte entièrement en MAJUSCULES n'est pas concerné ; relire
 avant envoi. Dates et
 téléphones ne sont pas touchés tant que les chiffres restent des chiffres.
 
