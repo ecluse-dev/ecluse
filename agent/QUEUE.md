@@ -213,6 +213,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-143 | code | Masquer les maladies rares (Orphanet, rattachées ou texte qui nomme une personne), réversible ; pathologies fréquentes en clair | P2-110 | fusionnée |
 | P2-144 | code | Patronyme repris seul en minuscules ou capitales (même texte et dossier) ; 116 → 4 non détectés | P2-140 | fusionnée |
 | P2-145 | code | Dossiers à casse mixte : corpus `_mixte`, même jeton pour une même personne, civilité de genre en clair en minuscules | P2-140 | fusionnée |
+| P2-146 | spec | Lecture du gabarit AIPD de la CNIL (« PIA, les modèles », 2018) et correspondance case par case avec Écluse (`agent/specs/P2-97.md`) | — | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
