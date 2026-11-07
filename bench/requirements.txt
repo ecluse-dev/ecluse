@@ -1,7 +1,11 @@
 presidio-analyzer>=2.2
-# Épinglages de dépendances transitives de spaCy : avec cymem 2.0.16 /
+# Épinglages de dépendances transitives de spaCy, avant Python 3.13 : dans
+# l'environnement d'origine (version de Python non notée), avec cymem 2.0.16 /
 # preshed 3.0.14 / murmurhash 1.0.16, tout chargement de pipeline spaCy
-# échoue (OverflowError dans Tokenizer._flush_specials).
-cymem==2.0.11
-preshed==3.0.9
-murmurhash==1.0.12
+# échouait (OverflowError dans
+# Tokenizer._flush_specials). Sous Python 3.13 (spaCy 3.8.18), c'est
+# l'inverse : les versions épinglées échouent, les dernières fonctionnent
+# (relecture P1-12, 5 novembre 2026).
+cymem==2.0.11; python_version < "3.13"
+preshed==3.0.9; python_version < "3.13"
+murmurhash==1.0.12; python_version < "3.13"

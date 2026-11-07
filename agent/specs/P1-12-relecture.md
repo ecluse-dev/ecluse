@@ -58,3 +58,14 @@ tâche de mesure P1-36 ajoutée à la file.
 Python 3.13.18 dans un environnement virtuel isolé ; `presidio-analyzer`
 2.2.366, spaCy 3.8.18, `en_core_web_lg` 3.8.0 ; corpus généré par le
 `generate_corpus.py` de `main`. Fichiers générés non versionnés.
+
+## 6. Version de publication (8 novembre 2026)
+
+Le mainteneur a validé la publication le 7 novembre. Corrections du § 3
+appliquées à `bench/ARTICLE.md` : titre et encart « Brouillon » retirés,
+mesure datée (`0b9fcd7`, chiffres Écluse rejoués à l'identique : 778 TP,
+42 FP FINESS, 67/67 NIR et IBAN irréguliers ; SHA-256 du corpus inchangé),
+deux versions de Presidio citées, paragraphe sur les épinglages corrigé.
+`bench/requirements.txt` n'épingle plus `cymem`, `preshed` et `murmurhash`
+sous Python 3.13 et plus (marqueurs d'environnement). Presidio n'a pas été
+rejoué ce jour-là. Reste au mainteneur : publier (comptes personnels).
