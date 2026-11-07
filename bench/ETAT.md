@@ -91,6 +91,16 @@ Repérage, mentions rattachées à une personne :
 | variantes (300, adjectifs et négations) | 100 % | 100 % | 0 |
 | formes libres (120) | 100 % | 100 % | — |
 
+Masquage des maladies rares (P2-143, `run_maladies_rares_bench.dart`) :
+
+| Mesure | Avant | Après |
+|---|---:|---:|
+| Mentions rares du corpus indices masquées | 0 / 51 | 51 / 51 |
+| Pathologies fréquentes masquées (hors mucoviscidose, drépanocytose) | 0 | 0 |
+| Masquages dans le témoin | 0 | 0 |
+| Échantillon Orphanet (300, graine 42), rattachées ou personne nommée | 0 / 300 | 276 / 300 |
+| Échantillon Orphanet, niées ou sans personne | 0 / 300 | 0 / 300 |
+
 ## Écarts avec les rapports
 
 1. **Généralisation, F après le 1er tour** : 2 002,0 (réaliste) et 2 466,1

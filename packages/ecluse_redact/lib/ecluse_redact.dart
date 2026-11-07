@@ -18,6 +18,7 @@ export 'src/heuristics/date_naissance_detector.dart';
 export 'src/heuristics/email_detector.dart';
 export 'src/heuristics/etablissement_detector.dart';
 export 'src/heuristics/identifiant_detector.dart';
+export 'src/heuristics/maladie_rare_detector.dart';
 export 'src/heuristics/name_detector.dart';
 export 'src/heuristics/minuscules_recapitalise_detector.dart';
 export 'src/heuristics/nom_minuscules_detector.dart';

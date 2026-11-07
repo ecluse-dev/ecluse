@@ -2,13 +2,15 @@ import 'dart:async';
 
 import 'package:ecluse_audit/ecluse_audit.dart' show AuditChain, JournalAudit;
 import 'package:ecluse_core/ecluse_core.dart';
-import 'package:ecluse_reference/ecluse_reference.dart' show EcluseReference;
+import 'package:ecluse_reference/ecluse_reference.dart'
+    show EcluseReference, RareDiseaseCatalog;
 
 import 'heuristics/adresse_detector.dart';
 import 'heuristics/date_naissance_detector.dart';
 import 'heuristics/email_detector.dart';
 import 'heuristics/etablissement_detector.dart';
 import 'heuristics/identifiant_detector.dart';
+import 'heuristics/maladie_rare_detector.dart';
 import 'heuristics/name_detector.dart';
 import 'heuristics/casse.dart';
 import 'heuristics/minuscules_recapitalise_detector.dart';
@@ -118,6 +120,13 @@ abstract final class Ecluse {
   /// rendu a toujours sa trace. Un refus de secrets laisse une entrée
   /// `secrets_refused`. Si l'écriture échoue, l'exception du journal remonte et
   /// rien n'est masqué. Sans [journal], la sortie est exactement celle d'avant.
+  ///
+  /// **Maladies rares** (P2-143) : avec [maladiesRares] (catalogue Orphanet
+  /// **chargé** par l'appelant, sinon [StateError]), une maladie rare
+  /// rattachée à une personne et non niée est masquée (`[MALADIE_RARE_1]`)
+  /// et restaurable ; les pathologies fréquentes restent en clair. Voir
+  /// `MaladieRareDetector`. Sans [maladiesRares], la sortie est exactement
+  /// celle d'avant.
   static Future<RedactResult> redact(
     String text, {
     List<Detector>? detectors,
@@ -126,9 +135,10 @@ abstract final class Ecluse {
     EcluseReference? riskReference,
     Dossier? dossier,
     JournalAudit? journal,
+    RareDiseaseCatalog? maladiesRares,
   }) {
-    final options = _Options(
-        detectors, restoreSecrets, refuseSecrets, riskReference, journal);
+    final options = _Options(detectors, restoreSecrets, refuseSecrets,
+        riskReference, journal, _supplementaires(maladiesRares));
     if (dossier == null) return _redact(text, _Etat(), options);
     return dossier._serialise(() {
       final etat = dossier._etat;
@@ -172,28 +182,44 @@ abstract final class Ecluse {
     String text, {
     List<Detector>? detectors,
     Dossier? dossier,
+    RareDiseaseCatalog? maladiesRares,
   }) {
-    if (dossier == null) return _detecter(text, _Etat(), detectors);
+    final extra = _supplementaires(maladiesRares);
+    if (dossier == null) return _detecter(text, _Etat(), detectors, extra);
     return dossier._serialise(() {
       final etat = dossier._etat;
       if (etat == null) throw const DossierFermeException();
-      return _detecter(text, etat, detectors);
+      return _detecter(text, etat, detectors, extra);
     });
   }
+
+  /// Détecteurs ajoutés par les options (P2-143). Construits à l'appel, pour
+  /// qu'un catalogue non chargé soit refusé avant toute détection.
+  static List<Detector> _supplementaires(RareDiseaseCatalog? maladiesRares) =>
+      maladiesRares == null
+          ? const []
+          : [
+              LegacyDetectorAdapter(
+                  MaladieRareDetector(maladiesRares), DetectorTier.reference,
+                  name: 'maladie_rare'),
+            ];
 
   /// Détection pure : lit [etat] (patronymes établis) sans jamais le modifier.
   static Future<List<DetectedEntity>> _detecter(
     String text,
     _Etat etat,
-    List<Detector>? detectors,
-  ) async {
+    List<Detector>? detectors, [
+    List<Detector> supplementaires = const [],
+  ]) async {
     // Dans un dossier, les patronymes établis par les documents précédents
     // amorcent la détection de noms (P2-14) ; des détecteurs fournis par
     // l'appelant ne sont jamais modifiés.
-    final engine = EcluseEngine(detectors ??
+    final base = detectors ??
         (etat.patronymes.isEmpty
             ? defaultDetectors
-            : _detecteursAvecPatronymes(etat.patronymes)));
+            : _detecteursAvecPatronymes(etat.patronymes));
+    final engine = EcluseEngine(
+        supplementaires.isEmpty ? base : [...base, ...supplementaires]);
     final (vue, positions) = _vueDeDetection(text);
     final entites = (await engine.run(vue)).entities;
     if (identical(vue, text)) return entites;
@@ -225,12 +251,20 @@ abstract final class Ecluse {
     _Etat etat,
     _Options options,
   ) async {
-    final resolved = await _detecter(text, etat, options.detectors);
+    final resolved =
+        await _detecter(text, etat, options.detectors, options.supplementaires);
 
     final secretCount =
         resolved.where((e) => e.type == EntityType.secret).length;
     final journal = options.journal;
-    final moteur = journal == null ? '' : descriptionMoteur(options.detectors);
+    final moteur = journal == null
+        ? ''
+        : descriptionMoteur(options.supplementaires.isEmpty
+            ? options.detectors
+            : [
+                ...options.detectors ?? defaultDetectors,
+                ...options.supplementaires
+              ]);
     if (options.refuseSecrets && secretCount > 0) {
       await journal?.enregistrerRefusSecrets(
           moteur: moteur, nombre: secretCount);
@@ -894,13 +928,14 @@ final class SecretsRefusedException implements Exception {
 /// une à une entre les étapes.
 final class _Options {
   const _Options(this.detectors, this.restoreSecrets, this.refuseSecrets,
-      this.riskReference, this.journal);
+      this.riskReference, this.journal, this.supplementaires);
 
   final List<Detector>? detectors;
   final bool restoreSecrets;
   final bool refuseSecrets;
   final EcluseReference? riskReference;
   final JournalAudit? journal;
+  final List<Detector> supplementaires;
 }
 
 /// État de masquage : jetons attribués, identités de noms, compteurs et carte.

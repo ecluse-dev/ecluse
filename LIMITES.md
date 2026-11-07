@@ -37,11 +37,16 @@ absence de protection connue.
    un rapport **en option** (`riskReference:`, P2-04) avec des suggestions de
    généralisation (P2-91) ; la généralisation n'est appliquée que si
    l'application appelle `appliquerGeneralisations` (P2-92). Limites au § 7.
-7. **Pathologies : signalées, jamais masquées ni comptées.** Le rapport de
-   risque liste les pathologies rattachées à une personne (« atteinte de la
-   maladie de Huntington ») mais elles **restent en clair** et n'entrent pas
-   dans l'estimation (§ 3) ; une généralisation est proposée, appliquée
-   seulement sur demande. La table des pathologies fréquentes a été
+7. **Pathologies : seules les maladies rares sont masquées, aucune n'est
+   comptée.** Avec le catalogue Orphanet passé en `maladiesRares:` (P2-143),
+   une maladie rare rattachée à une personne (« atteinte de la maladie de
+   Huntington ») devient `[MALADIE_RARE_1]`, restaurable. Sans ce catalogue,
+   rien n'est masqué. Les pathologies fréquentes **restent en clair** :
+   le rapport de risque les liste, elles n'entrent pas dans l'estimation
+   (§ 3), et une généralisation est proposée, appliquée seulement sur
+   demande. Une maladie rare citée sous un nom très long ou absent du
+   catalogue part en clair, comme une maladie rare non rattachée dans un
+   texte où aucun nom de personne n'est détecté. La table des pathologies fréquentes a été
    validée cliniquement par le mainteneur (P2-110).
 8. **Textes tout en minuscules, tout en capitales ou en casse de phrase**
    (majuscule en début de phrase seulement) : des détecteurs
@@ -178,13 +183,34 @@ validée, P2-110, et Orphanet), leur rattachement à une personne et leur négat
 Depuis P2-127, le rapport de risque **liste** les pathologies rattachées
 (`RiskReport.pathologies`, et une ligne dans `limites`), mais elles **ne
 comptent pas dans l'estimation** (aucune prévalence ne permet de chiffrer F)
-et **restent en clair** : rien n'est masqué. Depuis P2-135, le rapport
+et **restent en clair**, sauf les maladies rares depuis P2-143 (ci-dessous).
+Depuis P2-135, le rapport
 propose des généralisations (catégorie, puis « maladie rare » ou « maladie
 chronique ») que l'application applique **sur demande**
 (`appliquerGeneralisationsPathologie`), sans F chiffré ; les formes
 adjectivales (« diabétique ») n'en reçoivent pas. Les maladies rares
-ne sont repérées que si l'appelant a chargé `reference.rareDiseases`. La
-table des pathologies fréquentes n'est pas validée cliniquement.
+ne sont repérées que si l'appelant a chargé `reference.rareDiseases`.
+
+**Maladies rares masquées (P2-143).** Avec `Ecluse.redact(…, maladiesRares:
+catalogue)` (catalogue **chargé**, sinon refus), une maladie rare non niée est masquée si
+elle est rattachée à une personne (« atteinte de »), ou si le texte nomme
+quelqu'un (« Mme Verdier. Diagnostic : maladie de Wilson »). Est rare : une mention d'Orphanet ; une mention de la
+table maison qu'Orphanet connaît aussi (mucoviscidose, drépanocytose,
+phénylcétonurie, maladie de Gaucher), sauf tuberculose et bilharziose ; une
+mention de la table suivie d'un éponyme (« myopathie de Duchenne »). Mesure
+(`run_maladies_rares_bench.dart`) : 51 sur 51 mentions rares du corpus P2-112
+masquées (0 avant), aucune pathologie fréquente ni aucun mot du témoin
+masqué. Sur 300 noms Orphanet tirés au hasard (graine 42, nom préféré tel
+qu'écrit), 276 masqués en phrase rattachée ou qui nomme une personne, 0 en
+phrase niée ou générale sans personne. Les 24 manqués sont des intitulés
+longs (plus de mots que la fenêtre de repérage) ou à formule
+(« 46,XY », « del(16) »). Les mentions de mucoviscidose et de drépanocytose
+du corpus, annotées comme pathologies de la table maison, sont désormais
+masquées : c'est voulu (maladies rares au sens d'Orphanet).
+**Ce qui reste en clair** : une maladie rare non rattachée dans un texte où
+aucun nom n'est détecté, un nom absent du catalogue ou écrit autrement, et
+toute maladie rare quand l'application ne passe pas le catalogue. Le masquage retire aussi la mention du rapport de risque, qui ne
+lit que le texte masqué.
 
 ## 4. Fichiers pris en charge (`ecluse_ingest`)
 

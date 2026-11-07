@@ -140,7 +140,9 @@ Objectif : occuper le coin vide de la carte.
   validée cliniquement (P2-110), repérage avec
   rattachement à une personne et négation, signalé dans le rapport de risque
   **sans être compté**, généralisable en catégorie sur demande de
-  l'application (P2-111 à P2-135, `LIMITES.md` § 3).
+  l'application (P2-111 à P2-135, `LIMITES.md` § 3). **Maladies rares
+  masquées** et restaurables quand l'application passe le catalogue
+  (P2-143) ; les pathologies fréquentes restent en clair.
 - 🟡 Textes sans casse ordinaire (P2-117 à P2-124) : un texte tout en
   minuscules (dictée transcrite, message tapé vite) ou tout en capitales
   laissait fuir noms, adresses et établissements. Détecteurs dédiés,
