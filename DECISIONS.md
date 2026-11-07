@@ -495,3 +495,16 @@ minuscules (P2-140), mesurer un dossier à casse mixte.
   délégation (`agent/specs/P2-144.md`) : cohérence avec la casse ordinaire et
   un seul jeton par personne quelle que soit la casse. Le chiffre de fuite
   en minuscules monte (2,2 % → 30 % sur les noms) par la seule civilité.
+
+## 2026-11 — P2-101 : Melos 8 et workspace pub (7 novembre)
+Le mainteneur a demandé à l'agent de faire la migration lui-même.
+- Configuration de Melos dans le `pubspec.yaml` racine (`melos:`), workspace
+  pub (`workspace:`, `resolution: workspace`) ; `melos.yaml` supprimé.
+- **Plancher SDK relevé** : racine Dart 3.9 (minimum de Melos 7 et 8), packages
+  Dart 3.6 (minimum d'un membre de workspace), au lieu de 3.3. `CLAUDE.md`
+  dit encore « SDK ≥ 3.3 » : à mettre à jour par le mainteneur (zone
+  interdite aux agents).
+- La CI n'est pas modifiée : `dart pub global activate melos` délègue à la
+  version locale du workspace. Les commandes de `CONTRIBUTING.md` sont
+  inchangées.
+- La PR dependabot #243 devient sans objet.
