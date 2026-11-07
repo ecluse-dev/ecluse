@@ -2,8 +2,35 @@ name: ecluse_workspace
 description: Monorepo Écluse — le sas RGPD entre vos prompts et les LLM.
 publish_to: none
 
+# Racine du workspace pub (Dart ≥ 3.6) et configuration de Melos 7 et plus
+# (P2-101) : Melos ne lit plus `melos.yaml`. La racine demande Dart 3.9,
+# minimum de Melos 8 ; les packages gardent un plancher plus bas (3.6, minimum
+# d'un membre de workspace).
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.9.0 <4.0.0"
+
+workspace:
+  - packages/ecluse_audit
+  - packages/ecluse_bench
+  - packages/ecluse_core
+  - packages/ecluse_demo
+  - packages/ecluse_ingest
+  - packages/ecluse_ner
+  - packages/ecluse_redact
+  - packages/ecluse_reference
+  - packages/ecluse_reid
 
 dev_dependencies:
-  melos: ^6.1.0
+  melos: ^8.10.0
+
+melos:
+  scripts:
+    analyze:
+      description: Analyse statique de tous les packages
+      run: melos exec -- dart analyze --fatal-infos
+    test:
+      description: Lance les tests de tous les packages
+      run: melos exec --dir-exists=test -- dart test
+    format:
+      description: Vérifie le formatage
+      run: melos exec -- dart format --set-exit-if-changed .

@@ -167,7 +167,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-98 | mesure | Rappel des détecteurs sur un texte de style transcrit (sans audio) | — | fusionnée |
 | P2-99 | humain | Accepter ou non une dépendance native (whisper.cpp) dans le monorepo | P2-98 | humain |
 | P2-100 | code | Tests de coût : rapport de temps entre deux tailles au lieu d'une borne en millisecondes | — | fusionnée |
-| P2-101 | code | Migration vers Melos 7 et plus (configuration dans `pubspec.yaml`) | — | humain |
+| P2-101 | code | Migration vers Melos 7 et plus (configuration dans `pubspec.yaml`) | — | PR ouverte |
 | P2-102 | code | Relire au bon palier les tranches d'âge et les professions généralisées (défauts mesurés par P2-93) | P2-93 | fusionnée |
 | P2-103 | mesure | Généralisation du lieu : effet de « département N » non relu sur F et sur l'évaluation | P2-102 | PR ouverte |
 | P2-104 | spec | Critère GO/STOP du vérificateur LLM local | — | fusionnée |
@@ -211,8 +211,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-141 | code | Démo : rapport de risque (bande, indices restés visibles, pathologies) avec la référence publique | P2-137 | fusionnée |
 | P2-142 | code | QI : lieu d'un événement (« aura lieu à Brest ») écarté ; témoin 57 → 0 | P2-136 | fusionnée |
 | P2-143 | code | Masquer les maladies rares (Orphanet, rattachées ou texte qui nomme une personne), réversible ; pathologies fréquentes en clair | P2-110 | fusionnée |
-| P2-144 | code | Patronyme repris seul en minuscules ou capitales (même texte et dossier) ; 116 → 4 non détectés | P2-140 | PR ouverte |
-| P2-145 | code | Dossiers à casse mixte : corpus `_mixte`, même jeton pour une même personne, civilité de genre en clair en minuscules | P2-140 | PR ouverte |
+| P2-144 | code | Patronyme repris seul en minuscules ou capitales (même texte et dossier) ; 116 → 4 non détectés | P2-140 | fusionnée |
+| P2-145 | code | Dossiers à casse mixte : corpus `_mixte`, même jeton pour une même personne, civilité de genre en clair en minuscules | P2-140 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 

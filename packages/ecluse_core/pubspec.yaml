@@ -8,7 +8,9 @@ repository: https://github.com/ecluse-dev/ecluse
 publish_to: none # retiré lors de la première publication pub.dev
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
+
+resolution: workspace
 
 dev_dependencies:
   lints: ^4.0.0
