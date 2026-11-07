@@ -1,5 +1,6 @@
 import 'json_parser.dart';
 import 'llm_client.dart';
+import 'response.dart';
 import 'prompt_builder.dart';
 import 'span.dart';
 import 'verifier.dart';
@@ -31,6 +32,18 @@ class LlmRedactVerifier implements RedactVerifier {
     final response = await client.complete(prompt);
     stopwatch.stop();
 
+    // Motifs de non-vérification (P2-109) : la fin du texte n'a pas été
+    // soumise, ou la réponse a été coupée avant la fin.
+    final max = promptBuilder.maxOriginalChars;
+    final motifs = <String>[
+      if (originalText.length > max || redactedText.length > max)
+        'texte tronqué à $max caractères : la suite n\'a pas été vérifiée',
+      if (response.finishReason == LlmFinishReason.maxTokens)
+        'réponse du LLM coupée (limite de jetons atteinte)',
+      if (response.finishReason == LlmFinishReason.error)
+        'réponse du LLM en erreur',
+    ];
+
     try {
       final parsed = parseLeakSpansJson(
         response.text,
@@ -41,12 +54,15 @@ class LlmRedactVerifier implements RedactVerifier {
         latency: stopwatch.elapsed,
         rawResponse: response.text,
         warnings: parsed.warnings,
+        status: motifs.isEmpty
+            ? VerificationStatus.verifie
+            : VerificationStatus.nonVerifie,
+        motif: motifs.isEmpty ? null : motifs.join(' ; '),
       );
     } on LlmJsonParseException catch (e) {
-      // Ligne éditoriale : en cas d'échec de parsing, on ne fait PAS
-      // remonter d'exception au caller — on retourne un résultat vide avec
-      // warning. Le pipeline `EcluseEngine` continue avec les couches
-      // structurel + NER, qui restent fiables.
+      // Pas d'exception remontée : les couches structurelle et NER restent
+      // valables. Mais le résultat est **non vérifié**, jamais « propre » :
+      // une liste vide laissait `isClean` à vrai sur un texte non lu (P2-107).
       return VerificationResult(
         newLeaks: const [],
         latency: stopwatch.elapsed,
@@ -54,6 +70,11 @@ class LlmRedactVerifier implements RedactVerifier {
         warnings: [
           'JSON parse failed: ${e.message} — verification skipped',
         ],
+        status: VerificationStatus.nonVerifie,
+        motif: [
+          'réponse du LLM illisible (${e.message})',
+          ...motifs,
+        ].join(' ; '),
       );
     }
   }
