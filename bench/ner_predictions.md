@@ -58,6 +58,22 @@ décide (P2-01 § 4), et Écluse garde de toute façon la civilité visible.
 
 ## 4. Produire les prédictions (poste du mainteneur)
 
+**Script prêt** : `bench/ner_predict.py` fait les § 3 à 5 sans bash (le
+poste est sous Windows). Dépendances du poste seulement, hors
+`requirements.txt` : `pip install transformers torch sentencepiece psutil`.
+
+```bash
+python bench/ner_predict.py predire CHEMIN_DU_MODELE           # FP32
+python bench/ner_predict.py --int8 predire CHEMIN_DU_MODELE    # int8 livré
+python bench/ner_predict.py scorer                             # FP32
+python bench/ner_predict.py --int8 scorer --sans-dart          # int8
+```
+
+`predire` affiche les labels lus dans `config.json` (à relire contre le
+§ 3) et écrit `flou/ner_perf.json` (latence, taille, mémoire). Les
+fonctions de correspondance et de fusion sont testées par
+`test_ner_predict.py`. Le détail du pipeline, pour mémoire :
+
 Avec le spike existant (`onnxruntime` + `transformers`), le pipeline de
 classification de jetons donne déjà des offsets en caractères :
 
