@@ -453,3 +453,16 @@ clinique.
   `patho_orphanet.tsv.gz` dans `ecluse_reference/assets`, sous CC BY 4.0 avec
   attribution (`NOTICE`, `DATA_SOURCES.md`). Le chargement côté Dart et
   l'appariement sont une tâche à part (P2-115).
+
+## 2026-11 — P2-110 : table des pathologies fréquentes validée (7 novembre)
+Réponses du mainteneur aux points de `agent/specs/P2-94-table.md` § 4.
+- **Systèmes** : les douze systèmes sont suffisants pour le médico-social.
+- **Abréviations** : « AVC » et « BPCO » gardés ; « SEP » reste écarté
+  (sens multiples, choix de P2-112 confirmé).
+- **Pathologies hors liste ALD** (obésité, hypertension, troubles du spectre
+  de l'autisme, trisomie 21, handicap psychique) : **hors table**.
+- **Seuil** : *Standard* seul pour la pathologie.
+- **Sigles Orphanet** : pas de nouvelle entrée dans la liste blanche pour le
+  moment (« SLA » seule, P2-113).
+- **Conséquence** : la table et les formes adjectivales ne sont plus
+  « provisoires » (`tablePathologies`, `formesAdjectivales`).

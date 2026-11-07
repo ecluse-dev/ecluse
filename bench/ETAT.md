@@ -81,7 +81,7 @@ adversarial inchangés.
 | adversarial | 7 / 445 (1,6 %) | 7 / 596 (1,2 %) | 52 / 398 (13,1 %) |
 | témoin | 0 / 757 | 0 / 757 | 0 / 396 |
 
-## Pathologies (P2-112 à P2-135, table **provisoire**)
+## Pathologies (P2-112 à P2-135, table validée P2-110)
 
 Repérage, mentions rattachées à une personne :
 

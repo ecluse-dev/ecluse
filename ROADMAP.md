@@ -137,7 +137,7 @@ Objectif : occuper le coin vide de la carte.
   pathologie rare → catégorie). Bibliothèque de généralisation française.
   **Pathologies** : nomenclature Orphanet (CC BY 4.0) embarquée et lue
   (`RareDiseaseCatalog`), table maison des pathologies fréquentes
-  **provisoire** (validation clinique en attente), repérage avec
+  validée cliniquement (P2-110), repérage avec
   rattachement à une personne et négation, signalé dans le rapport de risque
   **sans être compté**, généralisable en catégorie sur demande de
   l'application (P2-111 à P2-135, `LIMITES.md` § 3).

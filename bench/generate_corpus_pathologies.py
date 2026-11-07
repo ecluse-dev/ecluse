@@ -18,9 +18,9 @@ fusionnes :
             et souvent une negation NON annotee (« pas de BPCO connu »,
             « aucun antecedent d'epilepsie ») (P2-126)
 
-**Provisoire** : les mentions, categories et systemes viennent de la table
-maison `agent/specs/P2-94-table.md` § 3, PAS ENCORE VALIDEE cliniquement
-(P2-110). Le corpus est a regenerer si la table change. Les maladies rares
+Les mentions, categories et systemes viennent de la table maison
+`agent/specs/P2-94-table.md` § 3, validee cliniquement par le mainteneur
+(P2-110, 7 novembre 2026). Le corpus est a regenerer si la table change. Les maladies rares
 prennent la categorie « maladie rare » sans code Orphanet : la categorie
 Orphanet fine est lue par `RareDiseaseCatalog` cote Dart, pas ici.
 

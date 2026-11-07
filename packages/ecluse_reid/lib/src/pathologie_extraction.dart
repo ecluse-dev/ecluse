@@ -7,12 +7,13 @@ import 'package:ecluse_reference/ecluse_reference.dart';
 /// désigne parfois une seule personne dans un département. Ce module
 /// **repère** les mentions et leur catégorie ; il n'est branché ni sur
 /// l'estimation du risque ni sur les suggestions de généralisation : sans
-/// donnée de prévalence, aucun F chiffré n'est possible, et la table des
-/// pathologies fréquentes n'est pas encore validée cliniquement (P2-110).
+/// donnée de prévalence, aucun F chiffré n'est possible. La table des
+/// pathologies fréquentes a été validée cliniquement par le mainteneur
+/// (P2-110, `DECISIONS.md`).
 ///
 /// Deux sources :
 ///
-/// - la **table maison provisoire** ([tablePathologiesProvisoire]), tirée de
+/// - la **table maison** ([tablePathologies]), tirée de
 ///   `agent/specs/P2-94-table.md` § 3 ; elle prime pour ses mentions
 ///   (décision P2-113) ;
 /// - le **catalogue Orphanet** ([RareDiseaseCatalog]) pour les maladies
@@ -73,10 +74,12 @@ class PathologieMention {
 /// Entrée de la table maison : (système, catégorie, mentions).
 typedef EntreePathologie = (String, String, List<String>);
 
-/// Table maison **provisoire** des pathologies fréquentes : copie de
-/// `agent/specs/P2-94-table.md` § 3, **non validée cliniquement** (P2-110).
-/// « SEP » en est retiré (sens multiples, choix provisoire de P2-112).
-const List<EntreePathologie> tablePathologiesProvisoire = [
+/// Table maison des pathologies fréquentes : copie de
+/// `agent/specs/P2-94-table.md` § 3, **validée cliniquement** par le
+/// mainteneur (P2-110) : douze systèmes suffisants pour le médico-social,
+/// « AVC » et « BPCO » gardés, « SEP » écarté (sens multiples), pathologies
+/// hors liste ALD laissées hors table.
+const List<EntreePathologie> tablePathologies = [
   (
     'neurologique',
     'accident vasculaire cérébral invalidant',
@@ -230,9 +233,9 @@ final RegExp _negationApres = RegExp(
 
 /// Formes adjectivales qui qualifient une personne (« Mme X, diabétique »),
 /// rattachées à la mention de la table dont elles relèvent (P2-126).
-/// Liste écrite par le projet, provisoire comme la table. Comparées en
+/// Liste écrite par le projet, rattachée à la table validée (P2-110). Comparées en
 /// minuscules **avec** leurs accents.
-const Map<String, String> formesAdjectivalesProvisoires = {
+const Map<String, String> formesAdjectivales = {
   'diabétique': 'diabète', 'épileptique': 'épilepsie', //
   'parkinsonien': 'maladie de Parkinson', //
   'parkinsonienne': 'maladie de Parkinson', //
@@ -252,7 +255,7 @@ Map<String, (String, String)>? _indexAdjectifs;
 
 Map<String, (String, String)> _adjectifs() => _indexAdjectifs ??= {
       for (final MapEntry(key: forme, value: mention)
-          in formesAdjectivalesProvisoires.entries)
+          in formesAdjectivales.entries)
         forme: _table()[normName(mention)]!,
     };
 
@@ -277,7 +280,7 @@ final RegExp _finDePhrase = RegExp(r'[.!?\n]');
 Map<String, (String, String)>? _indexTable;
 
 Map<String, (String, String)> _table() => _indexTable ??= {
-      for (final (systeme, categorie, mentions) in tablePathologiesProvisoire)
+      for (final (systeme, categorie, mentions) in tablePathologies)
         for (final m in mentions) normName(m): (systeme, categorie),
     };
 
