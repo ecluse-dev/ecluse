@@ -1356,8 +1356,10 @@ Voir `ROADMAP.md` pour le calendrier de ces briques.
 « il y a 3 ans ») n'est plus lue comme un âge, et une commune homonyme d'un
 mot courant (« Tours de garde ») ne compte comme lieu qu'après une
 préposition de lieu. Corpus témoin de QI : 412 extractions à tort → 57.
-**Reste** : un lieu réel sans lien avec une personne (« la réunion aura lieu
-à Brest ») est encore compté.
+Depuis P2-142, un lieu d'événement introduit par « aura lieu à », « se
+tiendra à », « organisé à »… n'est plus compté (témoin : 57 → 0). **Reste** :
+un lieu d'événement formulé autrement (« réunion à Brest jeudi ») est encore
+compté comme lieu d'une personne.
 
 Bibliothèque, **utilisée par `Ecluse.redact` seulement si l'appelant fournit
 `riskReference`** (rapport seul, désactivé par défaut) : elle estime la

@@ -165,6 +165,10 @@ List<(String, List<Commune>)> _scanCommunesNommees(
       final matches = ref.geo.communesByName(candidate);
       if (matches.isEmpty) continue;
       final debut = tokens[i].start;
+      if (_lieuEvenement
+          .hasMatch(text.substring(debut > 40 ? debut - 40 : 0, debut))) {
+        continue;
+      }
       if (_homonymesCourants.contains(candidate.toLowerCase()) &&
           !_locatifAvant
               .hasMatch(text.substring(debut > 30 ? debut - 30 : 0, debut))) {
@@ -398,6 +402,16 @@ final RegExp _locatifAvant = RegExp(
   caseSensitive: false,
 );
 
+/// Lieu d'un **événement**, pas d'une personne : « la réunion aura lieu à
+/// Brest », « se tiendra à Dijon », « organisée à Lille » (P2-142 : les 57
+/// extractions à tort restantes du corpus témoin de QI après P2-136).
+final RegExp _lieuEvenement = RegExp(
+  r'(?:(?:aura|a eu|avait|ont eu|auront) lieu|se tiendra|se tiendront|'
+  r"s'est tenue?s?|s’est tenue?s?|se déroulera|se dérouleront|"
+  r'organisée?s?|prévue?s?) (?:à|au|en)[ \t\u00A0]+$',
+  caseSensitive: false,
+);
+
 List<QiSpan> _lieuSpans(EcluseReference ref, String text) {
   final mots = RegExp(r"[A-ZÀ-Ý][\wÀ-ÿ'-]*").allMatches(text).toList();
   final seulementEspaces = RegExp('^[  ]+\$');
@@ -423,6 +437,10 @@ List<QiSpan> _lieuSpans(EcluseReference ref, String text) {
       if (_homonymesCourants.contains(nom.toLowerCase()) &&
           !_locatifAvant
               .hasMatch(text.substring(start > 30 ? start - 30 : 0, start))) {
+        continue;
+      }
+      if (_lieuEvenement
+          .hasMatch(text.substring(start > 40 ? start - 40 : 0, start))) {
         continue;
       }
       Qi? qi;
