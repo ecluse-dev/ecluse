@@ -508,3 +508,15 @@ Le mainteneur a demandé à l'agent de faire la migration lui-même.
   version locale du workspace. Les commandes de `CONTRIBUTING.md` sont
   inchangées.
 - La PR dependabot #243 devient sans objet.
+
+## 2026-11 — P2-99 et P2-109 (7 novembre)
+- **P2-99 : whisper.cpp dans un dépôt à part**, pas dans le monorepo. La
+  règle 6 (« pas de dépendance native dans `ecluse_core` ») et une CI sans
+  chaîne de compilation C++ restent intactes ; la transcription locale, si
+  elle passe son GO/STOP, sera un paquet séparé qui dépend d'Écluse, pas
+  l'inverse. Le dépôt n'est pas créé tant que le GO/STOP vocal n'est pas
+  tranché.
+- **P2-109** : corrigé sur la branche `feat/llm-scaffold` (#330), qui reste
+  non fusionnée dans `main` : `VerificationStatus.nonVerifie` et un motif sur
+  échec d'analyse, troncature ou réponse coupée ; `isClean` exige un texte
+  vérifié.
