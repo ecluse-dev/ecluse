@@ -207,7 +207,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-137 | code | Démo : texte et consigne masqués séparément dans un `Dossier` (la consigne « Résume. » désactivait les détecteurs de casse), avertissements affichés | P2-133 | fusionnée |
 | P2-138 | code | Texte en casse de phrase (majuscule en début de phrase seulement) : détecteurs de casse et avertissement ; fuite 64 % → 0,6 % | P2-120 | fusionnée |
 | P2-139 | code | Noms en minuscules : initiale, ordre « nom prénom », particules ; adversarial 27 % → 5,9 % | P2-138 | fusionnée |
-| P2-140 | mesure | Dossiers en minuscules et en casse de phrase : cohérence des jetons, collisions, fausses fusions (corpus dossiers × variantes de casse) | P2-139 | à faire |
+| P2-140 | mesure | Dossiers en minuscules et en casse de phrase : cohérence des jetons, collisions, fausses fusions (corpus dossiers × variantes de casse) | P2-139 | PR ouverte |
 | P2-141 | code | Démo : rapport de risque (bande, indices restés visibles, pathologies) avec la référence publique | P2-137 | fusionnée |
 | P2-142 | code | QI : lieu d'un événement (« aura lieu à Brest ») écarté ; témoin 57 → 0 | P2-136 | fusionnée |
 
