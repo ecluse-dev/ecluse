@@ -485,3 +485,13 @@ Précisions prises **par délégation** (à relire, `agent/specs/P2-143.md`) :
   jamais si elle est niée, ni dans un texte sans nom de personne.
 - Opt-in par le catalogue : sans lui, la sortie d'`Ecluse.redact` est
   inchangée (le catalogue se charge de façon asynchrone).
+
+## 2026-11 — P2-144 et P2-145 : casse et dossiers (7 novembre)
+Demandes du mainteneur : analyser et corriger les noms non détectés en
+minuscules (P2-140), mesurer un dossier à casse mixte.
+- **Patronyme repris seul** en minuscules ou capitales, comme en casse
+  ordinaire (P2-14) : même sur-masquage assumé d'un mot courant homonyme.
+- **Civilité de genre en clair** en minuscules et en capitales, par
+  délégation (`agent/specs/P2-144.md`) : cohérence avec la casse ordinaire et
+  un seul jeton par personne quelle que soit la casse. Le chiffre de fuite
+  en minuscules monte (2,2 % → 30 % sur les noms) par la seule civilité.

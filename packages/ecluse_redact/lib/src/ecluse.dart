@@ -298,9 +298,16 @@ abstract final class Ecluse {
     // changement d'état).
     final litteraux = etat.jetonsLitteraux(text);
     final docId = etat.documents++;
+    // Sans casse ordinaire, les noms viennent de `NomMinusculesDetector`, qui
+    // a ses propres confiances (P2-144).
+    final sansCasse = casseDuTexte(text) != CasseTexte.ordinaire;
     for (final entity in resolved) {
       if (entity.type != EntityType.nom) continue;
-      final patronyme =
+      // En capitales, `NameDetector` peut aussi avoir rendu la mention.
+      final patronyme = (sansCasse
+              ? NomMinusculesDetector.patronymeEtabli(
+                  entity.value, entity.confidence)
+              : null) ??
           NameDetector.patronymeEtabli(entity.value, entity.confidence);
       if (patronyme != null) etat.patronymes.add(patronyme.toLowerCase());
     }
@@ -720,6 +727,13 @@ List<Detector> _detecteursAvecPatronymes(Set<String> patronymes) => [
             DetectorTier.reference,
             name: 'nom',
           )
+        else if (detecteur is LegacyDetectorAdapter &&
+            detecteur.name == 'nom_minuscules')
+          LegacyDetectorAdapter(
+            NomMinusculesDetector(knownSurnames: Set.of(patronymes)),
+            DetectorTier.reference,
+            name: 'nom_minuscules',
+          )
         else
           detecteur,
     ];
@@ -753,12 +767,18 @@ final class _NomIdentity {
 /// « Mme Dupont » (un couple) sur leur seul patronyme commun.
 String? _genderBefore(String text, int start) {
   final head = text.substring(start < 20 ? 0 : start - 20, start);
-  if (RegExp(r'(?:^|[^\wÀ-ÿ])(?:M\.|Mr\.?|Monsieur)[ \t\u00A0\u202F]*$')
+  // Sans tenir compte de la casse : en minuscules ou en capitales, la
+  // civilité reste hors de la mention (P2-145) et doit encore séparer un
+  // couple.
+  if (RegExp(r'(?:^|[^\wÀ-ÿ])(?:M\.|Mr\.?|Monsieur)[ \t\u00A0\u202F]*$',
+          caseSensitive: false)
       .hasMatch(head)) {
     return 'm';
   }
-  if (RegExp(r'(?:^|[^\wÀ-ÿ])(?:Mme|Mlle|Mrs\.?|Madame|Mademoiselle)'
-          r'[ \t\u00A0\u202F]*$')
+  if (RegExp(
+          r'(?:^|[^\wÀ-ÿ])(?:Mme|Mlle|Mrs\.?|Madame|Mademoiselle)'
+          r'[ \t\u00A0\u202F]*$',
+          caseSensitive: false)
       .hasMatch(head)) {
     return 'f';
   }
@@ -768,12 +788,37 @@ String? _genderBefore(String text, int start) {
 /// Segments (minuscules, sans doublons) d'une mention de nom — insensible
 /// à l'ordre et à la casse : « Dubreuil Thomas » et « Thomas Dubreuil »
 /// produisent le même ensemble.
-Set<String> _nameSegments(String value) => value
-    .toLowerCase()
-    .replaceAll(',', ' ')
-    .split(RegExp(r'\s+'))
-    .where((segment) => segment.isNotEmpty)
-    .toSet();
+///
+/// Une civilité de genre **en tête** (« m. », « mme ») n'est pas un segment :
+/// `NomMinusculesDetector` l'inclut dans la mention, `NameDetector` la laisse
+/// en clair ; sans ce retrait, « m. antoine lacombe » et « M. Antoine
+/// Lacombe » (même personne, casses différentes) recevaient deux jetons
+/// (P2-145). Le sexe qu'elle indique est rendu par [_genreEnTete].
+Set<String> _nameSegments(String value) {
+  final mots = value
+      .toLowerCase()
+      .replaceAll(',', ' ')
+      .split(RegExp(r'\s+'))
+      .where((segment) => segment.isNotEmpty)
+      .toList();
+  if (mots.length > 1 && _civilitesGenre.containsKey(mots.first)) {
+    mots.removeAt(0);
+  }
+  return mots.toSet();
+}
+
+/// Civilités de genre (minuscules, point compris) et sexe indiqué.
+const Map<String, String> _civilitesGenre = {
+  'm.': 'm', 'm': 'm', 'mr': 'm', 'mr.': 'm', 'monsieur': 'm', //
+  'mme': 'f', 'mme.': 'f', 'mlle': 'f', 'mlle.': 'f', 'madame': 'f', //
+  'mademoiselle': 'f',
+};
+
+/// Sexe indiqué par une civilité de genre en tête de [value], ou `null`.
+String? _genreEnTete(String value) {
+  final premier = value.trimLeft().split(RegExp(r'\s+')).first.toLowerCase();
+  return _civilitesGenre[premier];
+}
 
 /// Résout le jeton d'une entité `nom`, en fusionnant les mentions
 /// **partielles** avec une identité déjà établie dans le même document —
@@ -807,7 +852,8 @@ String _resolveNomToken(
   String text,
 ) {
   final segments = _nameSegments(entity.value);
-  final gender = _genderBefore(text, entity.start);
+  final gender =
+      _genderBefore(text, entity.start) ?? _genreEnTete(entity.value);
   // Deux civilités de sexe différent désignent deux personnes, même avec un
   // patronyme commun (un couple).
   bool compatible(_NomIdentity identity) =>

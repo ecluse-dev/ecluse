@@ -27,8 +27,52 @@ import 'french_first_names.dart';
 /// faux positifs restent possibles (« claire » adjectif suivi d'un nom) ;
 /// en cas de doute on protège (voir `Ecluse.redact`), et `warnings` signale
 /// de toute façon un texte sans majuscule (P2-118).
+///
+/// **Patronyme repris seul** (P2-144) : un patronyme établi par une mention
+/// sûre (après une civilité, ou dans un couple prénom + nom) est ensuite
+/// reconnu seul (« suite à l'entretien avec verdier »), dans le même texte et,
+/// par [knownSurnames], dans les documents suivants d'un dossier. Mesure
+/// P2-140 : 116 noms non détectés dans les dossiers en minuscules, tous de
+/// ce type. Un mot courant égal à un patronyme établi est alors masqué :
+/// même sur-masquage assumé que `NameDetector` (`LIMITES.md` § 5.4).
 final class NomMinusculesDetector implements EntityDetector {
-  const NomMinusculesDetector();
+  const NomMinusculesDetector({this.knownSurnames = const {}});
+
+  /// Patronymes (minuscules) établis ailleurs que dans le texte, par les
+  /// documents précédents d'un dossier (P2-14, P2-144).
+  final Set<String> knownSurnames;
+
+  /// Patronyme qu'une entité rendue par ce détecteur établit, ou `null`.
+  /// Civilité (confiance 0.7) : le dernier mot, s'il n'est ni un prénom ni la
+  /// civilité elle-même. Couple de deux mots (0.5) : le mot qui n'est pas un
+  /// prénom, si l'autre en est un. Un mot outil, un mot d'une lettre ou un
+  /// qualificatif n'établit rien.
+  static String? patronymeEtabli(String value, double confidence) {
+    final mots = [
+      for (final m in _mot.allMatches(value.toLowerCase())) m.group(0)!
+    ];
+    String? candidat;
+    if (confidence == 0.7) {
+      // Mention après une civilité de genre (laissée hors de la mention) ou
+      // titre compris (« dr verdier »).
+      final nom = _civilites.contains(mots.first) ? mots.sublist(1) : mots;
+      if (nom.isNotEmpty && (nom.length == 1 || !_prenom(nom.last))) {
+        candidat = nom.last;
+      }
+      if (nom.length == 1 && _prenom(nom.single)) candidat = null;
+    } else if (confidence == 0.5 && mots.length == 2) {
+      final a = _prenom(mots[0]), b = _prenom(mots[1]);
+      if (a != b) candidat = a ? mots[1] : mots[0];
+    }
+    if (candidat == null ||
+        candidat.length < 3 ||
+        _outil(candidat) ||
+        _civilites.contains(candidat) ||
+        _qualificatif(candidat)) {
+      return null;
+    }
+    return candidat;
+  }
 
   @override
   EntityType get type => EntityType.nom;
@@ -40,6 +84,11 @@ final class NomMinusculesDetector implements EntityDetector {
   static const Set<String> _civilites = {
     'm', 'mme', 'mlle', 'monsieur', 'madame', 'mademoiselle', //
     'dr', 'docteur', 'pr', 'professeur',
+  };
+
+  /// Civilités de genre : laissées hors de la mention (P2-145).
+  static const Set<String> _genre = {
+    'm', 'mme', 'mlle', 'monsieur', 'madame', 'mademoiselle', //
   };
 
   /// Civilités abrégées qu'un point peut suivre (« m. », « dr. »).
@@ -300,7 +349,12 @@ final class NomMinusculesDetector implements EntityDetector {
             break; // un seul groupe de particules
           }
         }
-        ajoute(i, fin, 0.7);
+        // La civilité de genre reste en clair, comme avec `NameDetector`
+        // (`LIMITES.md`, l'essentiel, point 4) ; un titre (« dr ») est masqué
+        // avec le nom. Sans cela, « m. antoine lacombe » et « M. Antoine
+        // Lacombe » n'avaient pas la même valeur : deux jetons dans un
+        // dossier, ou une civilité ajoutée à la restauration (P2-145).
+        ajoute(_genre.contains(mot) ? i + 1 : i, fin, 0.7);
         i = fin + 1;
         continue;
       }
@@ -352,6 +406,30 @@ final class NomMinusculesDetector implements EntityDetector {
       }
       i++;
     }
+
+    // Seconde passe (P2-144) : patronymes établis ci-dessus ou par le
+    // dossier, repris seuls.
+    final connus = <String>{
+      ...knownSurnames,
+      for (final e in trouves)
+        if (patronymeEtabli(e.value, e.confidence) case final p?) p,
+    };
+    if (connus.isEmpty) return trouves;
+    final pris = [for (final e in trouves) (e.start, e.end)];
+    for (var k = 0; k < mots.length; k++) {
+      final mot = mots[k].group(0)!;
+      if (!connus.contains(mot)) continue;
+      final s = mots[k].start, e = mots[k].end;
+      if (pris.any((p) => p.$1 < e && p.$2 > s)) continue;
+      trouves.add(DetectedEntity(
+        type: EntityType.nom,
+        start: s,
+        end: e,
+        value: original.substring(s, e),
+        confidence: 0.6,
+      ));
+    }
+    trouves.sort((a, b) => a.start - b.start);
     return trouves;
   }
 }
