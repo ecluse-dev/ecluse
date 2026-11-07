@@ -1,8 +1,8 @@
-# Brouillon — Ce que Presidio ne voit pas : un benchmark d'identifiants français
+# Ce que Presidio ne voit pas : un benchmark d'identifiants français
 
-> **Brouillon à relire (tâche P1-12, mainteneur).** Tous les chiffres
-> viennent de `bench/README.md` et sont rejoués avec les commandes de la
-> section « Reproduire ». Rien n'a été mesuré sur des données réelles.
+> Mesures rejouées le 8 novembre 2026 sur `main` (commit `0b9fcd7`) avec les
+> commandes de la section « Reproduire ». Corpus synthétique ; aucune donnée
+> réelle.
 
 ## En une phrase
 
@@ -19,8 +19,9 @@ corpus est **synthétique**, généré par un script public avec une graine fixe
 FINESS) [C1]. Les identifiants sont fabriqués avec des clés valides
 calculées ; aucun n'est réel.
 
-Presidio est mesuré **tel que livré** : `presidio-analyzer` 2.2.364, modèle
-spaCy `en_core_web_lg`, seuil 0,35 [C3]. Un développeur peut écrire des
+Presidio est mesuré **tel que livré** : `presidio-analyzer` 2.2.364, puis
+2.2.366 (résultats identiques), modèle spaCy `en_core_web_lg`, seuil 0,35
+[C3]. Un développeur peut écrire des
 recognizers supplémentaires ; ce benchmark ne mesure pas ce qu'une équipe
 motivée obtiendrait en les ajoutant.
 
@@ -144,9 +145,12 @@ PY
 python3 -c "import json; print(sum(json.loads(l)['text'].startswith('Le SIREN de la société est') for l in open('bench/corpus.jsonl', encoding='utf-8')))"
 ```
 
-Version de `bench/requirements.txt` : les dépendances transitives de spaCy
-(`cymem`, `preshed`, `murmurhash`) y sont épinglées, faute de quoi spaCy ne
-charge aucun pipeline dans l'environnement de test.
+Dépendances de Presidio : `bench/requirements.txt` épingle trois dépendances
+transitives de spaCy (`cymem`, `preshed`, `murmurhash`) **avant Python
+3.13** : dans l'environnement d'origine du benchmark (version de Python non
+notée), les dernières versions empêchaient spaCy de charger un pipeline.
+Sous Python 3.13 avec spaCy 3.8.18, c'est l'inverse (vérifié le 5 novembre
+2026) : l'épinglage ne s'y applique pas.
 
 Les fichiers générés (`corpus.jsonl`, `predictions_*.jsonl`) ne sont pas
 versionnés.
