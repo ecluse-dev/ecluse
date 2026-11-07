@@ -11,14 +11,14 @@ List<String> _noms(String texte) => [
 
 void main() {
   group('détectés', () {
-    test('civilité + prénom + nom, avec la civilité', () {
+    test('civilité + prénom + nom, civilité de genre en clair (P2-145)', () {
       expect(_noms('rdv avec m. julien chevrier au ssiad de gray'),
-          ['m. julien chevrier']);
+          ['julien chevrier']);
     });
 
     test('civilité + patronyme seul', () {
       expect(_noms('vu ce jour par le dr lefèvre'), ['dr lefèvre']);
-      expect(_noms('appeler madame vasseur demain'), ['madame vasseur']);
+      expect(_noms('appeler madame vasseur demain'), ['vasseur']);
     });
 
     test('prénom connu + nom, sans civilité', () {
@@ -33,9 +33,9 @@ void main() {
     test('positions exactes', () {
       const texte = 'note : mme karine vasseur, admise';
       final e = const NomMinusculesDetector().detect(texte).single;
-      expect(texte.substring(e.start, e.end), 'mme karine vasseur');
+      expect(texte.substring(e.start, e.end), 'karine vasseur');
       expect(e.type, EntityType.nom);
-      expect(e.value, 'mme karine vasseur');
+      expect(e.value, 'karine vasseur');
     });
   });
 
@@ -45,7 +45,7 @@ void main() {
     });
 
     test('casse de phrase (P2-138) : comme un texte en minuscules', () {
-      expect(_noms('Rdv avec m. julien chevrier'), ['m. julien chevrier']);
+      expect(_noms('Rdv avec m. julien chevrier'), ['julien chevrier']);
     });
 
     test('civilité suivie d\'un mot outil', () {
@@ -88,7 +88,7 @@ void main() {
     });
 
     test('faux ami avec civilité : toujours un nom', () {
-      expect(_noms('vu mme rose vasseur hier'), ['mme rose vasseur']);
+      expect(_noms('vu mme rose vasseur hier'), ['rose vasseur']);
     });
   });
 
@@ -114,9 +114,8 @@ void main() {
 
     test('particules après le prénom', () {
       expect(_noms('excusé : monsieur jean de la fontaine, retenu'),
-          ['monsieur jean de la fontaine']);
-      expect(
-          _noms('vu monsieur jean de la part du service'), ['monsieur jean']);
+          ['jean de la fontaine']);
+      expect(_noms('vu monsieur jean de la part du service'), ['jean']);
     });
   });
 
@@ -124,8 +123,8 @@ void main() {
     test('civilité + prénom + nom, valeur relue dans l\'original', () {
       const texte = 'RDV AVEC M. JULIEN CHEVRIER AU SSIAD DE GRAY';
       final e = const NomMinusculesDetector().detect(texte).single;
-      expect(texte.substring(e.start, e.end), 'M. JULIEN CHEVRIER');
-      expect(e.value, 'M. JULIEN CHEVRIER');
+      expect(texte.substring(e.start, e.end), 'JULIEN CHEVRIER');
+      expect(e.value, 'JULIEN CHEVRIER');
     });
 
     test('mots outils et sigle de soin : rien', () {
@@ -137,6 +136,6 @@ void main() {
   test('Ecluse.redact masque le nom d\'un texte en minuscules', () async {
     final r = await Ecluse.redact('rdv avec m. julien chevrier demain matin');
     expect(r.maskedText, isNot(contains('chevrier')));
-    expect(r.mapping.values, contains('m. julien chevrier'));
+    expect(r.mapping.values, contains('julien chevrier'));
   });
 }

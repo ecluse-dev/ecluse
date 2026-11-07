@@ -30,15 +30,15 @@ Fuite au caractère (part des caractères annotés restés en clair).
 | réaliste | 27,7 % | 0 % | 0 % | **7,5 %** | | 0 |
 | adversarial | 18,3 % | 1,9 % | 0 % | **9,3 %** | | 61 |
 | témoin | | | | | **0** | 0 |
-| réaliste en minuscules | 2,2 % | 0 % | 0 % | **0,6 %** | | 0 |
-| adversarial en minuscules | 5,9 % (P2-139) | 1,9 % | 0 % | **3,3 %** | | 58³ |
+| réaliste en minuscules | 30,0 %⁴ | 0 % | 0 % | **8,1 %** | | 0 |
+| adversarial en minuscules | 14,1 %⁴ | 1,9 % | 0 % | **7,2 %** | | 61³ |
 | témoin en minuscules | | | | | **0** | 0 |
-| réaliste en capitales | 2,2 % | 0 % | 0 % | **0,6 %** | | 0 |
-| adversarial en capitales | 5,9 % (P2-139) | 1,9 % | 0 % | **3,3 %** | | 52 |
+| réaliste en capitales | 30,0 %⁴ | 0 % | 0 % | **8,1 %** | | 0 |
+| adversarial en capitales | 14,1 %⁴ | 1,9 % | 0 % | **7,2 %** | | 55 |
 | témoin en capitales | | | | | **0** | 0 |
 | faux amis prénoms (P2-124) | | | | | **0** | 0 |
-| réaliste en casse de phrase (P2-138) | 2,2 % | 0 % | 0 % | **0,6 %** | | 0 |
-| adversarial en casse de phrase (P2-138) | 9,0 % (P2-139) | 1,9 % | 0 % | **4,8 %** | | 58³ |
+| réaliste en casse de phrase (P2-138) | 30,0 %⁴ | 0 % | 0 % | **8,1 %** | | 0 |
+| adversarial en casse de phrase (P2-138) | 16,8 %⁴ | 1,9 % | 0 % | **8,6 %** | | 61³ |
 | témoin en casse de phrase (P2-138) | | | | | **0** | 0 |
 
 ¹ Harmonisation des re-mentions à la restauration (`LIMITES.md` § 5.3, point 5
@@ -51,6 +51,14 @@ change, longueur et contenu identiques.
 
 Sur le réaliste d'origine, les 27,7 % des noms sont la civilité laissée en
 clair volontairement (`bench/leak_hors_civilite.py`, P2-12).
+
+⁴ Depuis P2-145, la civilité de genre reste en clair aussi en minuscules et
+en capitales (avant : 2,2 % réaliste, 5,9 % adversarial, 9,0 % adversarial en
+casse de phrase). La hausse est **la civilité seule** : hors civilité, la
+fuite des noms est inchangée sur le réaliste (185 caractères) et a baissé sur
+l'adversarial grâce aux patronymes repris seuls (P2-144 : 5,9 % → 5,7 % avant
+le retrait de la civilité). Restaurations³ : +3, patronymes désormais
+détectés et harmonisés sur la forme complète.
 
 ## Quasi-identifiants (`ecluse_reid`, corpus QI, 400 documents)
 
@@ -80,6 +88,22 @@ adversarial inchangés.
 | réaliste | 0 / 557 | 0 / 935 | 0 / 397 |
 | adversarial | 7 / 445 (1,6 %) | 7 / 596 (1,2 %) | 52 / 398 (13,1 %) |
 | témoin | 0 / 757 | 0 / 757 | 0 / 396 |
+
+Variantes de casse (P2-140, P2-144, P2-145 ; `variantes_casse.py`, `_mixte` =
+une casse par document, en rotation dans le dossier) :
+
+| Corpus | Cohérence nom | Noms non détectés (avant P2-144) | Restaurations non identiques |
+|---|---:|---:|---:|
+| réaliste en minuscules | 30 / 160 | 4 (116) | 0 / 397 |
+| réaliste en capitales | 8 / 154 | 28 (104) | 0 / 397 |
+| réaliste à casse mixte | 18 / 161 | 0 (88) | 95 / 397⁵ |
+| adversarial en minuscules | 36 / 128 | 10 (47) | 52 / 398 |
+| adversarial à casse mixte | 24 / 128 | 12 (43) | 94 / 398⁵ |
+| témoins (toutes casses) | 0 / 129 | 0 | 0 / 396 |
+
+⁵ Un jeton garde une seule graphie par dossier : 95 sur 95 (réaliste) et 40
+sur 94 (adversarial) ne diffèrent que par la casse ; le reste est
+l'harmonisation déjà comptée en casse uniforme.
 
 ## Pathologies (P2-112 à P2-135, table validée P2-110)
 

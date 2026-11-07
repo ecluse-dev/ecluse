@@ -53,7 +53,8 @@ echo "# lieu"; redact run_generalisation_lieu_bench.dart | grep -iE "relu|F reca
 
 echo "## dossiers (avec Dossier)"
 python3 "$B/generate_corpus_dossiers.py" --n 400 --seed 42 --out-dir "$B/dossiers" > /dev/null
-for c in realiste adversarial temoin; do
+for c in realiste adversarial temoin; do python3 "$B/variantes_casse.py" "$B/dossiers/corpus_dossiers_$c.jsonl" > /dev/null; done
+for c in realiste adversarial temoin realiste_minuscules realiste_majuscules realiste_mixte adversarial_minuscules adversarial_mixte temoin_mixte; do
   redact run_dossiers_bench.dart --dossier "../../bench/dossiers/corpus_dossiers_$c.jsonl" "../../bench/dossiers/pred_$c.jsonl" > /dev/null
   echo "# $c"; python3 "$B/score_dossiers.py" --corpus "$B/dossiers/corpus_dossiers_$c.jsonl" --pred "$B/dossiers/pred_$c.jsonl" | grep -iE "coh|collision|fusion|restaur|non d" | head -6 || true
 done
