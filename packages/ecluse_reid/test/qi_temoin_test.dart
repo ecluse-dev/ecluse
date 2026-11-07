@@ -47,4 +47,15 @@ void main() {
     expect(types('Elle habite à Tours.'), [QiType.lieu]);
     expect(types('M. Faure est né à Orange.'), [QiType.lieu]);
   });
+
+  test('lieu d\'un événement : pas un QI (P2-142)', () {
+    for (final texte in [
+      'La réunion du CSE aura lieu à Brest.',
+      'Le colloque se tiendra à Dijon en mai.',
+      'Une formation organisée à Lille.',
+    ]) {
+      expect(types(texte), isEmpty, reason: texte);
+    }
+    expect(types('Elle habite à Brest.'), [QiType.lieu]);
+  });
 }
