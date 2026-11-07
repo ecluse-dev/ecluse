@@ -6,7 +6,9 @@ version: 0.1.0
 publish_to: none
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
+
+resolution: workspace
 
 dependencies:
   # Journal d'audit (P2-96, décision P2-96a n° 2) : tire package:crypto
