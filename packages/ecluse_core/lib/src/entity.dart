@@ -66,6 +66,12 @@ enum EntityType {
 
   /// Adresse IP étiquetée (détection heuristique, voir `ecluse_redact`).
   reseau,
+
+  /// Maladie rare (nomenclature Orphanet) rattachée à une personne. Masquée
+  /// parce qu'une maladie rare, avec un lieu ou un âge, suffit souvent à
+  /// désigner une personne ; une pathologie fréquente reste en clair
+  /// (décision P2-143). Voir `MaladieRareDetector` dans `ecluse_redact`.
+  maladieRare,
 }
 
 /// Une entité personnelle détectée dans un texte.

@@ -121,7 +121,9 @@ abstract final class Apercu {
     bool refuseSecrets = false,
     EcluseReference? riskReference,
     Dossier? dossier,
+    RareDiseaseCatalog? maladiesRares,
   }) async {
+    final extra = Ecluse._supplementaires(maladiesRares);
     Proposition construire(
         List<DetectedEntity> entites, int documents, _Etat etat) {
       final secrets = entites.where((e) => e.type == EntityType.secret).length;
@@ -135,14 +137,15 @@ abstract final class Apercu {
 
     if (dossier == null) {
       final etat = _Etat();
-      return construire(await Ecluse._detecter(text, etat, detectors), 0, etat);
+      return construire(
+          await Ecluse._detecter(text, etat, detectors, extra), 0, etat);
     }
     // Détection, lecture du compteur et simulation dans la même section
     // sérialisée.
     return dossier._serialise(() async {
       final etat = dossier._etat;
       if (etat == null) throw const DossierFermeException();
-      final entites = await Ecluse._detecter(text, etat, detectors);
+      final entites = await Ecluse._detecter(text, etat, detectors, extra);
       return construire(entites, etat.documents, etat);
     });
   }

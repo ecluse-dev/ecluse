@@ -466,3 +466,22 @@ Réponses du mainteneur aux points de `agent/specs/P2-94-table.md` § 4.
   moment (« SLA » seule, P2-113).
 - **Conséquence** : la table et les formes adjectivales ne sont plus
   « provisoires » (`tablePathologies`, `formesAdjectivales`).
+
+## 2026-11 — P2-143 : seules les maladies rares sont masquées (7 novembre)
+Décision du mainteneur : « les pathologies rares sont les seules à cacher ».
+- **Maladies rares** : masquées par un jeton réversible `[MALADIE_RARE_n]`
+  quand l'application passe le catalogue Orphanet (`maladiesRares:`).
+- **Pathologies fréquentes** : en clair, signalées par le rapport de risque,
+  généralisables sur demande (inchangé).
+
+Précisions prises **par délégation** (à relire, `agent/specs/P2-143.md`) :
+- Une mention de la table maison qu'Orphanet connaît aussi (mucoviscidose,
+  drépanocytose, phénylcétonurie, maladie de Gaucher) est rare ; la table
+  prime pour la catégorie (P2-113), pas pour la rareté. **Exceptions** :
+  tuberculose et bilharziose, infections courantes dans le médico-social.
+- Une mention de la table suivie d'un éponyme (« myopathie de Duchenne »)
+  est rare.
+- Masquée si rattachée à une personne, **ou** si le texte nomme quelqu'un ;
+  jamais si elle est niée, ni dans un texte sans nom de personne.
+- Opt-in par le catalogue : sans lui, la sortie d'`Ecluse.redact` est
+  inchangée (le catalogue se charge de façon asynchrone).

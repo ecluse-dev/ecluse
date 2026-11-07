@@ -35,6 +35,7 @@ class PathologieMention {
     required this.rattachee,
     this.niee = false,
     this.adjectif = false,
+    this.eponyme = false,
   });
 
   final int start;
@@ -64,6 +65,11 @@ class PathologieMention {
   /// remplace pas par un nom de catégorie sans réécrire la phrase ; aucune
   /// généralisation n'est proposée pour elle (P2-135).
   final bool adjectif;
+
+  /// Mention de la table suivie d'un éponyme absorbé (« myopathie de
+  /// Duchenne », « épilepsie de West ») : le nom propre fait d'une famille
+  /// de maladies une maladie précise, le plus souvent rare (P2-143).
+  final bool eponyme;
 
   @override
   String toString() =>
@@ -317,7 +323,8 @@ List<PathologieMention> extrairePathologies(
         // neurologique de Duchenne » : le nom propre restait visible (P2-135).
         final e = _eponyme.matchAsPrefix(text, finCar);
         final finMention = e == null ? finCar : e.end;
-        meilleure = _mention(text, debut, finMention, t.$2, t.$1, 'table');
+        meilleure = _mention(text, debut, finMention, t.$2, t.$1, 'table',
+            eponyme: e != null);
         if (e != null) {
           var k = i + n - 1;
           while (k + 1 < jetons.length && jetons[k + 1].end <= finMention) {
@@ -350,7 +357,7 @@ List<PathologieMention> extrairePathologies(
 
 PathologieMention _mention(String text, int start, int end, String categorie,
     String systeme, String source,
-    {bool adjectif = false}) {
+    {bool adjectif = false, bool eponyme = false}) {
   // Fenêtre bornée avant la mention : sans elle, chaque mention relisait
   // tout le texte qui la précède, et le coût devenait quadratique (P2-128 :
   // 2,7 s pour 2 000 mentions, 46 s pour 8 000).
@@ -381,6 +388,7 @@ PathologieMention _mention(String text, int start, int end, String categorie,
     rattachee: rattachee,
     niee: niee,
     adjectif: adjectif,
+    eponyme: eponyme,
   );
 }
 

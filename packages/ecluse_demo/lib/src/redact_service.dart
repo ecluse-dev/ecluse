@@ -68,10 +68,15 @@ final class RedactService {
       );
     }
     final dossier = Dossier(regle: RegleNoms.inclusion);
+    // Maladies rares masquées dès que le catalogue Orphanet est chargé
+    // (P2-143) ; sans lui, la démo se comporte comme avant.
+    final catalogue = reference?.rareDiseases;
+    final rares = catalogue != null && catalogue.isLoaded ? catalogue : null;
     try {
-      final redacted =
-          await Ecluse.redact(text, dossier: dossier, riskReference: reference);
-      final consigne = await Ecluse.redact(instruction, dossier: dossier);
+      final redacted = await Ecluse.redact(text,
+          dossier: dossier, riskReference: reference, maladiesRares: rares);
+      final consigne = await Ecluse.redact(instruction,
+          dossier: dossier, maladiesRares: rares);
       final maskedText = redacted.maskedText;
       final maskedInstruction = consigne.maskedText;
 
