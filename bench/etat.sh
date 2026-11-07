@@ -64,3 +64,4 @@ for c in indices variantes; do
   echo "# $c"; reid run_pathologies_bench.dart "../../bench/patho/corpus_pathologies_$c.jsonl" "../../bench/patho/corpus_pathologies_temoin.jsonl" | sed -n '/rattachées/,$p' | grep -E "indices :|témoin :" || true
 done
 echo "# formes_libres"; reid run_formes_libres.dart ../../bench/patho/corpus_pathologies_formes_libres.jsonl | grep TOTAL || true
+echo "# maladies rares masquées (P2-143)"; redact run_maladies_rares_bench.dart ../../bench/patho | grep -E "indices :|temoin :|échantillon" || true

@@ -75,20 +75,27 @@ void main() {
       expect(client.lastReceivedInstruction, contains('[NOM_1]'));
     });
 
-    test('avec référence : rapport de risque et pathologie (P2-141)', () async {
+    test('avec référence : rapport de risque, maladie rare masquée (P2-143)',
+        () async {
       final ref =
           EcluseReference(fileAssets(assetsDir: '../ecluse_reference/assets'));
       await ref.preload();
       await ref.rareDiseases.load();
-      final service = RedactService(_EchoClient(), reference: ref);
-      final r = await service.process(
-          'Mme Sophie Verdier, 74 ans, pneumologue à Thionville, atteinte de '
-          'la maladie de Huntington.',
-          instruction: 'Résume.');
+      final client = _EchoClient();
+      final service = RedactService(client, reference: ref);
+      const texte = 'Mme Sophie Verdier, 74 ans, pneumologue à Thionville, '
+          'atteinte de la maladie de Huntington et suivie pour diabète de '
+          'type 2.';
+      final r = await service.process(texte, instruction: 'Résume.');
       expect(r.risque, isNotNull);
       expect(r.risque!.evaluation.spans, isNotEmpty);
+      // La maladie rare ne part pas chez le tiers ; la pathologie fréquente
+      // reste en clair et signalée (P2-141).
+      expect(client.lastReceivedText, isNot(contains('Huntington')));
+      expect(r.maskedText, contains('[MALADIE_RARE_1]'));
+      expect(r.restoredText, texte);
       expect([for (final p in r.risque!.pathologies) p.text],
-          ['maladie de Huntington']);
+          ['diabète de type 2']);
     });
 
     test('sans référence : aucun rapport', () async {
