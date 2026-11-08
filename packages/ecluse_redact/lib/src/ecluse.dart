@@ -10,6 +10,7 @@ import 'heuristics/date_naissance_detector.dart';
 import 'heuristics/email_detector.dart';
 import 'heuristics/etablissement_detector.dart';
 import 'heuristics/identifiant_detector.dart';
+import 'heuristics/initiale_libelle_detector.dart';
 import 'heuristics/maladie_rare_detector.dart';
 import 'heuristics/name_detector.dart';
 import 'heuristics/casse.dart';
@@ -64,6 +65,8 @@ abstract final class Ecluse {
     LegacyDetectorAdapter(NameDetector(), DetectorTier.reference, name: 'nom'),
     LegacyDetectorAdapter(NomMinusculesDetector(), DetectorTier.reference,
         name: 'nom_minuscules'),
+    LegacyDetectorAdapter(InitialeLibelleDetector(), DetectorTier.reference,
+        name: 'nom_initiale'),
     LegacyDetectorAdapter(DateNaissanceDetector(), DetectorTier.pattern,
         name: 'date_naissance'),
     LegacyDetectorAdapter(AdresseDetector(), DetectorTier.pattern,

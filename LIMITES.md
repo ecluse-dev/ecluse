@@ -461,6 +461,18 @@ fontaine ») sont couverts après un champ ou un mot qui introduit une personne 
 adversarial en minuscules, fuite des noms 27 % → 5,9 %. Un prénom absent du
 gazetteer n'est pas reconnu.
 
+**Initiale et patronyme après un libellé (P2-147).** En casse ordinaire,
+« Présent : T. Lefèvre » ou « Présents : S. Verdier, K. Perrot » sont masqués
+quand le libellé annonce une personne (présent, excusé, absent, rédacteur,
+signé, auteur, référent, destinataire, participant, validé par…). Un autre
+libellé (« Annexe : A. Introduction ») ne déclenche rien. Corpus adversarial :
+fuite des noms 18,3 % → 13,9 %, fuite globale 9,3 % → 7,2 % ; autres corpus et
+témoins inchangés. Le témoin ne contient pas de piège de cette forme : les
+faux positifs ne sont vérifiés que par les tests unitaires.
+**Reste en clair** (mesure P2-89) : un prénom absent de la liste suivi d'un
+patronyme (« Contacter Yaroslav Delaunay »), 572 caractères sur
+l'adversarial.
+
 **Patronyme repris seul et casse mixte (P2-144, P2-145).** Un patronyme établi
 par une mention sûre (« mme aurélie hautecoeur », « julien chevrier ») est
 ensuite reconnu seul (« compte rendu : hautecoeur a confirmé »), dans le même
