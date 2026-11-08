@@ -154,7 +154,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-86 | spec | Fiche des modèles NER candidats (licence des poids et des données, taille, labels) | — | fusionnée |
 | P2-87 | humain | Valider les seuils de P2-01 § 7 et nommer la machine de référence | — | fusionnée |
 | P2-88 | code | `bench/ner_predictions.md` : format des prédictions attendu par `score_flou.py`, correspondance des labels, commande de mesure | P2-86 | fusionnée |
-| P2-89 | humain | Produire et scorer les prédictions du modèle sur les trois corpus flous, sur le poste du mainteneur | P2-87, P2-88 | humain |
+| P2-89 | humain | Produire et scorer les prédictions du modèle sur les trois corpus flous, sur le poste du mainteneur | P2-87, P2-88 | fusionnée |
 | P2-90 | humain | Décision GO/STOP du NER dans `DECISIONS.md` | P2-89 | humain |
 | P2-91 | code | Rapport de risque : suggestions de généralisation positionnées (QI, offsets, niveau, F avant/après), texte inchangé | — | fusionnée |
 | P2-92 | code | Application explicite des suggestions choisies par l'appelant (irréversible, refus si périmée) | P2-91 | fusionnée |
