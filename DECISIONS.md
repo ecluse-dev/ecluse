@@ -519,22 +519,20 @@ Le mainteneur a demandé à l'agent de faire la migration lui-même.
   échec d'analyse, troncature ou réponse coupée ; `isClean` exige un texte
   vérifié.
 
-## 2026-11 — Réponses du mainteneur du 7 novembre (questions 12 à 16)
-Corrigé le 8 novembre : une première version attribuait ces réponses aux
-mauvaises questions.
-- **12. Doublons table maison / Orphanet** (la table maison l'emporte,
-  P2-113) : « pas pour le moment ». **Non confirmé.** Le code applique
-  toujours la priorité de la table pour la catégorie ; pour le masquage
-  (P2-143), la mention qu'Orphanet connaît reste traitée comme rare
-  (mucoviscidose, drépanocytose, phénylcétonurie, maladie de Gaucher).
-- **13. Pathologies sans score** : confirmé. Signalées et généralisables
-  sur demande, jamais comptées dans le score de risque.
-- **14. Exceptions** (`AdresseDetector` en capitales, P2-122 ; préposition
-  réécrite devant un département, P2-132) : réponse « les pathologies rares
-  sont les seules à cacher », appliquée par P2-143. Les deux exceptions
-  restent en place.
-- **15. Démo** : `ecluse_demo` dépend de `ecluse_reference`, paquet interne
-  (P2-141) : confirmé.
-- **16** : « ok » ; énoncé à retrouver avec le mainteneur.
-- La liste blanche des sigles Orphanet reste « SLA » seule (P2-113), sans
-  réponse du mainteneur sur ce point.
+## 2026-11 — Choix validés par le mainteneur (8 novembre)
+Validés un par un, sur leur énoncé (la numérotation des questions du 7
+novembre s'était décalée à l'affichage ; les versions précédentes de cette
+section sont remplacées).
+- **Doublons table maison / Orphanet** : la table maison décide de la
+  catégorie (P2-113) ; une maladie qu'Orphanet connaît reste masquée comme
+  rare (P2-143 : mucoviscidose, drépanocytose, phénylcétonurie, maladie de
+  Gaucher).
+- **Pathologies** : seules les maladies rares sont masquées ; les
+  pathologies fréquentes sont signalées et généralisables sur demande ;
+  aucune n'entre dans le score de risque.
+- **Exceptions** : `AdresseDetector` traité à part en capitales (P2-122) ;
+  préposition réécrite devant un département (P2-132).
+- **Démo** : `ecluse_demo` dépend de `ecluse_reference`, paquet interne
+  (P2-141).
+- La liste blanche des sigles Orphanet reste « SLA » seule (P2-113, par
+  délégation).
