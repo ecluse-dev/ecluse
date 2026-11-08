@@ -520,3 +520,17 @@ Le mainteneur a demandé à l'agent de faire la migration lui-même.
   non fusionnée dans `main` : `VerificationStatus.nonVerifie` et un motif sur
   échec d'analyse, troncature ou réponse coupée ; `isClean` exige un texte
   vérifié.
+
+## 2026-11 — Choix confirmés par le mainteneur (7 novembre)
+Décisions prises auparavant par délégation, confirmées telles quelles :
+- **Doublons table maison / Orphanet** : la table maison l'emporte (P2-113).
+  Pour le masquage (P2-143), elle ne décide que de la **catégorie** :
+  mucoviscidose, drépanocytose, phénylcétonurie et maladie de Gaucher
+  restent masquées comme maladies rares (point à faire confirmer par le
+  mainteneur).
+- **Exceptions aux règles générales** : `AdresseDetector` modifié pour les
+  textes en capitales (mots neutres écartés, P2-122) ; la généralisation en
+  département réécrit la préposition qui précède (« habite dans le
+  département 70 », P2-132).
+- **Démo** : `ecluse_demo` dépend de `ecluse_reference`, paquet interne au
+  dépôt (P2-141).
