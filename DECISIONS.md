@@ -462,8 +462,6 @@ Réponses du mainteneur aux points de `agent/specs/P2-94-table.md` § 4.
 - **Pathologies hors liste ALD** (obésité, hypertension, troubles du spectre
   de l'autisme, trisomie 21, handicap psychique) : **hors table**.
 - **Seuil** : *Standard* seul pour la pathologie.
-- **Sigles Orphanet** : pas de nouvelle entrée dans la liste blanche pour le
-  moment (« SLA » seule, P2-113).
 - **Conséquence** : la table et les formes adjectivales ne sont plus
   « provisoires » (`tablePathologies`, `formesAdjectivales`).
 
@@ -521,16 +519,22 @@ Le mainteneur a demandé à l'agent de faire la migration lui-même.
   échec d'analyse, troncature ou réponse coupée ; `isClean` exige un texte
   vérifié.
 
-## 2026-11 — Choix confirmés par le mainteneur (7 novembre)
-Décisions prises auparavant par délégation, confirmées telles quelles :
-- **Doublons table maison / Orphanet** : la table maison l'emporte (P2-113).
-  Pour le masquage (P2-143), elle ne décide que de la **catégorie** :
-  mucoviscidose, drépanocytose, phénylcétonurie et maladie de Gaucher
-  restent masquées comme maladies rares (point à faire confirmer par le
-  mainteneur).
-- **Exceptions aux règles générales** : `AdresseDetector` modifié pour les
-  textes en capitales (mots neutres écartés, P2-122) ; la généralisation en
-  département réécrit la préposition qui précède (« habite dans le
-  département 70 », P2-132).
-- **Démo** : `ecluse_demo` dépend de `ecluse_reference`, paquet interne au
-  dépôt (P2-141).
+## 2026-11 — Réponses du mainteneur du 7 novembre (questions 12 à 16)
+Corrigé le 8 novembre : une première version attribuait ces réponses aux
+mauvaises questions.
+- **12. Doublons table maison / Orphanet** (la table maison l'emporte,
+  P2-113) : « pas pour le moment ». **Non confirmé.** Le code applique
+  toujours la priorité de la table pour la catégorie ; pour le masquage
+  (P2-143), la mention qu'Orphanet connaît reste traitée comme rare
+  (mucoviscidose, drépanocytose, phénylcétonurie, maladie de Gaucher).
+- **13. Pathologies sans score** : confirmé. Signalées et généralisables
+  sur demande, jamais comptées dans le score de risque.
+- **14. Exceptions** (`AdresseDetector` en capitales, P2-122 ; préposition
+  réécrite devant un département, P2-132) : réponse « les pathologies rares
+  sont les seules à cacher », appliquée par P2-143. Les deux exceptions
+  restent en place.
+- **15. Démo** : `ecluse_demo` dépend de `ecluse_reference`, paquet interne
+  (P2-141) : confirmé.
+- **16** : « ok » ; énoncé à retrouver avec le mainteneur.
+- La liste blanche des sigles Orphanet reste « SLA » seule (P2-113), sans
+  réponse du mainteneur sur ce point.
