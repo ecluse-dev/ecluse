@@ -31,7 +31,8 @@ final class InitialeLibelleDetector implements EntityDetector {
       r'Destinataires?|Interlocut(?:eur|rice)|Valid[ée] par|Vu par|'
       r'Copie [àa]|Participants?|Participantes?)';
 
-  static const String _nom = r'[A-ZÀ-ÖØ-Ý]\.[ \t\u00A0\u202F]?[A-ZÀ-ÖØ-Ý][a-zà-öø-ÿ]+'
+  static const String _nom =
+      r'[A-ZÀ-ÖØ-Ý]\.[ \t\u00A0\u202F]?[A-ZÀ-ÖØ-Ý][a-zà-öø-ÿ]+'
       r"(?:[-'’][A-ZÀ-ÖØ-Ý]?[a-zà-öø-ÿ]+)*";
 
   static final RegExp _ligne = RegExp(
