@@ -28,7 +28,7 @@ Fuite au caractère (part des caractères annotés restés en clair).
 | Corpus | nom | adresse | établissement | **global** | FP témoin | Restaurations non identiques¹ |
 |---|---:|---:|---:|---:|---:|---:|
 | réaliste | 27,7 % | 0 % | 0 % | **7,5 %** | | 0 |
-| adversarial | 18,3 % | 1,9 % | 0 % | **9,3 %** | | 61 |
+| adversarial | 13,9 % (P2-147) | 1,9 % | 0 % | **7,2 %** | | 61 |
 | témoin | | | | | **0** | 0 |
 | réaliste en minuscules | 30,0 %⁴ | 0 % | 0 % | **8,1 %** | | 0 |
 | adversarial en minuscules | 14,1 %⁴ | 1,9 % | 0 % | **7,2 %** | | 61³ |
