@@ -536,3 +536,24 @@ section sont remplacées).
   (P2-141).
 - La liste blanche des sigles Orphanet reste « SLA » seule (P2-113, par
   délégation).
+
+## 2026-11 — P2-90 : STOP du NER local (8 novembre)
+Le mainteneur a délégué la décision (« la plus favorable à Écluse »), prise
+après délibération du Conseil d'Écluse, sur la mesure de P2-89.
+- **STOP** pour le candidat 1 (`Anonym-IA/V2-camembert-ner-pii-french`) :
+  conditions A (gain de 3,3 points sur l'adversarial, seuil 5) et C (46,5 %
+  des documents témoins avec une détection, seuil 1 %) non remplies ; taille
+  FP32 de 445 Mo (seuil 300). Condition STOP n° 1 et n° 6 de P2-01.
+- **Chantier gelé**, pas de mesure du candidat 2 maintenant : un faux positif
+  sur un document sur deux contredit la promesse de sobriété, et le temps du
+  mainteneur va d'abord aux entretiens clients. Rouvert sur demande d'un
+  client ou d'un design partner, ou sur un candidat nouveau ; la mesure
+  coûte alors une heure (`bench/ner_predict.py`).
+- **Les heuristiques restent la détection des noms et adresses.** L'angle
+  mort mesuré (noms de l'adversarial hors civilité : 974 caractères, dont le
+  NER rattrapait 685) devient la cible des prochaines corrections, cas par
+  cas et mesurées (règle 5), sans dépendance nouvelle.
+- Les lignes « Si GO » du planning (paquet ONNX, intégration) sont
+  abandonnées ; la branche du NER ONNX n'est pas fusionnée.
+- Le vérificateur LLM (P2-108), qui attendait cette décision, reste à mesurer
+  sur le poste du mainteneur, sans urgence.
