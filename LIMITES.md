@@ -78,8 +78,11 @@ réel.
 détection repose sur des motifs et du contexte (civilité, prénom connu,
 mot-clé de voie ou d'établissement), pas sur une clé de contrôle. Ce sont
 des approximations volontairement prudentes (« en cas de doute, on masque »),
-pas des preuves. Elles seront remplacées par un modèle NER local en phase 2
-(voir `ROADMAP.md`).
+pas des preuves. Un modèle NER local a été mesuré et **écarté** (P2-89,
+P2-90 : gain insuffisant, 46,5 % de faux positifs sur le témoin) : ces
+heuristiques restent la seule détection des noms et adresses. Les mentions
+« NER de la phase 2 » plus bas désignent des angles morts sans solution
+prévue.
 
 **Email.** Détectés : adresse standard, sous-adressage (`+tag`),
 sous-domaines, TLD longs, majuscules, et les obfuscations entre crochets ou
