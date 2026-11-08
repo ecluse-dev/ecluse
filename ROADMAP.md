@@ -111,8 +111,12 @@ Objectif : occuper le coin vide de la carte.
   agrégat factuel du journal d'audit livré (`AuditExporter.agrege`, seuil
   « moins de 5 », mentions d'honnêteté). **Matière première, pas un registre** :
   gabarit de la CNIL non lu, avis d'un DPO non sollicité (`agent/specs/P2-09.md`)
-- ⚪ NER local embarqué (GLiNER/ONNX) pour noms et adresses — confiance
-  graduée. Remplace les détecteurs heuristiques v0 de `ecluse_redact`.
+- ⛔ NER local embarqué : **STOP** le 8 novembre 2026 (P2-90). Le candidat
+  mesuré (P2-89) gagne 3,3 points de fuite sur l'adversarial (seuil 5) et
+  marque 46,5 % des documents témoins (seuil 1 %). Les détecteurs
+  heuristiques restent la voie de détection des noms et adresses. Chantier
+  gelé ; il ne rouvre que sur un besoin client ou un nouveau candidat,
+  mesuré avec `bench/ner_predict.py`.
 - 🟡 Généralisation géographique (bibliothèque `ecluse_reid` livrée : commune
   → département → France ; régions non calculées ; proposée par le rapport de
   risque et appliquée seulement sur demande de l'application, P2-91 et P2-92 —
