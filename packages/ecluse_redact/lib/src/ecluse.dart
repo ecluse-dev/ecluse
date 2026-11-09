@@ -12,6 +12,7 @@ import 'heuristics/etablissement_detector.dart';
 import 'heuristics/identifiant_detector.dart';
 import 'heuristics/initiale_libelle_detector.dart';
 import 'heuristics/maladie_rare_detector.dart';
+import 'heuristics/prenom_insee_detector.dart';
 import 'heuristics/name_detector.dart';
 import 'heuristics/casse.dart';
 import 'heuristics/minuscules_recapitalise_detector.dart';
@@ -130,6 +131,14 @@ abstract final class Ecluse {
   /// et restaurable ; les pathologies fréquentes restent en clair. Voir
   /// `MaladieRareDetector`. Sans [maladiesRares], la sortie est exactement
   /// celle d'avant.
+  ///
+  /// **Prénoms de l'INSEE** (P2-149) : avec [prenomsInsee] (effectifs
+  /// **chargés** par l'appelant, sinon [StateError]), un prénom du fichier de
+  /// l'INSEE absent de la liste écrite à la main, d'effectif au moins égal au
+  /// seuil, suivi d'un patronyme (« Souleymane Aubry »), est masqué comme un
+  /// nom. Voir
+  /// `PrenomInseeDetector`. Sans [prenomsInsee], la sortie est exactement
+  /// celle d'avant.
   static Future<RedactResult> redact(
     String text, {
     List<Detector>? detectors,
@@ -139,9 +148,10 @@ abstract final class Ecluse {
     Dossier? dossier,
     JournalAudit? journal,
     RareDiseaseCatalog? maladiesRares,
+    PrenomsInsee? prenomsInsee,
   }) {
     final options = _Options(detectors, restoreSecrets, refuseSecrets,
-        riskReference, journal, _supplementaires(maladiesRares));
+        riskReference, journal, _supplementaires(maladiesRares, prenomsInsee));
     if (dossier == null) return _redact(text, _Etat(), options);
     return dossier._serialise(() {
       final etat = dossier._etat;
@@ -186,8 +196,9 @@ abstract final class Ecluse {
     List<Detector>? detectors,
     Dossier? dossier,
     RareDiseaseCatalog? maladiesRares,
+    PrenomsInsee? prenomsInsee,
   }) {
-    final extra = _supplementaires(maladiesRares);
+    final extra = _supplementaires(maladiesRares, prenomsInsee);
     if (dossier == null) return _detecter(text, _Etat(), detectors, extra);
     return dossier._serialise(() {
       final etat = dossier._etat;
@@ -196,16 +207,22 @@ abstract final class Ecluse {
     });
   }
 
-  /// Détecteurs ajoutés par les options (P2-143). Construits à l'appel, pour
-  /// qu'un catalogue non chargé soit refusé avant toute détection.
-  static List<Detector> _supplementaires(RareDiseaseCatalog? maladiesRares) =>
-      maladiesRares == null
-          ? const []
-          : [
-              LegacyDetectorAdapter(
-                  MaladieRareDetector(maladiesRares), DetectorTier.reference,
-                  name: 'maladie_rare'),
-            ];
+  /// Détecteurs ajoutés par les options (P2-143, P2-149). Construits à
+  /// l'appel, pour qu'un catalogue ou des effectifs non chargés soient
+  /// refusés avant toute détection.
+  static List<Detector> _supplementaires(RareDiseaseCatalog? maladiesRares,
+      [PrenomsInsee? prenomsInsee]) {
+    return [
+      if (maladiesRares != null)
+        LegacyDetectorAdapter(
+            MaladieRareDetector(maladiesRares), DetectorTier.reference,
+            name: 'maladie_rare'),
+      if (prenomsInsee != null)
+        LegacyDetectorAdapter(
+            PrenomInseeDetector(prenomsInsee), DetectorTier.reference,
+            name: 'prenom_insee'),
+    ];
+  }
 
   /// Détection pure : lit [etat] (patronymes établis) sans jamais le modifier.
   static Future<List<DetectedEntity>> _detecter(

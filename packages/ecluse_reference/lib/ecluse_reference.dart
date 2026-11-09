@@ -8,6 +8,7 @@ library;
 export 'src/age_rarity.dart';
 export 'src/asset_bytes.dart';
 export 'src/file_assets.dart';
+export 'src/first_name_frequencies.dart';
 export 'src/first_name_gazetteer.dart';
 export 'src/geo_hierarchy.dart';
 export 'src/normalize.dart';

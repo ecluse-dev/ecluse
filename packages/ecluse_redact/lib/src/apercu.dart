@@ -122,8 +122,9 @@ abstract final class Apercu {
     EcluseReference? riskReference,
     Dossier? dossier,
     RareDiseaseCatalog? maladiesRares,
+    PrenomsInsee? prenomsInsee,
   }) async {
-    final extra = Ecluse._supplementaires(maladiesRares);
+    final extra = Ecluse._supplementaires(maladiesRares, prenomsInsee);
     Proposition construire(
         List<DetectedEntity> entites, int documents, _Etat etat) {
       final secrets = entites.where((e) => e.type == EntityType.secret).length;
