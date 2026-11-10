@@ -217,7 +217,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-148 | spec | Liste de prénoms tirée du fichier des prénoms de l'INSEE (licence à lire), seuil d'effectif, garde-fous faux amis | P2-147 | fusionnée |
 | P2-149 | code | Asset de prénoms INSEE (script `tools/`, `NOTICE`), mesure avant/après sur tous les corpus | P2-148 | fusionnée |
 | P2-150 | code | Exclure les paires « France Travail » et « Ange Gardien » de l'option `prenomsInsee` (demande du mainteneur) | P2-149 | fusionnée |
-| P2-151 | code | Activer l'option `prenomsInsee` dans `ecluse_demo` (choix délégué par le mainteneur) | P2-150 | à faire |
+| P2-151 | code | Activer l'option `prenomsInsee` dans `ecluse_demo` (choix délégué par le mainteneur) | P2-150 | fusionnée |
 | P2-146 | spec | Lecture du gabarit AIPD de la CNIL (« PIA, les modèles », 2018) et correspondance case par case avec Écluse (`agent/specs/P2-97.md`) | — | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.

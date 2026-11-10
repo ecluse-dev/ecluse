@@ -575,5 +575,10 @@ Le mainteneur a accepté la liste de l'INSEE et délégué le choix du seuil
 - **« France Travail » et « Ange Gardien » exclus** (P2-150, demande du
   mainteneur) : exclusion de la paire, pas du prénom ; « France Dupuis »
   reste masquée.
+- **Option désactivée par défaut dans la bibliothèque, activée dans la démo**
+  (P2-151, choix délégué par le mainteneur) : la bibliothèque ne sait pas où
+  l'application range les assets (fichiers, bundle Flutter) ; c'est à
+  l'appelant de charger les effectifs, comme le catalogue Orphanet. La démo,
+  qui charge déjà la référence, active l'option.
 - Le script `tools/build_prenoms_effectifs.py` lit le Parquet avec `pyarrow`
   s'il est installé, sans l'ajouter aux dépendances du dépôt.

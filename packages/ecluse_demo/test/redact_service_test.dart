@@ -98,6 +98,32 @@ void main() {
           ['diabète de type 2']);
     });
 
+    test(
+        'avec effectifs des prénoms : prénom INSEE + patronyme masqué '
+        '(P2-151)', () async {
+      final ref =
+          EcluseReference(fileAssets(assetsDir: '../ecluse_reference/assets'));
+      await ref.firstNameFrequencies.load();
+      final client = _EchoClient();
+      final service = RedactService(client, reference: ref);
+      const texte = 'Visite de Souleymane Aubry. Orienté vers France Travail.';
+      final r = await service.process(texte,
+          instruction: 'Résume le cas de Souleymane Aubry.');
+      expect(client.lastReceivedText, isNot(contains('Souleymane')));
+      expect(client.lastReceivedText, contains('France Travail'));
+      expect(client.lastReceivedInstruction, isNot(contains('Souleymane')));
+      expect(r.restoredText, texte);
+    });
+
+    test('effectifs non chargés : la démo se comporte comme avant', () async {
+      final ref =
+          EcluseReference(fileAssets(assetsDir: '../ecluse_reference/assets'));
+      final client = _EchoClient();
+      await RedactService(client, reference: ref)
+          .process('Visite de Souleymane Aubry.', instruction: 'Résume.');
+      expect(client.lastReceivedText, contains('Souleymane'));
+    });
+
     test('sans référence : aucun rapport', () async {
       final r = await RedactService(_EchoClient())
           .process('M. Jean Dupont, 74 ans.', instruction: 'Résume.');
