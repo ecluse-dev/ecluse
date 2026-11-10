@@ -327,9 +327,10 @@ de l'INSEE chargés par l'appelant, un prénom du fichier de l'INSEE (au moins
 patronyme en casse de titre ou en capitales, est masqué : « Souleymane
 Aubry », « Łukasz Kowalski ». Limites : casse ordinaire seulement (en
 minuscules, ces noms partent encore en clair) ; jamais un prénom seul ni
-l'ordre « Nom Prénom » ; sur-masquage assumé de mots courants qui sont aussi
-des prénoms réels, suivis d'un mot capitalisé (« France Travail », « Ange
-Gardien »). Sans l'option, rien ne change : l'application qui veut cette
+l'ordre « Nom Prénom » ; sur-masquage possible d'un mot courant qui est aussi
+un vrai prénom, suivi d'un mot capitalisé. « France Travail » et « Ange
+Gardien » sont exclus comme paires (P2-150) : « France Dupuis » reste
+masquée. Une autre paire de ce genre serait masquée à tort. Sans l'option, rien ne change : l'application qui veut cette
 protection doit charger `EcluseReference.firstNameFrequencies` et la passer.
 Mesures : `agent/specs/P2-148.md` § 6.
 

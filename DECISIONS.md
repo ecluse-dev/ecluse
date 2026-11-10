@@ -572,7 +572,8 @@ Le mainteneur a accepté la liste de l'INSEE et délégué le choix du seuil
 - **Seuil 20 naissances depuis 1900**, par délégation : plus petit seuil qui
   écarte les mots courants observés ; à 100, des prénoms rares réels
   (« Łukasz ») repartaient en clair.
-- **Sur-masquage assumé** de « France Travail » et « Ange Gardien » : vrais
-  prénoms (« France », « Ange »), mieux vaut masquer que laisser fuir.
+- **« France Travail » et « Ange Gardien » exclus** (P2-150, demande du
+  mainteneur) : exclusion de la paire, pas du prénom ; « France Dupuis »
+  reste masquée.
 - Le script `tools/build_prenoms_effectifs.py` lit le Parquet avec `pyarrow`
   s'il est installé, sans l'ajouter aux dépendances du dépôt.
