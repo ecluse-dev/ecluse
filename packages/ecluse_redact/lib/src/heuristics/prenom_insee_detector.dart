@@ -94,6 +94,13 @@ final class PrenomInseeDetector implements EntityDetector {
     'ibn', 'ter', 'ten', 'das', 'dos', 'des', 'les', //
   };
 
+  /// Paires prénom + mot jamais prises pour un nom (P2-150, décision du
+  /// mainteneur du 10 novembre) : des noms d'organisme ou d'objet dont le
+  /// premier mot est aussi un vrai prénom. On exclut la **paire**, pas le
+  /// prénom : « France Dupuis » reste masquée. Formes en minuscules sans
+  /// accents.
+  static const Set<String> pairesExclues = {'france travail', 'ange gardien'};
+
   static final RegExp _qualificatif = RegExp(r'(?:ée|ées|é|és)$');
 
   static final Set<String> _motsEtablissement = {
@@ -109,6 +116,9 @@ final class PrenomInseeDetector implements EntityDetector {
       final fin = m.end + m.group(2)!.length + patronyme.length;
       if (!_prenomRetenu(prenom)) continue;
       if (!_patronymePlausible(patronyme)) continue;
+      if (pairesExclues.contains('${_plie(prenom)} ${_plie(patronyme)}')) {
+        continue;
+      }
       sortie.add(DetectedEntity(
         type: EntityType.nom,
         start: m.start,

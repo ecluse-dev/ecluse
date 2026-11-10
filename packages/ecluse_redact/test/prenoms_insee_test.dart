@@ -139,5 +139,16 @@ void main() {
         expect(r.maskedText, contains(mot), reason: mot);
       }
     });
+
+    test(
+        '« France Travail » et « Ange Gardien » intacts, '
+        '« France Dupuis » masquée (P2-150)', () async {
+      const texte = 'Orientée vers France Travail. Médaille Ange Gardien. '
+          'Visite de France Dupuis.';
+      final r = await Ecluse.redact(texte, prenomsInsee: reels);
+      expect(r.maskedText, contains('France Travail'));
+      expect(r.maskedText, contains('Ange Gardien'));
+      expect(r.maskedText, isNot(contains('Dupuis')));
+    });
   });
 }

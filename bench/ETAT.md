@@ -74,8 +74,8 @@ Noms de l'adversarial hors civilité : 572 → **0** caractère
 (`leak_hors_civilite.py`) ; les 8,3 % restants sont la civilité. Réaliste,
 témoins, faux amis, variantes de casse et dossiers : identiques à l'option
 désactivée. Prose des `.md` du dépôt (`run_prenoms_insee_prose.dart`) :
-7 nouvelles détections, 5 vrais noms et 2 sur-masquages assumés
-(`agent/specs/P2-148.md` § 6).
+6 nouvelles détections, toutes de vrais noms, après l'exclusion de « France
+Travail » et « Ange Gardien » (P2-150 ; `agent/specs/P2-148.md` § 6).
 
 ## Quasi-identifiants (`ecluse_reid`, corpus QI, 400 documents)
 
