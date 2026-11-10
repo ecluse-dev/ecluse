@@ -321,6 +321,18 @@ comme « EVA ») reposent sur des **listes finies et documentées**, pas sur
 une détection générale. Un sigle ou une unité absents de ces listes
 pourraient encore être mal classés.
 
+**Option `prenomsInsee` (P2-149), désactivée par défaut.** Avec les effectifs
+de l'INSEE chargés par l'appelant, un prénom du fichier de l'INSEE (au moins
+20 naissances depuis 1900) absent de la liste écrite à la main, suivi d'un
+patronyme en casse de titre ou en capitales, est masqué : « Souleymane
+Aubry », « Łukasz Kowalski ». Limites : casse ordinaire seulement (en
+minuscules, ces noms partent encore en clair) ; jamais un prénom seul ni
+l'ordre « Nom Prénom » ; sur-masquage assumé de mots courants qui sont aussi
+des prénoms réels, suivis d'un mot capitalisé (« France Travail », « Ange
+Gardien »). Sans l'option, rien ne change : l'application qui veut cette
+protection doit charger `EcluseReference.firstNameFrequencies` et la passer.
+Mesures : `agent/specs/P2-148.md` § 6.
+
 Le détecteur d'établissement peut, lui, absorber un mot capitalisé isolé
 qui suit immédiatement un nom d'établissement, sans ponctuation ni mot
 minuscule pour l'arrêter (« Hôpital Saint-Louis Réunion » où « Réunion »
@@ -1032,7 +1044,9 @@ après) : **32 textes changent, tous dans le corpus « flou adversarial »**, co
 désormais masqués (Aïcha, Krzysztof, Mei-Ling, Ibrahim…) ; aucun changement dans les corpus témoin, réaliste ni leurres. Banc inchangé octet pour
 octet ; 1120 tests. **Non traité, et à ne pas surestimer** : la liste reste une liste de démonstration. Le gazetteer INSEE des prénoms
 (155 000 entrées, `ecluse_reference`) n'est pas branché au détecteur : sans fréquences, il contient trop de mots courants pour servir de
-masque (voir son avertissement) ; un seuil de fréquence demanderait le fichier INSEE avec les effectifs (DATA_SOURCES.md), non retenu ici.
+masque (voir son avertissement) ; un seuil de fréquence demanderait le fichier INSEE avec les effectifs (DATA_SOURCES.md), non retenu ici. *Mise à
+jour (P2-149)* : les effectifs sont désormais embarqués et servent à l'option `prenomsInsee` (§ 5.1) ; la liste sans effectifs reste hors
+de la détection.
 Un prénom d'une origine non listée reste manqué sans contexte (civilité, étiquette, en-tête…).
 
 **Civilités au pluriel, en minuscules ou en majuscules, mots de parenté (P2-69).** Sonde de 26 formules de politesse (1ᵉʳ novembre 2026) :

@@ -1,5 +1,6 @@
 import 'age_rarity.dart';
 import 'asset_bytes.dart';
+import 'first_name_frequencies.dart';
 import 'first_name_gazetteer.dart';
 import 'geo_hierarchy.dart';
 import 'rare_disease_catalog.dart';
@@ -24,6 +25,11 @@ class EcluseReference {
   /// s'en sert : son chargement ne doit pas ralentir ceux qui n'en ont pas
   /// besoin (P2-115).
   late final RareDiseaseCatalog rareDiseases = RareDiseaseCatalog(_assets);
+
+  /// Effectifs des prénoms de l'INSEE (P2-149). Hors de [preload], pour la
+  /// même raison que [rareDiseases].
+  late final FirstNameFrequencies firstNameFrequencies =
+      FirstNameFrequencies(_assets);
 
   /// Réchauffe tous les assets (à appeler au démarrage sur mobile).
   Future<void> preload() async {
