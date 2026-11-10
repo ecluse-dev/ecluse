@@ -22,7 +22,7 @@ Variables d'environnement :
 | `ANTHROPIC_API_KEY` | oui | — | Clé API Anthropic, jamais en dur dans le code. |
 | `ECLUSE_LLM_MODEL` | non | `claude-sonnet-5` | Modèle Claude utilisé. |
 | `PORT` | non | `8080` | Port d'écoute local. |
-| `ECLUSE_REFERENCE` | non | `../ecluse_reference/assets` | Dossier des données publiques (communes, professions, Orphanet). Présent : la démo affiche le rapport de risque ; absent : la démo tourne sans. |
+| `ECLUSE_REFERENCE` | non | `../ecluse_reference/assets` | Dossier des données publiques (communes, professions, Orphanet, prénoms de l'INSEE). Présent : la démo affiche le rapport de risque, masque les maladies rares et les prénoms INSEE suivis d'un patronyme (P2-151) ; absent : la démo tourne sans. |
 
 Si vous préférez un fichier `.env`, il est déjà couvert par le
 `.gitignore` racine (`.env*`) — ne jamais le committer.

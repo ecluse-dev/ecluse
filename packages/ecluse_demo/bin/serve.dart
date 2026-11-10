@@ -35,6 +35,7 @@ Future<void> main() async {
     reference = EcluseReference(fileAssets(assetsDir: dossierReference));
     await reference.preload();
     await reference.rareDiseases.load();
+    await reference.firstNameFrequencies.load();
   } else {
     stdout.writeln('Écluse démo : référence introuvable ($dossierReference), '
         'rapport de risque désactivé.');
