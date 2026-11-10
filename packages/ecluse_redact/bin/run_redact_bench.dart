@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:ecluse_redact/ecluse_redact.dart';
+import 'package:ecluse_reference/ecluse_reference.dart';
 
 /// Correspondance entre les noms d'enumeration Dart (camelCase) et les types
 /// utilises dans les corpus d'entites floues (snake_case).
@@ -32,8 +33,29 @@ const Map<String, String> typeMap = {
 /// au format attendu par `bench/score_flou.py`.
 ///
 /// Usage :
-///   dart run bin/run_redact_bench.dart <corpus.jsonl> <sortie.jsonl>
-Future<void> main(List<String> args) async {
+///   dart run bin/run_redact_bench.dart [--prenoms-insee[=SEUIL]] <corpus.jsonl> <sortie.jsonl>
+///
+/// `--prenoms-insee` (P2-149) : active l'option `prenomsInsee` de
+/// `Ecluse.redact` avec les effectifs de `ecluse_reference`, au seuil par
+/// défaut ou à `SEUIL`.
+Future<void> main(List<String> argv) async {
+  final option = argv.where((a) => a.startsWith('--prenoms-insee')).toList();
+  final args = [
+    for (final a in argv)
+      if (!a.startsWith('--prenoms-insee')) a
+  ];
+  PrenomsInsee? gazetteer;
+  if (option.isNotEmpty) {
+    final effectifs =
+        EcluseReference(fileAssets(assetsDir: '../ecluse_reference/assets'))
+            .firstNameFrequencies;
+    await effectifs.load();
+    final valeur = option.last.split('=');
+    gazetteer = PrenomsInsee(effectifs,
+        seuil: valeur.length == 2
+            ? int.parse(valeur[1])
+            : PrenomsInsee.seuilParDefaut);
+  }
   if (args.length < 2) {
     stderr.writeln(
         'Usage : dart run bin/run_redact_bench.dart <corpus.jsonl> <sortie.jsonl>');
@@ -55,7 +77,7 @@ Future<void> main(List<String> args) async {
     final doc = jsonDecode(line) as Map<String, dynamic>;
     final text = doc['text'] as String;
 
-    final result = await Ecluse.redact(text);
+    final result = await Ecluse.redact(text, prenomsInsee: gazetteer);
 
     // Garde-fou : l'invariant de reversibilite doit tenir sur chaque document
     // du corpus. Une rupture ici est plus grave qu'un mauvais score.

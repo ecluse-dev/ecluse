@@ -13,7 +13,8 @@ https://www.etalab.gouv.fr/licence-ouverte-open-licence
 - Source : Insee. Code officiel géographique au 1er janvier 2026 (mis à jour le
   24/02/2026) ; populations légales 2023 (paru le 18/12/2025) ; population au
   1er janvier par sexe et âge (paru le 15/06/2026) ; fichier des prénoms (paru
-  le 16/07/2026). https://www.insee.fr
+  le 16/07/2026 ; liste et effectifs nationaux, ces derniers transformés par
+  `tools/build_prenoms_effectifs.py`). https://www.insee.fr
 
 - Source : DREES. La démographie des professionnels de santé depuis 2012 (RPPS),
   jeu modifié le 2 juillet 2026.

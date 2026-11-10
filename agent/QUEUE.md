@@ -215,7 +215,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-145 | code | Dossiers à casse mixte : corpus `_mixte`, même jeton pour une même personne, civilité de genre en clair en minuscules | P2-140 | fusionnée |
 | P2-147 | code | Initiale + patronyme après un libellé de personne (« Présent : T. Lefèvre »), casse ordinaire ; adversarial 9,3 % → 7,2 % | P2-90 | fusionnée |
 | P2-148 | spec | Liste de prénoms tirée du fichier des prénoms de l'INSEE (licence à lire), seuil d'effectif, garde-fous faux amis | P2-147 | fusionnée |
-| P2-149 | code | Asset de prénoms INSEE (script `tools/`, `NOTICE`), mesure avant/après sur tous les corpus | P2-148 | humain |
+| P2-149 | code | Asset de prénoms INSEE (script `tools/`, `NOTICE`), mesure avant/après sur tous les corpus | P2-148 | fusionnée |
 | P2-146 | spec | Lecture du gabarit AIPD de la CNIL (« PIA, les modèles », 2018) et correspondance case par case avec Écluse (`agent/specs/P2-97.md`) | — | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.

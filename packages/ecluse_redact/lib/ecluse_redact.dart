@@ -23,6 +23,7 @@ export 'src/heuristics/maladie_rare_detector.dart';
 export 'src/heuristics/name_detector.dart';
 export 'src/heuristics/minuscules_recapitalise_detector.dart';
 export 'src/heuristics/nom_minuscules_detector.dart';
+export 'src/heuristics/prenom_insee_detector.dart';
 export 'src/heuristics/tableau_csv.dart' show TableauAmbiguException;
 export 'src/heuristics/telephone_detector.dart';
 export 'src/redact_result.dart';
