@@ -45,7 +45,8 @@ final class RedactService {
 
   final LlmClient _llmClient;
 
-  /// Référence publique chargée (communes, professions, Orphanet). Avec elle,
+  /// Référence publique chargée (communes, professions, Orphanet, effectifs
+  /// des prénoms). Avec elle,
   /// la démo affiche le rapport de risque de ré-identification et les
   /// pathologies signalées (P2-141) ; sans elle, rien n'est évalué.
   final EcluseReference? reference;
@@ -72,11 +73,20 @@ final class RedactService {
     // (P2-143) ; sans lui, la démo se comporte comme avant.
     final catalogue = reference?.rareDiseases;
     final rares = catalogue != null && catalogue.isLoaded ? catalogue : null;
+    // Prénoms de l'INSEE + patronyme (P2-149, activés dans la démo par
+    // P2-151) dès que les effectifs sont chargés ; sinon, comme avant.
+    final effectifs = reference?.firstNameFrequencies;
+    final prenoms = effectifs != null && effectifs.isLoaded
+        ? PrenomsInsee(effectifs)
+        : null;
     try {
       final redacted = await Ecluse.redact(text,
-          dossier: dossier, riskReference: reference, maladiesRares: rares);
+          dossier: dossier,
+          riskReference: reference,
+          maladiesRares: rares,
+          prenomsInsee: prenoms);
       final consigne = await Ecluse.redact(instruction,
-          dossier: dossier, maladiesRares: rares);
+          dossier: dossier, maladiesRares: rares, prenomsInsee: prenoms);
       final maskedText = redacted.maskedText;
       final maskedInstruction = consigne.maskedText;
 
