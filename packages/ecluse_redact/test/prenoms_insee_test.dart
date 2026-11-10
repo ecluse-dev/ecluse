@@ -100,4 +100,44 @@ void main() {
   test('asset mal formé : refus explicite', () {
     expect(() => charge('BINTOU\tbeaucoup\n'), throwsFormatException);
   });
+
+  group('effectifs réels de l\'INSEE (asset embarqué)', () {
+    late PrenomsInsee reels;
+
+    setUpAll(() async {
+      final ref =
+          EcluseReference(fileAssets(assetsDir: '../ecluse_reference/assets'));
+      await ref.firstNameFrequencies.load();
+      reels = PrenomsInsee(ref.firstNameFrequencies);
+    });
+
+    test('prénoms rares d\'origines variées + patronyme : masqués', () async {
+      const texte = 'Visite de Souleymane Aubry, puis de Łukasz Kowalski et '
+          'de Bintou Lacombe.';
+      final r = await Ecluse.redact(texte, prenomsInsee: reels);
+      for (final mot in ['Souleymane', 'Łukasz', 'Bintou']) {
+        expect(r.maskedText, isNot(contains(mot)), reason: mot);
+      }
+      expect(Ecluse.restore(r.maskedText, r.mapping), texte);
+    });
+
+    test('mots courants relevés dans la prose du dépôt : intacts', () async {
+      const texte = 'Le Mario Kart de la salle commune. Van Der Berg. '
+          'Gemini CLI. Maison Bleue. Rue Pasteur. Clé Stripe. Idem IBAN. '
+          'Page DREES. Père Noël. Jeton Slack.';
+      final r = await Ecluse.redact(texte, prenomsInsee: reels);
+      for (final mot in [
+        'Mario',
+        'Gemini',
+        'Maison',
+        'Rue',
+        'Clé',
+        'Idem',
+        'Page',
+        'Jeton'
+      ]) {
+        expect(r.maskedText, contains(mot), reason: mot);
+      }
+    });
+  });
 }

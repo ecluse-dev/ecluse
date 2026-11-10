@@ -45,6 +45,14 @@ class Tests(unittest.TestCase):
         t = b.effectifs("SEXE,PREUSUEL,ANNAIS,NOMBRE\n1,BINTOU,1990,12\n")
         self.assertEqual(t, {"BINTOU": 12})
 
+    def test_seul_le_niveau_national_est_lu(self):
+        t = b.effectifs("sexe;prenom;periode;niveau_geographique;geographie;"
+                        "valeur;rang\n"
+                        "1;BINTOU;2000;FRANCE;F;20;1\n"
+                        "1;BINTOU;2000;REG;11;20;1\n"
+                        "1;BINTOU;2000;DEP;75;20;1\n")
+        self.assertEqual(t, {"BINTOU": 20})
+
     def test_colonnes_inconnues_refusees(self):
         with self.assertRaises(SystemExit):
             b.effectifs("a;b;c\n1;2;3\n")

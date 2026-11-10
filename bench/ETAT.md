@@ -60,6 +60,23 @@ l'adversarial grâce aux patronymes repris seuls (P2-144 : 5,9 % → 5,7 % avant
 le retrait de la civilité). Restaurations³ : +3, patronymes désormais
 détectés et harmonisés sur la forme complète.
 
+### Option `prenomsInsee` (P2-149, désactivée par défaut)
+
+Mêmes corpus, option active au seuil par défaut (20 naissances), mesurée avec
+P2-149 (`run_redact_bench.dart --prenoms-insee`, `run_dossiers_bench.dart
+--prenoms-insee`). Seules les lignes qui changent :
+
+| Corpus | nom | **global** | Restaurations non identiques |
+|---|---:|---:|---:|
+| adversarial | 13,9 % → **8,3 %** | 7,2 % → **4,4 %** | 61 → 58 |
+
+Noms de l'adversarial hors civilité : 572 → **0** caractère
+(`leak_hors_civilite.py`) ; les 8,3 % restants sont la civilité. Réaliste,
+témoins, faux amis, variantes de casse et dossiers : identiques à l'option
+désactivée. Prose des `.md` du dépôt (`run_prenoms_insee_prose.dart`) :
+7 nouvelles détections, 5 vrais noms et 2 sur-masquages assumés
+(`agent/specs/P2-148.md` § 6).
+
 ## Quasi-identifiants (`ecluse_reid`, corpus QI, 400 documents)
 
 | Corpus | âge P / R | lieu P / R | profession P / R | Non couverts (âge / lieu / prof.) |

@@ -18,8 +18,11 @@ final class PrenomsInsee {
   /// Effectif cumulé minimal (naissances depuis 1900).
   final int seuil;
 
-  /// Choisi sur mesure (P2-149) : voir `agent/specs/P2-148.md` § 6.
-  static const int seuilParDefaut = 100;
+  /// Choisi sur mesure (P2-149, `agent/specs/P2-148.md` § 6) : sur la prose
+  /// du dépôt, 20 est le plus petit seuil qui écarte les mots courants
+  /// observés (« Idem », 10 naissances) ; à 100, de vrais prénoms rares
+  /// (« Łukasz », 90) repartaient en clair.
+  static const int seuilParDefaut = 20;
 
   bool _retenu(String nomNormalise) =>
       effectifs.effectif(nomNormalise) >= seuil;
@@ -78,6 +81,19 @@ final class PrenomInseeDetector implements EntityDetector {
       '|[$_majuscule]+(?:[\'’-][$_majuscule]+)*))'
       '(?![\\w$_minuscule$_majuscule]))');
 
+  /// Mots du fichier de l'INSEE jamais pris pour un prénom par ce détecteur :
+  /// - les prénoms que P2-68 a déjà écartés de la liste écrite à la main parce
+  ///   qu'ils sont aussi des mots courants (« Mario Kart », « Manuel
+  ///   d'utilisation », « en Jan et en Jun ») : la même raison vaut ici ;
+  /// - les particules de nom (« Van Der Berg ») : elles ouvrent un patronyme,
+  ///   pas un prénom.
+  /// Formes en minuscules sans accents.
+  static const Set<String> exclus = {
+    'jan', 'jun', 'lou', 'said', 'manuel', 'mario', 'li', 'thi', //
+    'van', 'von', 'der', 'den', 'del', 'della', 'ben', 'bin', 'bint', //
+    'ibn', 'ter', 'ten', 'das', 'dos', 'des', 'les', //
+  };
+
   static final RegExp _qualificatif = RegExp(r'(?:ée|ées|é|és)$');
 
   static final Set<String> _motsEtablissement = {
@@ -106,6 +122,7 @@ final class PrenomInseeDetector implements EntityDetector {
 
   bool _prenomRetenu(String mot) {
     final bas = mot.toLowerCase();
+    if (exclus.contains(_plie(mot))) return false;
     // Déjà connu de la liste écrite à la main : affaire de `NameDetector`.
     for (final segment in bas.split('-')) {
       if (frenchFirstNames.contains(segment) ||

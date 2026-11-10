@@ -8,7 +8,12 @@ trois fois depuis 1900, donc des mots courants (« Bilan », « Maison », « Ru
 qu'un detecteur ne peut pas distinguer d'un prenom. Le fichier national donne
 les effectifs par annee : leur somme permet un seuil, choisi sur mesure.
 
-Lecture : un CSV (ou un ZIP qui en contient un seul) a separateur `;` ou `,`.
+Lecture : un CSV (ou un ZIP qui en contient un seul) a separateur `;` ou `,`,
+ou le fichier Parquet « ensemble des donnees » de l'INSEE. Le Parquet exige
+`pyarrow`, importe seulement dans ce cas (aucune dependance ajoutee au depot :
+`pip install pyarrow` sur le poste qui construit l'asset). Si une colonne
+`niveau_geographique` existe, seules les lignes `FRANCE` sont lues : les
+lignes regionales et departementales repetent les memes naissances.
 Les colonnes sont reconnues par leur nom, pas par leur position, parce que
 leur intitule a change d'une edition a l'autre :
   - prenom : la colonne dont le nom contient « pren », ou `preusuel`
@@ -59,7 +64,25 @@ def norm_name(s):
     return " ".join(s.split())
 
 
+def lire_parquet(chemin):
+    """Lignes du Parquet en texte CSV `;`, pour un seul chemin de lecture."""
+    import pyarrow.parquet as pq  # facultatif : seulement pour un Parquet
+
+    table = pq.read_table(chemin)
+    noms = table.column_names
+    sortie = io.StringIO()
+    ecrivain = csv.writer(sortie, delimiter=";", lineterminator="\n")
+    ecrivain.writerow(noms)
+    for lot in table.to_batches():
+        colonnes_lot = [lot.column(i).to_pylist() for i in range(len(noms))]
+        for ligne in zip(*colonnes_lot):
+            ecrivain.writerow(["" if v is None else v for v in ligne])
+    return sortie.getvalue()
+
+
 def lire_texte(chemin):
+    if chemin.lower().endswith(".parquet"):
+        return lire_parquet(chemin)
     if zipfile.is_zipfile(chemin):
         with zipfile.ZipFile(chemin) as zf:
             csvs = [n for n in zf.namelist() if n.lower().endswith(".csv")]
@@ -92,9 +115,14 @@ def effectifs(texte):
     if entete is None:
         raise SystemExit("refus : fichier vide")
     i_prenom, i_effectif = colonnes(entete)
+    bas = [c.strip().lower() for c in entete]
+    i_niveau = bas.index("niveau_geographique") if "niveau_geographique" in bas \
+        else None
     total = {}
     for n, ligne in enumerate(lecteur, start=2):
         if not ligne or all(not c.strip() for c in ligne):
+            continue
+        if i_niveau is not None and ligne[i_niveau].strip().upper() != "FRANCE":
             continue
         brut = ligne[i_prenom].strip()
         if brut.upper() in REGROUPEMENTS:

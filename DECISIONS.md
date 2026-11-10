@@ -557,3 +557,22 @@ après délibération du Conseil d'Écluse, sur la mesure de P2-89.
   abandonnées ; la branche du NER ONNX n'est pas fusionnée.
 - Le vérificateur LLM (P2-108), qui attendait cette décision, reste à mesurer
   sur le poste du mainteneur, sans urgence.
+
+## 2026-11 — P2-149 : prénoms de l'INSEE (10 novembre)
+Le mainteneur a accepté la liste de l'INSEE et délégué le choix du seuil
+(« choisis toi »).
+- **Option `prenomsInsee` de `Ecluse.redact`, désactivée par défaut**, comme
+  les maladies rares (P2-143) : les effectifs se chargent de façon
+  asynchrone, et l'application qui n'en veut pas ne paie rien.
+- **Effectifs plutôt que liste** : la liste déjà embarquée, sans effectifs,
+  masquerait des mots courants (« Maison Bleue », « Clé Stripe », mesuré sur la
+  prose du dépôt). Asset `first_names_effectifs.tsv.gz` tiré du fichier
+  « ensemble des données » de la même édition (juillet 2026), fourni par le
+  mainteneur.
+- **Seuil 20 naissances depuis 1900**, par délégation : plus petit seuil qui
+  écarte les mots courants observés ; à 100, des prénoms rares réels
+  (« Łukasz ») repartaient en clair.
+- **Sur-masquage assumé** de « France Travail » et « Ange Gardien » : vrais
+  prénoms (« France », « Ange »), mieux vaut masquer que laisser fuir.
+- Le script `tools/build_prenoms_effectifs.py` lit le Parquet avec `pyarrow`
+  s'il est installé, sans l'ajouter aux dépendances du dépôt.

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:ecluse_core/ecluse_core.dart';
 import 'package:ecluse_redact/ecluse_redact.dart';
+import 'package:ecluse_reference/ecluse_reference.dart';
 
 /// Forme d'un jeton produit par `Ecluse.redact` : `[NOM_1]`, `[EMAIL_2]`…
 final RegExp _jeton = RegExp(r'\[[A-Z_]+_\d+\]');
@@ -57,14 +58,25 @@ List<Map<String, dynamic>> mentionsAvecJeton(
 /// `--dossier`), les dossiers utilisent la fusion par inclusion entre documents
 /// (`RegleNoms.inclusion`) au lieu de N1 (défaut).
 ///
+/// Avec `--prenoms-insee` (P2-149), l'option `prenomsInsee` est active au
+/// seuil par défaut.
+///
 /// Usage :
-///   dart run bin/run_dossiers_bench.dart [--dossier|--regle=n2] <corpus.jsonl> <sortie.jsonl>
+///   dart run bin/run_dossiers_bench.dart [--dossier|--regle=n2] [--prenoms-insee] <corpus.jsonl> <sortie.jsonl>
 Future<void> main(List<String> arguments) async {
   final regleN2 = arguments.contains('--regle=n2');
   final avecDossier = arguments.contains('--dossier') || regleN2;
+  PrenomsInsee? prenoms;
+  if (arguments.contains('--prenoms-insee')) {
+    final effectifs =
+        EcluseReference(fileAssets(assetsDir: '../ecluse_reference/assets'))
+            .firstNameFrequencies;
+    await effectifs.load();
+    prenoms = PrenomsInsee(effectifs);
+  }
   final args = [
     for (final a in arguments)
-      if (a != '--dossier' && a != '--regle=n2') a
+      if (a != '--dossier' && a != '--regle=n2' && a != '--prenoms-insee') a
   ];
   if (args.length != 2) {
     stderr.writeln(
@@ -92,7 +104,8 @@ Future<void> main(List<String> arguments) async {
                 regle:
                     regleN2 ? RegleNoms.inclusion : RegleNoms.identiteComplete))
         : null;
-    final resultat = await Ecluse.redact(texte, dossier: dossier);
+    final resultat =
+        await Ecluse.redact(texte, dossier: dossier, prenomsInsee: prenoms);
     final restaure = dossier != null
         ? dossier.restore(resultat.maskedText)
         : Ecluse.restore(resultat.maskedText, resultat.mapping);

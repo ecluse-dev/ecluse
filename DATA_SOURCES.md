@@ -66,6 +66,7 @@ Licence DREES : voir plus bas (lue sur la page du jeu).
 | `geo_hierarchie.json` | dérivé du COG ci-dessus et de la colonne `Région` de `donnees_communes.csv` | INSEE | les deux pages ci-dessus | idem | idem | idem |
 | `age_pyramide.json` | `Population-2025.zip` → `3_Pop1janv_age.xlsx`, feuille `2026` | INSEE, « Données nationales - Population », tableau POP3 (population au 1er janvier par sexe et âge détaillé, France) | `https://www.insee.fr/fr/statistiques/8999013` | `3_Pop1janv_age.xlsx` (`/fr/statistiques/fichier/8999013/3_Pop1janv_age.xlsx`), aussi dans l'archive `irsocsd2025_pop.zip` | « Paru le 15/06/2026 » (« Juin 2026 ») | idem |
 | `first_names.txt.gz` | `prenoms-2025-liste_csv.zip` → `prenoms-2025-liste.csv` | INSEE, fichier des prénoms, édition de juillet 2026 (naissances 1900-2025) | `https://www.insee.fr/fr/statistiques/8595130` | `prenoms-2025-liste_csv.zip` (`/fr/statistiques/fichier/8595130/prenoms-2025-liste_csv.zip`) | « Paru le 16/07/2026 » (« Juillet 2026 ») | idem |
+| `first_names_effectifs.tsv.gz` (prénom normalisé, effectif cumulé 1900-2025) | `prenoms-2025.parquet`, lignes `niveau_geographique = FRANCE` (`tools/build_prenoms_effectifs.py`, P2-149) | INSEE, fichier des prénoms, édition de juillet 2026 (naissances 1900-2025), fichier « ensemble des données » | `https://www.insee.fr/fr/statistiques/8595130` | fichier Parquet de l'ensemble des données | « Paru le 16/07/2026 » (comme la liste ci-dessus) | idem |
 | `rarity_medecins.json` | `Médecins_RPPS_2012-2026.xlsx` (feuille `Effectifs`) | DREES/OSAM, « La démographie des professionnels de santé depuis 2012 » (identifiant `la-demographie-des-professionnels-de-sante-depuis-2012`) ; pièce jointe `Médecins RPPS 2012-2026.xlsx` | `https://data.drees.solidarites-sante.gouv.fr/explore/dataset/la-demographie-des-professionnels-de-sante-depuis-2012/information/` | pièce jointe `Médecins RPPS 2012-2026.xlsx` | jeu modifié le 2 juillet 2026 à 11:38 | **Licence Ouverte v2.0 (Etalab)**, lue sur la page du jeu par le mainteneur (25 octobre 2026) ; lien : `https://www.etalab.gouv.fr/wp-content/uploads/2017/04/ETALAB-Licence-Ouverte-v2.0.pdf` |
 | `rarity_professions.json` | `Pharmaciens_RPPS_2012-2026.xlsx`, `Chirurgiens-dentistes_RPPS_2012-2026.xlsx`, `Sages-femmes_RPPS_2012-2026.xlsx`, `Pédicures-podologues_RPPS_2018-2026.xlsx` | même jeu DREES/OSAM ; pièces jointes de mêmes noms (`Pharmaciens RPPS 2012-2026.xlsx`, `Chirurgiens-dentistes RPPS 2012-2026.xlsx`, `Sages-femmes RPPS 2012-2026.xlsx`, `Pédicures-podologues RPPS 2018-2026.xlsx`) : présentes dans la liste de la page | idem | idem | idem | idem |
 | `reference_meta.json` | produit par le script | Écluse | sans objet | sans objet | sans objet | sans objet |
@@ -97,6 +98,16 @@ comparaison jetable, hors dépôt). Résultats :
   `prenoms-2025-liste_csv.zip` : 154 977 prénoms normalisés, **identiques** à
   `first_names.txt.gz`. L'« 2025 » du script est l'année de naissance la plus
   récente, pas l'année d'édition.
+- **Effectifs des prénoms (P2-149)** : la session ne peut pas joindre
+  `www.insee.fr` ; le mainteneur a téléchargé le fichier Parquet de la page
+  8595130 et l'a joint à la session le 10 novembre 2026. SHA-256 :
+  `f78a41de5b4aa77af3f4ba2fbf29fcdf428250ae9a49a019fb61246269075070`. Contenu : colonnes `sexe`, `prenom`, `periode` (1900 à 2025, 126
+  années), `niveau_geographique` (`FRANCE`, `REG`, `DEP`), `geographie`,
+  `valeur`, `rang`. Seules les 724 645 lignes `FRANCE` sont lues (les niveaux
+  régional et départemental répètent les mêmes naissances) : 87 644 320
+  naissances, 43 398 prénoms normalisés de 3 caractères ou plus. Le nom du
+  fichier sur la page n'a pas pu être vérifié par la session ; la page et
+  l'édition sont celles qu'a indiquées le mainteneur.
 - **COG** : 8740222, fichier `v_commune_2026.csv`, confirmé par le contrôle ci-dessus.
 
 Ce contrôle prouve que les assets se **régénèrent à l'identique** depuis ces
