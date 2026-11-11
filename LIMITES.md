@@ -117,8 +117,9 @@ barre oblique, tabulation, espace insécable et espaces typographiques (dont
 l'espace fine U+2009). Les mois 13 à 19 et 43 à 49 restent rejetés. L'IBAN
 accepte espace, tiret, point et barre oblique.
 **Coupure de ligne** : un identifiant (NIR, IBAN, téléphone, date de naissance numérique) coupé par
-un saut de ligne **entre deux groupes de chiffres** est détecté (P2-38) ; une coupure ailleurs (au milieu
-d'un groupe, après une lettre) ne l'est pas.
+un saut de ligne **entre deux groupes de chiffres** est détecté (P2-38), y compris après la lettre d'un
+groupe (« 461K⏎4056 », « 2A⏎073 ») et quand la fin de ligne est bordée d'espaces insécables (P2-152) ;
+une coupure au milieu d'un groupe ne l'est pas.
 
 **Ne pas confondre les deux.**
 
@@ -618,6 +619,13 @@ noms, adresses et établissements ; **seuls les identifiants à chiffres sont co
 validation (clé NIR, clé IBAN) ou leur forme étroite limite le risque de fusionner deux lignes sans
 rapport. **Restent non détectés** : l'adresse e-mail coupée après le `@`, une date écrite avec le
 mois en lettres sur deux lignes (« 12 mars⏎1950 »), un identifiant coupé au milieu d'un groupe.
+*P2-152 (11 novembre)* : sur un échantillon de 400 documents du corpus structurel remis en page (retours
+à la ligne d'une page, sans autre changement), 5 identifiants sur 316 restaient en clair : coupure après
+une lettre de groupe (« 461K⏎4056 », « 2A ⏎073 ») ou bordée d'espaces insécables (« 7460⏎\u00A08432 »).
+La coupure est maintenant admise après **une** majuscule précédée d'un chiffre et avec les mêmes blancs
+que `DigitCompaction` ; ce qui suit doit toujours être un chiffre. Tests d'abord (4 rouges sur 6) ;
+4 contre-exemples intacts (« Chambre 12B⏎34 lits »…) ; échantillon : 5 → 0 ; tableau de bord et
+fichiers de prédiction inchangés octet pour octet ; coût mesuré sur 4 entrées de 400 000 caractères : 1,5 à 2,4 s.
 
 **Date de naissance séparée de son étiquette (P2-39).** Sonde de formats de formulaire : « Date de
 naissance :⏎12/03/1950 » (étiquette sur sa ligne, valeur sur la suivante), « Date de naissance |

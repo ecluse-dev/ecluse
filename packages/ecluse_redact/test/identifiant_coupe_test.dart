@@ -32,6 +32,40 @@ void main() {
     });
   }
 
+  // P2-152 : coupure après la lettre d'un groupe (lettre de compte d'un IBAN,
+  // `2A`/`2B` d'un NIR corse) ou bordée d'espaces insécables. Clés calculées,
+  // identifiants synthétiques.
+  const coupesLettreOuInsecable = {
+    'compte FR76 4347 9463 461K\n4056 8299 690.': 'IBAN',
+    'compte FR76 4347 9463\n461K 4056 8299 690.': 'IBAN',
+    'IBAN FR16\u00A08202\u00A03337\u00A07460\n\u00A08432\u00A05621\u00A0686.':
+        'IBAN',
+    'IBAN FR16 8202 3337 7460\u202F\n8432 5621 686.': 'IBAN',
+    'NIR 2  41  01  2A \n073  561  75, ce jour': 'NIR',
+    'NIR 2\u00A056\u00A007\u00A016\u00A0561\n\u00A0259\u00A020, ce jour': 'NIR',
+  };
+  for (final MapEntry(key: texte, value: type)
+      in coupesLettreOuInsecable.entries) {
+    test('masqué (P2-152) : ${texte.replaceAll('\n', '\\n')}', () async {
+      final r = await Ecluse.redact(texte);
+      expect(r.mapping.keys, contains('[${type}_1]'), reason: r.maskedText);
+      expect(Ecluse.restore(r.maskedText, r.mapping), texte);
+    });
+  }
+
+  const intactsLettre = [
+    'Chambre 12B\n34 lits',
+    'Bâtiment 3A\n12 logements',
+    'Vol AF12\nB7 porte',
+    'Salle 4\nA2 fermée',
+  ];
+  for (final texte in intactsLettre) {
+    test('inchangé (P2-152) : ${texte.replaceAll('\n', '\\n')}', () async {
+      final r = await Ecluse.redact(texte);
+      expect(r.maskedText, texte);
+    });
+  }
+
   const intacts = [
     'Total : 150\nPage 12',
     'Chambre 12\nLit 3\nÉtage 4',
