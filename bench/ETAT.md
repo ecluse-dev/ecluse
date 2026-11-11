@@ -142,6 +142,49 @@ Masquage des maladies rares (P2-143, `run_maladies_rares_bench.dart`) :
 | Échantillon Orphanet (300, graine 42), rattachées ou personne nommée | 0 / 300 | 276 / 300 |
 | Échantillon Orphanet, niées ou sans personne | 0 / 300 | 0 / 300 |
 
+## Mise en page : textes recoupés aux espaces (P2-153)
+
+Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par
+`bench/generate_corpus_mise_en_page.py` : chaque espace ordinaire devient un
+retour à la ligne quand le mot suivant dépasserait la largeur (60 puis 90
+caractères), rien d'autre ne change, longueur et offsets conservés
+(vérifié par `test_mise_en_page.py`). **Aucun détecteur modifié** : la règle
+« un span ne traverse jamais un saut de ligne » (`LIMITES.md` § 5.2) est
+assumée, ceci la chiffre.
+
+Entités floues, fuite au caractère (part des caractères annotés restés en
+clair), documents refusés exclus du calcul :
+
+| Corpus | Retours ajoutés | nom | adresse | établissement | **global** | Refus¹ |
+|---|---:|---:|---:|---:|---:|---:|
+| réaliste, sans recoupe | 0 | 27,7 % | 0 % | 0 % | **7,5 %** | 0 |
+| réaliste, largeur 90 | 84 | 27,7 % | 0 % | 9,2 % | **9,3 %** | 0 |
+| réaliste, largeur 60 | 256 | 27,6 % | 1,3 % | 0,5 % | **8,6 %** | 2 |
+| adversarial, 60 et 90 | 7 et 0 | 13,9 % | 1,9 % | 0 % | **7,2 %** (inchangé) | 0 |
+| témoin, 60 et 90 | 292 et 12 | | | | **0 prédiction** | 0 |
+
+Corpus structurel (rappel ; sans recoupe : 100 % partout) :
+
+| Largeur | NIR | RPPS | IBAN | FINESS | Total (P / R) |
+|---|---:|---:|---:|---:|---:|
+| 90 | 100 % | 100 % | 87,4 % | 100 % | 94,5 / 96,5 % |
+| 60 | 91,8 % | 90,4 % | **72,9 %** | 100 % | 93,3 / **87,7 %** |
+
+Lecture : à 60 colonnes, 22 NIR sur 269, 16 RPPS sur 166 et 58 IBAN sur 214
+ne sont plus détectés (à 90 : 0, 0 et 27) ; ces identifiants groupés
+coupés par un retour à la ligne partent en clair au LLM. L'adversarial n'est
+presque pas touché : ses textes sont courts, le recoupage n'y change que 7
+espaces, ce qui ne dit rien de la robustesse des adresses. Sur le réaliste,
+les noms sont stables (la civilité seule, cf. P2-12) et les
+établissements/adresses coupés en deux lignes fuient en partie. FINESS :
+inchangé (aucun rappel perdu, 42 faux positifs SIREN comme avant).
+
+¹ Refus explicites du détecteur de tableaux (`TableauAmbiguException`,
+règle 4) : le retour à la ligne fabrique un faux tableau à colonnes
+inégales ; rien n'est envoyé. Le banc `run_redact_bench.dart` les compte
+désormais (`"refuse": true`) au lieu de s'arrêter ; sans cela le réaliste
+à 60 colonnes ne pouvait pas être mesuré.
+
 ## Écarts avec les rapports
 
 1. **Généralisation, F après le 1er tour** : 2 002,0 (réaliste) et 2 466,1

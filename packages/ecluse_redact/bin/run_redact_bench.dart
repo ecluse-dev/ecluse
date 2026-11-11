@@ -69,6 +69,7 @@ Future<void> main(List<String> argv) async {
   final sink = File(outPath).openWrite();
   var documents = 0;
   var entityCount = 0;
+  var refus = 0;
   final parType = <String, int>{};
   final typesInconnus = <String>{};
 
@@ -77,7 +78,22 @@ Future<void> main(List<String> argv) async {
     final doc = jsonDecode(line) as Map<String, dynamic>;
     final text = doc['text'] as String;
 
-    final result = await Ecluse.redact(text, prenomsInsee: gazetteer);
+    final RedactResult result;
+    try {
+      result = await Ecluse.redact(text, prenomsInsee: gazetteer);
+    } on TableauAmbiguException {
+      // Refus explicite (règle 4) : rien n'est envoyé, donc rien ne fuit.
+      // On le note (`refuse`) au lieu de faire tomber tout le banc ; le
+      // tableau de bord compte les refus à part (P2-153).
+      sink.writeln(jsonEncode({
+        'id': doc['id'],
+        'entities': <Map<String, dynamic>>[],
+        'refuse': true
+      }));
+      refus++;
+      stderr.writeln('REFUS : document ${doc['id']} (tableau ambigu)');
+      continue;
+    }
 
     // Garde-fou : l'invariant de reversibilite doit tenir sur chaque document
     // du corpus. Une rupture ici est plus grave qu'un mauvais score.
@@ -106,7 +122,7 @@ Future<void> main(List<String> argv) async {
   await sink.close();
 
   stdout.writeln('Ecluse redact : $documents documents, '
-      '$entityCount entites -> $outPath');
+      '$entityCount entites, $refus refus -> $outPath');
   final types = parType.keys.toList()..sort();
   for (final t in types) {
     stdout.writeln('    ${t.padRight(16)} ${parType[t]}');
