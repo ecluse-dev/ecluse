@@ -220,6 +220,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-151 | code | Activer l'option `prenomsInsee` dans `ecluse_demo` (choix délégué par le mainteneur) | P2-150 | fusionnée |
 | P2-152 | code | Identifiant coupé par une fin de ligne après une lettre de groupe ou bordée d'espaces insécables (extension de P2-38) | P2-38 | fusionnée |
 | P2-146 | spec | Lecture du gabarit AIPD de la CNIL (« PIA, les modèles », 2018) et correspondance case par case avec Écluse (`agent/specs/P2-97.md`) | — | fusionnée |
+| P2-153 | code | Corpus « mise en page » : générateur qui remet les corpus flous et structurel en lignes d'une page (retours à la ligne seuls), et ligne au tableau de bord ; aucun détecteur modifié | P2-152 | à faire |
+| P2-154 | mesure | Âge : analyser les 12,7 % d'âges non couverts du corpus QI adversarial (formes manquées, chiffrées) | — | à faire |
+| P2-155 | spec | Nombres dictés en lettres : normalisation « mots → chiffres » dans la vue de détection (périmètre, ambiguïtés, faux positifs, plan de mesure) | P2-98 | à faire |
+| P2-156 | mesure | Dépendances `pdf_cos`, `pdf_document`, `pdf_graphics` (10.0.0, dernière 15.0.0) : essayer la montée de version et rapporter ce qui casse | — | à faire |
+| P2-157 | mesure | Adresses : analyser les 1,9 % de fuite du corpus flou adversarial (formes manquées, chiffrées) | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -358,3 +363,39 @@ ne reprennent que ce qui manque pour la prendre.
   neurologie, « cancer » au sens figuré, « dialyse » d'un appareil).
   **Fini quand** : corpus reproductible à graine égale, offsets exacts,
   tests passés.
+- **P2-153** : Python, dans `bench/`, comme les autres générateurs
+  (`generate_corpus_mise_en_page.py`), plus ses tests. Entrée : un corpus
+  `.jsonl` existant ; sortie : le même, où chaque texte est recoupé aux
+  espaces à une largeur donnée (60 puis 90 caractères), sans rien changer
+  d'autre, avec les offsets des entités recalculés exactement. Graine 42.
+  Ajouter à `bench/etat.sh` et à `bench/ETAT.md` une section « mise en
+  page » : fuite par type sur le réaliste, l'adversarial et le témoin flous,
+  rappel sur le corpus structurel. **Ne modifier aucun détecteur** : la
+  règle « un span ne traverse jamais un saut de ligne » (`LIMITES.md` § 5.2)
+  est assumée ; la tâche la chiffre. **Fini quand** : corpus reproductible à
+  graine égale, offsets vérifiés par un test, chiffres dans `ETAT.md`.
+- **P2-154** : mesurer, ne rien corriger. Partir de `bench/qi/` (corpus
+  adversarial, 400 documents, `score_qi.py`). Classer les âges non couverts
+  par forme (« bientôt 80 ans », « la soixantaine », âge en lettres…), avec
+  le nombre de cas et un exemple synthétique par forme. Rapport dans
+  `agent/specs/P2-154.md`, avec pour chaque forme le risque de faux positif
+  attendu si on la couvrait.
+- **P2-155** : document seulement (`agent/specs/P2-155.md`), aucune ligne de
+  code de production. Contexte : `agent/specs/P2-98.md` (rappel 0 % sur le
+  corpus transcrit, `bench/generate_corpus_transcrit.py`). Traiter : les
+  façons de dicter un NIR, un téléphone, un IBAN, un RPPS (chiffre à
+  chiffre, par paires, « quatre-vingt-dix », « soixante et onze », « double
+  zéro ») ; où faire la conversion (vue de détection seulement, le texte
+  n'est jamais réécrit, offsets conservés) ; les ambiguïtés (« un » article
+  ou chiffre, « neuf » adjectif) ; le budget de faux positifs sur les
+  témoins ; le plan de mesure avant/après. Finir par les décisions qui
+  reviennent au mainteneur.
+- **P2-156** : mesurer, ne rien corriger sur `main`. Sur la branche de la
+  tâche, monter les trois paquets, lancer `melos run analyze` et `melos run
+  test`, rejouer les PDF synthétiques (`bench/generate_pdfs.py`). Rapport
+  dans `agent/specs/P2-156.md` : ce qui casse, l'effort estimé, les notes de
+  version lues. **Ne pas inclure** le changement de `pubspec` dans la PR :
+  seul le rapport est fusionnable ; le mainteneur décide de la montée.
+- **P2-157** : mesurer, ne rien corriger. `bench/flou/`, corpus adversarial,
+  type adresse. Même forme de rapport que P2-154, dans
+  `agent/specs/P2-157.md`.
