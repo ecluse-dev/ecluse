@@ -222,7 +222,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-146 | spec | Lecture du gabarit AIPD de la CNIL (« PIA, les modèles », 2018) et correspondance case par case avec Écluse (`agent/specs/P2-97.md`) | — | fusionnée |
 | P2-153 | code | Corpus « mise en page » : générateur qui remet les corpus flous et structurel en lignes d'une page (retours à la ligne seuls), et ligne au tableau de bord ; aucun détecteur modifié | P2-152 | à faire |
 | P2-154 | mesure | Âge : analyser les 12,7 % d'âges non couverts du corpus QI adversarial (formes manquées, chiffrées) | — | à faire |
-| P2-155 | spec | Nombres dictés en lettres : normalisation « mots → chiffres » dans la vue de détection (périmètre, ambiguïtés, faux positifs, plan de mesure) | P2-98 | à faire |
+| P2-155 | spec | Nombres dictés en lettres : normalisation « mots → chiffres » dans la vue de détection (périmètre, ambiguïtés, faux positifs, plan de mesure) | P2-98 | PR ouverte |
 | P2-156 | mesure | Dépendances `pdf_cos`, `pdf_document`, `pdf_graphics` (10.0.0, dernière 15.0.0) : essayer la montée de version et rapporter ce qui casse | — | à faire |
 | P2-157 | mesure | Adresses : analyser les 1,9 % de fuite du corpus flou adversarial (formes manquées, chiffrées) | — | à faire |
 
