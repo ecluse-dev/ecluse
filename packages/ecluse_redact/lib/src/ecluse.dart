@@ -595,8 +595,10 @@ int _versAscii(int c) {
   for (final m in coupures) {
     // Après un séparateur (`12-` / `34`), la coupure disparaît ; après un
     // chiffre, elle devient une espace.
-    final apresChiffre = vue.codeUnitAt(m.start - 1) >= 0x30 &&
-        vue.codeUnitAt(m.start - 1) <= 0x39;
+    // Une majuscule de groupe (P2-152) compte comme un chiffre.
+    final avant = vue.codeUnitAt(m.start - 1);
+    final apresChiffre =
+        (avant >= 0x30 && avant <= 0x39) || (avant >= 0x41 && avant <= 0x5A);
     var debut = m.start;
     if (apresChiffre) {
       unites[m.start] = 0x20;
@@ -715,8 +717,21 @@ bool _finitParDeuxPoints(String vue, int fin) {
 /// ou l'un de `/ . -`, avant un chiffre, avec les blancs de part et d'autre.
 /// Volontairement étroite : un saut de ligne ordinaire (texte, nom, adresse)
 /// n'est pas touché, donc aucun span de texte ne traverse une ligne.
-final RegExp _coupuresDeLigne =
-    RegExp(r'(?<=[0-9/.\-])[ \t]*\r?\n[ \t]*(?=[0-9])');
+///
+/// P2-152 : la coupure est aussi admise après **une** majuscule précédée d'un
+/// chiffre (lettre de compte d'un IBAN « 461K⏎4056 », « 2A⏎073 » d'un NIR
+/// corse), même tolérance que `DigitCompaction`, et les blancs autour de la
+/// fin de ligne comprennent les espaces insécables et typographiques (un
+/// export bureautique coupe « 7460⏎\u00A08432 »). Ce qui suit doit toujours
+/// être un chiffre ; la validation de l'identifiant (clé, forme) reste le
+/// garde-fou contre la fusion de deux lignes sans rapport.
+final RegExp _coupuresDeLigne = RegExp(r'(?<=[0-9/.\-]|[0-9][A-Z])'
+    '[$_blancsDeLigne]*\\r?\\n[$_blancsDeLigne]*'
+    r'(?=[0-9])');
+
+/// Blancs horizontaux admis autour d'une fin de ligne d'identifiant : ceux de
+/// `DigitCompaction` (jamais le saut de ligne lui-même).
+const String _blancsDeLigne = r' \t\u00A0\u2000-\u200A\u202F\u3000';
 
 /// Marques de mise en forme Markdown ou HTML autour d'une étiquette (P2-51) :
 /// `**Nom :** Quenelle`, `*Nom* : Quenelle`, `` `Nom` : …``, `<b>Nom :</b>`.
