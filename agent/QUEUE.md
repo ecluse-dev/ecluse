@@ -225,6 +225,12 @@ tâches copiées ici sont prises par l'agent.
 | P2-155 | spec | Nombres dictés en lettres : normalisation « mots → chiffres » dans la vue de détection (périmètre, ambiguïtés, faux positifs, plan de mesure) | P2-98 | fusionnée |
 | P2-156 | mesure | Dépendances `pdf_cos`, `pdf_document`, `pdf_graphics` (10.0.0, dernière 15.0.0) : essayer la montée de version et rapporter ce qui casse | — | à faire |
 | P2-157 | mesure | Adresses : analyser les 1,9 % de fuite du corpus flou adversarial (formes manquées, chiffrées) | — | à faire |
+| P2-158 | code | IBAN coupé par une fin de ligne juste avant un groupe qui commence par une lettre (« …0270⏎D932… »), dernier identifiant manqué du corpus « mise en page » | P2-153 | à faire |
+| P2-159 | code | Âge écrit en lettres suivi de « ans » (« soixante-douze ans ») dans `ecluse_reid` : les 15 cas de P2-154 | P2-154 | à faire |
+| P2-160 | code | Corpus témoin « mots-nombres » (montants, dates, quantités, consignes en lettres) : générateur et corpus, aucun détecteur modifié | P2-155 | à faire |
+| P2-161 | code | Corpus transcrit : variantes de dictée manquantes (« double zéro », « septante », « o six », séparateurs perdus) et mesure de départ ; aucun détecteur modifié | P2-155 | à faire |
+| P2-162 | spec | Fin de ligne dans un identifiant : faut-il descendre la neutralisation de `ecluse_redact` dans `ecluse_core` ? | P2-153 | à faire |
+| P2-163 | code | Tranche d'âge « de 80 à 85 ans » : lire les deux bornes (aujourd'hui seule la seconde sort) | P2-154 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -399,3 +405,55 @@ ne reprennent que ce qui manque pour la prendre.
 - **P2-157** : mesurer, ne rien corriger. `bench/flou/`, corpus adversarial,
   type adresse. Même forme de rapport que P2-154, dans
   `agent/specs/P2-157.md`.
+- **P2-158** : extension étroite de P2-152 (`_coupuresDeLigne`,
+  `ecluse_redact/lib/src/ecluse.dart`). Aujourd'hui la fin de ligne n'est
+  neutralisée que si ce qui suit est un chiffre ; l'admettre aussi devant
+  **une** majuscule suivie d'un chiffre. Test d'abord dans
+  `identifiant_coupe_test.dart` (le cas rouge, plus des contre-exemples qui
+  doivent rester intacts : « Salle 4⏎A2 fermée », « Vol 12⏎B7 porte », « le
+  3⏎C4 du plan »). **Fini quand** : section « mise en page » de
+  `bench/ETAT.md` à 778/778 par `Ecluse.redact` à 60 colonnes, tous les
+  autres chiffres du tableau de bord inchangés, `LIMITES.md` § 5.2 mis à
+  jour (y citer aussi les chiffres de P2-153).
+- **P2-159** : `ecluse_reid`, `qi_extraction.dart`. Périmètre décidé par le
+  mainteneur le 12 novembre : seulement un nombre en lettres **suivi de
+  « ans »** (unités, dizaines, « et un », « soixante-dix », « quatre-vingt »,
+  avec trait d'union ou espace). **Hors périmètre** : « la soixantaine »,
+  « octogénaire », « dans sa quatre-vingtième année » (choix de produit, ne
+  pas y toucher). Réutiliser l'exclusion des durées (`_dureeAvant`, P2-136).
+  Test d'abord sur les 15 cas de `agent/specs/P2-154.md` § 2. **Fini
+  quand** : âges non couverts du corpus QI adversarial 12,7 % → 0 %, corpus
+  témoin QI toujours à 0 extraction à tort, reste du tableau de bord
+  inchangé.
+- **P2-160** : Python, dans `bench/`, avec ses tests, sur le modèle des
+  autres générateurs. Au moins 300 phrases synthétiques, graine 42, dont une
+  moitié avec au moins 6 mots-nombres consécutifs : montants (« deux cent
+  cinquante mille euros »), dates en lettres, quantités, consignes
+  (« comptez dix, répétez six fois »). Aucune entité annotée : c'est un
+  témoin. Ajouter au tableau de bord une ligne « témoin mots-nombres :
+  N prédictions » par `Ecluse.redact`. **Ne modifier aucun détecteur.**
+  Voir `agent/specs/P2-155.md` § 5.
+- **P2-161** : `bench/generate_corpus_transcrit.py` et ses tests. Ajouter
+  les variantes de `agent/specs/P2-155.md` § 2 absentes du corpus :
+  « double / triple », « septante / huitante / nonante », zéro dit « o »,
+  traits d'union et virgules perdus. Offsets exacts, graine 42. Mesurer le
+  rappel et la fuite de départ par variante et par type, et les écrire dans
+  `bench/ETAT.md`. **Ne modifier aucun détecteur** : c'est le « défaut
+  d'abord » de la future tâche de code.
+- **P2-162** : document seulement (`agent/specs/P2-162.md`). Constat de
+  P2-153 : par `Ecluse.redact`, 777 identifiants sur 778 sont détectés à
+  60 colonnes ; par le moteur seul (`EcluseEngine`), 87,7 %. Une
+  application qui appelle `ecluse_core` directement manque donc les
+  identifiants coupés. Décrire : qui appelle le moteur seul aujourd'hui
+  (`ecluse_bench`, `ecluse_demo`, autres ?), les options (descendre la
+  neutralisation dans `ecluse_core`, la documenter comme limite du moteur,
+  refuser l'appel direct), leurs risques (faux positifs, offsets, coût,
+  détecteurs purs), le plan de mesure. Finir par la décision qui revient au
+  mainteneur.
+- **P2-163** : `ecluse_reid`, `qi_extraction.dart`. Constat de
+  `agent/specs/P2-154.md` § 3 : « de 80 à 85 ans » ne sort que la borne 85.
+  Test d'abord (« de 80 à 85 ans », « entre 60 et 65 ans », « 80-85 ans »)
+  et contre-exemples (« de 2 à 3 ans de suivi », durée). Décider dans la PR,
+  en le justifiant, si l'extraction est une tranche ou deux âges, sans
+  changer le format du rapport de risque. **Fini quand** : cas rouges
+  verts, corpus QI et témoins inchangés.
