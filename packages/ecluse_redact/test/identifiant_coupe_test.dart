@@ -53,11 +53,31 @@ void main() {
     });
   }
 
+  // P2-158 : coupure juste avant un groupe qui commence par **une** lettre
+  // suivie d'un chiffre (« …0270⏎D932… » : le groupe d'un IBAN peut porter
+  // une lettre de compte). Clé calculée, identifiant synthétique.
+  const coupesAvantLettre = {
+    'compte FR45 4347 9463 0270\nD932 8299 690.': 'IBAN',
+    'compte FR45 4347 9463 0270\n D932 8299 690.': 'IBAN',
+    'compte FR45 4347 9463 0270 \r\nD932 8299 690.': 'IBAN',
+  };
+  for (final MapEntry(key: texte, value: type) in coupesAvantLettre.entries) {
+    test('masqué (P2-158) : ${texte.replaceAll('\n', '\\n')}', () async {
+      final r = await Ecluse.redact(texte);
+      expect(r.mapping.keys, contains('[${type}_1]'), reason: r.maskedText);
+      expect(Ecluse.restore(r.maskedText, r.mapping), texte);
+    });
+  }
+
   const intactsLettre = [
     'Chambre 12B\n34 lits',
     'Bâtiment 3A\n12 logements',
     'Vol AF12\nB7 porte',
     'Salle 4\nA2 fermée',
+    // P2-158 : une lettre isolée suivie d'un chiffre après un chiffre.
+    'Vol 12\nB7 porte',
+    'le 3\nC4 du plan',
+    'Étage 2\nA1 : bureaux',
   ];
   for (final texte in intactsLettre) {
     test('inchangé (P2-152) : ${texte.replaceAll('\n', '\\n')}', () async {

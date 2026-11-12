@@ -169,14 +169,15 @@ Corpus structurel (rappel ; sans recoupe : 100 % partout). Deux chemins,
 | Largeur | Chemin | NIR | RPPS | IBAN | FINESS | Total |
 |---|---|---:|---:|---:|---:|---:|
 | 90 | **`Ecluse.redact`** (ce que reçoit le LLM) | 269/269 | 166/166 | 214/214 | 129/129 | **778/778** |
-| 60 | **`Ecluse.redact`** (ce que reçoit le LLM) | 269/269 | 166/166 | 213/214 | 129/129 | **777/778 (99,9 %)** |
+| 60 | **`Ecluse.redact`** (ce que reçoit le LLM) | 269/269 | 166/166 | 214/214 | 129/129 | **778/778** (777/778 avant P2-158) |
 | 90 | moteur seul (`ecluse_core`) | 100 % | 100 % | 87,4 % | 100 % | 96,5 % |
 | 60 | moteur seul (`ecluse_core`) | 91,8 % | 90,4 % | 72,9 % | 100 % | 87,7 % |
 
 Lecture : par `Ecluse.redact`, un identifiant coupé entre deux groupes est
-détecté (fin de ligne neutralisée dans la vue de détection, P2-38 et P2-152) :
-un seul IBAN sur 778 identifiants part en clair à 60 colonnes, coupé avant un
-groupe qui commence par une lettre (« …0270⏎D932… »). Le **moteur seul**
+détecté (fin de ligne neutralisée dans la vue de détection, P2-38, P2-152 et
+P2-158) : les 778 identifiants sont détectés à 60 colonnes (le dernier, un IBAN
+coupé avant un groupe qui commence par une lettre, « …0270⏎D932… », l'est depuis
+P2-158). Le **moteur seul**
 (`EcluseEngine`, sans `ecluse_redact`) n'a pas cette neutralisation : une
 application qui l'appellerait directement manquerait 22 NIR, 16 RPPS et
 58 IBAN à 60 colonnes. Rappel par `bench/rappel_structurel.py` (identifiant
