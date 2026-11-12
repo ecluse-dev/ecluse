@@ -78,8 +78,8 @@ prévoie explicitement. S'il en faut une, il s'arrête et le signale.
    commence par `claude/`. En session cloud, `gh pr` est indisponible ;
    utiliser l'API REST :
    `gh api 'repos/ecluse-dev/ecluse/pulls?state=open&per_page=100' --jq '[.[] | select(.head.ref | startswith("claude/"))] | length'`.
-   S'il y en a **3 ou plus**, ne rien faire d'autre : terminer la session
-   en une phrase (« 3 PR en attente de revue, arrêt »). S'il est impossible
+   S'il y en a **6 ou plus**, ne rien faire d'autre : terminer la session
+   en une phrase (« 6 PR en attente de revue, arrêt »). S'il est impossible
    de compter les PR ouvertes, s'arrêter aussi.
 2. **Choisir une seule tâche** dans `agent/QUEUE.md` : la première ligne au
    statut `à faire` dont toutes les dépendances sont `fusionnée`, qui
@@ -104,7 +104,8 @@ prévoie explicitement. S'il en faut une, il s'arrête et le signale.
    la tâche** (la règle du point 2 en dépend), avec : ce qui a été fait, les
    mesures avant/après le cas échéant, ce qui reste incertain, et ce que le
    mainteneur doit vérifier. Ne jamais la fusionner.
-8. **S'arrêter.** Une tâche par exécution, même s'il reste du temps.
+8. **S'arrêter.** Une tâche par exécution, sauf consigne contraire du mainteneur dans la
+   tâche planifiée.
 
 ## Relecture par Gemini
 
