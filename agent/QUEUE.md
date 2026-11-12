@@ -226,11 +226,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-156 | mesure | Dépendances `pdf_cos`, `pdf_document`, `pdf_graphics` (10.0.0, dernière 15.0.0) : essayer la montée de version et rapporter ce qui casse | — | à faire |
 | P2-157 | mesure | Adresses : analyser les 1,9 % de fuite du corpus flou adversarial (formes manquées, chiffrées) | — | à faire |
 | P2-158 | code | IBAN coupé par une fin de ligne juste avant un groupe qui commence par une lettre (« …0270⏎D932… »), dernier identifiant manqué du corpus « mise en page » | P2-153 | à faire |
-| P2-159 | code | Âge écrit en lettres suivi de « ans » (« soixante-douze ans ») dans `ecluse_reid` : les 15 cas de P2-154 | P2-154 | à faire |
-| P2-160 | code | Corpus témoin « mots-nombres » (montants, dates, quantités, consignes en lettres) : générateur et corpus, aucun détecteur modifié | P2-155 | à faire |
-| P2-161 | code | Corpus transcrit : variantes de dictée manquantes (« double zéro », « septante », « o six », séparateurs perdus) et mesure de départ ; aucun détecteur modifié | P2-155 | à faire |
+| P2-159 | code | Âges dans `ecluse_reid` : nombre en lettres suivi de « ans » (les 15 cas de P2-154) et tranche « de 80 à 85 ans » (regroupe P2-163) | P2-154 | à faire |
+| P2-160 | code | Dictée, les deux corpus de mesure : témoin « mots-nombres » et variantes de dictée manquantes du corpus transcrit, avec mesure de départ ; aucun détecteur modifié (regroupe P2-161) | P2-155 | à faire |
+| P2-161 | code | Corpus transcrit : variantes de dictée manquantes (« double zéro », « septante », « o six », séparateurs perdus) et mesure de départ ; aucun détecteur modifié | P2-155 | regroupée (P2-160) |
 | P2-162 | spec | Fin de ligne dans un identifiant : faut-il descendre la neutralisation de `ecluse_redact` dans `ecluse_core` ? | P2-153 | à faire |
-| P2-163 | code | Tranche d'âge « de 80 à 85 ans » : lire les deux bornes (aujourd'hui seule la seconde sort) | P2-154 | à faire |
+| P2-163 | code | Tranche d'âge « de 80 à 85 ans » : lire les deux bornes (aujourd'hui seule la seconde sort) | P2-154 | regroupée (P2-159) |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -425,6 +425,14 @@ ne reprennent que ce qui manque pour la prendre.
   quand** : âges non couverts du corpus QI adversarial 12,7 % → 0 %, corpus
   témoin QI toujours à 0 extraction à tort, reste du tableau de bord
   inchangé.
+  **Second volet (ancienne P2-163)**, dans la même PR : « de 80 à 85 ans »
+  ne sort aujourd'hui que la borne 85 (`agent/specs/P2-154.md` § 3). Test
+  d'abord (« de 80 à 85 ans », « entre 60 et 65 ans », « 80-85 ans ») et
+  contre-exemples (« de 2 à 3 ans de suivi », durée). Décider dans la PR, en
+  le justifiant, si l'extraction est une tranche ou deux âges, sans changer
+  le format du rapport de risque. **Fini quand**, pour les deux volets : cas
+  rouges verts, âges non couverts du QI adversarial à 0 %, corpus QI réaliste
+  et témoins inchangés, reste du tableau de bord inchangé.
 - **P2-160** : Python, dans `bench/`, avec ses tests, sur le modèle des
   autres générateurs. Au moins 300 phrases synthétiques, graine 42, dont une
   moitié avec au moins 6 mots-nombres consécutifs : montants (« deux cent
@@ -433,13 +441,15 @@ ne reprennent que ce qui manque pour la prendre.
   témoin. Ajouter au tableau de bord une ligne « témoin mots-nombres :
   N prédictions » par `Ecluse.redact`. **Ne modifier aucun détecteur.**
   Voir `agent/specs/P2-155.md` § 5.
-- **P2-161** : `bench/generate_corpus_transcrit.py` et ses tests. Ajouter
-  les variantes de `agent/specs/P2-155.md` § 2 absentes du corpus :
-  « double / triple », « septante / huitante / nonante », zéro dit « o »,
-  traits d'union et virgules perdus. Offsets exacts, graine 42. Mesurer le
-  rappel et la fuite de départ par variante et par type, et les écrire dans
-  `bench/ETAT.md`. **Ne modifier aucun détecteur** : c'est le « défaut
-  d'abord » de la future tâche de code.
+  **Second volet (ancienne P2-161)**, dans la même PR :
+  `bench/generate_corpus_transcrit.py` et ses tests. Ajouter les variantes de
+  `agent/specs/P2-155.md` § 2 absentes du corpus : « double / triple »,
+  « septante / huitante / nonante », zéro dit « o », traits d'union et
+  virgules perdus. Offsets exacts, graine 42. Mesurer le rappel et la fuite
+  de départ par variante et par type, et les écrire dans `bench/ETAT.md`.
+  C'est le « défaut d'abord » de la future tâche de code. **Fini quand** :
+  les deux corpus sont reproductibles à graine égale, leurs chiffres sont
+  dans `bench/ETAT.md`, le reste du tableau de bord est inchangé.
 - **P2-162** : document seulement (`agent/specs/P2-162.md`). Constat de
   P2-153 : par `Ecluse.redact`, 777 identifiants sur 778 sont détectés à
   60 colonnes ; par le moteur seul (`EcluseEngine`), 87,7 %. Une
@@ -450,10 +460,7 @@ ne reprennent que ce qui manque pour la prendre.
   refuser l'appel direct), leurs risques (faux positifs, offsets, coût,
   détecteurs purs), le plan de mesure. Finir par la décision qui revient au
   mainteneur.
-- **P2-163** : `ecluse_reid`, `qi_extraction.dart`. Constat de
-  `agent/specs/P2-154.md` § 3 : « de 80 à 85 ans » ne sort que la borne 85.
-  Test d'abord (« de 80 à 85 ans », « entre 60 et 65 ans », « 80-85 ans »)
-  et contre-exemples (« de 2 à 3 ans de suivi », durée). Décider dans la PR,
-  en le justifiant, si l'extraction est une tranche ou deux âges, sans
-  changer le format du rapport de risque. **Fini quand** : cas rouges
-  verts, corpus QI et témoins inchangés.
+- **P2-161** : regroupée dans P2-160 le 12 novembre (une seule PR pour les
+  deux corpus de dictée).
+- **P2-163** : regroupée dans P2-159 le 12 novembre (une seule PR pour les
+  âges).
