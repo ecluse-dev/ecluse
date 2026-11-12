@@ -722,12 +722,15 @@ bool _finitParDeuxPoints(String vue, int fin) {
 /// chiffre (lettre de compte d'un IBAN « 461K⏎4056 », « 2A⏎073 » d'un NIR
 /// corse), même tolérance que `DigitCompaction`, et les blancs autour de la
 /// fin de ligne comprennent les espaces insécables et typographiques (un
-/// export bureautique coupe « 7460⏎\u00A08432 »). Ce qui suit doit toujours
-/// être un chiffre ; la validation de l'identifiant (clé, forme) reste le
-/// garde-fou contre la fusion de deux lignes sans rapport.
+/// export bureautique coupe « 7460⏎\u00A08432 »). Ce qui suit doit être un
+/// chiffre, ou (P2-158) **une** majuscule suivie d'un chiffre : un groupe de
+/// compte d'IBAN peut commencer par une lettre (« …0270⏎D932… »). Les
+/// contre-exemples (« Salle 4⏎A2 fermée », « Vol 12⏎B7 porte ») ne sont pas
+/// détectés après neutralisation : la validation de l'identifiant (clé,
+/// forme) reste le garde-fou contre la fusion de deux lignes sans rapport.
 final RegExp _coupuresDeLigne = RegExp(r'(?<=[0-9/.\-]|[0-9][A-Z])'
     '[$_blancsDeLigne]*\\r?\\n[$_blancsDeLigne]*'
-    r'(?=[0-9])');
+    r'(?=[0-9]|[A-Z][0-9])');
 
 /// Blancs horizontaux admis autour d'une fin de ligne d'identifiant : ceux de
 /// `DigitCompaction` (jamais le saut de ligne lui-même).
