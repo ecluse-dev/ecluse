@@ -626,6 +626,14 @@ La coupure est maintenant admise après **une** majuscule précédée d'un chiff
 que `DigitCompaction` ; ce qui suit doit toujours être un chiffre. Tests d'abord (4 rouges sur 6) ;
 4 contre-exemples intacts (« Chambre 12B⏎34 lits »…) ; échantillon : 5 → 0 ; tableau de bord et
 fichiers de prédiction inchangés octet pour octet ; coût mesuré sur 4 entrées de 400 000 caractères : 1,5 à 2,4 s.
+*P2-153 puis P2-158 (12 novembre)* : sur le corpus structurel (1 000 documents, 778 identifiants) remis en
+page à 60 colonnes, **`Ecluse.redact`** (le chemin que reçoit le LLM) détectait 777 identifiants sur 778 : un
+IBAN coupé juste avant un groupe qui commence par une lettre (« …0270⏎D932… ») restait en clair. La coupure est
+maintenant aussi admise devant **une** majuscule suivie d'un chiffre : 778 / 778 à 60 et à 90 colonnes. Contre-
+exemples intacts, testés : « Salle 4⏎A2 fermée », « Vol 12⏎B7 porte », « le 3⏎C4 du plan », « Étage 2⏎A1 ». Le
+**moteur seul** (`EcluseEngine`, `ecluse_core`) n'a pas cette neutralisation : à 60 colonnes il ne détecte que 87,7 %
+des identifiants (NIR 91,8 %, RPPS 90,4 %, IBAN 72,9 %), à 90 colonnes 96,5 % ; une application qui l'appellerait
+directement manquerait les identifiants coupés (voir P2-162).
 
 **Date de naissance séparée de son étiquette (P2-39).** Sonde de formats de formulaire : « Date de
 naissance :⏎12/03/1950 » (étiquette sur sa ligne, valeur sur la suivante), « Date de naissance |
