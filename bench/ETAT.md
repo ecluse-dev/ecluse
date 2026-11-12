@@ -82,19 +82,23 @@ Travail » et « Ange Gardien » (P2-150 ; `agent/specs/P2-148.md` § 6).
 | Corpus | âge P / R | lieu P / R | profession P / R | Non couverts (âge / lieu / prof.) |
 |---|---|---|---|---|
 | réaliste | 100 / 100 % | 88,2 / 100 % | 100 / 100 % | 0 / 0 / 0 % |
-| adversarial | 100 / 95,5 % | 92,3 / 100 % | 100 / 96,2 % | 12,7 / 0 / 2,0 % |
+| adversarial | 100 / **100 %** (95,5 % avant P2-159) | 92,3 / 100 % | 100 / 96,2 % | **0** (12,7 avant P2-159) / 0 / 2,0 % |
 | témoin | 412 extractions à tort, 337 documents sur 400 ; **57 / 57 après P2-136, 0 après P2-142** | | | |
 
 Identique à `bench/README.md` (P2-03b) au commit `d85fb84` ; témoin corrigé
 ensuite par P2-136 (durées, communes-mots courants), réaliste et
-adversarial inchangés.
+adversarial inchangés ; âges en lettres et tranche « de N à M ans » lus par
+P2-159 (adversarial : 12,7 % → 0 % d'âges non couverts, 15 âges en lettres).
+Chemin : `ecluse_reid` seul (`run_reid_bench.dart`), pas `Ecluse.redact`. La
+ligne « Généralisation appliquée » de l'adversarial en découle : ces 15
+documents ont désormais un âge (sur les 385 autres, sortie identique, vérifié).
 
 ## Généralisation appliquée (P2-92, P2-102, P2-116, P2-132)
 
 | Corpus | Avec suggestion | Refus | F médian avant → après 1er tour | Bande après 1er tour |
 |---|---:|---:|---|---|
 | QI réaliste | 170 | 0 | 74,0 → 2 002,0 | faible 170 |
-| QI adversarial | 109 | 0 | 6,0 → 2 466,1 | faible 101, moyen 7, élevé 1 |
+| QI adversarial | 111 (109 avant P2-159) | 0 | 5,0 → 2 320,0 (6,0 → 2 466,1) | faible 103, moyen 7, élevé 1 |
 | QI témoin | 0 | 0 | — | — |
 | lieu (810 documents) | 24 | 0 | F recalculé = F simulé (24/24) | élevé 1, moyen 20, faible 3 |
 
