@@ -18,6 +18,26 @@ final RegExp _agePattern = RegExp(r'\b(\d{1,3})\s*ans\b', caseSensitive: false);
 const String _tranche = r'\b(\d{1,3})\s*-\s*(\d{1,3})\s*ans\b';
 final RegExp _tranchePattern = RegExp(_tranche, caseSensitive: false);
 
+/// Tranche écrite à la main : « de 80 à 85 ans », « entre 60 et 65 ans »
+/// (P2-159). Avant, seule la borne haute sortait (« 85 ans » lu comme un âge
+/// exact : la tranche était sous-estimée). « de » ou « entre » est exigé pour
+/// ne pas lire « 60 et 65 ans » dans une énumération. Le span commence au
+/// premier nombre : une généralisation réécrit « 80 à 85 ans » et laisse le
+/// « de ».
+final RegExp _trancheMotsPattern = RegExp(
+  r'\b(?:de|entre)[ \t\u00A0]+(\d{1,3})[ \t\u00A0]*(?:à|et)[ \t\u00A0]*'
+  r'(\d{1,3})[ \t\u00A0]*ans\b',
+  caseSensitive: false,
+);
+
+/// « de 2 à 3 ans de suivi », « de 2 à 3 ans d'ancienneté » : une durée, pas
+/// un âge (P2-159, contre-exemple de la fiche).
+final RegExp _dureeApres = RegExp(
+  r'^[ \t\u00A0]+(?:de|d[\x27’])[ \t\u00A0]*\p{L}',
+  unicode: true,
+  caseSensitive: false,
+);
+
 /// QI d'une tranche lue dans le texte. Le palier suit la largeur, comme
 /// l'échelle de `generalizer.dart` : 5 ans au plus (palier 1), 10 au plus
 /// (palier 2), au-delà (tranche senior, palier 3). `null` si la tranche est
@@ -44,30 +64,142 @@ final RegExp _dureeAvant = RegExp(
   caseSensitive: false,
 );
 
-/// Âges du texte, dans l'ordre : tranches (« 70-74 ans ») et âges exacts
-/// (« N ans », 0 à 120) qui ne sont pas la borne d'une tranche.
-List<(RegExpMatch, Qi)> _ages(String text) {
-  final tranches = _tranchePattern.allMatches(text).toList();
-  final trouves = <(RegExpMatch, Qi)>[
-    for (final t in tranches)
-      if (_trancheQi(t) case final qi?) (t, qi),
+/// Mots d'un nombre écrit en lettres, de 2 à 120 (P2-159), chacun un mot
+/// simple : « quatre-vingt-quatorze » est quatre + vingt + quatorze, « trente
+/// et un » trente + et + un. Un motif à mots simples séparés par un séparateur
+/// obligatoire se découpe d'une seule façon : pas de retour arrière
+/// superlinéaire.
+const String _motsNombre = 'zéro|un|une|deux|trois|quatre|cinq|six|sept|huit|'
+    'neuf|dix|onze|douze|treize|quatorze|quinze|seize|vingts?|trente|quarante|'
+    'cinquante|soixante|cent';
+
+/// Un nombre en lettres (au plus 6 mots) suivi de « ans » : « trente et un
+/// ans », « soixante-douze ans ». Le groupe 1 est le nombre seul. La suite de
+/// mots est ensuite **validée en entier** ([_motsEnAge]) : « quarante-quatre-
+/// vingt ans » ou « dix et vingt ans » ne donnent aucun âge.
+final RegExp _ageLettresPattern = RegExp(
+  '(?<![\\p{L}-])((?:$_motsNombre)'
+  '(?:(?:[ \\t\\u00A0]+|-)(?:et(?:[ \\t\\u00A0]+|-))?(?:$_motsNombre)){0,5})'
+  '[ \\t\\u00A0]+ans(?![\\p{L}])',
+  unicode: true,
+  caseSensitive: false,
+);
+
+/// Écriture canonique (mots séparés par une espace, sans « et », « vingts »
+/// ramené à « vingt ») de chaque âge de 2 à 120 vers sa valeur. Fabriquée
+/// depuis la règle de composition plutôt qu'écrite à la main : un nombre est
+/// reconnu s'il s'écrit exactement ainsi.
+final Map<String, int> _ageParMots = () {
+  const unites = [
+    '',
+    'un',
+    'deux',
+    'trois',
+    'quatre',
+    'cinq',
+    'six',
+    'sept',
+    'huit',
+    'neuf',
+    'dix',
+    'onze',
+    'douze',
+    'treize',
+    'quatorze',
+    'quinze',
+    'seize',
+    'dix sept',
+    'dix huit',
+    'dix neuf',
   ];
-  for (final m in _agePattern.allMatches(text)) {
-    if (tranches.any((t) => m.start < t.end && t.start < m.end)) continue;
-    if (_dureeAvant
-        .hasMatch(text.substring(m.start > 40 ? m.start - 40 : 0, m.start))) {
+  const dizaines = {
+    20: 'vingt',
+    30: 'trente',
+    40: 'quarante',
+    50: 'cinquante',
+    60: 'soixante',
+  };
+  String mots(int n) {
+    if (n < 20) return unites[n];
+    if (n >= 100) return n == 100 ? 'cent' : 'cent ${mots(n - 100)}';
+    if (n >= 80) {
+      return n == 80 ? 'quatre vingt' : 'quatre vingt ${mots(n - 80)}';
+    }
+    if (n >= 70) return 'soixante ${mots(n - 60)}';
+    final d = n - n % 10;
+    return n % 10 == 0 ? dizaines[d]! : '${dizaines[d]!} ${unites[n % 10]}';
+  }
+
+  return {for (var n = 2; n <= 120; n++) mots(n): n};
+}();
+
+/// Valeur d'un nombre écrit en lettres, `null` s'il n'est pas un âge de 2 à
+/// 120 ans écrit selon les règles (« et » admis seulement devant « un » et
+/// « onze »).
+int? _motsEnAge(String mots) {
+  final jetons = mots
+      .toLowerCase()
+      .split(RegExp(r'[ \t\u00A0-]+'))
+      .map((j) => j == 'vingts' ? 'vingt' : j)
+      .toList();
+  for (var i = 0; i < jetons.length; i++) {
+    if (jetons[i] != 'et') continue;
+    if (i == 0 ||
+        i + 1 >= jetons.length ||
+        (jetons[i + 1] != 'un' && jetons[i + 1] != 'onze')) {
+      return null;
+    }
+  }
+  return _ageParMots[jetons.where((j) => j != 'et').join(' ')];
+}
+
+/// Âge repéré dans le texte : début et fin du span, QI associé.
+typedef _AgeTrouve = (int, int, Qi);
+
+/// Âges du texte, dans l'ordre : tranches (« 70-74 ans », « de 80 à 85
+/// ans »), âges en lettres (« soixante-douze ans ») et âges exacts (« N ans »,
+/// 0 à 120) qui ne sont pas la borne d'une tranche.
+List<_AgeTrouve> _ages(String text) {
+  final tranches = _tranchePattern.allMatches(text).toList();
+  final trouves = <_AgeTrouve>[
+    for (final t in tranches)
+      if (_trancheQi(t) case final qi?) (t.start, t.end, qi),
+  ];
+  // « de 80 à 85 ans » : le span commence au premier nombre. Une durée
+  // (« de 2 à 3 ans de suivi », « il y a entre 5 et 7 ans ») ne donne rien,
+  // et ses deux bornes ne sont pas relues comme un âge isolé.
+  final occupes = <(int, int)>[for (final t in tranches) (t.start, t.end)];
+  for (final m in _trancheMotsPattern.allMatches(text)) {
+    final debut = m.start + m.group(0)!.indexOf(m.group(1)!);
+    occupes.add((debut, m.end));
+    if (_dureeAvant.hasMatch(
+            text.substring(m.start > 40 ? m.start - 40 : 0, m.start)) ||
+        _dureeApres.hasMatch(text.substring(m.end))) {
       continue;
     }
-    final age = int.parse(m.group(1)!);
-    if (age <= 120) trouves.add((m, Qi(QiType.age, age.toString())));
+    if (_trancheQi(m) case final qi?) trouves.add((debut, m.end, qi));
   }
-  trouves.sort((a, b) => a.$1.start - b.$1.start);
+  bool occupe(int start, int end) =>
+      occupes.any((o) => start < o.$2 && o.$1 < end);
+  bool duree(int start) =>
+      _dureeAvant.hasMatch(text.substring(start > 40 ? start - 40 : 0, start));
+  for (final m in _agePattern.allMatches(text)) {
+    if (occupe(m.start, m.end) || duree(m.start)) continue;
+    final age = int.parse(m.group(1)!);
+    if (age <= 120) trouves.add((m.start, m.end, Qi(QiType.age, '$age')));
+  }
+  for (final m in _ageLettresPattern.allMatches(text)) {
+    if (occupe(m.start, m.end) || duree(m.start)) continue;
+    final age = _motsEnAge(m.group(1)!);
+    if (age != null) trouves.add((m.start, m.end, Qi(QiType.age, '$age')));
+  }
+  trouves.sort((a, b) => a.$1 - b.$1);
   return trouves;
 }
 
 /// Motif « N ans » (spec §2), âges plausibles 0-120, et tranches écrites
 /// par la généralisation (P2-102).
-List<Qi> extractAge(String text) => [for (final (_, qi) in _ages(text)) qi];
+List<Qi> extractAge(String text) => [for (final (_, _, qi) in _ages(text)) qi];
 
 /// Un nom de commune porté par plusieurs communes (« Saint-Denis », ~3 700
 /// communes concernées sur ~35 000). Rendu à l'appelant pour qu'il sache
@@ -466,12 +598,12 @@ List<QiSpan> _lieuSpans(EcluseReference ref, String text) {
 /// Même règle que [extractAge] (« N ans », 0 à 120), avec positions : le span
 /// couvre les chiffres, l'espace éventuel (insécable compris) et « ans ».
 List<QiSpan> _ageSpans(String text) => [
-      for (final (m, qi) in _ages(text))
+      for (final (start, end, qi) in _ages(text))
         QiSpan(
           type: QiType.age,
-          start: m.start,
-          end: m.end,
-          text: m.group(0)!,
+          start: start,
+          end: end,
+          text: text.substring(start, end),
           qi: qi,
         ),
     ];

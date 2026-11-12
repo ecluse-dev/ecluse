@@ -1492,6 +1492,17 @@ pas une garantie d'anonymat. Limites connues :
   produit désormais un QI de lieu prudent, parfois à tort.
 - **Âges** : la pyramide couvre 0 à 104 ans ; une tranche de 10 ans qui
   chevauche 65 ans passe directement au retrait.
+- **Âges écrits** (P2-159) : sont lus « 72 ans », « soixante-douze ans » (2 à
+  120, avec « et », trait d'union ou espace, « quatre-vingt(s) », « cent »),
+  et la tranche « de 80 à 85 ans » / « entre 60 et 65 ans » (une tranche, pas
+  deux âges). **Non lus**, choix de produit : « la soixantaine », « octogénaire »,
+  « dans sa quatre-vingtième année », « septante / huitante / nonante ».
+  Une durée précédée d'une préposition (« depuis trente ans ») ou suivie de
+  « de / d' » (« de 2 à 3 ans de suivi ») n'est pas un âge ; **« Suivi de 2 à
+  3 ans. »** (sans rien après) est lu comme une tranche d'âge : indiscernable
+  d'un âge sans contexte. Un âge isolé écrit en lettres peut aussi être une
+  durée hors des tournures ci-dessus (« trois ans de prison », « cela fait vingt
+  ans ») : même limite que pour les chiffres.
 - **Données embarquées** : millésimes mélangés (populations communales
   2023→2026, pyramide 2026 France entière) ; provenance et licence documentées
   dans `DATA_SOURCES.md` et `NOTICE`. Les données restent sous la Licence Ouverte
