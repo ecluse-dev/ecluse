@@ -229,7 +229,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-159 | code | Âges dans `ecluse_reid` : nombre en lettres suivi de « ans » (les 15 cas de P2-154) et tranche « de 80 à 85 ans » (regroupe P2-163) | P2-154 | fusionnée |
 | P2-160 | code | Dictée, les deux corpus de mesure : témoin « mots-nombres » et variantes de dictée manquantes du corpus transcrit, avec mesure de départ ; aucun détecteur modifié (regroupe P2-161) | P2-155 | fusionnée |
 | P2-161 | code | Corpus transcrit : variantes de dictée manquantes (« double zéro », « septante », « o six », séparateurs perdus) et mesure de départ ; aucun détecteur modifié | P2-155 | regroupée (P2-160) |
-| P2-162 | spec | Fin de ligne dans un identifiant : faut-il descendre la neutralisation de `ecluse_redact` dans `ecluse_core` ? | P2-153 | à faire |
+| P2-162 | spec | Fin de ligne dans un identifiant : faut-il descendre la neutralisation de `ecluse_redact` dans `ecluse_core` ? | P2-153 | fusionnée |
 | P2-163 | code | Tranche d'âge « de 80 à 85 ans » : lire les deux bornes (aujourd'hui seule la seconde sort) | P2-154 | regroupée (P2-159) |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
