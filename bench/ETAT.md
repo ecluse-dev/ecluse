@@ -163,16 +163,24 @@ clair), documents refusés exclus du calcul :
 | adversarial, 60 et 90 | 7 et 0 | 13,9 % | 1,9 % | 0 % | **7,2 %** (inchangé) | 0 |
 | témoin, 60 et 90 | 292 et 12 | | | | **0 prédiction** | 0 |
 
-Corpus structurel (rappel ; sans recoupe : 100 % partout) :
+Corpus structurel (rappel ; sans recoupe : 100 % partout). Deux chemins,
+à ne pas confondre :
 
-| Largeur | NIR | RPPS | IBAN | FINESS | Total (P / R) |
-|---|---:|---:|---:|---:|---:|
-| 90 | 100 % | 100 % | 87,4 % | 100 % | 94,5 / 96,5 % |
-| 60 | 91,8 % | 90,4 % | **72,9 %** | 100 % | 93,3 / **87,7 %** |
+| Largeur | Chemin | NIR | RPPS | IBAN | FINESS | Total |
+|---|---|---:|---:|---:|---:|---:|
+| 90 | **`Ecluse.redact`** (ce que reçoit le LLM) | 269/269 | 166/166 | 214/214 | 129/129 | **778/778** |
+| 60 | **`Ecluse.redact`** (ce que reçoit le LLM) | 269/269 | 166/166 | 213/214 | 129/129 | **777/778 (99,9 %)** |
+| 90 | moteur seul (`ecluse_core`) | 100 % | 100 % | 87,4 % | 100 % | 96,5 % |
+| 60 | moteur seul (`ecluse_core`) | 91,8 % | 90,4 % | 72,9 % | 100 % | 87,7 % |
 
-Lecture : à 60 colonnes, 22 NIR sur 269, 16 RPPS sur 166 et 58 IBAN sur 214
-ne sont plus détectés (à 90 : 0, 0 et 27) ; ces identifiants groupés
-coupés par un retour à la ligne partent en clair au LLM. L'adversarial n'est
+Lecture : par `Ecluse.redact`, un identifiant coupé entre deux groupes est
+détecté (fin de ligne neutralisée dans la vue de détection, P2-38 et P2-152) :
+un seul IBAN sur 778 identifiants part en clair à 60 colonnes, coupé avant un
+groupe qui commence par une lettre (« …0270⏎D932… »). Le **moteur seul**
+(`EcluseEngine`, sans `ecluse_redact`) n'a pas cette neutralisation : une
+application qui l'appellerait directement manquerait 22 NIR, 16 RPPS et
+58 IBAN à 60 colonnes. Rappel par `bench/rappel_structurel.py` (identifiant
+entièrement couvert par une détection, quel qu'en soit le type). L'adversarial n'est
 presque pas touché : ses textes sont courts, le recoupage n'y change que 7
 espaces, ce qui ne dit rien de la robustesse des adresses. Sur le réaliste,
 les noms sont stables (la civilité seule, cf. P2-12) et les

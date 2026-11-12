@@ -88,5 +88,9 @@ PY
   done
   python3 "$B/generate_corpus_mise_en_page.py" "$B/corpus.jsonl" --largeur $w --out "$B/flou/structurel_l$w.jsonl" > /dev/null
   (cd "$R/packages/ecluse_bench" && dart run bin/run_ecluse.dart "../../bench/flou/structurel_l$w.jsonl" "../../bench/flou/pred_structurel_l$w.jsonl" < /dev/null > /dev/null)
-  echo "# structurel largeur $w"; (cd "$B" && python3 score.py --corpus "flou/structurel_l$w.jsonl" --pred "Ecluse=flou/pred_structurel_l$w.jsonl" | grep -E "^Ecluse +(nir|rpps|iban|finess|TOTAL)" | head -5 || true)
+  echo "# structurel largeur $w, moteur seul (ecluse_core)"; (cd "$B" && python3 score.py --corpus "flou/structurel_l$w.jsonl" --pred "Ecluse=flou/pred_structurel_l$w.jsonl" | grep -E "^Ecluse +(nir|rpps|iban|finess|TOTAL)" | head -5 || true)
+  # Chemin du produit : Ecluse.redact neutralise la fin de ligne entre deux
+  # groupes d'un identifiant (P2-38, P2-152) ; le moteur seul ne le fait pas.
+  redact run_redact_bench.dart "../../bench/flou/structurel_l$w.jsonl" "../../bench/flou/redact_structurel_l$w.jsonl" > /dev/null 2>&1
+  echo "# structurel largeur $w, Ecluse.redact (chemin du produit)"; python3 "$B/rappel_structurel.py" --corpus "$B/flou/structurel_l$w.jsonl" --pred "$B/flou/redact_structurel_l$w.jsonl"
 done

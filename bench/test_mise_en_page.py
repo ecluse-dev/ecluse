@@ -78,5 +78,17 @@ class TestMiseEnPage(unittest.TestCase):
             self.assertEqual(sorties[0], sorties[1])
 
 
+class TestRappelStructurel(unittest.TestCase):
+    def test_couvert_quel_que_soit_le_type_et_blancs_ignores(self):
+        import rappel_structurel as rs
+        corpus = [{"id": 0, "text": "NIR 1 85 05\n78 006 084 36 et RPPS 10000000001",
+                   "entities": [{"type": "NIR", "start": 4, "end": 25},
+                                {"type": "RPPS", "start": 34, "end": 45}]}]
+        pred = [{"id": 0, "entities": [{"type": "nir", "start": 4, "end": 11},
+                                       {"type": "nir", "start": 12, "end": 25}]}]
+        self.assertEqual(rs.rappel(corpus, pred),
+                         {"nir": (1, 1), "rpps": (0, 1)})
+
+
 if __name__ == "__main__":
     unittest.main()
