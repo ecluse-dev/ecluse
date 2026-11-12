@@ -66,3 +66,31 @@ for c in indices variantes; do
 done
 echo "# formes_libres"; reid run_formes_libres.dart ../../bench/patho/corpus_pathologies_formes_libres.jsonl | grep TOTAL || true
 echo "# maladies rares masquées (P2-143)"; redact run_maladies_rares_bench.dart ../../bench/patho | grep -E "indices :|temoin :|échantillon" || true
+
+echo "## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90"
+# Un refus explicite (tableau ambigu) n'envoie rien : il est compté à part et
+# retiré du corpus noté ; la fuite se lit sur les documents traités.
+for w in 60 90; do
+  for c in realiste adversarial temoin; do
+    python3 "$B/generate_corpus_mise_en_page.py" "$B/flou/corpus_flou_$c.jsonl" --largeur $w --out "$B/flou/corpus_flou_${c}_l$w.jsonl" > /dev/null
+    refus=$(redact run_redact_bench.dart "../../bench/flou/corpus_flou_${c}_l$w.jsonl" "../../bench/flou/etat_${c}_l$w.jsonl" 2>&1 > /dev/null | grep -c REFUS || true)
+    python3 - "$B/flou/corpus_flou_${c}_l$w.jsonl" "$B/flou/etat_${c}_l$w.jsonl" <<'PY'
+import json, sys
+c, p = sys.argv[1], sys.argv[2]
+refuses = {json.loads(l)["id"] for l in open(p) if json.loads(l).get("refuse")}
+with open(c + ".traites", "w") as out:
+    for l in open(c):
+        if json.loads(l)["id"] not in refuses:
+            out.write(l)
+PY
+    echo "# $c largeur $w : $refus refus"
+    (cd "$B" && python3 score_flou.py --corpus "flou/corpus_flou_${c}_l$w.jsonl.traites" --pred "Ecluse=flou/etat_${c}_l$w.jsonl" | grep -E "^GLOBAL|^nom |^adresse |^etablissement " || true)
+  done
+  python3 "$B/generate_corpus_mise_en_page.py" "$B/corpus.jsonl" --largeur $w --out "$B/flou/structurel_l$w.jsonl" > /dev/null
+  (cd "$R/packages/ecluse_bench" && dart run bin/run_ecluse.dart "../../bench/flou/structurel_l$w.jsonl" "../../bench/flou/pred_structurel_l$w.jsonl" < /dev/null > /dev/null)
+  echo "# structurel largeur $w, moteur seul (ecluse_core)"; (cd "$B" && python3 score.py --corpus "flou/structurel_l$w.jsonl" --pred "Ecluse=flou/pred_structurel_l$w.jsonl" | grep -E "^Ecluse +(nir|rpps|iban|finess|TOTAL)" | head -5 || true)
+  # Chemin du produit : Ecluse.redact neutralise la fin de ligne entre deux
+  # groupes d'un identifiant (P2-38, P2-152) ; le moteur seul ne le fait pas.
+  redact run_redact_bench.dart "../../bench/flou/structurel_l$w.jsonl" "../../bench/flou/redact_structurel_l$w.jsonl" > /dev/null 2>&1
+  echo "# structurel largeur $w, Ecluse.redact (chemin du produit)"; python3 "$B/rappel_structurel.py" --corpus "$B/flou/structurel_l$w.jsonl" --pred "$B/flou/redact_structurel_l$w.jsonl"
+done
