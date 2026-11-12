@@ -231,6 +231,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-161 | code | Corpus transcrit : variantes de dictée manquantes (« double zéro », « septante », « o six », séparateurs perdus) et mesure de départ ; aucun détecteur modifié | P2-155 | regroupée (P2-160) |
 | P2-162 | spec | Fin de ligne dans un identifiant : faut-il descendre la neutralisation de `ecluse_redact` dans `ecluse_core` ? | P2-153 | fusionnée |
 | P2-163 | code | Tranche d'âge « de 80 à 85 ans » : lire les deux bornes (aujourd'hui seule la seconde sort) | P2-154 | regroupée (P2-159) |
+| P2-164 | code | Adresses : numéro de CEDEX (« CEDEX 9 », « Cedex 09 », virgule avant CEDEX) et boîte postale (« BP 12 ») laissés en clair (suite de P2-157) | P2-157 | à faire |
+| P2-165 | code | Âges dans `ecluse_reid` : durées lues à tort comme un âge (« deux ans plus tard », « au bout de cinq ans », « un contrat de 3 ans »), en lettres comme en chiffres (suite de P2-159) | P2-159 | à faire |
+| P2-166 | mesure | Mise en page : ligne « détecteur isolé » au tableau de bord et budget de faux positifs d'une fin de ligne neutralisée dans le cœur (plan de mesure de P2-162 § 5, points 1 et 3) ; aucun code de production | P2-162 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -464,3 +467,47 @@ ne reprennent que ce qui manque pour la prendre.
   deux corpus de dictée).
 - **P2-163** : regroupée dans P2-159 le 12 novembre (une seule PR pour les
   âges).
+
+- **P2-164** : `ecluse_redact`, `adresse_detector.dart`. Constat de
+  `agent/specs/P2-157.md` : les 53 adresses « … CEDEX 9 » du corpus flou
+  adversarial laissent « 9 » en clair (1,9 % des caractères d'adresse), et la
+  sonde montre « CEDEX 09 », « Cedex 9 », « , CEDEX 9 » et « BP 12 » en clair.
+  Test d'abord sur ces cas rouges ; contre-exemples à garder intacts :
+  « CEDEX » sans numéro, un nombre après une commune sans CEDEX (« 70000
+  VESOUL 3 agents »), « BP » hors adresse (« la BP 12 du moteur », sigle dans
+  une phrase). Deux volets dans la même PR : le numéro de CEDEX, puis la
+  boîte postale attachée à une adresse. Si la boîte postale exige un nouveau
+  type d'entité ou sort du périmètre de `LIMITES.md`, s'arrêter sur ce volet
+  et l'expliquer. **Fini quand** : ligne `adresse` de l'adversarial 1,9 % →
+  0 % (mesurée par `Ecluse.redact`), corpus réaliste et témoins flous
+  inchangés (0 prédiction sur les témoins), reste du tableau de bord
+  inchangé, `LIMITES.md` à jour.
+- **P2-165** : `ecluse_reid`, `qi_extraction.dart`. Sonde du 13 novembre
+  (relecture de P2-159) : « deux ans plus tard », « au bout de cinq ans »,
+  « voilà dix ans », « un contrat de trois ans », « trois ans de prison »,
+  « les vingt ans du service » sortent comme des âges, en lettres comme en
+  chiffres (« 2 ans plus tard »). Un âge à tort grossit le risque calculé et
+  peut proposer une généralisation sans objet. Test d'abord : ces cas rouges
+  dans les deux écritures ; cas qui doivent rester lus (« âgé de deux ans »,
+  « Patiente de quatre-vingts ans », « suivi depuis ses deux ans »,
+  « 72 ans »). Étendre `_dureeAvant` et `_dureeApres` par tournures, sans
+  liste ajustée aux valeurs d'un corpus. Ajouter ces phrases au corpus témoin
+  QI (graine 42) pour que le défaut soit mesuré avant la correction. **Fini
+  quand** : cas rouges verts, témoin QI à 0 extraction à tort (nouvelles
+  phrases comprises), âge du QI réaliste et adversarial inchangés (rappel
+  100 %), reste du tableau de bord inchangé, `LIMITES.md` à jour.
+- **P2-166** : mesure seulement, dans `bench/` (script et test Python, ou
+  binaire de banc dans `ecluse_bench`) ; aucun fichier de `lib/` modifié.
+  Plan de `agent/specs/P2-162.md` § 5. Premier volet : ajouter au tableau de
+  bord, section « mise en page », la ligne « détecteur isolé » (`NirDetector`,
+  `RppsDetector`, `IbanFrDetector`, `FinessDetector` appelés directement, à
+  60 et 90 colonnes), à côté des lignes « moteur seul » et `Ecluse.redact`.
+  Second volet : chiffrer ce que coûterait une fin de ligne neutralisée dans
+  le cœur, sans la coder : compter dans les corpus existants (v3, flous,
+  témoins, prose des `.md`) les endroits « chiffre, fin de ligne, chiffre »
+  qui formeraient un identifiant à clé valide une fois recollés, et les
+  colonnes de nombres à 9, 11 ou 13 chiffres. **Fini quand** : la ligne est
+  dans `bench/ETAT.md` avec son chemin de mesure, le compte de faux positifs
+  possibles est écrit dans `agent/specs/P2-166.md`, le reste du tableau de
+  bord est inchangé. La décision A1 / A2 / B / C de P2-162 reste au
+  mainteneur.
