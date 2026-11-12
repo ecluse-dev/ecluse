@@ -223,7 +223,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-153 | code | Corpus « mise en page » : générateur qui remet les corpus flous et structurel en lignes d'une page (retours à la ligne seuls), et ligne au tableau de bord ; aucun détecteur modifié | P2-152 | fusionnée |
 | P2-154 | mesure | Âge : analyser les 12,7 % d'âges non couverts du corpus QI adversarial (formes manquées, chiffrées) | — | fusionnée |
 | P2-155 | spec | Nombres dictés en lettres : normalisation « mots → chiffres » dans la vue de détection (périmètre, ambiguïtés, faux positifs, plan de mesure) | P2-98 | fusionnée |
-| P2-156 | mesure | Dépendances `pdf_cos`, `pdf_document`, `pdf_graphics` (10.0.0, dernière 15.0.0) : essayer la montée de version et rapporter ce qui casse | — | à faire |
+| P2-156 | mesure | Dépendances `pdf_cos`, `pdf_document`, `pdf_graphics` (10.0.0, dernière 15.0.0) : essayer la montée de version et rapporter ce qui casse | — | PR ouverte |
 | P2-157 | mesure | Adresses : analyser les 1,9 % de fuite du corpus flou adversarial (formes manquées, chiffrées) | — | à faire |
 | P2-158 | code | IBAN coupé par une fin de ligne juste avant un groupe qui commence par une lettre (« …0270⏎D932… »), dernier identifiant manqué du corpus « mise en page » | P2-153 | à faire |
 | P2-159 | code | Âges dans `ecluse_reid` : nombre en lettres suivi de « ans » (les 15 cas de P2-154) et tranche « de 80 à 85 ans » (regroupe P2-163) | P2-154 | à faire |
