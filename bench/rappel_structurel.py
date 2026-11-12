@@ -34,10 +34,31 @@ def rappel(corpus, pred):
     return {t: (couverts[t], total[t]) for t in sorted(total)}
 
 
+def fuite(corpus, pred):
+    """Rend {type: (caracteres non couverts, caracteres)} ; blancs ignores.
+    Meme definition de « couvert » que `rappel`, au caractere (P2-160)."""
+    preds = {d["id"]: d for d in pred}
+    total, perdus = collections.Counter(), collections.Counter()
+    for doc in corpus:
+        couvert = set()
+        for e in preds[doc["id"]].get("entities", []):
+            couvert.update(range(e["start"], e["end"]))
+        for e in doc["entities"]:
+            t = e["type"].lower()
+            for i in range(e["start"], e["end"]):
+                if doc["text"][i].isspace():
+                    continue
+                total[t] += 1
+                perdus[t] += i not in couvert
+    return {t: (perdus[t], total[t]) for t in sorted(total)}
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--corpus", required=True)
     p.add_argument("--pred", required=True)
+    p.add_argument("--fuite", action="store_true",
+                   help="ajoute la fuite au caractere par type")
     a = p.parse_args()
     with open(a.corpus, encoding="utf-8") as f:
         corpus = [json.loads(l) for l in f if l.strip()]
@@ -48,6 +69,14 @@ def main():
     n = sum(t for _, t in r.values())
     print("  ".join(f"{t} {c}/{tot}" for t, (c, tot) in r.items())
           + f"  TOTAL {ok}/{n} ({100 * ok / max(1, n):.1f} %)")
+    if a.fuite:
+        f = fuite(corpus, pred)
+        perdus = sum(p for p, _ in f.values())
+        chars = sum(t for _, t in f.values())
+        print("  fuite au caractère : "
+              + "  ".join(f"{t} {100 * p / max(1, tot):.1f} %"
+                          for t, (p, tot) in f.items())
+              + f"  TOTAL {100 * perdus / max(1, chars):.1f} %")
 
 
 if __name__ == "__main__":
