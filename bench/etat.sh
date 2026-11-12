@@ -26,6 +26,21 @@ for v in sans_ponctuation en_lettres; do
   echo "# $v"; (cd "$B" && python3 score.py --corpus "transcrit/corpus_transcrit_$v.jsonl" --pred "Ecluse=transcrit/pred_$v.jsonl" | grep -E "TOTAL" | head -1)
 done
 
+echo "## v3 dictée : variantes de P2-160 (rappel = identifiant entièrement couvert ; fuite au caractère)"
+for v in double_triple regional zero_o sans_traits_union; do
+  (cd "$R/packages/ecluse_bench" && dart run bin/run_ecluse.dart "../../bench/transcrit/corpus_transcrit_$v.jsonl" "../../bench/transcrit/pred_$v.jsonl" < /dev/null > /dev/null)
+  echo "# $v : moteur seul (ecluse_core)"; (cd "$B" && python3 score.py --corpus "transcrit/corpus_transcrit_$v.jsonl" --pred "Ecluse=transcrit/pred_$v.jsonl" | grep -E "TOTAL" | head -1)
+done
+for v in sans_ponctuation en_lettres double_triple regional zero_o sans_traits_union; do
+  redact run_redact_bench.dart "../../bench/transcrit/corpus_transcrit_$v.jsonl" "../../bench/transcrit/pred_redact_$v.jsonl" > /dev/null 2>&1 || true
+  echo "# $v : Ecluse.redact (chemin du produit)"; python3 "$B/rappel_structurel.py" --fuite --corpus "$B/transcrit/corpus_transcrit_$v.jsonl" --pred "$B/transcrit/pred_redact_$v.jsonl"
+done
+
+echo "## témoin mots-nombres (P2-160) : Ecluse.redact, aucune entité annotée"
+python3 "$B/generate_corpus_mots_nombres.py" --n 300 --seed 42 --out "$B/transcrit/corpus_temoin_mots_nombres.jsonl" > /dev/null
+redact run_redact_bench.dart "../../bench/transcrit/corpus_temoin_mots_nombres.jsonl" "../../bench/transcrit/pred_temoin_mots_nombres.jsonl" > /dev/null 2>&1 || true
+python3 -c "import json,sys;print('témoin mots-nombres :',sum(len(json.loads(l)['entities']) for l in open(sys.argv[1])),'prédictions sur',sum(1 for _ in open(sys.argv[1])),'phrases')" "$B/transcrit/pred_temoin_mots_nombres.jsonl"
+
 echo "## flou (entités floues) et variantes de casse"
 python3 "$B/generate_corpus_flou.py" --n 400 --seed 42 --out-dir "$B/flou" > /dev/null
 python3 "$B/variantes_casse.py" "$B"/flou/corpus_flou_{realiste,adversarial,temoin}.jsonl > /dev/null

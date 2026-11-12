@@ -21,6 +21,43 @@ Presidio n'est pas rejoué ici (environnement à part, `bench/README.md`,
 | v3 sans ponctuation, minuscules | 94,9 % | 100 % | 97,4 % | 42 | = P2-98 |
 | v3 nombres en lettres | 0 % | **0 %** | 0 % | 0 | = P2-98 |
 
+## Dictée : identifiants dits en lettres (P2-160)
+
+Corpus v3 (1 000 documents, 778 identifiants) transcrits sans audio par
+`bench/generate_corpus_transcrit.py` : les deux variantes d'origine (sorties
+**identiques octet pour octet** après P2-160) et quatre variantes de dictée
+(`agent/specs/P2-155.md` § 2) : `double_triple` (« double zéro », « triple
+neuf », chiffre par chiffre), `regional` (« septante », « huitante », « nonante »,
+par groupes), `zero_o` (« o six »), `sans_traits_union` (« quatre vingt treize »,
+par groupes). **Aucun détecteur modifié** : c'est le point de départ de la
+future tâche de code (défaut d'abord).
+
+Deux chemins, à ne pas confondre. « Rappel » = identifiant entièrement couvert
+par une détection quel qu'en soit le type ; « fuite » = part des caractères
+d'identifiant (blancs exclus) couverts par aucune détection.
+
+| Variante | **`Ecluse.redact`** (ce que reçoit le LLM) : rappel | fuite au caractère | moteur seul (`ecluse_core`) : rappel |
+|---|---:|---:|---:|
+| sans ponctuation (chiffres) | 778/778 | 0,0 % | 100 % (42 FP FINESS/SIREN) |
+| en lettres (d'origine) | 23/778 (3,0 %) | 97,3 % | 0 % |
+| double / triple | 18/778 (2,3 %) | 97,6 % | 0 % |
+| septante / huitante / nonante | 32/778 (4,1 %) | 96,9 % | 0 % |
+| zéro dit « o » | 25/778 (3,2 %) | 97,2 % | 0 % |
+| traits d'union perdus | 34/778 (4,4 %) | 96,9 % | 0 % |
+
+Par type (fuite au caractère, `Ecluse.redact`) : NIR 99,9 à 100 %, RPPS 100 %,
+IBAN 99,9 à 100 %, FINESS 68 à 76 % selon la variante. Les rares identifiants
+« couverts » sont des FINESS recouverts par une détection de type
+**établissement** (vérifié sur la variante d'origine : 23 sur 23) ; aucune
+variante n'est lue comme identifiant. **Un identifiant dicté en lettres part donc en clair par
+`Ecluse.redact`, quelle que soit la façon de le dicter.**
+
+Témoin « mots-nombres » (`bench/generate_corpus_mots_nombres.py`, 300 phrases
+synthétiques sans identifiant, dont 150 avec au moins 6 mots-nombres
+consécutifs, aucune entité annotée) : **0 prédiction** par `Ecluse.redact`.
+Aujourd'hui sans enjeu (aucun détecteur ne lit de nombre en lettres) ; c'est le
+garde-fou du futur GO : une détection à tort sur ce corpus le bloque.
+
 ## Entités floues (corpus flous v2, 400 documents chacun)
 
 Fuite au caractère (part des caractères annotés restés en clair).
