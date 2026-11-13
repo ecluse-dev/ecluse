@@ -241,7 +241,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-171 | code | Fin de ligne et moteur seul : documenter la limite (option B de P2-162) et faire les deux mesures qui manquent avant A1 (équivalence octet pour octet, coût en temps) ; aucun fichier de `lib/` | P2-166 | fusionnée |
 | P2-172 | code | `ReidTrace.toAuditMap` : aucune valeur de quasi-identifiant dans la trace d'audit (voie F2 de P2-169) | P2-170 | fusionnée |
 | P2-173 | code | Établissement et commune coupés par une fin de ligne (« Centre⏎Hospitalier de … », dernier mot de la commune) laissés en clair par `Ecluse.redact` | P2-171 | fusionnée |
-| P2-174 | code | Identifiant suivi d'une date ou d'un nombre : FINESS suivi d'une date masqué comme RPPS en avalant le jour (témoin d'abord) | — | PR ouverte |
+| P2-174 | code | Identifiant suivi d'une date ou d'un nombre : FINESS suivi d'une date masqué comme RPPS en avalant le jour (témoin d'abord) | — | fusionnée |
 | P2-175 | code | Extraction des QI : ligne « par `Ecluse.redact` » au tableau de bord, lieux à tort (patronyme homonyme d'une commune), professions abrégées (« pneumo », « gynéco », « pediatre ») | — | à faire |
 | P2-176 | code | Effectif F hors des canaux de texte (`toString`, `toAuditMap`, note de plafonnement) : la tranche de risque à la place de l'effectif exact | P2-172 | à faire |
 | P2-177 | code | Adresses : nombre de cinq chiffres en tête de phrase suivi d'un mot (« 58699 Alpha livrés ») masqué à tort comme adresse (témoin d'abord) | P2-167 | à faire |
