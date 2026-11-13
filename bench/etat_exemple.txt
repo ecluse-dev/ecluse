@@ -1,4 +1,4 @@
-## commit 2beaf30
+## commit c7c7cd7
 ## v3 (identifiants structurels)
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
@@ -240,16 +240,18 @@ témoin cinq chiffres : 400 phrases, 74 prédiction(s) d'adresse par Ecluse.reda
   suffixe=minuscule : 25 / 180 phrases avec une adresse
   suffixe=rien : 0 / 132 phrases avec une adresse
 ## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90
-# realiste largeur 60 : 2 refus
-adresse            157   157  91.7%  91.7%  91.7%  100.0%     1.3%
-etablissement      398   398  78.1%  78.1%  78.1%  100.0%     0.5%
-nom                477   477  16.4%  16.4%  16.4%  100.0%    27.6%
-GLOBAL            1667  1650  69.8%  69.0%  69.4%   99.5%     8.6%
+# realiste largeur 60 : 3 refus
+adresse            156   156 100.0% 100.0% 100.0%  100.0%     0.0%
+etablissement      397   397  79.1%  79.1%  79.1%  100.0%     0.0%
+nom                476   476  16.4%  16.4%  16.4%  100.0%    27.6%
+GLOBAL            1662  1646  70.8%  70.1%  70.4%   99.5%     8.2%
+  entités coupées par une fin de ligne : adresse 95 coupées (95 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 4 coupées (4 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
 # adversarial largeur 60 : 0 refus
 adresse            155   155 100.0% 100.0% 100.0%  100.0%     0.0%
 etablissement      114   114 100.0% 100.0% 100.0%  100.0%     0.0%
 nom                594   560  72.5%  68.4%  70.4%   97.1%    13.9%
 GLOBAL            1082  1048  85.3%  82.6%  83.9%   98.4%     6.7%
+  entités coupées par une fin de ligne : adresse 106 coupées (106 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 0 coupées (0 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
 # temoin largeur 60 : 0 refus
   entites predites 0
 # structurel largeur 60, moteur seul (ecluse_core)
@@ -264,14 +266,16 @@ finess 129/129  iban 156/214  nir 247/269  rpps 150/166  TOTAL 682/778 (87.7 %)
 finess 129/129  iban 214/214  nir 269/269  rpps 166/166  TOTAL 778/778 (100.0 %)
 # realiste largeur 90 : 0 refus
 adresse            159   159 100.0% 100.0% 100.0%  100.0%     0.0%
-etablissement      400   363  75.2%  68.2%  71.6%   95.2%     9.2%
+etablissement      400   400  79.2%  79.2%  79.2%  100.0%     0.0%
 nom                479   479  16.3%  16.3%  16.3%  100.0%    27.7%
-GLOBAL            1677  1640  70.1%  68.5%  69.3%   98.9%     9.3%
+GLOBAL            1677  1677  71.1%  71.1%  71.1%  100.0%     7.5%
+  entités coupées par une fin de ligne : adresse 83 coupées (83 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 44 coupées (44 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
 # adversarial largeur 90 : 0 refus
 adresse            155   155 100.0% 100.0% 100.0%  100.0%     0.0%
 etablissement      114   114 100.0% 100.0% 100.0%  100.0%     0.0%
 nom                594   560  72.5%  68.4%  70.4%   97.1%    13.9%
 GLOBAL            1082  1048  85.3%  82.6%  83.9%   98.4%     6.7%
+  entités coupées par une fin de ligne : adresse 106 coupées (106 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 0 coupées (0 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
 # temoin largeur 90 : 0 refus
   entites predites 0
 # structurel largeur 90, moteur seul (ecluse_core)

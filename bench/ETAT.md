@@ -243,10 +243,34 @@ clair), documents refusés exclus du calcul :
 | Corpus | Retours ajoutés | nom | adresse | établissement | **global** | Refus¹ |
 |---|---:|---:|---:|---:|---:|---:|
 | réaliste, sans recoupe | 0 | 27,7 % | 0 % | 0 % | **7,5 %** | 0 |
-| réaliste, largeur 90 | 84 | 27,7 % | 0 % | 9,2 % | **9,3 %** | 0 |
-| réaliste, largeur 60 | 256 | 27,6 % | 1,3 % | 0,5 % | **8,6 %** | 2 |
+| réaliste, largeur 90 | 84 | 27,7 % | 0 % | **0 %** (9,2 % avant P2-173) | **7,5 %** (9,3 %) | 0 |
+| réaliste, largeur 60 | 256 | 27,6 % | **0 %** (1,3 % avant P2-173) | **0 %** (0,5 %) | **8,2 %** (8,6 %) | 3 (2 avant P2-173) |
 | adversarial, 60 et 90 | 7 et 0 | 13,9 % | 0 % | 0 % | **6,7 %** (inchangé) | 0 |
 | témoin, 60 et 90 | 292 et 12 | | | | **0 prédiction** | 0 |
+
+Entités **coupées par une fin de ligne** (P2-173, `bench/entites_coupees.py`),
+chemin **`Ecluse.redact`** (ce que reçoit le LLM), documents refusés exclus.
+« Couverte » = tous ses caractères hors blancs sont sous une détection, quel
+qu'en soit le type :
+
+| Corpus | Type | Coupées | Couvertes avant P2-173 | Couvertes après |
+|---|---|---:|---:|---:|
+| réaliste, largeur 90 | établissement | 44 | 0 (37 entièrement en clair, 7 en partie ; 503 caractères) | **44** |
+| réaliste, largeur 90 | adresse | 83 | 83 | 83 |
+| réaliste, largeur 60 | établissement | 4 | 0 (4 en partie ; 24 caractères) | **4** |
+| réaliste, largeur 60 | adresse | 96 avant, 95 après² | 83 (13 en partie : dernier mot de la commune ; 65 caractères) | **95** |
+| adversarial, 60 et 90 | adresse | 106 | 106 | 106 |
+
+² Une des 13 adresses est dans le document refusé en plus après P2-173
+(note ¹) : 12 sont maintenant couvertes, 1 n'est plus envoyée.
+
+La fin de ligne est neutralisée dans la vue de détection quand le nom
+continue visiblement (mot de liaison en fin ou en début de ligne, nom propre
+qui n'ouvre pas une phrase, mot-clé de plusieurs mots coupé) ; règles et
+restes dans `LIMITES.md` § 5.2. Témoins recoupés : toujours 0 prédiction.
+Prose de 78 fichiers `.md` du dépôt (13 791 fins de ligne), mesure faite à la
+main le 13 novembre, hors tableau de bord : détections identiques avant et
+après.
 
 Corpus structurel (rappel ; sans recoupe : 100 % partout). Deux chemins,
 à ne pas confondre :
@@ -289,11 +313,19 @@ application qui l'appellerait directement manquerait 22 NIR, 16 RPPS et
 entièrement couvert par une détection, quel qu'en soit le type). L'adversarial n'est
 presque pas touché : ses textes sont courts, le recoupage n'y change que 7
 espaces, ce qui ne dit rien de la robustesse des adresses. Sur le réaliste,
-les noms sont stables (la civilité seule, cf. P2-12) et les
-établissements/adresses coupés en deux lignes fuient en partie. FINESS :
+les noms sont stables (la civilité seule, cf. P2-12) ; les
+établissements et les communes coupés en deux lignes, qui fuyaient en partie,
+sont couverts depuis P2-173 (tableau ci-dessus). FINESS :
 inchangé (aucun rappel perdu, 42 faux positifs SIREN comme avant).
 
-¹ Refus explicites du détecteur de tableaux (`TableauAmbiguException`,
+¹ **3 refus à 60 colonnes depuis P2-173 (2 avant).** Le troisième document
+contient « …, 70160 PORT SUR⏎SAONE, » : une fois la commune recollée dans la
+vue de détection, la ligne retrouve la forme qu'elle a sans coupure et le
+détecteur de tableaux la lit, avec ses voisines, comme un tableau à colonnes
+inégales, exactement comme les deux autres documents refusés (même gabarit,
+aucune ligne recollée). Rien n'est envoyé ; c'est le défaut des faux tableaux
+ci-dessous, pas une règle nouvelle.
+Refus explicites du détecteur de tableaux (`TableauAmbiguException`,
 règle 4) : le retour à la ligne fabrique un faux tableau à colonnes
 inégales ; rien n'est envoyé. Le banc `run_redact_bench.dart` les compte
 désormais (`"refuse": true`) au lieu de s'arrêter ; sans cela le réaliste
