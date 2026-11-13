@@ -662,6 +662,19 @@ exemples intacts, testés : « Salle 4⏎A2 fermée », « Vol 12⏎B7 porte »,
 des identifiants (NIR 91,8 %, RPPS 90,4 %, IBAN 72,9 %), à 90 colonnes 96,5 % ; une application qui l'appellerait
 directement manquerait les identifiants coupés (voir P2-162).
 
+**Limite du moteur seul et des détecteurs appelés seuls (décision du 13 novembre, option B de P2-162 ; P2-171).**
+Un détecteur d'`ecluse_core` appelé directement (`NirDetector().detect(texte)`, l'exemple de son README) ou le
+moteur seul (`EcluseEngine`) **ne lit pas un identifiant coupé par une fin de ligne** : aucun des deux ne franchit
+un saut de ligne. Mesuré sur le corpus structurel synthétique remis en page (778 identifiants, `bench/ETAT.md`,
+section « Mise en page ») : **682 / 778** détectés à 60 colonnes (96 manqués : 22 NIR, 16 RPPS, 58 IBAN) et
+**751 / 778** à 90 colonnes (27 IBAN manqués), par l'appel direct comme par le moteur seul. Le morceau qui reste
+sur une ligne peut en plus être pris pour un autre identifiant (9 fins d'IBAN lues comme un RPPS). Par
+**`Ecluse.redact`**, le seul chemin du produit et ce que reçoit le LLM : **778 / 778** aux deux largeurs. Un texte
+qui vient d'un PDF, d'un courriel ou d'un formulaire passe donc par `Ecluse.redact`, pas par un détecteur seul.
+Ces chiffres valent pour un corpus synthétique recoupé mécaniquement ; ils ne disent pas la fréquence d'une
+coupure dans des documents réels. Descendre la neutralisation dans le cœur (option A1) n'est pas décidé : les deux
+mesures qui manquaient sont dans `agent/specs/P2-171.md`.
+
 **Date de naissance séparée de son étiquette (P2-39).** Sonde de formats de formulaire : « Date de
 naissance :⏎12/03/1950 » (étiquette sur sa ligne, valeur sur la suivante), « Date de naissance |
 12/03/1950 » (tableau) et « Date de naissance;12/03/1950 » (CSV) n'étaient pas détectées : seules des
