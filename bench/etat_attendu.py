@@ -81,6 +81,11 @@ ATTENDU = [
         (r"^corpus temoin :", 1, "maladies rares, témoin"),
         (r"^échantillon Orphanet", 1, "échantillon Orphanet"),
     ]),
+    ("## témoin nombres à cinq chiffres", [
+        (r"^témoin cinq chiffres : \d+ phrases, \d+ prédiction", 1,
+         "compte des adresses prédites à tort (P2-167)"),
+        (r"^  position=(debut|milieu) : \d+ / \d+", 2, "par position"),
+    ]),
     ("## mise en page", [
         (r"^# \w+ largeur \d+ : \d+ refus$", 6, "3 corpus x 2 largeurs"),
         (r"^GLOBAL +\d+", 4, "GLOBAL du réaliste et de l'adversarial"),

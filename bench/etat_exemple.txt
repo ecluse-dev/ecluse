@@ -1,4 +1,4 @@
-## commit 0df9d8d
+## commit 2beaf30
 ## v3 (identifiants structurels)
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
@@ -226,6 +226,19 @@ profession        183      176  100.0%   96.2%   98.1%     98.1%          2.0%
 corpus indices : maladies rares annotées 51, masquées avant 0, après 51 ; pathologies fréquentes masquées 13 ; masquages hors annotation 13 {mucoviscidose: 12, drépanocytose: 1}
 corpus temoin : maladies rares annotées 0, masquées avant 0, après 0 ; pathologies fréquentes masquées 0 ; masquages hors annotation 0 
 échantillon Orphanet (300 mentions, graine 42) : rattachées masquées 276 / 300 ; niées ou générales masquées 0 / 300
+## témoin nombres à cinq chiffres (P2-167) : Ecluse.redact (chemin du produit), aucune adresse annotée
+témoin cinq chiffres : 400 phrases, 74 prédiction(s) d'adresse par Ecluse.redact (chemin du produit)
+  voie : détecteur seul 49, texte d'ombre 25, les deux 0 (phrases avec prédiction)
+  casse=ordinaire : 49 / 244 phrases avec une adresse
+  casse=phrase : 25 / 156 phrases avec une adresse
+  famille=montant : 0 / 132 phrases avec une adresse
+  famille=quantite : 42 / 136 phrases avec une adresse
+  famille=reference : 32 / 132 phrases avec une adresse
+  position=debut : 66 / 200 phrases avec une adresse
+  position=milieu : 8 / 200 phrases avec une adresse
+  suffixe=majuscule : 49 / 88 phrases avec une adresse
+  suffixe=minuscule : 25 / 180 phrases avec une adresse
+  suffixe=rien : 0 / 132 phrases avec une adresse
 ## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90
 # realiste largeur 60 : 2 refus
 adresse            157   157  91.7%  91.7%  91.7%  100.0%     1.3%

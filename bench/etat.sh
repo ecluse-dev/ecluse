@@ -181,6 +181,11 @@ done
 echo "# formes_libres"; montre "pathologies formes_libres" -E "TOTAL" 0 non reid run_formes_libres.dart ../../bench/patho/corpus_pathologies_formes_libres.jsonl || true
 echo "# maladies rares masquées (P2-143)"; montre "maladies rares" -E "indices :|temoin :|échantillon" 0 non redact run_maladies_rares_bench.dart ../../bench/patho || true
 
+echo "## témoin nombres à cinq chiffres (P2-167) : Ecluse.redact (chemin du produit), aucune adresse annotée"
+if produit "témoin cinq chiffres, générateur" "$B/flou/corpus_flou_cinq_chiffres.jsonl" python3 "$B/generate_corpus_cinq_chiffres.py" --n 400 --seed 42 --out "$B/flou/corpus_flou_cinq_chiffres.jsonl"; then
+  montre "témoin cinq chiffres, Ecluse.redact" -E . 0 non redact run_cinq_chiffres_bench.dart ../../bench/flou/corpus_flou_cinq_chiffres.jsonl || true
+fi
+
 echo "## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90"
 # Un refus explicite (tableau ambigu) n'envoie rien : il est compté à part et
 # retiré du corpus noté ; la fuite se lit sur les documents traités.
