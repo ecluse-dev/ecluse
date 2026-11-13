@@ -1,4 +1,4 @@
-## commit d18b002
+## commit 0df9d8d
 ## v3 (identifiants structurels)
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
@@ -245,6 +245,8 @@ Ecluse     rpps     95.5%   90.4%   92.9%   150     7    16
 Ecluse     iban    100.0%   72.9%   84.3%   156     0    58
 Ecluse     finess   75.4%  100.0%   86.0%   129    42     0
 Ecluse     TOTAL    93.3%   87.7%   90.4%   682    49    96
+# structurel largeur 60, détecteur isolé (appel direct des quatre détecteurs)
+finess 129/129  iban 156/214  nir 247/269  rpps 150/166  TOTAL 682/778 (87.7 %)
 # structurel largeur 60, Ecluse.redact (chemin du produit)
 finess 129/129  iban 214/214  nir 269/269  rpps 166/166  TOTAL 778/778 (100.0 %)
 # realiste largeur 90 : 0 refus
@@ -265,6 +267,25 @@ Ecluse     rpps     98.8%  100.0%   99.4%   166     2     0
 Ecluse     iban    100.0%   87.4%   93.3%   187     0    27
 Ecluse     finess   75.4%  100.0%   86.0%   129    42     0
 Ecluse     TOTAL    94.5%   96.5%   95.5%   751    44    27
+# structurel largeur 90, détecteur isolé (appel direct des quatre détecteurs)
+finess 129/129  iban 187/214  nir 269/269  rpps 166/166  TOTAL 751/778 (96.5 %)
 # structurel largeur 90, Ecluse.redact (chemin du produit)
 finess 129/129  iban 214/214  nir 269/269  rpps 166/166  TOTAL 778/778 (100.0 %)
+## collage de fin de ligne hors du cœur (P2-166)
+../../bench/flou/structurel_l60.jsonl : 1000 doc., 97 coupures chiffre-fin de ligne-chiffre, 96 détections traversant une coupure (iban 58, nir 22, rpps 16) = 96 attendues + 0 à tort, 0 colonnes de 9/11/13 chiffres
+../../bench/flou/structurel_l90.jsonl : 1000 doc., 27 coupures chiffre-fin de ligne-chiffre, 27 détections traversant une coupure (iban 27) = 27 attendues + 0 à tort, 0 colonnes de 9/11/13 chiffres
+../../bench/flou/corpus_flou_temoin_l60.jsonl : 400 doc., 0 coupures chiffre-fin de ligne-chiffre, 0 détections traversant une coupure (aucune) = 0 attendues + 0 à tort, 0 colonnes de 9/11/13 chiffres
+../../bench/flou/corpus_flou_temoin_l90.jsonl : 400 doc., 0 coupures chiffre-fin de ligne-chiffre, 0 détections traversant une coupure (aucune) = 0 attendues + 0 à tort, 0 colonnes de 9/11/13 chiffres
+Contrôle : 0 détection(s) traversant une coupure dans le texte non recollé (attendu 0).
+cas « Salle 4⏎A2 » : 1 coupure(s), 0 détection(s) traversant une coupure
+cas « Vol 12⏎B7 » : 1 coupure(s), 0 détection(s) traversant une coupure
+cas « le 3⏎C4 du plan » : 1 coupure(s), 0 détection(s) traversant une coupure
+cas « chambres 101⏎102 » : 3 coupure(s), 0 détection(s) traversant une coupure
+cas « tableau de chambres » : 7 coupure(s), 0 détection(s) traversant une coupure
+colonne de 2 nombres de 9 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+colonne de 10 nombres de 9 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+colonne de 2 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+colonne de 10 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+colonne de 2 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+colonne de 10 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
 AVERTISSEMENT : types d'entité absents de la table de run_redact_bench.dart, comptés tels quels : identifiant
