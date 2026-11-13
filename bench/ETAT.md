@@ -9,6 +9,15 @@ disent. Commande :
 bash bench/etat.sh > etat.log 2>&1   # depuis la racine, Dart et Python requis
 ```
 
+Fiabilité du script (P2-168). `bench/etat.sh` ne tait plus une ligne attendue
+et ne masque plus un échec : une commande qui échoue, un fichier de sortie
+absent ou vide, un filtre qui ne trouve rien s'impriment « ÉCHEC : … » ou
+« section vide : … » et le script sort avec un code non nul. Il vérifie sa
+propre sortie contre `bench/etat_attendu.py` (une liste de lignes attendues par
+section) et supprime d'abord tous les fichiers générés d'un rejeu précédent :
+un résultat manquant ne peut plus être remplacé par un ancien. Ajouter une
+ligne au tableau de bord, c'est ajouter son motif à `etat_attendu.py`.
+
 Corpus **synthétiques** uniquement ; aucun chiffre ne vaut fréquence réelle.
 Presidio n'est pas rejoué ici (environnement à part, `bench/README.md`,
 « Reproduire ») ; ses chiffres de référence datent de la relecture P1-12.
