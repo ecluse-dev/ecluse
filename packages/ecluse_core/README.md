@@ -21,6 +21,31 @@ void main() {
 }
 ```
 
+### Limite : un identifiant coupé par une fin de ligne
+
+Un détecteur appelé seul, comme ci-dessus, et le moteur seul (`EcluseEngine`)
+**ne franchissent jamais un saut de ligne**. Un identifiant dont les groupes
+sont répartis sur deux lignes (texte extrait d'un PDF, courriel replié à
+72 colonnes, formulaire) n'est donc pas détecté :
+
+```dart
+// Le même NIR synthétique (clé calculée), coupé entre deux groupes :
+const NirDetector().detect('Patient 1 85 05 78 006\n084 91 admis.'); // []
+```
+
+Mesuré sur le corpus synthétique du dépôt remis en page (778 identifiants,
+`bench/ETAT.md`, section « Mise en page ») :
+
+| Chemin | 60 colonnes | 90 colonnes |
+|---|---:|---:|
+| détecteur appelé seul, ou `EcluseEngine` | 682 / 778 | 751 / 778 |
+| `Ecluse.redact` (paquet `ecluse_redact`) | 778 / 778 | 778 / 778 |
+
+Pour un texte dont vous ne maîtrisez pas la mise en page, passez par
+`Ecluse.redact` : il neutralise ces fins de ligne dans sa vue de détection,
+sans réécrire le texte. Les détecteurs seuls conviennent à une valeur déjà
+isolée (un champ de formulaire, une cellule). Voir `LIMITES.md` § 5.2.
+
 ## Détecteurs disponibles
 
 | Entité | Détecteur | Validation | Confiance |
