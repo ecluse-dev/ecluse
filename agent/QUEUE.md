@@ -236,7 +236,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-166 | mesure | Mise en page : ligne « détecteur isolé » au tableau de bord et budget de faux positifs d'une fin de ligne neutralisée dans le cœur (plan de mesure de P2-162 § 5, points 1 et 3) ; aucun code de production | P2-162 | à faire |
 | P2-167 | code | Adresses : « code postal + mot » hors adresse masqué à tort (« Commande de 70000 unités ») ; mesurer d'abord sur un témoin dédié, puis corriger sans perdre une adresse | P2-164 | à faire |
 | P2-168 | code | Tableau de bord : `bench/etat.sh` ne doit ni taire une ligne attendue ni masquer un échec (filtres `grep`, `\|\| true`, sorties jetées) ; banc seulement, aucun fichier de `lib/` | P2-165 | à faire |
-| P2-169 | mesure | Audit des voies de fuite après les changements de novembre (`ecluse_redact`, `ecluse_reid`, `ecluse_ingest`, `ecluse_demo`, `ecluse_audit`) : exceptions, `toString`, journaux, sérialisation ; rapporter, ne rien corriger | P2-165 | PR ouverte |
+| P2-169 | mesure | Audit des voies de fuite après les changements de novembre (`ecluse_redact`, `ecluse_reid`, `ecluse_ingest`, `ecluse_demo`, `ecluse_audit`) : exceptions, `toString`, journaux, sérialisation ; rapporter, ne rien corriger | P2-165 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
