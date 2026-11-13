@@ -55,9 +55,9 @@ done
 
 echo "## quasi-identifiants (ecluse_reid)"
 python3 "$B/generate_corpus_qi.py" --n 400 --seed 42 --out-dir "$B/qi" > /dev/null
-for c in realiste adversarial temoin; do
+for c in realiste adversarial temoin temoin_durees; do
   reid run_reid_bench.dart "../../bench/qi/corpus_qi_$c.jsonl" "../../bench/qi/pred_qi_$c.jsonl" > /dev/null
-  echo "# $c"; python3 "$B/score_qi.py" --corpus "$B/qi/corpus_qi_$c.jsonl" --pred "Ecluse=$B/qi/pred_qi_$c.jsonl" | grep -E "^(age|lieu|profession|GLOBAL|TOTAL)|extractions" | head -6 || true
+  echo "# $c"; python3 "$B/score_qi.py" --corpus "$B/qi/corpus_qi_$c.jsonl" --pred "Ecluse=$B/qi/pred_qi_$c.jsonl" | grep -E "^(age|lieu|profession|GLOBAL|TOTAL)|[Ee]xtractions" | head -6 || true
 done
 
 echo "## généralisation appliquée"
