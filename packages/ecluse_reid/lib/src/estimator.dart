@@ -107,9 +107,10 @@ ReidEstimate _estimateCasA(EcluseReference ref, Qi profession, Qi? lieu) {
   } else if (ref.rarity.professions().contains(profession.value)) {
     f = ref.rarity.professionCount(profession.value, dep) ?? 0;
   } else {
+    // Motif fixe : le code reçu vient du texte, il ne sort pas (P2-170, F4).
     throw ArgumentError(
-      'profession: code "${profession.value}" inconnu (ni spécialité DREES, '
-      'ni profession référencée).',
+      'profession: code inconnu (ni spécialité DREES, ni profession '
+      'référencée).',
     );
   }
 
@@ -201,15 +202,19 @@ ReidEstimate _estimateCasB(EcluseReference ref, Qi? lieu, Qi? age) {
 /// Part de la population à l'âge/tranche d'âge du QI [ageQi], selon son
 /// niveau (0=âge exact, 1-3=tranche généralisée, 4=retrait -> 1.0, pas de
 /// filtre).
+///
+/// Les messages ont un motif fixe et ne citent que le niveau : la valeur d'un
+/// QI âge vient du texte, et le message d'une exception part dans l'outil de
+/// suivi d'erreurs de l'application (P2-170, voie F4 de
+/// `agent/specs/P2-169.md`).
 double _shareForAgeQi(AgeRarity age, Qi ageQi) {
   try {
     return _shareForAgeQiUnchecked(age, ageQi);
   } on FormatException {
-    throw ArgumentError('age: valeur "${ageQi.value}" illisible.');
+    throw ArgumentError('age: valeur illisible (niveau ${ageQi.level}).');
   } on RangeError {
     throw ArgumentError(
-      'age: valeur "${ageQi.value}" incompatible avec le niveau '
-      '${ageQi.level}.',
+      'age: valeur incompatible avec le niveau ${ageQi.level}.',
     );
   }
 }
@@ -225,7 +230,7 @@ double _shareForAgeQiUnchecked(AgeRarity age, Qi ageQi) {
     case 0:
       final exact = int.parse(ageQi.value);
       if (exact < 0 || exact > _maxAge) {
-        throw ArgumentError('age: $exact hors de [0, $_maxAge].');
+        throw ArgumentError('age: valeur hors de [0, $_maxAge].');
       }
       return age.shareAtAge(exact);
     case 1:
@@ -233,7 +238,7 @@ double _shareForAgeQiUnchecked(AgeRarity age, Qi ageQi) {
     case 3:
       final range = parseAgeRange(ageQi.value);
       if (range.$1 < 0 || range.$2 < range.$1) {
-        throw ArgumentError('age: tranche "${ageQi.value}" invalide.');
+        throw ArgumentError('age: tranche invalide (niveau ${ageQi.level}).');
       }
       return shareForRange(age, range.$1, range.$2);
     default:

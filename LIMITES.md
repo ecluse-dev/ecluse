@@ -1547,6 +1547,39 @@ pas une garantie d'anonymat. Limites connues :
   avis juridique extérieur. La date de téléchargement d'origine des assets n'a pas
   été enregistrée.
 
+### Ce qui sort à côté du texte : `toString` et messages d'erreur (P2-169, P2-170)
+
+Une application qui appelle `ecluse_reid` ou `ecluse_reference` directement
+peut écrire un de leurs objets dans un journal, ou envoyer une exception à
+son outil de suivi d'erreurs. Depuis P2-170 :
+
+- `Qi.toString` rend le type, le niveau et la longueur de la valeur ;
+  `Generalization.toString` s'appuie dessus ; `BirthDate.toString` ne rend
+  aucune composante ; `PathologieMention.toString` rend les bornes, la source
+  et le rattachement, ni le texte ni la catégorie.
+- Les `ArgumentError` de l'estimateur (âge, commune, code de profession), de
+  `GeoHierarchy.populationOfDep` (département) et de `BirthDate` (date
+  inexistante) ont un motif fixe, sans la valeur reçue. Le motif
+  « estimation impossible : … » d'une évaluation, qui recopie ce message,
+  n'en porte donc plus non plus.
+
+**Reste** :
+
+- Les **champs** portent toujours la valeur (`Qi.value`,
+  `PathologieMention.text`, `BirthDate.year`…) : c'est leur rôle. Une
+  application qui les écrit elle-même dans un journal les y met.
+- **F** (un effectif) figure encore dans `Generalization.toString`,
+  `ReidEstimate.toString` et `ReidTrace.toString`. Pour un lieu seul, c'est
+  la population de la commune : dans une petite région, ce nombre peut
+  suffire à la retrouver.
+- `ReidTrace.toAuditMap` écrit encore les valeurs des quasi-identifiants sous
+  `qisInitiaux` (voie F2 de `agent/specs/P2-169.md`, tâche P2-172).
+- `ageOn` cite la date de **référence** (fournie par l'application, pas tirée
+  du texte) quand elle précède la naissance.
+- Les motifs et avertissements d'une évaluation, et les limites du rapport de
+  risque, nomment volontairement un lieu ou une pathologie restés en clair :
+  ils sont rendus à l'application pour l'utilisateur, pas à un journal.
+
 ### Généralisation appliquée (P2-91, P2-92)
 
 - **Suggestions** : `RiskReport.suggestions` liste les paliers d'un cran qui

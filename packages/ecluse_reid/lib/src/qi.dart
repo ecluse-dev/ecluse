@@ -29,8 +29,12 @@ class Qi {
   @override
   int get hashCode => Object.hash(type, value, level);
 
+  /// Type, niveau et longueur de la valeur, jamais [value] : c'est une
+  /// commune, un âge ou une profession tirés du texte, et un `toString` finit
+  /// dans un journal ou une trace d'erreur de l'application (P2-170, voie F1
+  /// de `agent/specs/P2-169.md`). Qui a besoin de la valeur lit [value].
   @override
-  String toString() => 'Qi(${type.name}, $value, niveau $level)';
+  String toString() => 'Qi(${type.name}, niveau $level, ${value.length} car.)';
 }
 
 /// Valeur sentinelle : retrait complet d'un QI de la combinaison (dernier
