@@ -210,6 +210,13 @@ PY
   if produit "structurel l$w, moteur seul" "$B/flou/pred_structurel_l$w.jsonl" bench_pkg run_ecluse.dart "../../bench/flou/structurel_l$w.jsonl" "../../bench/flou/pred_structurel_l$w.jsonl"; then
     montre "structurel l$w, score moteur seul" -E "^Ecluse +(nir|rpps|iban|finess|TOTAL)" 5 non dans_B python3 score.py --corpus "flou/structurel_l$w.jsonl" --pred "Ecluse=flou/pred_structurel_l$w.jsonl" || true
   fi
+  # Détecteur isolé (P2-166) : NirDetector, RppsDetector, IbanFrDetector et
+  # FinessDetector appelés directement, comme dans l'exemple du README
+  # d'ecluse_core ; ni moteur, ni ecluse_redact.
+  echo "# structurel largeur $w, détecteur isolé (appel direct des quatre détecteurs)"
+  if produit "structurel l$w, détecteur isolé" "$B/flou/isole_structurel_l$w.jsonl" bench_pkg run_detecteur_isole.dart "../../bench/flou/structurel_l$w.jsonl" "../../bench/flou/isole_structurel_l$w.jsonl"; then
+    montre "structurel l$w, rappel détecteur isolé" -E . 0 non python3 "$B/rappel_structurel.py" --corpus "$B/flou/structurel_l$w.jsonl" --pred "$B/flou/isole_structurel_l$w.jsonl" || true
+  fi
   # Chemin du produit : Ecluse.redact neutralise la fin de ligne entre deux
   # groupes d'un identifiant (P2-38, P2-152) ; le moteur seul ne le fait pas.
   echo "# structurel largeur $w, Ecluse.redact (chemin du produit)"
@@ -217,6 +224,16 @@ PY
     montre "structurel l$w, rappel Ecluse.redact" -E . 0 non python3 "$B/rappel_structurel.py" --corpus "$B/flou/structurel_l$w.jsonl" --pred "$B/flou/redact_structurel_l$w.jsonl" || true
   fi
 done
+
+
+# Collage hors du cœur (P2-166) : ce que détecteraient les détecteurs appelés
+# seuls si la fin de ligne était recollée comme le fait ecluse_redact. Chemin
+# mesuré : détecteurs isolés sur texte recollé par le banc ; rien n'est
+# changé dans lib/. « à tort » = détection traversant une coupure qui ne
+# recouvre aucun identifiant annoté.
+echo "## collage de fin de ligne hors du cœur (P2-166)"
+montre "collage, corpus recoupés" -E . 0 non bench_pkg run_collage_fp.dart ../../bench/flou/structurel_l60.jsonl ../../bench/flou/structurel_l90.jsonl ../../bench/flou/corpus_flou_temoin_l60.jsonl ../../bench/flou/corpus_flou_temoin_l90.jsonl || true
+montre "collage, prose et cas ciblés" -E . 0 non bench_pkg run_collage_fp.dart || true
 
 # Types que le banc ne connaît pas (ATTENTION de run_redact_bench.dart) : un
 # seul avertissement pour tout le rejeu ; l'ancien script le jetait (2>&1 > /dev/null).

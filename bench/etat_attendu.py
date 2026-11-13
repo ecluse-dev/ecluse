@@ -88,8 +88,19 @@ ATTENDU = [
          "prédictions du témoin (annoncées par ETAT.md)"),
         (r"^# structurel largeur \d+, moteur seul", 2, "moteur seul"),
         (r"^Ecluse +TOTAL ", 2, "score moteur seul"),
+        (r"^# structurel largeur \d+, détecteur isolé", 2,
+         "détecteur isolé (P2-166)"),
         (r"^# structurel largeur \d+, Ecluse\.redact", 2, "Ecluse.redact"),
-        (r"^finess .* TOTAL \d+/\d+ \(", 2, "rappel Ecluse.redact"),
+        (r"^finess .* TOTAL \d+/\d+ \(", 4,
+         "rappel du détecteur isolé et d'Ecluse.redact"),
+    ]),
+    ("## collage de fin de ligne hors du cœur", [
+        (r"structurel_l\d+\.jsonl : \d+ doc\., \d+ coupures", 2,
+         "corpus structurel recoupé à 60 et 90 colonnes"),
+        (r"^Contrôle : \d+ détection", 1, "contrôle sur le texte non recollé"),
+        (r"^cas « ", 5, "cas ciblés de P2-162 § 5.3"),
+        (r"^colonne de \d+ nombres de \d+ chiffres", 6,
+         "colonnes de 9, 11 et 13 chiffres"),
     ]),
 ]
 
