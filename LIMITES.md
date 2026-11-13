@@ -606,6 +606,18 @@ non-détection). Tests d'abord (4 rouges) ; banc inchangé octet pour octet ; co
 (« 1 B rue » × 4000 : ~0,2 s). **Restent non traités** : lettre minuscule (« 12 b rue »), lettres
 au-delà de F, « Lieu-dit », boîte postale, adresse sans code postal.
 
+**Numéro de CEDEX (P2-164, 13 novembre).** Mesure P2-157 : « 70000 VESOUL CEDEX 9 » était masqué jusqu'au mot
+« CEDEX », et le numéro de distribution restait en clair (« [ADRESSE_1] 9 ») ; « cedex » en minuscules et
+« , CEDEX 9 » restaient entiers en clair. Le motif « code postal + commune » accepte maintenant « CEDEX » dans toutes
+les casses, après une virgule facultative, et **1 ou 2 chiffres** derrière lui, sur la même ligne. Tests d'abord
+(12 rouges sur 20) ; par `Ecluse.redact`, adresses du corpus flou adversarial : 1,9 % → **0 %** de caractères en
+clair (global 7,2 % → 6,7 %), toutes variantes de casse et de mise en page comprises ; corpus réaliste, témoins et
+reste du tableau de bord inchangés. Contre-exemples testés : « 70000 VESOUL 3 agents » (pas de CEDEX : le nombre
+reste), « CEDEX 2026 dossiers », « CEDEX 9e étage », un nombre à la ligne suivante, « Le service CEDEX 9 » hors
+adresse. **Restent en clair** : la boîte postale (« BP 12 », « CS 40001 », « TSA »), avant le code postal ou sur
+sa propre ligne (complément intercalé, hors périmètre v0, voir plus haut), et le CEDEX d'une commune de plus de
+quatre mots.
+
 **Identifiant coupé par une fin de ligne (P2-38).** Sonde de 14 formes : un téléphone, un NIR, un
 IBAN ou une date coupés entre deux groupes (« 01 99 00⏎12 34 », « FR76 3000 6000⏎0112 … ») n'étaient
 pas détectés, alors que l'extraction d'un PDF ou le retour automatique d'un traitement de texte les
@@ -768,8 +780,8 @@ pas reconnus). Sont ajoutés : « sentier », « ruelle », « traverse », « v
 Tests d'abord (17 rouges) ; banc inchangé octet pour octet ; 715 tests ; coût linéaire. Le code postal + commune
 reste obligatoire en fin de motif : « Le 25 R de la table », « Chapitre 3 pl. de la liste », « Il a fait 6 clos de la
 saison », « Page 6 ch. 3 » restent intacts (5 contre-exemples testés). **Restent non couverts** : « Rond-point »,
-« Cour », « Mail », « Domaine », « Résidence » (complément d'adresse), « Cedex 03 » (le suffixe reste en clair, sans
-valeur identifiante), une adresse sans code postal (« 12 rue des Lilas »), « Paris 11e ». Les abréviations d'une
+« Cour », « Mail », « Domaine », « Résidence » (complément d'adresse), « Cedex 03 » (le suffixe restait en clair ; **traité par P2-164**, voir § adresses ci-dessous),
+une adresse sans code postal (« 12 rue des Lilas »), « Paris 11e ». Les abréviations d'une
 lettre (« R ») ne sont reconnues que suivies d'un nom puis d'un code postal et d'une commune.
 
 **Recherche de la fiche « Prénom » bornée (P2-50).** Sonde de robustesse sur 16 textes pathologiques d'environ
