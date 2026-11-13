@@ -91,7 +91,24 @@ final class AdresseDetector implements EntityDetector {
   ///   un document réel ; `\s` matche aussi le saut de ligne, ce qui
   ///   laissait un span avaler la ligne suivante en entier.
   static const _codePostalCommune = '(?<!\\d)\\d{5}$_h+(?<commune>$_motCommune)'
-      '(?:[ \\u00A0\\u202F-]$_connecteurs*(?!$_titres\\b)$_motCommune){0,3}';
+      '(?:[ \\u00A0\\u202F-]$_connecteurs*(?!$_titres\\b)$_motCommune){0,3}'
+      '$_suffixeCedex';
+
+  /// « CEDEX » et son numéro de distribution (P2-164). Le mot « CEDEX » en
+  /// capitales ou « Cedex » était déjà pris comme dernier mot de la commune ;
+  /// le numéro qui suit (« CEDEX 9 », « Cedex 09 ») restait en clair, comme
+  /// « cedex » en minuscules ou après une virgule (mesure P2-157 : 53
+  /// adresses sur 155 du corpus flou adversarial). Le numéro n'est lu
+  /// qu'**après le mot « CEDEX »** et sur la même ligne, 1 ou 2 chiffres
+  /// (1 à 99 ; « CEDEX 2026 dossiers », « CEDEX 9e étage » : le nombre reste
+  /// en clair) : un nombre qui suit une commune sans CEDEX n'est jamais
+  /// absorbé (« 70000 VESOUL 3 agents »).
+  static const _suffixeCedex = '(?:(?:,?$_h*$_cedex)?(?<=$_cedex)'
+      '(?:$_h+\\d{1,2}(?![\\dA-Za-zÀ-ÿ]))?)?';
+
+  /// « cedex » dans toutes les casses (le motif d'adresse est sensible à la
+  /// casse), jamais collé à une lettre qui suit.
+  static const _cedex = '[Cc][Ee][Dd][Ee][Xx](?![A-Za-zÀ-ÿ])';
 
   /// Blanc horizontal : espace, tabulation, espace insécable (U+00A0), espace
   /// fine insécable (U+202F). Jamais un saut de ligne.

@@ -65,17 +65,17 @@ Fuite au caractère (part des caractères annotés restés en clair).
 | Corpus | nom | adresse | établissement | **global** | FP témoin | Restaurations non identiques¹ |
 |---|---:|---:|---:|---:|---:|---:|
 | réaliste | 27,7 % | 0 % | 0 % | **7,5 %** | | 0 |
-| adversarial | 13,9 % (P2-147) | 1,9 % | 0 % | **7,2 %** | | 61 |
+| adversarial | 13,9 % (P2-147) | **0 %** (1,9 % avant P2-164) | 0 % | **6,7 %** | | 61 |
 | témoin | | | | | **0** | 0 |
 | réaliste en minuscules | 30,0 %⁴ | 0 % | 0 % | **8,1 %** | | 0 |
-| adversarial en minuscules | 14,1 %⁴ | 1,9 % | 0 % | **7,2 %** | | 61³ |
+| adversarial en minuscules | 14,1 %⁴ | 0 % | 0 % | **6,8 %** | | 61³ |
 | témoin en minuscules | | | | | **0** | 0 |
 | réaliste en capitales | 30,0 %⁴ | 0 % | 0 % | **8,1 %** | | 0 |
-| adversarial en capitales | 14,1 %⁴ | 1,9 % | 0 % | **7,2 %** | | 55 |
+| adversarial en capitales | 14,1 %⁴ | 0 % | 0 % | **6,8 %** | | 55 |
 | témoin en capitales | | | | | **0** | 0 |
 | faux amis prénoms (P2-124) | | | | | **0** | 0 |
 | réaliste en casse de phrase (P2-138) | 30,0 %⁴ | 0 % | 0 % | **8,1 %** | | 0 |
-| adversarial en casse de phrase (P2-138) | 16,8 %⁴ | 1,9 % | 0 % | **8,6 %** | | 61³ |
+| adversarial en casse de phrase (P2-138) | 16,8 %⁴ | 0 % | 0 % | **8,1 %** | | 61³ |
 | témoin en casse de phrase (P2-138) | | | | | **0** | 0 |
 
 ¹ Harmonisation des re-mentions à la restauration (`LIMITES.md` § 5.3, point 5
@@ -105,7 +105,7 @@ P2-149 (`run_redact_bench.dart --prenoms-insee`, `run_dossiers_bench.dart
 
 | Corpus | nom | **global** | Restaurations non identiques |
 |---|---:|---:|---:|
-| adversarial | 13,9 % → **8,3 %** | 7,2 % → **4,4 %** | 61 → 58 |
+| adversarial | 13,9 % → **8,3 %** | 6,7 % → **4,0 %** (7,2 % → 4,4 % avant P2-164) | 61 → 58 |
 
 Noms de l'adversarial hors civilité : 572 → **0** caractère
 (`leak_hors_civilite.py`) ; les 8,3 % restants sont la civilité. Réaliste,
@@ -201,7 +201,7 @@ clair), documents refusés exclus du calcul :
 | réaliste, sans recoupe | 0 | 27,7 % | 0 % | 0 % | **7,5 %** | 0 |
 | réaliste, largeur 90 | 84 | 27,7 % | 0 % | 9,2 % | **9,3 %** | 0 |
 | réaliste, largeur 60 | 256 | 27,6 % | 1,3 % | 0,5 % | **8,6 %** | 2 |
-| adversarial, 60 et 90 | 7 et 0 | 13,9 % | 1,9 % | 0 % | **7,2 %** (inchangé) | 0 |
+| adversarial, 60 et 90 | 7 et 0 | 13,9 % | 0 % | 0 % | **6,7 %** (inchangé) | 0 |
 | témoin, 60 et 90 | 292 et 12 | | | | **0 prédiction** | 0 |
 
 Corpus structurel (rappel ; sans recoupe : 100 % partout). Deux chemins,
