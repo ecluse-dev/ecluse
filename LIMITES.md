@@ -370,11 +370,62 @@ suivante » laissait jusqu'ici le numéro et l'odonyme en clair.
 - **Le destinataire** placé au-dessus de la voie (nom de personne ou de
   société sur la ligne précédente) n'est jamais absorbé dans le span
   d'adresse : il relève exclusivement du détecteur de noms.
-- Toute autre entité coupée par une mise en forme multiligne (un nom
-  d'établissement qui continue sur la ligne suivante, par exemple) reste
-  soumise à la règle générale absolue : aucun span ne traverse la ligne.
-  Seule l'adresse bénéficie de cette exception, et seulement dans la forme
-  voie → CP + commune.
+- Toute autre entité coupée par une mise en forme multiligne reste soumise
+  à la règle générale : aucun span ne traverse la ligne. Les exceptions sont
+  l'adresse (forme voie → CP + commune, ci-dessus), l'identifiant coupé entre
+  deux groupes (P2-38, plus bas) et, depuis P2-173, le nom d'établissement ou
+  de commune coupé à un endroit où il continue visiblement (ci-dessous).
+
+**Nom d'établissement ou de commune coupé par une fin de ligne (P2-173).**
+Chemin : `Ecluse.redact`. Sur le corpus flou réaliste recoupé
+(`bench/ETAT.md`, « Mise en page »), 44 établissements coupés à 90 colonnes
+restaient en clair (37 en entier : « Centre⏎Hospitalier de Dole », « CH⏎de
+Vesoul », « EHPAD⏎Les Tilleuls » ; 7 en partie : « IME La⏎Source »), soit
+9,2 % des caractères d'établissement ; à 60 colonnes, 13 adresses laissaient
+le dernier mot de la commune (« 70180 DAMPIERRE SUR⏎SALON », 1,3 %) et
+4 établissements leur fin. La fin de ligne est maintenant remplacée par une
+espace **dans la vue de détection seulement** (le texte n'est pas réécrit,
+`ecluse_core` n'est pas touché), dans quatre cas :
+
+1. la ligne finit par un mot de liaison derrière un mot-clé d'établissement
+   (« CH de⏎Vesoul », « IME La⏎Source ») ou derrière un code postal et le
+   début d'une commune (« DAMPIERRE SUR⏎SALON », « 25000 SAINT⏎VIT ») ;
+2. la ligne suivante commence par un mot de liaison en minuscules suivi d'un
+   nom propre (« CH⏎de Vesoul ») ;
+3. la ligne suivante commence par un nom propre qui n'ouvre pas une phrase
+   (« EHPAD⏎Les Tilleuls », « Centre⏎Hospitalier de Dole ») ;
+4. la coupure tombe dans un mot-clé de plusieurs mots (« centre⏎hospitalier »,
+   « Maison de⏎retraite »).
+
+Jamais à travers une ligne vide ; au plus deux fins de ligne de suite. Après :
+établissements à 90 colonnes 9,2 % → **0 %**, adresses à 60 colonnes 1,3 % →
+**0 %**, les 44 et les 4 établissements coupés couverts, témoins recoupés à
+0 prédiction, prose de 78 fichiers `.md` du dépôt (13 791 fins de ligne) :
+détections identiques avant et après. **Ce qui reste :**
+
+- Le cas 3 est ambigu par nature. Ne sont pas recollés : un pronom, un
+  déterminant, une conjonction, une civilité, une étiquette (« Contact : »),
+  un article suivi d'une minuscule (« EHPAD⏎Les résidents déjeunent »). Un nom
+  propre qui ouvrait une phrase sans ponctuation avant (« …à l'EHPAD⏎Bellevue
+  est fermée ») ou un article suivi d'une majuscule (« EHPAD⏎Les Tilleuls sont
+  en fleurs ») **est** recollé : sur-masquage, jamais une fuite.
+- Une commune coupée ailleurs que derrière un mot de liaison (« 42260 SAINT
+  GERMAIN⏎LAVAL ») n'est pas recollée : rien ne distingue « LAVAL » du début
+  de la ligne suivante. Le dernier mot reste en clair. Non mesuré : le corpus
+  ne contient pas cette forme.
+- Un nom d'établissement sur plus de trois lignes, ou coupé deux fois par un
+  article seul sur sa ligne (« EHPAD⏎Les⏎Tilleuls »), n'est pas recollé.
+- Texte tout en minuscules ou tout en capitales : la règle lit les mots-clés
+  dans leur casse d'origine, comme `EtablissementDetector` ; les détecteurs de
+  casse (P2-120, P2-122) ne recollent pas. Non mesuré.
+- **Un refus de plus à 60 colonnes** (2 → 3 documents sur 400). Une fois
+  « PORT SUR⏎SAONE » recollé, la ligne « demeurant …, 70160 PORT SUR SAONE, »
+  retrouve la forme qu'elle a sans coupure, et le détecteur de tableaux la lit,
+  avec ses voisines, comme un tableau à colonnes inégales : refus explicite,
+  rien n'est envoyé. C'est le défaut déjà connu des faux tableaux (les deux
+  autres refus ont la même cause, sans ligne recollée), pas une règle
+  nouvelle. Des 13 adresses, 12 sont maintenant couvertes et 1 est dans ce
+  document refusé.
 
 Dans tous les autres cas, le coût reste symétrique : entre « fusionner deux
 lignes à tort » et « rater une entité coupée par la mise en forme », le

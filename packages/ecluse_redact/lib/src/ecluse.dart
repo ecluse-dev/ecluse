@@ -18,6 +18,7 @@ import 'heuristics/casse.dart';
 import 'heuristics/minuscules_recapitalise_detector.dart';
 import 'heuristics/nom_minuscules_detector.dart';
 import 'heuristics/telephone_detector.dart';
+import 'coupures_de_nom.dart';
 import 'redact_result.dart';
 import 'risque.dart';
 import 'tokenizer.dart';
@@ -576,12 +577,16 @@ int _versAscii(int c) {
     vue = String.fromCharCodes([for (final c in vue.codeUnits) _versAscii(c)]);
   }
   final coupures = _coupuresDeLigne.allMatches(vue).toList();
+  // Fins de ligne à l'intérieur d'un nom d'établissement ou de commune
+  // (P2-173) : une espace à la place, dans la vue seulement.
+  final nomsCoupes = coupuresDeNom(vue);
   final cles = _cleNommee.allMatches(vue).toList();
   final decorations = _decorations.allMatches(vue).toList();
   final balises = vue.contains('<') || vue.contains('&nbsp;')
       ? _balisesStructure.allMatches(vue).toList()
       : <RegExpMatch>[];
   if (coupures.isEmpty &&
+      nomsCoupes.isEmpty &&
       cles.isEmpty &&
       decorations.isEmpty &&
       balises.isEmpty &&
@@ -605,6 +610,20 @@ int _versAscii(int c) {
       debut++;
     }
     for (var i = debut; i < m.end; i++) {
+      retires.add(i);
+    }
+  }
+  // Nom coupé (P2-173) : la fin de ligne et ses blancs deviennent une seule
+  // espace. Une coupure d'identifiant au même endroit prime (les deux listes
+  // sont dans l'ordre du texte : un seul parcours).
+  var k = 0;
+  for (final (debut, fin) in nomsCoupes) {
+    while (k < coupures.length && coupures[k].end <= debut) {
+      k++;
+    }
+    if (k < coupures.length && coupures[k].start < fin) continue;
+    unites[debut] = 0x20;
+    for (var i = debut + 1; i < fin; i++) {
       retires.add(i);
     }
   }

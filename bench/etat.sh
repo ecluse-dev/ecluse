@@ -208,6 +208,11 @@ PY
       montre "mise en page $c l$w, score" -E "^GLOBAL|^nom |^adresse |^etablissement " 0 "$vide" dans_B python3 score_flou.py --corpus "flou/corpus_flou_${c}_l$w.jsonl.traites" --pred "Ecluse=flou/etat_${c}_l$w.jsonl" || true
       # ETAT.md annonce « 0 prédiction » pour le témoin : la ligne sort ici.
       if [ "$c" = temoin ]; then predites "$B/flou/etat_${c}_l$w.jsonl"; fi
+      # Entités coupées par un retour à la ligne (P2-173) : couvertes ou en
+      # clair, par Ecluse.redact. Le témoin n'a aucune entité annotée.
+      if [ "$c" != temoin ]; then
+        montre "mise en page $c l$w, entités coupées" -E . 0 non python3 "$B/entites_coupees.py" --corpus "$B/flou/corpus_flou_${c}_l$w.jsonl.traites" --pred "$B/flou/etat_${c}_l$w.jsonl" || true
+      fi
     fi
   done
   produit "mise en page structurel l$w, générateur" "$B/flou/structurel_l$w.jsonl" python3 "$B/generate_corpus_mise_en_page.py" "$B/corpus.jsonl" --largeur $w --out "$B/flou/structurel_l$w.jsonl" || true
