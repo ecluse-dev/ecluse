@@ -264,6 +264,41 @@ final class AdresseDetector implements EntityDetector {
     return commune != null && _uppercaseFirstLetter.hasMatch(commune);
   }
 
+  /// Tournure de **quantité ou de référence** juste avant un nombre à cinq
+  /// chiffres (P2-167) : « commande **de** 70000 unités », « **environ** 12345
+  /// exemplaires », « **lot** 70000 », « **réf.** 54321 », « **n°** 17514 »,
+  /// « **total :** 70000 ». Un code postal n'est pas introduit ainsi : il suit
+  /// une voie, une virgule, un retour à la ligne, « à » ou une étiquette
+  /// d'adresse. Mesure de départ (`bench/generate_corpus_cinq_chiffres.py`,
+  /// 400 phrases sans adresse) : 132 adresses prédites à tort par
+  /// `Ecluse.redact`.
+  ///
+  /// Les mots de la tournure sont des mots de grammaire (préposition de
+  /// quantité, étiquettes de pièce ou de commande), pas des valeurs tirées d'un
+  /// corpus. Les mots qui **suivent** le nombre ne sont pas jugés : « 70000
+  /// Vesoul » et « 70000 Alpha » ont la même forme.
+  ///
+  /// Limite assumée : « la mairie de 70000 Vesoul » (code postal introduit par
+  /// « de ») n'est plus masqué par cette voie ; la commune suivie d'un code
+  /// postal sans voie ni virgule est rare, `LIMITES.md` § 5.2.
+  static final RegExp _introduitParQuantite = RegExp(
+    r'(?:(?<![\p{L}])(?:de|environ|n°|réf\.?|ref\.?|référence|reference|lot|'
+    r'dossier|commande|facture|total|quantité|quantite|montant)|'
+    r"(?<![\p{L}])d['’])"
+    r'[ \t  ]*:?[ \t  ]*$',
+    caseSensitive: false,
+    unicode: true,
+  );
+
+  /// Borne la partie du texte relue avant le nombre : le coût reste linéaire
+  /// quand les nombres à cinq chiffres se répètent.
+  static const int _fenetreQuantite = 40;
+
+  static bool _estIntroduitParQuantite(String text, int debut) {
+    final depart = debut > _fenetreQuantite ? debut - _fenetreQuantite : 0;
+    return _introduitParQuantite.hasMatch(text.substring(depart, debut));
+  }
+
   static bool _chevauche(List<_Range> tries, int start, int end) {
     var lo = 0;
     var hi = tries.length;
@@ -353,6 +388,7 @@ final class AdresseDetector implements EntityDetector {
       if (capitales && _communeNeutre(match)) continue;
       final start = match.start;
       final end = match.end;
+      if (_estIntroduitParQuantite(text, start)) continue;
       // Déjà couvert par une adresse complète (numéro + voie) ci-dessus :
       // ne pas ajouter un doublon pour le seul suffixe "code postal +
       // commune" de cette même adresse.

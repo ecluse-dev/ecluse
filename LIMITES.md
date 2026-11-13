@@ -618,6 +618,20 @@ adresse. **Restent en clair** : la boîte postale (« BP 12 », « CS 40001 », 
 sa propre ligne (complément intercalé, hors périmètre v0, voir plus haut), et le CEDEX d'une commune de plus de
 quatre mots.
 
+**Nombre à cinq chiffres hors adresse (P2-167, 13 novembre).** Par `Ecluse.redact`, « Commande de 70000 unités,
+cedex 9 non concerné. » sortait avec « 70000 unités » masqué comme adresse. Deux règles : `AdresseDetector` seul
+(code postal + mot à majuscule, même en casse ordinaire : « Réf. 55090 Standard ») et, dans un texte sans
+majuscule hors début de phrase, le texte d'ombre de `MinusculesRecapitaliseDetector` (code postal + nom commun :
+« 70000 unités »). Témoin `bench/generate_corpus_cinq_chiffres.py` (400 phrases sans adresse) : **130 → 66** adresses
+prédites à tort (nombre après des mots : 64 → **0**). Le motif « code postal + commune **sans voie** » écarte
+maintenant un nombre introduit par une tournure de quantité ou de référence (« de », « environ », « lot », « réf. »,
+« n° », « dossier », « commande », « facture », « total »), jamais d'après le mot qui suit. **Restent masqués à
+tort** : un nombre **en tête de phrase** suivi d'un mot (« 58699 Alpha livrés », 66 sur 200), qui a la forme d'un
+code postal en tête de ligne (« 70000 Vesoul ») ; un nombre derrière une tournure absente de la liste. **Perte
+assumée** : « la mairie de 70000 Vesoul » (code postal introduit par « de », sans voie ni virgule) n'est plus masqué par
+cette voie. Une adresse avec numéro et voie (« rue du Lot 46000 Cahors ») n'est pas concernée. Adresses des corpus flous
+et reste du tableau de bord inchangés.
+
 **Identifiant coupé par une fin de ligne (P2-38).** Sonde de 14 formes : un téléphone, un NIR, un
 IBAN ou une date coupés entre deux groupes (« 01 99 00⏎12 34 », « FR76 3000 6000⏎0112 … ») n'étaient
 pas détectés, alors que l'extraction d'un PDF ou le retour automatique d'un traitement de texte les

@@ -188,6 +188,35 @@ Masquage des maladies rares (P2-143, `run_maladies_rares_bench.dart`) :
 | Échantillon Orphanet (300, graine 42), rattachées ou personne nommée | 0 / 300 | 276 / 300 |
 | Échantillon Orphanet, niées ou sans personne | 0 / 300 | 0 / 300 |
 
+## Nombres à cinq chiffres hors adresse (P2-167)
+
+Témoin `bench/generate_corpus_cinq_chiffres.py` (400 phrases, graine 42,
+**aucune adresse annotée** : toute adresse prédite est un faux positif) :
+quantités (« Commande de 70000 unités »), montants, références, lots et
+dossiers, suivis d'un mot en minuscules, d'un mot à majuscule ou de rien, le
+nombre ouvrant la phrase ou venant après des mots, en casse ordinaire ou en
+casse de phrase. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM) ;
+les deux voies (détecteur seul, texte d'ombre des casses de phrase et
+minuscules) sont comptées à part par `run_cinq_chiffres_bench.dart` pour dire
+quelle règle produit la prédiction.
+
+| | avant P2-167 | après P2-167 |
+|---|---:|---:|
+| Adresses prédites à tort (400 phrases) | 130 | **66** |
+| dont voie « détecteur seul » (nombre + mot à majuscule) | 88 | 44 |
+| dont voie « texte d'ombre » (nombre + nom commun, casse de phrase) | 42 | 22 |
+| nombre après des mots (200 phrases) | 64 | **0** |
+| nombre en tête de phrase (200 phrases) | 66 | 66 |
+| montants (« euros ») et nombre sans mot suivant | 0 | 0 |
+
+Correction : un nombre à cinq chiffres **introduit par une tournure de
+quantité ou de référence** (« de », « environ », « lot », « réf. », « n° »,
+« total »…) n'est plus pris pour un code postal sans voie. **Reste** : un nombre
+en tête de phrase suivi d'un mot (« 58699 Alpha livrés ») a exactement la forme
+d'un code postal en tête de ligne (« 70000 Vesoul ») ; aucune tournure ne les
+sépare, ils restent masqués (66 sur 200). Reste du tableau de bord inchangé
+(adresses des corpus flous comprises).
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par
