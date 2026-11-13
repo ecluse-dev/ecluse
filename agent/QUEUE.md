@@ -169,7 +169,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-100 | code | Tests de coût : rapport de temps entre deux tailles au lieu d'une borne en millisecondes | — | fusionnée |
 | P2-101 | code | Migration vers Melos 7 et plus (configuration dans `pubspec.yaml`) | — | fusionnée |
 | P2-102 | code | Relire au bon palier les tranches d'âge et les professions généralisées (défauts mesurés par P2-93) | P2-93 | fusionnée |
-| P2-103 | mesure | Généralisation du lieu : effet de « département N » non relu sur F et sur l'évaluation | P2-102 | PR ouverte |
+| P2-103 | mesure | Généralisation du lieu : effet de « département N » non relu sur F et sur l'évaluation | P2-102 | fusionnée |
 | P2-104 | spec | Critère GO/STOP du vérificateur LLM local | — | fusionnée |
 | P2-104a | humain | Trancher les décisions de P2-104 § 6 (seuils, signaler ou masquer, ordre) et de P2-106 § 4 (licence des données d'un LLM) | P2-104 | fusionnée |
 | P2-105 | code | Générateur du corpus de fuites sémantiques (indices annotés, témoin, jeu injection), graine fixe | P2-104a | fusionnée |
@@ -207,7 +207,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-137 | code | Démo : texte et consigne masqués séparément dans un `Dossier` (la consigne « Résume. » désactivait les détecteurs de casse), avertissements affichés | P2-133 | fusionnée |
 | P2-138 | code | Texte en casse de phrase (majuscule en début de phrase seulement) : détecteurs de casse et avertissement ; fuite 64 % → 0,6 % | P2-120 | fusionnée |
 | P2-139 | code | Noms en minuscules : initiale, ordre « nom prénom », particules ; adversarial 27 % → 5,9 % | P2-138 | fusionnée |
-| P2-140 | mesure | Dossiers en minuscules et en casse de phrase : cohérence des jetons, collisions, fausses fusions (corpus dossiers × variantes de casse) | P2-139 | PR ouverte |
+| P2-140 | mesure | Dossiers en minuscules et en casse de phrase : cohérence des jetons, collisions, fausses fusions (corpus dossiers × variantes de casse) | P2-139 | fusionnée |
 | P2-141 | code | Démo : rapport de risque (bande, indices restés visibles, pathologies) avec la référence publique | P2-137 | fusionnée |
 | P2-142 | code | QI : lieu d'un événement (« aura lieu à Brest ») écarté ; témoin 57 → 0 | P2-136 | fusionnée |
 | P2-143 | code | Masquer les maladies rares (Orphanet, rattachées ou texte qui nomme une personne), réversible ; pathologies fréquentes en clair | P2-110 | fusionnée |
@@ -240,6 +240,13 @@ tâches copiées ici sont prises par l'agent.
 | P2-170 | code | Voies de fuite de `ecluse_reid` et `ecluse_reference` : `toString` sans valeur tirée du texte (`Qi`, `BirthDate`, `Generalization`, `PathologieMention`) et messages d'`ArgumentError` à motif fixe (F1, F3, F4, F5 de P2-169) | P2-169 | fusionnée |
 | P2-171 | code | Fin de ligne et moteur seul : documenter la limite (option B de P2-162) et faire les deux mesures qui manquent avant A1 (équivalence octet pour octet, coût en temps) ; aucun fichier de `lib/` | P2-166 | fusionnée |
 | P2-172 | code | `ReidTrace.toAuditMap` : aucune valeur de quasi-identifiant dans la trace d'audit (voie F2 de P2-169) | P2-170 | fusionnée |
+| P2-173 | code | Établissement et commune coupés par une fin de ligne (« Centre⏎Hospitalier de … », dernier mot de la commune) laissés en clair par `Ecluse.redact` | P2-171 | à faire |
+| P2-174 | code | Identifiant suivi d'une date ou d'un nombre : FINESS suivi d'une date masqué comme RPPS en avalant le jour (témoin d'abord) | — | à faire |
+| P2-175 | code | Extraction des QI : ligne « par `Ecluse.redact` » au tableau de bord, lieux à tort (patronyme homonyme d'une commune), professions abrégées (« pneumo », « gynéco », « pediatre ») | — | à faire |
+| P2-176 | code | Effectif F hors des canaux de texte (`toString`, `toAuditMap`, note de plafonnement) : la tranche de risque à la place de l'effectif exact | P2-172 | à faire |
+| P2-177 | code | Adresses : nombre de cinq chiffres en tête de phrase suivi d'un mot (« 58699 Alpha livrés ») masqué à tort comme adresse (témoin d'abord) | P2-167 | à faire |
+| P2-178 | mesure | Adresses : CEDEX après une commune de plus de quatre mots ; mesurer, ne rien corriger | P2-164 | à faire |
+| P2-179 | code | Tableau de bord : en-tête de `bench/ETAT.md` à jour et type `identifiant` reconnu par `run_redact_bench.dart` (avertissement de fin d'`etat.sh`) ; banc seulement | P2-168 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -614,3 +621,77 @@ ne reprennent que ce qui manque pour la prendre.
   **Fini quand** : test de non-fuite rouge avant, vert après ; tableau de
   bord rejoué sans chiffre modifié ; `LIMITES.md`, `agent/specs/P2-169.md`
   (F2 traitée) et la documentation de l'audit à jour.
+- **P2-173** : `ecluse_redact`, chemin `Ecluse.redact`. Mesure du compte
+  rendu de session du 13 novembre (midi), sonde jetable sur le corpus flou
+  réaliste recoupé : à 90 colonnes, 44 établissements coupés restent en
+  clair (37 en entier, mot-clé coupé ; 7 en partie, 9,2 % des caractères
+  d'établissement) ; à 60 colonnes, 13 adresses laissent le dernier mot de
+  la commune en clair (1,3 %) et 4 établissements leur fin. Test d'abord :
+  versionner la mesure au tableau de bord (corpus recoupés à 60 et 90
+  colonnes, graine 42), puis corriger dans la vue de détection de
+  `ecluse_redact` (même principe que la neutralisation des fins de ligne
+  des identifiants), sans toucher `ecluse_core`. **Fini quand** : fuite
+  établissement à 90 colonnes 9,2 % → 0 %, adresse à 60 colonnes 1,3 % → 0 %,
+  témoins recoupés à 0 prédiction, reste du tableau de bord inchangé,
+  `LIMITES.md` § 5.2 à jour. Si un cas ne peut pas être rattrapé sans faux
+  positif sur les témoins, le laisser, le chiffrer et l'écrire.
+- **P2-174** : chemin `Ecluse.redact`. Sonde du 13 novembre, non versionnée
+  et non remesurée depuis : un FINESS suivi d'une date est masqué comme RPPS
+  en avalant le jour, 55 cas sur 500. Mesurer d'abord : témoin versionné
+  (identifiant de chaque type suivi d'une date, d'un âge, d'un nombre), avec
+  le chiffre de départ. Si la sonde ne se reproduit pas, rapporter et
+  s'arrêter. Sinon corriger. **Fini quand** : sur le témoin, type juste et
+  date intacte ; aucun identifiant perdu sur les corpus du tableau de bord ;
+  P1-19 et ses tests toujours verts.
+- **P2-175** : `ecluse_reid` et banc. Constat du 13 novembre : la ligne QI du
+  tableau de bord mesure `ecluse_reid` seul, pas le produit. Premier volet :
+  ajouter une ligne « QI par `Ecluse.redact` » (mesure de la sonde :
+  0 document sur 400 en réaliste, 2 sur 400 en adversarial, nom derrière un
+  métier sans civilité resté en clair). Second volet, `ecluse_reid` seul :
+  les 43 et 33 lieux à tort (précision 88,2 % et 92,3 %) sont un patronyme
+  homonyme d'une commune ; professions manquées de l'adversarial (7 sur 183) :
+  « pneumo » 3, « gynéco » 3, « pediatre » sans accent 1. Test d'abord pour
+  chaque volet. **Fini quand** : la ligne « par `Ecluse.redact` » est au
+  tableau de bord ; précision lieu 100 % sur les deux corpus ; rappel
+  profession 100 % sur l'adversarial ; témoins QI à 0 et 53 (inchangés) ;
+  aucune commune réelle perdue (le dire si un homonyme reste ambigu).
+- **P2-176** : `ecluse_reid`. Sonde du 13 novembre sur `geo_communes.csv.gz`
+  (populations légales INSEE) : la population est unique en France pour
+  2 964 communes (8,5 %) et unique dans son département pour 24 416 (70,1 %).
+  Pour un lieu seul, F est cette population, donc l'effectif exact désigne la
+  commune dans `toAuditMap` (`fInitial`, `fAvant`, `fApres`, note de
+  plafonnement), `ReidEstimate.toString`, `Generalization.toString` et
+  `ReidTrace.toString`. Format retenu (proposé par Claude le 13 novembre, à
+  la demande du mainteneur ; le mainteneur peut le changer) : ces canaux
+  donnent la **tranche de risque** (`band`) à la place de l'effectif exact ;
+  les champs numériques de l'API (`f`) ne changent pas. Test d'abord : pour
+  une commune à population unique, le F exact n'apparaît ni dans le JSON de
+  `toAuditMap` ni dans un `toString`. Si un consommateur du dépôt (export
+  AIPD, démo, bancs, `raisonDuChoix`) lit ces valeurs, l'adapter dans la même
+  PR ; s'il en a besoin pour fonctionner, s'arrêter et l'expliquer. **Fini
+  quand** : test rouge puis vert ; tableau de bord inchangé ; `LIMITES.md`
+  § 7 et `agent/specs/P2-169.md` à jour.
+- **P2-177** : adresses. Constat noté le 13 novembre : un nombre de cinq
+  chiffres en tête de phrase suivi d'un mot (« 58699 Alpha livrés ») est
+  masqué comme adresse, 66 cas sur 200, même forme qu'un code postal en tête
+  de ligne. Test d'abord : témoin versionné, avec à côté un jeu d'adresses
+  réelles de forme proche (code postal en tête de ligne suivi d'une commune,
+  synthétique) pour ne pas en perdre. **Fini quand** : faux positifs du
+  témoin chiffrés avant/après ; aucune adresse perdue sur les corpus du
+  tableau de bord ; si les deux formes ne se séparent pas sans perte, garder
+  le masquage (une adresse perdue est pire) et l'écrire dans `LIMITES.md`.
+- **P2-178** : mesure seule. Après P2-164, CEDEX après une commune de plus
+  de quatre mots (« Saint-… -sur-… », communes composées) : générer des cas
+  synthétiques à partir de `geo_communes.csv.gz`, mesurer ce qui reste en
+  clair par `Ecluse.redact`. Rapport dans `agent/specs/P2-178.md`. **Fini
+  quand** : chiffre de fuite par longueur de nom de commune, exemples
+  synthétiques, proposition de tâche si la fuite n'est pas nulle ; aucun
+  fichier de `lib/` modifié.
+- **P2-179** : banc seulement. Remarques de la veille de mesure du
+  13 novembre : l'en-tête de `bench/ETAT.md` cite encore les commits
+  `d85fb84` et `a263a83` ; `etat.sh` finit par « AVERTISSEMENT : types
+  d'entité absents de la table de `run_redact_bench.dart`, comptés tels
+  quels : identifiant ». Mettre l'en-tête à jour, ajouter `identifiant` à la
+  table (ou expliquer pourquoi il doit rester compté tel quel). **Fini
+  quand** : `etat.sh` sans avertissement ; chiffres du tableau de bord
+  inchangés (ou l'écart expliqué ligne par ligne) ; aucun fichier de `lib/`.
