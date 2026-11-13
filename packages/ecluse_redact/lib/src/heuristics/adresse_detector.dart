@@ -278,14 +278,17 @@ final class AdresseDetector implements EntityDetector {
   /// corpus. Les mots qui **suivent** le nombre ne sont pas jugés : « 70000
   /// Vesoul » et « 70000 Alpha » ont la même forme.
   ///
-  /// Limite assumée : « la mairie de 70000 Vesoul » (code postal introduit par
-  /// « de ») n'est plus masqué par cette voie ; la commune suivie d'un code
-  /// postal sans voie ni virgule est rare, `LIMITES.md` § 5.2.
+  /// « de » seul n'est **pas** une tournure de quantité (décision du
+  /// 13 novembre) : « la mairie de 70000 Vesoul », « originaire de 25000
+  /// Besançon » restent masqués. « de » ne compte qu'après un nom de pièce ou
+  /// de quantité (« commande de 70000 unités », « un lot de 12345 pièces »).
+  /// Mieux vaut un nombre masqué à tort qu'un code postal laissé en clair.
   static final RegExp _introduitParQuantite = RegExp(
-    r'(?:(?<![\p{L}])(?:de|environ|n°|réf\.?|ref\.?|référence|reference|lot|'
-    r'dossier|commande|facture|total|quantité|quantite|montant)|'
-    r"(?<![\p{L}])d['’])"
-    r'[ \t  ]*:?[ \t  ]*$',
+    r'(?<![\p{L}])(?:(?:commande|lot|total|quantité|quantite|montant|facture|'
+    r'dossier|stock|livraison|tirage)s?'
+    r"(?:[ \t\u00A0\u202F]+(?:de|d['’]))?|"
+    r'environ|n°|réf\.?|ref\.?|référence|reference)'
+    r'[ \t\u00A0\u202F]*:?[ \t\u00A0\u202F]*$',
     caseSensitive: false,
     unicode: true,
   );

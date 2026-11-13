@@ -74,9 +74,23 @@ void main() {
 
   // Limites assumées, documentées dans `LIMITES.md` : ce qui ne change pas ou
   // qui est perdu. Un test les fixe pour que la perte reste mesurée.
-  test('perte assumée : « la mairie de 70000 Vesoul » (introduit par « de »)',
+  // « de » seul n'est pas une tournure de quantité (décision du 13 novembre) :
+  // un code postal introduit par « de » reste masqué.
+  for (final texte in const [
+    'Courrier de la mairie de 70000 Vesoul.',
+    'Patient originaire de 25000 Besançon.',
+    'Transfert en provenance de 90000 Belfort.',
+  ]) {
+    test('code postal introduit par « de », toujours masqué : $texte',
+        () async {
+      final r = await Ecluse.redact(texte);
+      expect(r.entities.where((e) => e.type == EntityType.adresse), isNotEmpty);
+    });
+  }
+
+  test('« de » après un nom de quantité : « un lot de 12345 Pièces »',
       () async {
-    final r = await Ecluse.redact('Courrier de la mairie de 70000 Vesoul.');
+    final r = await Ecluse.redact('Il reste un lot de 12345 Pièces en stock.');
     expect(r.entities.where((e) => e.type == EntityType.adresse), isEmpty);
   });
 
