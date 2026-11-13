@@ -9,6 +9,15 @@ disent. Commande :
 bash bench/etat.sh > etat.log 2>&1   # depuis la racine, Dart et Python requis
 ```
 
+Fiabilité du script (P2-168). `bench/etat.sh` ne tait plus une ligne attendue
+et ne masque plus un échec : une commande qui échoue, un fichier de sortie
+absent ou vide, un filtre qui ne trouve rien s'impriment « ÉCHEC : … » ou
+« section vide : … » et le script sort avec un code non nul. Il vérifie sa
+propre sortie contre `bench/etat_attendu.py` (une liste de lignes attendues par
+section) et supprime d'abord tous les fichiers générés d'un rejeu précédent :
+un résultat manquant ne peut plus être remplacé par un ancien. Ajouter une
+ligne au tableau de bord, c'est ajouter son motif à `etat_attendu.py`.
+
 Corpus **synthétiques** uniquement ; aucun chiffre ne vaut fréquence réelle.
 Presidio n'est pas rejoué ici (environnement à part, `bench/README.md`,
 « Reproduire ») ; ses chiffres de référence datent de la relecture P1-12.
@@ -202,16 +211,17 @@ quelle règle produit la prédiction.
 
 | | avant P2-167 | après P2-167 |
 |---|---:|---:|
-| Adresses prédites à tort (400 phrases) | 130 | **66** |
-| dont voie « détecteur seul » (nombre + mot à majuscule) | 88 | 44 |
-| dont voie « texte d'ombre » (nombre + nom commun, casse de phrase) | 42 | 22 |
-| nombre après des mots (200 phrases) | 64 | **0** |
+| Adresses prédites à tort (400 phrases) | 130 | **74** |
+| dont voie « détecteur seul » (nombre + mot à majuscule) | 88 | 49 |
+| dont voie « texte d'ombre » (nombre + nom commun, casse de phrase) | 42 | 25 |
+| nombre après des mots (200 phrases) | 64 | **8** |
 | nombre en tête de phrase (200 phrases) | 66 | 66 |
 | montants (« euros ») et nombre sans mot suivant | 0 | 0 |
 
 Correction : un nombre à cinq chiffres **introduit par une tournure de
-quantité ou de référence** (« de », « environ », « lot », « réf. », « n° »,
-« total »…) n'est plus pris pour un code postal sans voie. **Reste** : un nombre
+quantité ou de référence** (« environ », « lot », « réf. », « n° », « total »,
+« commande de », « lot de »… ; **jamais « de » seul** : « la mairie de 70000
+Vesoul » reste masqué, les 8 nombres restants sont introduits par « de » seul) n'est plus pris pour un code postal sans voie. **Reste** : un nombre
 en tête de phrase suivi d'un mot (« 58699 Alpha livrés ») a exactement la forme
 d'un code postal en tête de ligne (« 70000 Vesoul ») ; aucune tournure ne les
 sépare, ils restent masqués (66 sur 200). Reste du tableau de bord inchangé
@@ -247,6 +257,26 @@ Corpus structurel (rappel ; sans recoupe : 100 % partout). Deux chemins,
 | 60 | **`Ecluse.redact`** (ce que reçoit le LLM) | 269/269 | 166/166 | 214/214 | 129/129 | **778/778** (777/778 avant P2-158) |
 | 90 | moteur seul (`ecluse_core`) | 100 % | 100 % | 87,4 % | 100 % | 96,5 % |
 | 60 | moteur seul (`ecluse_core`) | 91,8 % | 90,4 % | 72,9 % | 100 % | 87,7 % |
+| 90 | **détecteur isolé** (`NirDetector`, `RppsDetector`, `IbanFrDetector`, `FinessDetector` appelés directement, P2-166) | 100 % | 100 % | 87,4 % | 100 % | 96,5 % |
+| 60 | **détecteur isolé** (id.) | 91,8 % | 90,4 % | 72,9 % | 100 % | 87,7 % |
+
+Le détecteur isolé (`bench/` : `run_detecteur_isole.dart`) donne exactement les
+chiffres du moteur seul : l'appel direct d'un détecteur, comme dans l'exemple du
+README d'`ecluse_core`, manque 96 identifiants sur 778 à 60 colonnes (22 NIR,
+16 RPPS, 58 IBAN) et 27 à 90 colonnes. Chemin mesuré : appel direct, **pas** ce
+que reçoit le LLM (`Ecluse.redact`, 778/778).
+
+Collage de fin de ligne **hors du cœur** (P2-166, `run_collage_fp.dart`,
+`agent/specs/P2-166.md`) : texte recollé par le banc avec la règle
+d'`ecluse_redact`, détecteurs appelés seuls sur le texte recollé ; rien n'est
+changé dans `lib/`. Corpus structurel : à 60 colonnes 97 coupures, 96
+détections traversant une coupure (toutes sur un identifiant annoté), **0 à
+tort** ; à 90 colonnes 27 coupures, 27 détections, **0 à tort**. Corpus flous,
+QI, dossiers, pathologies, transcrit : 0 coupure (ils n'exercent pas ce cas).
+Prose de 71 fichiers `.md` : 300 coupures, 0 identifiant formé. Cas ciblés
+(« Salle 4⏎A2 », « Vol 12⏎B7 », tableau de chambres) et colonnes de nombres
+uniformes à 9, 11, 13 chiffres (12 000 tirages, graine 42) : 0 détection
+traversant une coupure.
 
 Lecture : par `Ecluse.redact`, un identifiant coupé entre deux groupes est
 détecté (fin de ligne neutralisée dans la vue de détection, P2-38, P2-152 et

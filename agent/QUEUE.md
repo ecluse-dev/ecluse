@@ -233,10 +233,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-163 | code | Tranche d'âge « de 80 à 85 ans » : lire les deux bornes (aujourd'hui seule la seconde sort) | P2-154 | regroupée (P2-159) |
 | P2-164 | code | Adresses : numéro de CEDEX (« CEDEX 9 », « Cedex 09 », virgule avant CEDEX) et boîte postale (« BP 12 ») laissés en clair (suite de P2-157) | P2-157 | fusionnée |
 | P2-165 | code | Âges dans `ecluse_reid` : durées lues à tort comme un âge (« deux ans plus tard », « au bout de cinq ans », « un contrat de 3 ans »), en lettres comme en chiffres (suite de P2-159) | P2-159 | fusionnée |
-| P2-166 | mesure | Mise en page : ligne « détecteur isolé » au tableau de bord et budget de faux positifs d'une fin de ligne neutralisée dans le cœur (plan de mesure de P2-162 § 5, points 1 et 3) ; aucun code de production | P2-162 | à faire |
-| P2-167 | code | Adresses : « code postal + mot » hors adresse masqué à tort (« Commande de 70000 unités ») ; mesurer d'abord sur un témoin dédié, puis corriger sans perdre une adresse | P2-164 | PR ouverte |
-| P2-168 | code | Tableau de bord : `bench/etat.sh` ne doit ni taire une ligne attendue ni masquer un échec (filtres `grep`, `\|\| true`, sorties jetées) ; banc seulement, aucun fichier de `lib/` | P2-165 | à faire |
-| P2-169 | mesure | Audit des voies de fuite après les changements de novembre (`ecluse_redact`, `ecluse_reid`, `ecluse_ingest`, `ecluse_demo`, `ecluse_audit`) : exceptions, `toString`, journaux, sérialisation ; rapporter, ne rien corriger | P2-165 | à faire |
+| P2-166 | mesure | Mise en page : ligne « détecteur isolé » au tableau de bord et budget de faux positifs d'une fin de ligne neutralisée dans le cœur (plan de mesure de P2-162 § 5, points 1 et 3) ; aucun code de production | P2-162 | fusionnée |
+| P2-167 | code | Adresses : « code postal + mot » hors adresse masqué à tort (« Commande de 70000 unités ») ; mesurer d'abord sur un témoin dédié, puis corriger sans perdre une adresse | P2-164 | fusionnée |
+| P2-168 | code | Tableau de bord : `bench/etat.sh` ne doit ni taire une ligne attendue ni masquer un échec (filtres `grep`, `\|\| true`, sorties jetées) ; banc seulement, aucun fichier de `lib/` | P2-165 | fusionnée |
+| P2-169 | mesure | Audit des voies de fuite après les changements de novembre (`ecluse_redact`, `ecluse_reid`, `ecluse_ingest`, `ecluse_demo`, `ecluse_audit`) : exceptions, `toString`, journaux, sérialisation ; rapporter, ne rien corriger | P2-165 | fusionnée |
+| P2-170 | code | Voies de fuite de `ecluse_reid` et `ecluse_reference` : `toString` sans valeur tirée du texte (`Qi`, `BirthDate`, `Generalization`, `PathologieMention`) et messages d'`ArgumentError` à motif fixe (F1, F3, F4, F5 de P2-169) | P2-169 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -559,3 +560,22 @@ ne reprennent que ce qui manque pour la prendre.
   vérifiées (y compris celles qui sont saines), les voies fautives avec leur
   reproduction, et propose une tâche de correction par voie fautive ; aucun
   fichier de `lib/` modifié.
+- **P2-170** : `ecluse_reid` et `ecluse_reference`. Rapport
+  `agent/specs/P2-169.md` § 2 et § 3 : voies F1 (`Qi.toString`), F3
+  (`PathologieMention.toString`, gravité haute), F4 (`ArgumentError` de
+  `estimator.dart` et `lieu_population.dart` avec une valeur de QI), F5
+  (`GeoHierarchy.populationOfDep`), et les deux « hors décompte »
+  (`BirthDate.toString`, `Generalization.toString`). Une seule PR, un volet
+  par voie. Pour chaque voie, test d'abord : une entrée synthétique qui
+  déclenche la sortie, et l'assertion que la valeur tirée du texte n'y est
+  pas (reprendre les reproductions du rapport). Puis la correction :
+  `toString` ne rend que le type, le niveau et des longueurs ; les messages
+  d'exception ont un motif fixe, sans la valeur reçue. Ne changer aucune API
+  publique ni aucun champ : seuls les textes de `toString` et des messages
+  changent. Vérifier qu'aucun test, banc ou script ne lit ces textes pour en
+  tirer une valeur (sinon s'arrêter sur ce volet et l'expliquer). **F2 n'est
+  pas dans cette tâche** (`ReidTrace.toAuditMap`, clé `qisInitiaux`) : le
+  mainteneur doit d'abord dire si la preuve AIPD garde ces valeurs. **Fini
+  quand** : un test de non-fuite par voie, rouge avant et vert après ; tableau
+  de bord rejoué sans aucun chiffre modifié ; `LIMITES.md` et
+  `agent/specs/P2-169.md` (état de chaque voie) à jour.
