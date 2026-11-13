@@ -234,6 +234,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-164 | code | Adresses : numéro de CEDEX (« CEDEX 9 », « Cedex 09 », virgule avant CEDEX) et boîte postale (« BP 12 ») laissés en clair (suite de P2-157) | P2-157 | fusionnée |
 | P2-165 | code | Âges dans `ecluse_reid` : durées lues à tort comme un âge (« deux ans plus tard », « au bout de cinq ans », « un contrat de 3 ans »), en lettres comme en chiffres (suite de P2-159) | P2-159 | fusionnée |
 | P2-166 | mesure | Mise en page : ligne « détecteur isolé » au tableau de bord et budget de faux positifs d'une fin de ligne neutralisée dans le cœur (plan de mesure de P2-162 § 5, points 1 et 3) ; aucun code de production | P2-162 | à faire |
+| P2-167 | code | Adresses : « code postal + mot » hors adresse masqué à tort (« Commande de 70000 unités ») ; mesurer d'abord sur un témoin dédié, puis corriger sans perdre une adresse | P2-164 | à faire |
+| P2-168 | code | Tableau de bord : `bench/etat.sh` ne doit ni taire une ligne attendue ni masquer un échec (filtres `grep`, `\|\| true`, sorties jetées) ; banc seulement, aucun fichier de `lib/` | P2-165 | à faire |
+| P2-169 | mesure | Audit des voies de fuite après les changements de novembre (`ecluse_redact`, `ecluse_reid`, `ecluse_ingest`, `ecluse_demo`, `ecluse_audit`) : exceptions, `toString`, journaux, sérialisation ; rapporter, ne rien corriger | P2-165 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -511,3 +514,48 @@ ne reprennent que ce qui manque pour la prendre.
   possibles est écrit dans `agent/specs/P2-166.md`, le reste du tableau de
   bord est inchangé. La décision A1 / A2 / B / C de P2-162 reste au
   mainteneur.
+- **P2-167** : `ecluse_redact`, `adresse_detector.dart`. Relevé le
+  13 novembre (relecture de P2-164) : par `Ecluse.redact`, « Commande de
+  70000 unités, cedex 9 non concerné. » sort avec « 70000 unités » masqué
+  comme une adresse. Premier volet, mesurer : écrire un corpus témoin
+  « nombres à cinq chiffres » (graine 42, dans `bench/`, à côté des témoins
+  flous) : quantités, montants, références, numéros de lot ou de dossier,
+  suivis d'un mot en minuscules, d'un mot à majuscule, en début ou en fin de
+  phrase ; compter les prédictions par `Ecluse.redact` et dire quelle règle
+  les produit (la sonde sera à refaire : ne pas supposer la cause). Second
+  volet, corriger, dans la même PR, si la cause est une règle du détecteur
+  d'adresse : test rouge d'abord, puis correction par tournure, sans liste
+  ajustée aux valeurs du corpus. Si la correction ferait perdre une adresse
+  des corpus flous, s'arrêter et rapporter la mesure seule. **Fini quand** :
+  le nouveau témoin est au tableau de bord avec son chemin de mesure, son
+  compte avant et après ; adresses du réaliste et de l'adversarial inchangées
+  (0 % en clair), témoins existants à 0, reste du tableau de bord inchangé,
+  `LIMITES.md` à jour.
+- **P2-168** : `bench/etat.sh` et les scripts qu'il appelle ; aucun fichier
+  de `lib/`. Constat du 13 novembre (P2-165) : la ligne « témoin » des
+  quasi-identifiants ne s'imprimait pas, le filtre cherchait « extractions »
+  alors que le score écrit « Extractions ». Le tableau de bord a donc pu taire
+  un chiffre sans que personne le voie. Relire chaque section : pour chaque
+  ligne que `bench/ETAT.md` annonce, vérifier qu'elle sort bien de
+  `bench/etat.sh` ; recenser les `|| true`, les `> /dev/null 2>&1` et les
+  `grep` qui peuvent rendre une section vide. Corriger pour qu'une commande
+  qui échoue ou une section vide s'affiche comme telle (« ÉCHEC : … »,
+  « section vide ») et que le script sorte avec un code non nul, sans changer
+  aucun chiffre. Ajouter un test Python dans `bench/` qui échoue si une
+  section attendue manque dans une sortie d'exemple. **Fini quand** : la
+  liste des trous trouvés est dans la PR, `bash bench/etat.sh` rejoué donne
+  les mêmes chiffres qu'avant ligne à ligne (lignes ajoutées exceptées), un
+  échec provoqué exprès (corpus absent) est visible et fait sortir en erreur.
+- **P2-169** : mesure seulement, rapport dans `agent/specs/P2-169.md`.
+  Reprendre la méthode des audits précédents (chercher « fuite » et
+  « P2-9 » dans `DECISIONS.md` et `LIMITES.md`) sur le code ajouté depuis
+  le 1er novembre : option `prenomsInsee`, neutralisation des fins de ligne,
+  âges en lettres et tranches, durées, CEDEX, corpus de dictée, bancs. Pour
+  chaque paquet : messages d'exception, `toString`, `print` et journaux,
+  sérialisation JSON, journal d'audit, serveur de démo. Une valeur tirée du
+  texte de l'utilisateur ne doit apparaître dans aucun de ces canaux. Pour
+  chaque voie trouvée : fichier, ligne, une entrée synthétique qui la
+  déclenche et ce qui sort. **Fini quand** : le rapport liste les voies
+  vérifiées (y compris celles qui sont saines), les voies fautives avec leur
+  reproduction, et propose une tâche de correction par voie fautive ; aucun
+  fichier de `lib/` modifié.
