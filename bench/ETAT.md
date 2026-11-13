@@ -127,29 +127,81 @@ Travail » et « Ange Gardien » (P2-150 ; `agent/specs/P2-148.md` § 6).
 
 | Corpus | âge P / R | lieu P / R | profession P / R | Non couverts (âge / lieu / prof.) |
 |---|---|---|---|---|
-| réaliste | 100 / 100 % | 88,2 / 100 % | 100 / 100 % | 0 / 0 / 0 % |
-| adversarial | 100 / **100 %** (95,5 % avant P2-159) | 92,3 / 100 % | 100 / 96,2 % | **0** (12,7 avant P2-159) / 0 / 2,0 % |
-| témoin | 412 extractions à tort, 337 documents sur 400 ; **57 / 57 après P2-136, 0 après P2-142** | | | |
-| témoin « durées » (P2-165) | 400 extractions à tort sur 400 documents ; **53 après P2-165** (la seule forme « fêtera ses N ans ») | | | |
+| réaliste | 100 / 100 % | 88,2 → **100 %** / 100 % | 100 / 100 % | 0 / 0 / 0 % |
+| adversarial | 100 / **100 %** (95,5 % avant P2-159) | 92,3 → **100 %** / 100 % | 100 / 96,2 → **100 %** | **0** (12,7 avant P2-159) / 0 / 2,0 → **0 %** |
+| témoin | 412 extractions à tort, 337 documents sur 400 ; **57 / 57 après P2-136, 0 après P2-142** (inchangé par P2-175) | | | |
+| témoin « durées » (P2-165) | 400 extractions à tort sur 400 documents ; **53 après P2-165** (la seule forme « fêtera ses N ans », inchangé par P2-175) | | | |
 
 Identique à `bench/README.md` (P2-03b) au commit `d85fb84` ; témoin corrigé
 ensuite par P2-136 (durées, communes-mots courants), réaliste et
 adversarial inchangés ; âges en lettres et tranche « de N à M ans » lus par
 P2-159 (adversarial : 12,7 % → 0 % d'âges non couverts, 15 âges en lettres).
-Chemin : `ecluse_reid` seul (`run_reid_bench.dart`), pas `Ecluse.redact`. Le
-témoin « durées » (400 phrases sans âge : « deux ans plus tard », « au bout de
-5 ans », « un contrat de trois ans », « dix ans d'ancienneté », en lettres et en
-chiffres) mesure les durées lues à tort comme un âge : 400 → 53 par P2-165,
-réaliste et adversarial inchangés (rappel d'âge 100 %). La
+Chemin : `ecluse_reid` seul (`run_reid_bench.dart`), pas `Ecluse.redact` (voir
+« Quasi-identifiants par `Ecluse.redact` » ci-dessous pour le chemin produit).
+Le témoin « durées » (400 phrases sans âge : « deux ans plus tard », « au bout
+de 5 ans », « un contrat de trois ans », « dix ans d'ancienneté », en lettres
+et en chiffres) mesure les durées lues à tort comme un âge : 400 → 53 par
+P2-165, réaliste et adversarial inchangés (rappel d'âge 100 %). La
 ligne « Généralisation appliquée » de l'adversarial en découle : ces 15
 documents ont désormais un âge (sur les 385 autres, sortie identique, vérifié).
+
+### Lieux à tort et professions manquées (P2-175)
+
+Constat du 13 novembre : les 43 et 33 lieux à tort (précision 88,2 % et
+92,3 % ci-dessus) étaient tous un patronyme homonyme d'une commune de la
+référence publique (ex. « Chevrier », Haute-Savoie) extrait derrière une
+civilité ou un métier (« Monsieur Chevrier réside à Lille » lisait à tort
+« Chevrier » comme un second lieu). Les 7 professions manquées de
+l'adversarial (sur 183) étaient des abréviations ou graphies sans accent :
+« pneumo » (3), « gynéco » (3), « pediatre » sans accent (1).
+
+Mesure avant → après (`ecluse_reid` seul) : précision lieu 88,2 % → **100 %**
+(réaliste), 92,3 % → **100 %** (adversarial) ; rappel profession 96,2 % →
+**100 %** (adversarial). Témoins inchangés (0 et 53). Correction : un mot
+capitalisé juste après une civilité, un titre ou un couple article + nom
+commun de métier (hors noms de lieu comme « commune », « village ») n'est
+plus lu comme un lieu ; « pneumo » et « gynéco » (table dédiée) et la forme
+sans accent des mots-clés de profession existants sont désormais lus par
+`_professionSpans`, pas par `extractProfession` (qui compterait « pneumo »
+deux fois dans « pneumologue »). Aucune commune réelle n'est perdue : les cas
+contre-exemples (« Mme Verdier habite Chevrier », « il connaît le village
+Chevrier », etc.) restent extraits (test dédié). Effet en cascade attendu sur
+la « Généralisation appliquée » : les 7 professions désormais extraites sur
+l'adversarial y gagnent une suggestion (111 → 118 documents avec suggestion,
+vérifié document par document).
+
+### Quasi-identifiants par `Ecluse.redact` (P2-175, premier volet)
+
+Nouvelle ligne de tableau de bord : jusqu'ici, la ligne QI ne mesurait que
+`ecluse_reid` seul (ce que l'extraction sait lire dans un texte déjà en
+clair), jamais ce que `Ecluse.redact` laisse réellement partir. Mesure
+(`score_qi_redact.py`) : le patronyme de la personne reste-t-il en clair une
+fois les entités prédites par `Ecluse.redact` retirées du texte, sur les
+corpus réaliste et adversarial (`generate_corpus_qi.py`) ?
+
+| Corpus | Documents avec patronyme en clair |
+|---|---:|
+| réaliste | 0 / 400 |
+| adversarial | **29** / 400 |
+
+Sonde du 13 novembre (compte rendu de session, jetable, non versionnée) :
+0 / 2 sur 400. Chiffre non reproduit à l'identique sur l'adversarial (29 au
+lieu de 2) ; la cause est la même dans les deux mesures et n'est pas
+corrigée ici (hors périmètre de ce volet) : un patronyme qui suit un métier
+**hors périmètre** d'`ecluse_reid` sans civilité (« L'infirmière Chevrier »,
+« Le kinésithérapeute Marchand »...) n'est pas masqué par `NameDetector`, qui
+ne déclenche que sur une civilité ou un titre professionnel d'un ensemble
+fermé (Dr, Pr, Me...), jamais sur un nom de métier quelconque. Vérifié : les
+29 documents correspondent tous à ce cas (aucun autre patronyme en clair). À
+signaler au mainteneur comme écart de mesure ; une correction éventuelle de
+`NameDetector` reste une tâche à part (voir `LIMITES.md`).
 
 ## Généralisation appliquée (P2-92, P2-102, P2-116, P2-132)
 
 | Corpus | Avec suggestion | Refus | F médian avant → après 1er tour | Bande après 1er tour |
 |---|---:|---:|---|---|
 | QI réaliste | 170 | 0 | 74,0 → 2 002,0 | faible 170 |
-| QI adversarial | 111 (109 avant P2-159) | 0 | 5,0 → 2 320,0 (6,0 → 2 466,1) | faible 103, moyen 7, élevé 1 |
+| QI adversarial | 118 (111 avant P2-175, 109 avant P2-159) | 0 | 7,0 → 2 320,0 (5,0 → 2 320,0 avant P2-175) | faible 110, moyen 7, élevé 1 |
 | QI témoin | 0 | 0 | — | — |
 | lieu (810 documents) | 24 | 0 | F recalculé = F simulé (24/24) | élevé 1, moyen 20, faible 3 |
 
