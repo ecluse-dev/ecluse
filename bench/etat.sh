@@ -152,6 +152,14 @@ for c in realiste adversarial temoin temoin_durees; do
   fi
 done
 
+echo "## quasi-identifiants par Ecluse.redact (P2-175) : patronyme en clair derrière un métier sans civilité"
+for c in realiste adversarial; do
+  echo "# $c"
+  if produit "QI $c, Ecluse.redact" "$B/qi/pred_redact_qi_$c.jsonl" redact run_redact_bench.dart "../../bench/qi/corpus_qi_$c.jsonl" "../../bench/qi/pred_redact_qi_$c.jsonl"; then
+    montre "QI $c, patronyme en clair" -E "^QI par|documents|patronyme" 0 non python3 "$B/score_qi_redact.py" --corpus "$B/qi/corpus_qi_$c.jsonl" --pred "$B/qi/pred_redact_qi_$c.jsonl" || true
+  fi
+done
+
 echo "## généralisation appliquée"
 for c in realiste adversarial temoin; do
   echo "# $c"; montre "généralisation $c" -iE "suggestion|refus|médian|bande|plafond" 6 non redact run_generalisation_bench.dart "../../bench/qi/corpus_qi_$c.jsonl" || true

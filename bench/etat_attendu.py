@@ -54,6 +54,12 @@ ATTENDU = [
         (r"^profession +\d+", 2, "profession"),
         (r"^  Extractions totales +: \d+$", 2, "témoin et témoin durées"),
     ]),
+    ("## quasi-identifiants par Ecluse.redact", [
+        (r"^# (realiste|adversarial)$", 2, "2 corpus (réaliste et adversarial)"),
+        (r"^  documents +: \d+$", 2, "nombre de documents"),
+        (r"^  patronyme en clair +: \d+ document", 2,
+         "patronymes en clair, mesure du produit"),
+    ]),
     ("## généralisation appliquée", [
         (r"^# \w+$", 4, "3 corpus et le lieu"),
         (r"^  documents avec suggestion :", 3, "documents avec suggestion"),
