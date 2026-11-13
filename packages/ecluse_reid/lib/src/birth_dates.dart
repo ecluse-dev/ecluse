@@ -9,12 +9,15 @@ final class BirthDate {
   /// Lève [ArgumentError] pour une date qui n'existe pas (mois hors 1-12,
   /// 31 avril, 29 février d'une année non bissextile, année < 1).
   BirthDate(this.year, this.month, this.day) {
-    if (year < 1) throw ArgumentError.value(year, 'year', 'au moins 1');
+    // Le nom du paramètre et le motif, jamais la composante reçue : c'est un
+    // morceau d'une date de naissance (P2-170). `ArgumentError.value`
+    // l'écrivait dans le message.
+    if (year < 1) throw ArgumentError('au moins 1', 'year');
     if (month < 1 || month > 12) {
-      throw ArgumentError.value(month, 'month', 'entre 1 et 12');
+      throw ArgumentError('entre 1 et 12', 'month');
     }
     if (day < 1 || day > _daysIn(year, month)) {
-      throw ArgumentError.value(day, 'day', 'jour inexistant ce mois-ci');
+      throw ArgumentError('jour inexistant ce mois-ci', 'day');
     }
   }
 
@@ -32,8 +35,11 @@ final class BirthDate {
   @override
   int get hashCode => Object.hash(year, month, day);
 
+  /// Aucune composante : une date de naissance exacte est un
+  /// quasi-identifiant fort, et un `toString` finit dans un journal (P2-170).
+  /// Qui a besoin de la date lit [year], [month] et [day].
   @override
-  String toString() => 'BirthDate($year-$month-$day)';
+  String toString() => 'BirthDate(date non affichée)';
 }
 
 bool _isLeap(int year) => (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;

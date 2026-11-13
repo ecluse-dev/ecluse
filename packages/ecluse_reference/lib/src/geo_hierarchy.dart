@@ -159,15 +159,19 @@ class GeoHierarchy {
   /// Lève [ArgumentError] pour un département inconnu ou dont la population
   /// est incomplète dans les données (voir `_depIncomplete`) : renvoyer 0
   /// ou un total partiel donnait un faux « risque élevé » (F = 0).
+  ///
+  /// Les messages ne citent pas [dep] : le code est souvent déduit d'une
+  /// commune du texte de l'utilisateur (P2-170, voie F5 de
+  /// `agent/specs/P2-169.md`).
   int populationOfDep(String dep) {
     _checkLoaded();
     final total = _depPopulation![dep];
     if (total == null) {
-      throw ArgumentError('département "$dep" inconnu.');
+      throw ArgumentError('département inconnu.');
     }
     if (_depIncomplete!.contains(dep)) {
       throw ArgumentError(
-        'population du département "$dep" incomplète dans les données '
+        'population du département incomplète dans les données '
         '(commune sans population) : estimation refusée.',
       );
     }
