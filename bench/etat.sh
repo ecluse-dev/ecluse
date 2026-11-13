@@ -186,6 +186,15 @@ if produit "témoin cinq chiffres, générateur" "$B/flou/corpus_flou_cinq_chiff
   montre "témoin cinq chiffres, Ecluse.redact" -E . 0 non redact run_cinq_chiffres_bench.dart ../../bench/flou/corpus_flou_cinq_chiffres.jsonl || true
 fi
 
+# Identifiant suivi d'une date, d'un âge ou d'un nombre (P2-174) : 4 types x
+# 4 familles x 3 séparateurs x 100 documents. Un identifiant non couvert est
+# une fuite ; un type faux ou une suite avalée abîme le texte sans fuite.
+echo "## identifiant suivi d'un nombre (P2-174) : Ecluse.redact (chemin du produit)"
+produit "générateur identifiant suivi" "$B/flou/corpus_identifiant_suivi.jsonl" dans_B python3 generate_corpus_identifiant_suivi.py --n 100 --seed 42 --out flou/corpus_identifiant_suivi.jsonl || true
+if produit "identifiant suivi, Ecluse.redact" "$B/flou/pred_identifiant_suivi.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_identifiant_suivi.jsonl ../../bench/flou/pred_identifiant_suivi.jsonl; then
+  montre "identifiant suivi, score" -E "^identifiant suivi|type_id=|separateur=|^  défaut" 0 non dans_B python3 score_identifiant_suivi.py --corpus flou/corpus_identifiant_suivi.jsonl --pred flou/pred_identifiant_suivi.jsonl || true
+fi
+
 echo "## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90"
 # Un refus explicite (tableau ambigu) n'envoie rien : il est compté à part et
 # retiré du corpus noté ; la fuite se lit sur les documents traités.

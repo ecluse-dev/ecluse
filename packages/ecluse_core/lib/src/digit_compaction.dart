@@ -20,7 +20,7 @@
 /// majuscules (ex. « IBAN 1234 » ne doit jamais devenir « IBAN1234 »,
 /// sans quoi le motif du détecteur ne reconnaît plus son propre début).
 final class DigitCompaction {
-  const DigitCompaction._(this.original, this.compact, this._originalIndex);
+  DigitCompaction._(this.original, this.compact, this._originalIndex);
 
   /// Texte d'origine, tel que reçu.
   final String original;
@@ -132,9 +132,22 @@ final class DigitCompaction {
   /// alors un seul nombre trop long et rejettent le candidat : une fuite. Le
   /// passage sur le texte d'origine retrouve ces identifiants au format
   /// courant (un séparateur simple), le passage compacté garde les
-  /// espacements irréguliers (espaces multiples, NBSP, tabulation). Reste non
-  /// couvert : un espacement irrégulier **et** un nombre voisin (voir
-  /// `LIMITES.md`).
+  /// espacements irréguliers (espaces multiples, NBSP, tabulation).
+  ///
+  /// Troisième passage (P2-174), sur le texte **régularisé** : chaque suite de
+  /// blancs entre deux chiffres y devient une seule espace au lieu de
+  /// disparaître. Il couvre ce que les deux autres laissaient : un espacement
+  /// irrégulier **et** un nombre voisin (`NIR 1  85  05 … 91 12 ans`), mesuré
+  /// à 492 identifiants non détectés sur 2 400 par le témoin
+  /// `bench/generate_corpus_identifiant_suivi.py`. Ce passage ne lit rien de
+  /// plus qu'un document écrit avec des espaces simples : les garde-fous de
+  /// chaque détecteur (clé, forme) s'appliquent tels quels.
+  ///
+  /// Enfin, un candidat qui **finit au milieu d'une date en chiffres**
+  /// (`… 12/03/2024` : le candidat s'arrête après `12` ou `12/03`) est écarté :
+  /// ses derniers chiffres sont le début de la date, pas la fin d'un
+  /// identifiant (un RPPS suivi d'une date se lisait parfois comme un NIR, un
+  /// FINESS suivi d'une date comme un RPPS).
   List<CompactCandidate> candidates(RegExp pattern) {
     final found = <CompactCandidate>[];
     final seen = <(int, int)>{};
@@ -150,8 +163,75 @@ final class DigitCompaction {
         found.add(CompactCandidate(m.start, m.end, m.group(0)!));
       }
     }
+    final regularise = _regularise;
+    if (regularise != null) {
+      final (texte, index) = regularise;
+      for (final m in pattern.allMatches(texte)) {
+        final start = index[m.start];
+        final end = index[m.end - 1] + 1;
+        if (seen.add((start, end))) {
+          found.add(CompactCandidate(start, end, m.group(0)!));
+        }
+      }
+    }
+    found.removeWhere((c) => _finitDansUneDate(c.start, c.end));
     found.sort((a, b) => a.start - b.start);
     return found;
+  }
+
+  /// Texte régularisé et position d'origine de chacun de ses caractères, ou
+  /// `null` si aucun blanc entre deux chiffres n'est irrégulier (le texte
+  /// régularisé serait le texte d'origine, déjà parcouru). Calculé une fois.
+  late final (String, List<int>)? _regularise = _construitRegularise();
+
+  (String, List<int>)? _construitRegularise() {
+    final unites = <int>[];
+    final index = <int>[];
+    var irregulier = false;
+    var i = 0;
+    while (i < original.length) {
+      if (!_whitespace.contains(original[i])) {
+        unites.add(original.codeUnitAt(i));
+        index.add(i);
+        i++;
+        continue;
+      }
+      var fin = i + 1;
+      while (fin < original.length && _whitespace.contains(original[fin])) {
+        fin++;
+      }
+      if (_digitBehind(unites) && _digitAhead(original, fin)) {
+        // Entre deux chiffres : une seule espace ordinaire.
+        if (fin - i > 1 || original.codeUnitAt(i) != 0x20) irregulier = true;
+        unites.add(0x20);
+        index.add(i);
+      } else {
+        for (var j = i; j < fin; j++) {
+          unites.add(original.codeUnitAt(j));
+          index.add(j);
+        }
+      }
+      i = fin;
+    }
+    return irregulier ? (String.fromCharCodes(unites), index) : null;
+  }
+
+  /// Date en chiffres à année sur quatre chiffres : `12/03/2024`,
+  /// `1.3.1998`, `12-03-2024` (même séparateur des deux côtés).
+  static final RegExp _dateEnChiffres =
+      RegExp(r'[0-3]?[0-9]([/.\-])[01]?[0-9]\1(?:19|20)[0-9]{2}(?![0-9])');
+
+  /// Le candidat `[start, end)` s'arrête-t-il au milieu d'une date en
+  /// chiffres qui commence à son dernier groupe (le dernier morceau séparé
+  /// du reste par un blanc) ?
+  bool _finitDansUneDate(int start, int end) {
+    var g = end;
+    while (g > start && !_whitespace.contains(original[g - 1])) {
+      g--;
+    }
+    if (g == start) return false; // d'un seul tenant : pas de groupe à part
+    final date = _dateEnChiffres.matchAsPrefix(original, g);
+    return date != null && date.end > end;
   }
 
   /// Position, dans le texte d'origine, du début d'un match `[compactStart,

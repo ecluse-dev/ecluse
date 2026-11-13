@@ -104,10 +104,57 @@ des caractères NUL (UTF-16 sans BOM) sont **refusés avec un motif**. Un
 document sans aucun texte reçoit l'avertissement `empty`.
 **Identifiant collé à un nombre.** Un NIR, un RPPS, un IBAN ou un FINESS
 suivi ou précédé d'un nombre séparé par un simple blanc est détecté
-(`NIR 1 85 05 78 006 084 91 12 ans`). **Reste non détecté** : un
-identifiant à espacement *irrégulier* (espaces multiples, tabulation,
-espace insécable) **et** collé à un nombre voisin, et un FINESS écrit avec
-des espaces suivi d'un nombre.
+(`NIR 1 85 05 78 006 084 91 12 ans`).
+
+**Identifiant suivi d'une date, d'un âge ou d'un nombre (P2-174).** Témoin
+`bench/generate_corpus_identifiant_suivi.py` : 4 800 documents synthétiques
+(NIR, RPPS, IBAN, FINESS × date en chiffres, date en lettres, âge, quantité ×
+espace, virgule, retour à la ligne), chemin **`Ecluse.redact`**. Avant P2-174,
+**804 identifiants sur 4 800 n'étaient pas couverts** (17 %, une fuite) : un
+identifiant à espacement irrégulier (espaces multiples, tabulation, espace
+insécable) collé à un nombre voisin (NIR 202, IBAN 290), et un FINESS écrit
+« 12 345 678 9 » suivi d'un nombre (312) ; c'était le reste laissé par
+P1-19. S'y ajoutaient 55 FINESS masqués **comme RPPS** en avalant le jour de
+la date ou l'âge (neuf chiffres et deux font onze, la clé de Luhn passe une
+fois sur dix) : rien en clair, mais un type faux et une date abîmée. Après :
+**1 identifiant non couvert, 2 documents en défaut** sur 4 800. Trois
+changements, dans `ecluse_core` :
+
+- un troisième passage de `DigitCompaction.candidates` sur un texte
+  **régularisé** (chaque suite de blancs entre deux chiffres devient une
+  espace au lieu de disparaître) : il lit un identifiant à blancs irréguliers
+  comme s'il était écrit avec des espaces simples, sans souder le voisin ;
+- un motif groupé « 12 345 678 9 » pour le FINESS (groupement strict 2-3-3-1,
+  espace seule) ;
+- un candidat qui finit au milieu d'une date en chiffres (« … 12/03/2024 »)
+  est écarté, et un RPPS formé de neuf chiffres à clé de Luhn valide puis de
+  deux chiffres est écarté **si la suite le prouve** (suite d'une date, nom de
+  mois, « ans »).
+
+**Ce qui reste :**
+
+- **Sans preuve, le RPPS garde tout.** « 123456789 12 séances » : rien ne dit
+  que « 12 » n'est pas la fin d'un RPPS écrit en deux groupes. Les onze
+  chiffres restent masqués sous le type RPPS (sur-masquage et type faux,
+  jamais une fuite). Aucun des 400 FINESS suivis d'une quantité du témoin n'y
+  tombe ; le cas est tenu par un test unitaire.
+- **Deux candidats qui se chevauchent en partie.** « 12 785 847 0 1250
+  jours » : un bloc de onze chiffres à cheval sur la fin du FINESS et le
+  nombre voisin passe Luhn, le résolveur de chevauchements garde le RPPS et
+  les deux premiers chiffres du FINESS restent en clair (1 cas sur 4 800 ;
+  c'était déjà le cas avant, quand le FINESS n'était pas détecté du tout).
+  Masquer l'union de deux candidats qui se chevauchent serait la réponse ;
+  ce n'est pas fait.
+- **Un RPPS suivi d'un nombre peut passer pour un NIR** (onze chiffres et
+  quatre font quinze ; clé valide par hasard) : 1 cas sur 4 800, tout masqué.
+- Le motif groupé du FINESS ne connaît que « 12 345 678 9 ». Un autre
+  groupement (« 123 456 789 ») suivi d'un nombre n'est pas détecté. Non
+  mesuré : le corpus n'écrit pas cette forme.
+- **Moteur seul** (`ecluse_core` sans `ecluse_redact`) : la fin d'un IBAN à
+  blancs irréguliers coupé par un retour à la ligne peut être lue comme un
+  RPPS (1 faux positif de plus sur le corpus structurel à 90 colonnes : 2 →
+  3). Par `Ecluse.redact`, qui recolle la ligne, l'IBAN est lu en entier
+  (778 / 778).
 
 **NIR et IBAN : variantes de forme.** Le NIR est reconnu avec un mois de
 naissance fictif (`00`, `20` à `42`, `50` à `99`, d'après la nomenclature

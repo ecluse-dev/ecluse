@@ -86,6 +86,14 @@ ATTENDU = [
          "compte des adresses prédites à tort (P2-167)"),
         (r"^  position=(debut|milieu) : \d+ / \d+", 2, "par position"),
     ]),
+    ("## identifiant suivi d'un nombre", [
+        (r"^identifiant suivi : \d+ documents, \d+ identifiant\(s\) non "
+         r"couvert\(s\)", 1, "témoin identifiant suivi (P2-174)"),
+        (r"^  type_id=(finess|iban|nir|rpps) : \d+ / \d+ en défaut", 4,
+         "par type d'identifiant"),
+        (r"^  separateur=(espace|ligne|virgule) : \d+ / \d+ en défaut", 3,
+         "par séparateur"),
+    ]),
     ("## mise en page", [
         (r"^# \w+ largeur \d+ : \d+ refus$", 6, "3 corpus x 2 largeurs"),
         (r"^GLOBAL +\d+", 4, "GLOBAL du réaliste et de l'adversarial"),
