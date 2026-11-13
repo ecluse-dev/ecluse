@@ -197,6 +197,50 @@ Masquage des maladies rares (P2-143, `run_maladies_rares_bench.dart`) :
 | Échantillon Orphanet (300, graine 42), rattachées ou personne nommée | 0 / 300 | 276 / 300 |
 | Échantillon Orphanet, niées ou sans personne | 0 / 300 | 0 / 300 |
 
+## Identifiant suivi d'une date, d'un âge ou d'un nombre (P2-174)
+
+Témoin `bench/generate_corpus_identifiant_suivi.py` (graine 42) : 4 800
+documents, 100 par combinaison de type (NIR, RPPS, IBAN, FINESS), de suite
+(date en chiffres, date en lettres, âge, quantité) et de séparateur (espace,
+virgule, retour à la ligne). Identifiants valides fabriqués (clés calculées),
+écrits dans les styles du corpus v3 (collé, groupé, pointé, blancs
+irréguliers). Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM),
+scoreur `bench/score_identifiant_suivi.py`. « Non couvert » = au moins un
+caractère de l'identifiant hors de toute détection (une fuite) ; « type
+faux » = couvert sous un autre type ; « suite avalée » = la date, l'âge ou le
+nombre voisin pris dans la détection de l'identifiant.
+
+| | avant P2-174 | après P2-174 |
+|---|---:|---:|
+| Identifiants non couverts (4 800) | **804** | **1** |
+| dont FINESS (1 200) | 312 | 1 |
+| dont IBAN (1 200) | 290 | 0 |
+| dont NIR (1 200) | 202 | 0 |
+| dont RPPS (1 200) | 0 | 0 |
+| Type faux (non couverts compris) | 863 | 2 |
+| dont FINESS couvert mais lu comme RPPS | 55 | 0 |
+| Suite avalée | 72 | 2 |
+| Documents en défaut | 863 | **2** |
+| Séparateur virgule (1 600) | 0 | 0 |
+| Séparateur espace (1 600) | 439 | 1 |
+| Séparateur retour à la ligne (1 600) | 424 | 1 |
+
+Avant, les non couverts étaient les identifiants à blancs irréguliers et les
+FINESS groupés collés à un nombre voisin (reste connu de P1-19, jamais
+chiffré). Les deux documents restants : un FINESS groupé suivi de « 1250
+jours », où un bloc de onze chiffres à cheval sur les deux passe Luhn (les
+deux premiers chiffres du FINESS restent en clair) ; un RPPS suivi de « 1250
+jours », lu comme un NIR à clé valide par hasard (tout est masqué). Détail et
+restes dans `LIMITES.md` (« Identifiant suivi d'une date… »).
+
+Effet sur le reste du tableau de bord : **une seule ligne change**, par le
+**moteur seul** (pas `Ecluse.redact`) : corpus structurel à 90 colonnes, faux
+positifs RPPS 2 → 3 (précision RPPS 98,8 % → 98,2 %, total 94,5 % → 94,3 %).
+C'est la fin d'un IBAN à blancs irréguliers coupé par un retour à la ligne,
+que le moteur seul ne lit pas comme un IBAN et dont le dernier bloc est
+maintenant lu comme un RPPS. Rappels inchangés partout ; v3 d'origine :
+toujours 42 faux positifs (FINESS/SIREN).
+
 ## Nombres à cinq chiffres hors adresse (P2-167)
 
 Témoin `bench/generate_corpus_cinq_chiffres.py` (400 phrases, graine 42,
