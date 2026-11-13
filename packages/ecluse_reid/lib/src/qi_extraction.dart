@@ -372,6 +372,35 @@ const Map<String, String> _professionKeywords = {
   'pédicure-podologue': 'pedicure-podologue',
 };
 
+/// Abréviations courantes d'une spécialité (P2-175 : « pneumo » et « gynéco »,
+/// 6 des 7 professions manquées du corpus QI adversarial). Table à part,
+/// lue seulement par [_professionSpans], qui cherche des mots entiers :
+/// dans [extractProfession], qui cherche une sous-chaîne, « pneumo »
+/// compterait une seconde fois dans « pneumologue ». Seules les abréviations
+/// mesurées y sont ; « gastro » (aussi une maladie) et « psy » (psychologue
+/// ou psychiatre) n'y entreront pas sans mesure.
+const Map<String, String> _abreviationsSpecialite = {
+  'pneumo': '11',
+  'gynéco': '09',
+};
+
+/// [table] complétée par l'écriture sans accent de chaque mot-clé accentué
+/// (« pediatre », « generaliste », « gyneco ») : un texte saisi vite ou en
+/// capitales les perd (P2-175, « pediatre » manqué dans l'adversarial).
+Map<String, String> _avecSansAccent(Map<String, String> table) => {
+      ...table,
+      for (final e in table.entries)
+        if (_sansAccent(e.key) != e.key) _sansAccent(e.key): e.value,
+    };
+
+String _sansAccent(String s) => s
+    .replaceAll(RegExp('[éèêë]'), 'e')
+    .replaceAll(RegExp('[àâ]'), 'a')
+    .replaceAll(RegExp('[îï]'), 'i')
+    .replaceAll(RegExp('[ôö]'), 'o')
+    .replaceAll(RegExp('[ùûü]'), 'u')
+    .replaceAll('ç', 'c');
+
 /// Libellés écrits par `qiValueLabel` pour une profession généralisée, relus
 /// à leur palier (P2-102). Sans eux, « médecin (toute spécialité) » n'était
 /// plus une profession : F passait du Cas A au Cas B et pouvait baisser, ou
@@ -520,8 +549,9 @@ List<QiSpan> _professionSpans(String text) {
     }
   }
 
-  parcourt(_specialtyKeywords);
-  parcourt(_professionKeywords);
+  parcourt(_avecSansAccent(_specialtyKeywords));
+  parcourt(_avecSansAccent(_professionKeywords));
+  parcourt(_avecSansAccent(_abreviationsSpecialite));
   for (final entry in _libellesGeneralises.entries) {
     final motif = RegExp(RegExp.escape(entry.key), caseSensitive: false);
     for (final m in motif.allMatches(text)) {
@@ -570,6 +600,43 @@ final RegExp _lieuEvenement = RegExp(
   caseSensitive: false,
 );
 
+/// Ce qui, juste avant un mot capitalisé, en fait le **nom d'une personne**
+/// et non un lieu (P2-175) : une civilité ou un titre, suivis au plus d'un
+/// prénom (« Monsieur Chevrier », « Le Dr Chevrier », « Mme Camille
+/// Chevrier »). Les 43 et 33 lieux extraits à tort des corpus QI réaliste et
+/// adversarial étaient tous un patronyme homonyme d'une commune. Seuls des
+/// blancs séparent la civilité du nom : « Le Dr Perrot, Dijon » garde Dijon.
+final RegExp _civiliteAvant = RegExp(
+  r'(?:^|[^\p{L}])(?:M\.|MM\.|Mme|Mmes|Mlle|Mr|Monsieur|Madame|Mademoiselle|'
+  r'Dr|Dre|Docteur|Docteure|Pr|Professeur|Professeure|Me|Maître)\.?'
+  r"[ \t\u00A0]+(?:\p{Lu}[\p{L}'’-]*[ \t\u00A0]+)?$",
+  unicode: true,
+);
+
+/// Un article puis un nom commun juste avant un mot capitalisé : un métier
+/// ou une fonction suivis du nom de la personne (« l'aide-soignante
+/// Chevrier », « le directeur Chevrier »). Par `Ecluse.redact`, un nom sans
+/// civilité n'est pas masqué : c'étaient les 2 lieux à tort restants sur 400
+/// documents de l'adversarial.
+final RegExp _nomCommunAvant = RegExp(
+  r"(?:^|[^\p{L}])(?:[Ll]['’]|[Ll]e |[Ll]a |[Uu]n |[Uu]ne )"
+  r'(\p{Ll}[\p{Ll}-]*)[ \t\u00A0]+$',
+  unicode: true,
+);
+
+/// Noms communs qui annoncent un lieu, pas une personne : « la commune
+/// Chevrier », « le village Chevrier ».
+const Set<String> _nomsDeLieu = {
+  'ville', 'commune', 'village', 'bourg', 'hameau', 'agglomération', //
+  'métropole', 'secteur', 'canton', 'localité', 'municipalité', 'mairie', //
+};
+
+bool _nomDePersonne(String avant) {
+  if (_civiliteAvant.hasMatch(avant)) return true;
+  final m = _nomCommunAvant.firstMatch(avant);
+  return m != null && !_nomsDeLieu.contains(m.group(1));
+}
+
 List<QiSpan> _lieuSpans(EcluseReference ref, String text) {
   final mots = RegExp(r"[A-ZÀ-Ý][\wÀ-ÿ'-]*").allMatches(text).toList();
   final seulementEspaces = RegExp('^[  ]+\$');
@@ -599,6 +666,9 @@ List<QiSpan> _lieuSpans(EcluseReference ref, String text) {
       }
       if (_lieuEvenement
           .hasMatch(text.substring(start > 40 ? start - 40 : 0, start))) {
+        continue;
+      }
+      if (_nomDePersonne(text.substring(start > 60 ? start - 60 : 0, start))) {
         continue;
       }
       Qi? qi;
