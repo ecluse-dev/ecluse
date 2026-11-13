@@ -1560,7 +1560,7 @@ pas une garantie d'anonymat. Limites connues :
   avis juridique extérieur. La date de téléchargement d'origine des assets n'a pas
   été enregistrée.
 
-### Ce qui sort à côté du texte : `toString` et messages d'erreur (P2-169, P2-170)
+### Ce qui sort à côté du texte : `toString`, messages d'erreur et trace d'audit (P2-169, P2-170, P2-172)
 
 Une application qui appelle `ecluse_reid` ou `ecluse_reference` directement
 peut écrire un de leurs objets dans un journal, ou envoyer une exception à
@@ -1585,8 +1585,18 @@ son outil de suivi d'erreurs. Depuis P2-170 :
   `ReidEstimate.toString` et `ReidTrace.toString`. Pour un lieu seul, c'est
   la population de la commune : dans une petite région, ce nombre peut
   suffire à la retrouver.
-- `ReidTrace.toAuditMap` écrit encore les valeurs des quasi-identifiants sous
-  `qisInitiaux` (voie F2 de `agent/specs/P2-169.md`, tâche P2-172).
+- `ReidTrace.toAuditMap` (la carte destinée à une preuve conservée) ne porte
+  plus de valeur depuis P2-172 : `qisInitiaux` donne, par quasi-identifiant,
+  le type et le niveau de généralisation ; l'effectif estimé et la tranche de
+  risque de la combinaison restent dans `fInitial` et `bandeInitiale`. **Le
+  format de `qisInitiaux` a changé** (une carte `{type, niveau}` par QI au
+  lieu d'une chaîne) ; cette carte n'a pas de numéro de version de schéma, et
+  celui d'`ecluse_audit` (§ 8) n'est pas concerné. Elle garde des
+  **effectifs** (`fInitial`, `fAvant`, `fApres`, la note de plafonnement à la
+  population du lieu), avec la réserve du point précédent.
+- `ReidTrace.explainNarrative` cite **volontairement** les valeurs (commune,
+  âge, profession) : c'est le récit rendu à l'application pour un lecteur
+  humain. L'écrire dans un journal y met ces valeurs.
 - `ageOn` cite la date de **référence** (fournie par l'application, pas tirée
   du texte) quand elle précède la naissance.
 - Les motifs et avertissements d'une évaluation, et les limites du rapport de
