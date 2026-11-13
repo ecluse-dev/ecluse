@@ -239,6 +239,17 @@ témoin cinq chiffres : 400 phrases, 74 prédiction(s) d'adresse par Ecluse.reda
   suffixe=majuscule : 49 / 88 phrases avec une adresse
   suffixe=minuscule : 25 / 180 phrases avec une adresse
   suffixe=rien : 0 / 132 phrases avec une adresse
+## identifiant suivi d'un nombre (P2-174) : Ecluse.redact (chemin du produit)
+identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) faux, 2 suite(s) avalée(s), 2 document(s) en défaut
+  type_id=finess : 1 / 1200 en défaut, 1 non couvert(s)
+  type_id=iban : 0 / 1200 en défaut, 0 non couvert(s)
+  type_id=nir : 0 / 1200 en défaut, 0 non couvert(s)
+  type_id=rpps : 1 / 1200 en défaut, 0 non couvert(s)
+  separateur=espace : 1 / 1600 en défaut, 1 non couvert(s)
+  separateur=ligne : 1 / 1600 en défaut, 0 non couvert(s)
+  separateur=virgule : 0 / 1600 en défaut, 0 non couvert(s)
+  défaut : finess lu « rpps », nombre, espace : 1
+  défaut : rpps lu « nir », nombre, ligne : 1
 ## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90
 # realiste largeur 60 : 2 refus
 adresse            157   157  91.7%  91.7%  91.7%  100.0%     1.3%
