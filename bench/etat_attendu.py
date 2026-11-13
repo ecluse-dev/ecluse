@@ -91,6 +91,8 @@ ATTENDU = [
         (r"^GLOBAL +\d+", 4, "GLOBAL du réaliste et de l'adversarial"),
         (r"^  entites predites \d+$", 2,
          "prédictions du témoin (annoncées par ETAT.md)"),
+        (r"^  entités coupées par une fin de ligne : adresse \d+ coupées", 4,
+         "entités coupées, réaliste et adversarial (P2-173)"),
         (r"^# structurel largeur \d+, moteur seul", 2, "moteur seul"),
         (r"^Ecluse +TOTAL ", 2, "score moteur seul"),
         (r"^# structurel largeur \d+, détecteur isolé", 2,

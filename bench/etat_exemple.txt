@@ -245,11 +245,13 @@ adresse            157   157  91.7%  91.7%  91.7%  100.0%     1.3%
 etablissement      398   398  78.1%  78.1%  78.1%  100.0%     0.5%
 nom                477   477  16.4%  16.4%  16.4%  100.0%    27.6%
 GLOBAL            1667  1650  69.8%  69.0%  69.4%   99.5%     8.6%
+  entités coupées par une fin de ligne : adresse 95 coupées (95 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 4 coupées (4 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
 # adversarial largeur 60 : 0 refus
 adresse            155   155 100.0% 100.0% 100.0%  100.0%     0.0%
 etablissement      114   114 100.0% 100.0% 100.0%  100.0%     0.0%
 nom                594   560  72.5%  68.4%  70.4%   97.1%    13.9%
 GLOBAL            1082  1048  85.3%  82.6%  83.9%   98.4%     6.7%
+  entités coupées par une fin de ligne : adresse 106 coupées (106 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 0 coupées (0 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
 # temoin largeur 60 : 0 refus
   entites predites 0
 # structurel largeur 60, moteur seul (ecluse_core)
@@ -267,11 +269,13 @@ adresse            159   159 100.0% 100.0% 100.0%  100.0%     0.0%
 etablissement      400   363  75.2%  68.2%  71.6%   95.2%     9.2%
 nom                479   479  16.3%  16.3%  16.3%  100.0%    27.7%
 GLOBAL            1677  1640  70.1%  68.5%  69.3%   98.9%     9.3%
+  entités coupées par une fin de ligne : adresse 83 coupées (83 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 44 coupées (44 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
 # adversarial largeur 90 : 0 refus
 adresse            155   155 100.0% 100.0% 100.0%  100.0%     0.0%
 etablissement      114   114 100.0% 100.0% 100.0%  100.0%     0.0%
 nom                594   560  72.5%  68.4%  70.4%   97.1%    13.9%
 GLOBAL            1082  1048  85.3%  82.6%  83.9%   98.4%     6.7%
+  entités coupées par une fin de ligne : adresse 106 coupées (106 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 0 coupées (0 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
 # temoin largeur 90 : 0 refus
   entites predites 0
 # structurel largeur 90, moteur seul (ecluse_core)
