@@ -238,6 +238,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-168 | code | Tableau de bord : `bench/etat.sh` ne doit ni taire une ligne attendue ni masquer un échec (filtres `grep`, `\|\| true`, sorties jetées) ; banc seulement, aucun fichier de `lib/` | P2-165 | fusionnée |
 | P2-169 | mesure | Audit des voies de fuite après les changements de novembre (`ecluse_redact`, `ecluse_reid`, `ecluse_ingest`, `ecluse_demo`, `ecluse_audit`) : exceptions, `toString`, journaux, sérialisation ; rapporter, ne rien corriger | P2-165 | fusionnée |
 | P2-170 | code | Voies de fuite de `ecluse_reid` et `ecluse_reference` : `toString` sans valeur tirée du texte (`Qi`, `BirthDate`, `Generalization`, `PathologieMention`) et messages d'`ArgumentError` à motif fixe (F1, F3, F4, F5 de P2-169) | P2-169 | à faire |
+| P2-171 | code | Fin de ligne et moteur seul : documenter la limite (option B de P2-162) et faire les deux mesures qui manquent avant A1 (équivalence octet pour octet, coût en temps) ; aucun fichier de `lib/` | P2-166 | à faire |
+| P2-172 | code | `ReidTrace.toAuditMap` : aucune valeur de quasi-identifiant dans la trace d'audit (voie F2 de P2-169) | P2-170 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -579,3 +581,36 @@ ne reprennent que ce qui manque pour la prendre.
   quand** : un test de non-fuite par voie, rouge avant et vert après ; tableau
   de bord rejoué sans aucun chiffre modifié ; `LIMITES.md` et
   `agent/specs/P2-169.md` (état de chaque voie) à jour.
+- **P2-171** : décision du 13 novembre (`DECISIONS.md`) : option B de
+  `agent/specs/P2-162.md` maintenant, A1 seulement après mesure. Premier
+  volet, documenter : dans le README d'`ecluse_core` (près de l'exemple
+  d'appel direct des détecteurs) et dans `LIMITES.md`, dire qu'un détecteur
+  ou le moteur appelés seuls manquent un identifiant coupé par une fin de
+  ligne, avec les chiffres du tableau de bord (682/778 à 60 colonnes,
+  751/778 à 90) et le renvoi vers `Ecluse.redact` (778/778). Second volet,
+  mesurer, dans `bench/` et `ecluse_bench` seulement (points 2 et 4 du plan
+  de P2-162 § 5) : (a) sur tous les corpus sans coupure « chiffre, fin de
+  ligne, chiffre », les détections des détecteurs isolés sont identiques
+  octet pour octet avec et sans recollage par le banc (`run_collage_fp.dart`) ;
+  (b) le coût en temps du recollage sur 1 000, 10 000 et 100 000 lignes,
+  et sur un texte adversarial (longues suites de chiffres et de fins de
+  ligne), pour vérifier qu'il reste linéaire. Rapport dans
+  `agent/specs/P2-171.md`. **Aucun fichier de `lib/` modifié** : A1 n'est
+  pas codée ici. **Fini quand** : la limite est écrite aux deux endroits ;
+  le rapport donne l'équivalence (nombre de documents comparés, différences)
+  et les temps ; tableau de bord rejoué sans chiffre modifié ; le rapport
+  dit en une phrase si les mesures lèvent ou non les réserves sur A1, la
+  décision restant au mainteneur.
+- **P2-172** : `ecluse_reid`. Décision du 13 novembre (`DECISIONS.md`) : la
+  trace d'audit ne porte aucune valeur. `ReidTrace.toAuditMap` écrit
+  aujourd'hui les valeurs des quasi-identifiants sous la clé `qisInitiaux`
+  (voie F2 de `agent/specs/P2-169.md`, avec sa reproduction). Test d'abord :
+  sur le JSON complet de `toAuditMap`, aucune valeur tirée du texte (lieu,
+  âge, date, profession, pathologie) n'apparaît, pour chaque type de QI.
+  Correction : `qisInitiaux` garde le type, le niveau et l'effectif ou la
+  tranche de risque ; jamais la valeur. Si un consommateur du dépôt (export
+  AIPD, démo, bancs) lit ces valeurs, l'adapter dans la même PR ; si le
+  schéma de l'audit porte un numéro de version, l'incrémenter et le dire.
+  **Fini quand** : test de non-fuite rouge avant, vert après ; tableau de
+  bord rejoué sans chiffre modifié ; `LIMITES.md`, `agent/specs/P2-169.md`
+  (F2 traitée) et la documentation de l'audit à jour.

@@ -582,3 +582,33 @@ Le mainteneur a accepté la liste de l'INSEE et délégué le choix du seuil
   qui charge déjà la référence, active l'option.
 - Le script `tools/build_prenoms_effectifs.py` lit le Parquet avec `pyarrow`
   s'il est installé, sans l'ajouter aux dépendances du dépôt.
+
+## 2026-11 — Décisions déléguées du 13 novembre
+Le mainteneur a délégué quatre décisions en session (« prends la meilleure
+décision »). Règle commune : dans le doute, le côté qui protège.
+- **P2-167, « de » seul n'est pas une tournure de quantité.** La PR écartait
+  tout nombre à cinq chiffres introduit par « de » : 130 → 66 adresses
+  prédites à tort sur le témoin, mais « la mairie de 70000 Vesoul » repartait
+  en clair. Retenu : « de » ne compte qu'après un nom de pièce ou de quantité
+  (« commande de 70000 unités »). 130 → **74**, aucune adresse perdue. Un
+  nombre masqué à tort coûte de la lisibilité ; un code postal en clair est
+  une fuite.
+- **P2-164, la boîte postale reste hors périmètre.** `LIMITES.md` l'explique
+  (ne pas rouvrir le span qui avale une ligne) et aucune mesure ne montre de
+  boîte postale dans les corpus. Pas de travail sans défaut mesuré.
+- **P2-162, fin de ligne dans le cœur : option B maintenant, A1 seulement
+  après mesure.** Le moteur appelé seul manque un identifiant coupé par une
+  fin de ligne (87,7 % à 60 colonnes) ; `Ecluse.redact`, seul chemin du
+  produit, le rattrape (778/778). Retenu : écrire cette limite dans le README
+  d'`ecluse_core` et dans `LIMITES.md` (option B), sans toucher au cœur. A1
+  (étendre `DigitCompaction`) reste candidate : P2-166 trouve 0 détection à
+  tort, mais sur des corpus qui exercent peu le risque, et deux mesures du
+  plan manquent (équivalence octet pour octet, coût en temps). A2 et C sont
+  écartées : A2 modifie le texte vu par tous les détecteurs, C casserait les
+  appelants du README. Tâche P2-171.
+- **P2-169, voie F2 : la trace d'audit ne porte aucune valeur.**
+  `ReidTrace.toAuditMap` écrit les valeurs des quasi-identifiants sous
+  `qisInitiaux`. Principe déjà posé pour `ecluse_audit` (journal sans donnée
+  personnelle) : la preuve AIPD garde le type, le niveau de généralisation et
+  l'effectif, jamais la valeur. Tâche P2-172.
+
