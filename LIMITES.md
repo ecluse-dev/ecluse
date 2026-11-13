@@ -263,6 +263,35 @@ aucun nom n'est détecté, un nom absent du catalogue ou écrit autrement, et
 toute maladie rare quand l'application ne passe pas le catalogue. Le masquage retire aussi la mention du rapport de risque, qui ne
 lit que le texte masqué.
 
+**Lieux à tort et professions manquées, corrigés (P2-175).** Un patronyme
+homonyme d'une commune de la référence publique (ex. « Chevrier »,
+Haute-Savoie) n'est plus lu comme un second lieu quand il suit une civilité,
+un titre ou un métier (sauf s'il suit un nom commun de lieu comme
+« commune » ou « village »). Les abréviations « pneumo » et « gynéco » et les
+graphies sans accent (« pediatre », « generaliste »...) sont désormais lues
+comme une profession. Mesure (`ecluse_reid` seul, corpus QI) : précision
+lieu 88,2 % → 100 % (réaliste) et 92,3 % → 100 % (adversarial) ; rappel
+profession 96,2 % → 100 % (adversarial). **Reste possible** : un homonyme non
+couvert par les motifs ajoutés (un nom commun de métier ou une civilité
+absents des tables `_civiliteAvant` / `_nomCommunAvant`) resterait lu comme
+un lieu ; aucun cas de ce type n'a été trouvé sur les corpus mesurés.
+
+**QI par `Ecluse.redact` : patronyme en clair derrière un métier sans
+civilité (P2-175, non corrigé).** La ligne « QI par `Ecluse.redact` » du
+tableau de bord (`bench/score_qi_redact.py`) mesure, sur le texte que
+`Ecluse.redact` laisse réellement partir (pas `ecluse_reid` seul), si le
+patronyme de la personne reste lisible. Un patronyme qui suit un métier
+**hors périmètre** d'`ecluse_reid` (infirmière, kinésithérapeute,
+orthophoniste, aide-soignante, ergothérapeute, diététicienne) sans civilité
+(« L'infirmière Chevrier », « Le kinésithérapeute Marchand ») n'est pas
+masqué : `NameDetector` (`ecluse_redact`) ne déclenche que sur une civilité
+(M., Mme, Dr...) ou un titre professionnel d'un ensemble fermé, jamais sur un
+nom de métier quelconque. Mesuré sur le corpus QI adversarial : 29 documents
+sur 400 (0 sur 400 en réaliste, où ce tour de phrase n'apparaît pas). Non
+corrigé ici (hors périmètre de ce volet, la correction porterait sur
+`NameDetector`, pas sur `ecluse_reid`) ; à reprendre dans une tâche dédiée si
+le mainteneur le juge prioritaire.
+
 ## 4. Fichiers pris en charge (`ecluse_ingest`)
 
 Sont ingérés : `.txt`, `.md`, `.docx`, `.odt` et `.pdf` à texte natif.
