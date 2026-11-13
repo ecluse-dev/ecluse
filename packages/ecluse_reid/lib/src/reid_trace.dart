@@ -88,16 +88,30 @@ class ReidTrace {
   }
 
   /// Dump structuré pour preuve d'audit AIPD (spec §7, usage 2),
-  /// JSON-sérialisable (types primitifs / String uniquement).
+  /// JSON-sérialisable (types primitifs, chaînes, listes et cartes).
+  ///
+  /// Ne porte **aucune valeur** de quasi-identifiant : par QI, le type et le
+  /// niveau de généralisation ; pour la combinaison, l'effectif estimé et la
+  /// tranche de risque. Même principe que le journal d'`ecluse_audit` (sans
+  /// donnée personnelle). Qui a besoin des valeurs lit [qisInitiaux], ou
+  /// [explainNarrative], qui les cite volontairement pour le lecteur humain
+  /// et ne doit donc pas être conservé comme une trace.
+  ///
+  /// Reste : `fInitial`, `fAvant`, `fApres` et une note de plafonnement sont
+  /// des effectifs. Pour un lieu seul, c'est la population de la commune,
+  /// qui peut suffire à la retrouver dans une petite région (`LIMITES.md`
+  /// § 7).
   Map<String, Object?> toAuditMap() {
     return {
-      // Voie F2 de `agent/specs/P2-169.md`, hors de P2-170 : la sortie est
-      // gardée telle quelle, valeur comprise, jusqu'à P2-172 (décision du
-      // 13 novembre : la trace d'audit ne portera aucune valeur). Écrite ici
-      // en toutes lettres parce que `Qi.toString` ne rend plus la valeur.
+      // Le type et le niveau de généralisation de chaque QI, jamais sa
+      // valeur : une commune, un âge ou une profession tirés du texte
+      // n'ont pas leur place dans une preuve conservée (P2-172, voie F2 de
+      // `agent/specs/P2-169.md`, décision du 13 novembre dans
+      // `DECISIONS.md`). L'effectif et la tranche de risque de la
+      // combinaison sont juste dessous (`fInitial`, `bandeInitiale`).
       'qisInitiaux': [
         for (final qi in qisInitiaux)
-          'Qi(${qi.type.name}, ${qi.value}, niveau ${qi.level})',
+          {'type': qi.type.name, 'niveau': qi.level},
       ],
       'fInitial': estimateInitial.f,
       'bandeInitiale': estimateInitial.band.name,

@@ -239,7 +239,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-169 | mesure | Audit des voies de fuite après les changements de novembre (`ecluse_redact`, `ecluse_reid`, `ecluse_ingest`, `ecluse_demo`, `ecluse_audit`) : exceptions, `toString`, journaux, sérialisation ; rapporter, ne rien corriger | P2-165 | fusionnée |
 | P2-170 | code | Voies de fuite de `ecluse_reid` et `ecluse_reference` : `toString` sans valeur tirée du texte (`Qi`, `BirthDate`, `Generalization`, `PathologieMention`) et messages d'`ArgumentError` à motif fixe (F1, F3, F4, F5 de P2-169) | P2-169 | fusionnée |
 | P2-171 | code | Fin de ligne et moteur seul : documenter la limite (option B de P2-162) et faire les deux mesures qui manquent avant A1 (équivalence octet pour octet, coût en temps) ; aucun fichier de `lib/` | P2-166 | fusionnée |
-| P2-172 | code | `ReidTrace.toAuditMap` : aucune valeur de quasi-identifiant dans la trace d'audit (voie F2 de P2-169) | P2-170 | à faire |
+| P2-172 | code | `ReidTrace.toAuditMap` : aucune valeur de quasi-identifiant dans la trace d'audit (voie F2 de P2-169) | P2-170 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ecluse_reference/ecluse_reference.dart';
 import 'package:ecluse_reid/ecluse_reid.dart';
 import 'package:test/test.dart';
@@ -191,4 +193,132 @@ void main() {
       });
     }
   });
+
+  group('F2 : ReidTrace.toAuditMap ne porte aucune valeur de QI', () {
+    late EcluseReference ref;
+    setUpAll(() async {
+      ref =
+          EcluseReference(fileAssets(assetsDir: '../ecluse_reference/assets'));
+      await ref.preload();
+    });
+
+    // Trace construite à la main : la carte doit rester sans valeur quel que
+    // soit ce que l'appelant a mis dans les `Qi`, y compris dans les
+    // candidats et la suggestion (avant et après généralisation).
+    for (final (type, valeur, generalisee) in const [
+      (QiType.lieu, 'Vesoul-synth', 'dep-synth'),
+      (QiType.age, 'age-47-synth', 'tranche-45-49-synth'),
+      (QiType.profession, 'pharmacien-synth', 'metier-large-synth'),
+    ]) {
+      test('trace construite, ${type.name} : JSON complet', () {
+        final avant = Qi(type, valeur);
+        final apres = Qi(type, generalisee, level: 1);
+        final trace = ReidTrace(
+          qisInitiaux: [avant],
+          estimateInitial:
+              ReidEstimate(12, RiskBand.eleve, type, false, const ['note']),
+          outcome: TraceOutcome.suggestion,
+          suggestion: Generalization(
+              avant, apres, 12, 3400, RiskBand.eleve, RiskBand.faible),
+          candidats: [
+            GeneralizationCandidate(
+              type: type,
+              from: avant,
+              to: apres,
+              fBefore: 12,
+              fAfter: 3400,
+              bandAfter: RiskBand.faible,
+              retenu: true,
+              raison: 'F : 12.00 -> 3400.00.',
+            ),
+          ],
+          seuilVise: 20,
+          bandeFinale: RiskBand.faible,
+          qisBloquants: const [],
+          notes: const ['note'],
+        );
+        final json = jsonEncode(trace.toAuditMap());
+        expect(json, isNot(contains(valeur)));
+        expect(json, isNot(contains(generalisee)));
+        // Ce que la preuve garde : le type et le niveau de chaque QI.
+        expect(trace.toAuditMap()['qisInitiaux'], [
+          {'type': type.name, 'niveau': 0},
+        ]);
+      });
+    }
+
+    // De bout en bout, sur la référence chargée : codes et âges tels que
+    // l'extraction les produit, à chaque niveau de généralisation.
+    final cas = <(String, List<Qi>)>[
+      (
+        'commune et âge exacts',
+        const [Qi(QiType.age, '89'), Qi(QiType.lieu, '57001')],
+      ),
+      (
+        'département et tranche d\'âge',
+        const [
+          Qi(QiType.age, '85-89', level: 1),
+          Qi(QiType.lieu, '57', level: 1),
+        ],
+      ),
+      (
+        'profession et lieu',
+        const [Qi(QiType.profession, '11'), Qi(QiType.lieu, '57001')],
+      ),
+    ];
+
+    for (final (nom, qis) in cas) {
+      test('ReidLoop.explain, $nom', () {
+        final carte = ReidLoop(ref).explain(qis).toAuditMap();
+        // La carte reste sérialisable.
+        final relue = jsonDecode(jsonEncode(carte)) as Map<String, Object?>;
+
+        // `qisInitiaux` : exactement le type et le niveau, rien d'autre.
+        expect(relue['qisInitiaux'], [
+          for (final qi in qis) {'type': qi.type.name, 'niveau': qi.level},
+        ]);
+
+        // Aucune chaîne de la carte ne porte une valeur de QI comme nombre
+        // ou mot entier (« 89 » ne doit pas être confondu avec un chiffre
+        // d'un effectif comme « 3519.56 »), aucun nombre ne lui est égal.
+        final chaines = <String>[];
+        final nombres = <num>[];
+        void parcourir(Object? noeud, {String? cle}) {
+          if (noeud is Map) {
+            noeud.forEach((k, v) => parcourir(v, cle: k as String));
+          } else if (noeud is List) {
+            for (final v in noeud) {
+              parcourir(v, cle: cle);
+            }
+          } else if (noeud is String) {
+            chaines.add(noeud);
+          } else if (noeud is num &&
+              cle != null &&
+              !_clesDeNiveau.contains(cle)) {
+            nombres.add(noeud);
+          }
+        }
+
+        parcourir(relue);
+        for (final qi in qis) {
+          final motif = RegExp(
+              '(?<![0-9A-Za-z.])${RegExp.escape(qi.value)}(?![0-9A-Za-z])');
+          for (final chaine in chaines) {
+            expect(motif.hasMatch(chaine), isFalse,
+                reason: 'valeur d\'un QI ${qi.type.name} dans une chaîne');
+          }
+          final n = num.tryParse(qi.value);
+          if (n != null) {
+            expect(nombres, isNot(contains(n)),
+                reason: 'valeur d\'un QI ${qi.type.name} dans un nombre');
+          }
+        }
+      });
+    }
+  });
 }
+
+/// Clés de la carte d'audit qui portent un niveau de généralisation ou un
+/// seuil (petits entiers fixés par Écluse, pas tirés du texte) : exclues de
+/// la comparaison aux valeurs numériques des QI.
+const _clesDeNiveau = {'niveau', 'niveauAvant', 'niveauApres', 'seuilVise'};
