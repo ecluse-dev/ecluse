@@ -90,6 +90,11 @@ risque après, raison du choix. Ligne de conclusion : seuil visé, atteint
 ou non, score final, type de sortie. Sert l'**audit AIPD** (preuve
 technique) ET le **mode explication** (récit lisible DPO).
 
+La preuve d'audit ne porte **aucune valeur** de quasi-identifiant : le type,
+le niveau de généralisation, l'effectif et la tranche de risque seulement
+(décision du 13 novembre 2026, `DECISIONS.md` ; `ReidTrace.toAuditMap`). Seul
+le récit lisible cite les valeurs, pour la personne qui décide.
+
 ---
 
 ## Pseudo-code
