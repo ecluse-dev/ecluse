@@ -104,8 +104,22 @@ PY
   python3 "$B/generate_corpus_mise_en_page.py" "$B/corpus.jsonl" --largeur $w --out "$B/flou/structurel_l$w.jsonl" > /dev/null
   (cd "$R/packages/ecluse_bench" && dart run bin/run_ecluse.dart "../../bench/flou/structurel_l$w.jsonl" "../../bench/flou/pred_structurel_l$w.jsonl" < /dev/null > /dev/null)
   echo "# structurel largeur $w, moteur seul (ecluse_core)"; (cd "$B" && python3 score.py --corpus "flou/structurel_l$w.jsonl" --pred "Ecluse=flou/pred_structurel_l$w.jsonl" | grep -E "^Ecluse +(nir|rpps|iban|finess|TOTAL)" | head -5 || true)
+  # Détecteur isolé (P2-166) : NirDetector, RppsDetector, IbanFrDetector et
+  # FinessDetector appelés directement, comme dans l'exemple du README
+  # d'ecluse_core ; ni moteur, ni ecluse_redact.
+  (cd "$R/packages/ecluse_bench" && dart run bin/run_detecteur_isole.dart "../../bench/flou/structurel_l$w.jsonl" "../../bench/flou/isole_structurel_l$w.jsonl" < /dev/null > /dev/null)
+  echo "# structurel largeur $w, détecteur isolé (appel direct des quatre détecteurs)"; python3 "$B/rappel_structurel.py" --corpus "$B/flou/structurel_l$w.jsonl" --pred "$B/flou/isole_structurel_l$w.jsonl"
   # Chemin du produit : Ecluse.redact neutralise la fin de ligne entre deux
   # groupes d'un identifiant (P2-38, P2-152) ; le moteur seul ne le fait pas.
   redact run_redact_bench.dart "../../bench/flou/structurel_l$w.jsonl" "../../bench/flou/redact_structurel_l$w.jsonl" > /dev/null 2>&1
   echo "# structurel largeur $w, Ecluse.redact (chemin du produit)"; python3 "$B/rappel_structurel.py" --corpus "$B/flou/structurel_l$w.jsonl" --pred "$B/flou/redact_structurel_l$w.jsonl"
 done
+
+# Collage hors du cœur (P2-166) : ce que détecteraient les détecteurs appelés
+# seuls si la fin de ligne était recollée comme le fait ecluse_redact. Chemin
+# mesuré : détecteurs isolés sur texte recollé par le banc ; rien n'est
+# changé dans lib/. « à tort » = détection traversant une coupure qui ne
+# recouvre aucun identifiant annoté.
+echo "## collage de fin de ligne hors du cœur (P2-166)"
+(cd "$R/packages/ecluse_bench" && dart run bin/run_collage_fp.dart ../../bench/flou/structurel_l60.jsonl ../../bench/flou/structurel_l90.jsonl ../../bench/flou/corpus_flou_temoin_l60.jsonl ../../bench/flou/corpus_flou_temoin_l90.jsonl < /dev/null)
+(cd "$R/packages/ecluse_bench" && dart run bin/run_collage_fp.dart < /dev/null)
