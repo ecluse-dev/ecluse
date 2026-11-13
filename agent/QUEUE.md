@@ -231,7 +231,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-161 | code | Corpus transcrit : variantes de dictée manquantes (« double zéro », « septante », « o six », séparateurs perdus) et mesure de départ ; aucun détecteur modifié | P2-155 | regroupée (P2-160) |
 | P2-162 | spec | Fin de ligne dans un identifiant : faut-il descendre la neutralisation de `ecluse_redact` dans `ecluse_core` ? | P2-153 | fusionnée |
 | P2-163 | code | Tranche d'âge « de 80 à 85 ans » : lire les deux bornes (aujourd'hui seule la seconde sort) | P2-154 | regroupée (P2-159) |
-| P2-164 | code | Adresses : numéro de CEDEX (« CEDEX 9 », « Cedex 09 », virgule avant CEDEX) et boîte postale (« BP 12 ») laissés en clair (suite de P2-157) | P2-157 | à faire |
+| P2-164 | code | Adresses : numéro de CEDEX (« CEDEX 9 », « Cedex 09 », virgule avant CEDEX) et boîte postale (« BP 12 ») laissés en clair (suite de P2-157) | P2-157 | fusionnée |
 | P2-165 | code | Âges dans `ecluse_reid` : durées lues à tort comme un âge (« deux ans plus tard », « au bout de cinq ans », « un contrat de 3 ans »), en lettres comme en chiffres (suite de P2-159) | P2-159 | à faire |
 | P2-166 | mesure | Mise en page : ligne « détecteur isolé » au tableau de bord et budget de faux positifs d'une fin de ligne neutralisée dans le cœur (plan de mesure de P2-162 § 5, points 1 et 3) ; aucun code de production | P2-162 | à faire |
 
