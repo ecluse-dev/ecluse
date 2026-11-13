@@ -1512,9 +1512,18 @@ pas une garantie d'anonymat. Limites connues :
   Une durée précédée d'une préposition (« depuis trente ans ») ou suivie de
   « de / d' » (« de 2 à 3 ans de suivi ») n'est pas un âge ; **« Suivi de 2 à
   3 ans. »** (sans rien après) est lu comme une tranche d'âge : indiscernable
-  d'un âge sans contexte. Un âge isolé écrit en lettres peut aussi être une
-  durée hors des tournures ci-dessus (« trois ans de prison », « cela fait vingt
-  ans ») : même limite que pour les chiffres.
+  d'un âge sans contexte.
+- **Durées lues comme un âge** (P2-165) : « N ans », en chiffres ou en
+  lettres, n'est pas un âge après « au bout de », « voilà », « cela fait »,
+  « d'ici », après un nom d'engagement (« un contrat / bail / mandat / stage
+  de trois ans ») ni devant « plus tard », « plus tôt », « auparavant » ou
+  « de prison / de suivi / d'ancienneté / d'expérience… » (liste fermée).
+  Corpus témoin de durées : 400 extractions à tort sur 400 documents → 53.
+  **Choix assumé** : en cas de doute, la durée est lue comme un âge (le risque
+  est surestimé) plutôt que l'inverse. Restent donc lus comme un âge : « le
+  service fêtera ses vingt ans » (indiscernable de « fêtera ses 80 ans »),
+  « 3 ans après », « 5 ans de » suivi d'un nom hors liste, et toute durée
+  sans tournure reconnaissable.
 - **Données embarquées** : millésimes mélangés (populations communales
   2023→2026, pyramide 2026 France entière) ; provenance et licence documentées
   dans `DATA_SOURCES.md` et `NOTICE`. Les données restent sous la Licence Ouverte

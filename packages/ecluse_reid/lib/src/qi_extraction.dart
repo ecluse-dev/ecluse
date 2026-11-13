@@ -38,6 +38,23 @@ final RegExp _dureeApres = RegExp(
   caseSensitive: false,
 );
 
+/// Ce qui suit « N ans » en fait une durée (P2-165) : « deux ans plus tard »,
+/// « dix ans auparavant », « trois ans de prison », « 5 ans d'ancienneté ».
+/// Les noms admis après « de » sont une liste fermée de choses qui durent :
+/// un âge suivi de « de » reste un âge (« homme de 72 ans de sexe masculin »,
+/// « 68 ans d'origine bretonne »). « après » et « avant » n'y sont pas :
+/// « opérée à 72 ans après une chute ». Un âge manqué sous-estime le risque ;
+/// mieux vaut une durée lue à tort qu'un âge perdu.
+final RegExp _dureeApresAge = RegExp(
+  r'^[ \t\u00A0]+(?:plus tard|plus tôt|auparavant|de suite|d[\x27’]affilée|'
+  r'(?:de|d[\x27’])[ \t\u00A0]*(?:prison|réclusion|détention|sursis|suivi|'
+  r'ancienneté|expérience|carrière|recul|cotisations?|pratique|mariage|'
+  r'vie commune|service|présence|retard|travail|études|formation|traitement|'
+  r'garantie|bail|contrat|mandat))(?![\p{L}])',
+  unicode: true,
+  caseSensitive: false,
+);
+
 /// QI d'une tranche lue dans le texte. Le palier suit la largeur, comme
 /// l'échelle de `generalizer.dart` : 5 ans au plus (palier 1), 10 au plus
 /// (palier 2), au-delà (tranche senior, palier 3). `null` si la tranche est
@@ -54,10 +71,16 @@ Qi? _trancheQi(RegExpMatch m) {
 /// Tournure de **durée** juste avant « N ans » : « signé pour 9 ans », « il y
 /// a 3 ans », « existe depuis 23 ans ». Ce n'est pas un âge (P2-136 : 222
 /// des 412 extractions à tort du corpus témoin de QI). « a 74 ans », « âgé
-/// de 74 ans » ne sont pas concernés.
+/// de 74 ans » ne sont pas concernés. P2-165 : « au bout de cinq ans »,
+/// « voilà dix ans », « cela fait 20 ans », « d'ici deux ans », et la durée
+/// d'un engagement (« un contrat de trois ans », « un bail de 9 ans »). La
+/// liste des noms est fermée : « un patient de trois ans » reste un âge.
 final RegExp _dureeAvant = RegExp(
   r'(?:^|[^\p{L}])(?:pour|depuis|pendant|durant|dans|il y a|voici|'
-  r'en|sur|tous les|toutes les|chaque|après|avant)'
+  r'en|sur|tous les|toutes les|chaque|après|avant|'
+  r'au bout de|voilà|voila|cela fait|ça fait|d[\x27’]ici|'
+  r'(?:contrat|bail|mandat|délai|stage|prêt|crédit|garantie|peine|sursis|'
+  r'période|durée|mission|cdd|engagement|préavis)s? de)'
   r'(?:[ \t\u00A0]+(?:plus de|moins de|près de|environ|presque|bientôt|'
   r'déjà|au moins))?[ \t\u00A0]+$',
   unicode: true,
@@ -181,15 +204,18 @@ List<_AgeTrouve> _ages(String text) {
   }
   bool occupe(int start, int end) =>
       occupes.any((o) => start < o.$2 && o.$1 < end);
-  bool duree(int start) =>
-      _dureeAvant.hasMatch(text.substring(start > 40 ? start - 40 : 0, start));
+  bool duree(int start, int end) =>
+      _dureeAvant
+          .hasMatch(text.substring(start > 40 ? start - 40 : 0, start)) ||
+      _dureeApresAge.hasMatch(
+          text.substring(end, end + 40 < text.length ? end + 40 : text.length));
   for (final m in _agePattern.allMatches(text)) {
-    if (occupe(m.start, m.end) || duree(m.start)) continue;
+    if (occupe(m.start, m.end) || duree(m.start, m.end)) continue;
     final age = int.parse(m.group(1)!);
     if (age <= 120) trouves.add((m.start, m.end, Qi(QiType.age, '$age')));
   }
   for (final m in _ageLettresPattern.allMatches(text)) {
-    if (occupe(m.start, m.end) || duree(m.start)) continue;
+    if (occupe(m.start, m.end) || duree(m.start, m.end)) continue;
     final age = _motsEnAge(m.group(1)!);
     if (age != null) trouves.add((m.start, m.end, Qi(QiType.age, '$age')));
   }
