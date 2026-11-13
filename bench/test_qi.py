@@ -66,6 +66,17 @@ class GenerateurTest(unittest.TestCase):
             self.assertEqual(d["entities"], [])
             self.assertEqual(d["personnes"], 0)
 
+    def test_temoin_durees_sans_aucun_qi_ni_personne(self):
+        """P2-165 : des durees (« deux ans plus tard »), en lettres et en
+        chiffres, aucune entite annotee."""
+        docs = corpus("temoin_durees")
+        for d in docs:
+            self.assertEqual(d["entities"], [])
+            self.assertEqual(d["personnes"], 0)
+            self.assertRegex(d["text"], r"\bans\b")
+        self.assertTrue(any(re.search(r"\d ans", d["text"]) for d in docs))
+        self.assertTrue(any(re.search(r"[a-z] ans", d["text"]) for d in docs))
+
     def test_realiste_une_seule_personne(self):
         self.assertTrue(all(d["personnes"] == 1 for d in corpus("realiste")))
 

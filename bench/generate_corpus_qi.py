@@ -267,10 +267,54 @@ def doc_temoin(rng):
     return d, 0
 
 
+# Durees ecrites comme un age (P2-165) : un nombre suivi de « ans » qui ne
+# dit l'age de personne. Petits nombres en lettres (les plus frequents dans la
+# prose) ou en chiffres, au hasard.
+PETITS_NOMBRES = {2: "deux", 3: "trois", 4: "quatre", 5: "cinq", 6: "six",
+                  7: "sept", 8: "huit", 9: "neuf", 10: "dix", 12: "douze",
+                  15: "quinze", 20: "vingt", 25: "vingt-cinq", 30: "trente"}
+OBJETS_DUREE = ["contrat", "bail", "mandat", "délai", "stage", "prêt"]
+SUITES_DUREE = ["de suivi", "d'ancienneté", "d'expérience", "de prison",
+                "de carrière", "de recul", "de cotisation"]
+
+
+def duree(rng):
+    """« 3 ans » ou « trois ans », une fois sur deux."""
+    n = rng.choice(sorted(PETITS_NOMBRES))
+    return f"{PETITS_NOMBRES[n] if rng.random() < 0.5 else n} ans"
+
+
+def doc_temoin_durees(rng):
+    """Aucun age : seulement des durees que rien ne rattache a une personne
+    (« deux ans plus tard », « au bout de 5 ans », « un contrat de trois
+    ans », « dix ans d'ancienneté »). Toute extraction est a tort."""
+    d = Doc()
+    intro(d, rng)
+    cas = rng.randrange(8)
+    if cas == 0:
+        d.add(f"Le dossier a été rouvert {duree(rng)} plus tard.")
+    elif cas == 1:
+        d.add(f"Au bout de {duree(rng)}, la convention a été dénoncée.")
+    elif cas == 2:
+        d.add(f"Voilà {duree(rng)} que la procédure est en place.")
+    elif cas == 3:
+        d.add(f"Un {rng.choice(OBJETS_DUREE)} de {duree(rng)} a été proposé.")
+    elif cas == 4:
+        d.add(f"Le poste exige {duree(rng)} {rng.choice(SUITES_DUREE)}.")
+    elif cas == 5:
+        d.add(f"Cela fait {duree(rng)} que le logiciel n'a pas été mis à "
+              f"jour.")
+    elif cas == 6:
+        d.add(f"La même panne s'était produite {duree(rng)} auparavant.")
+    else:  # anniversaire d'une structure : limite connue, non corrigee
+        d.add(f"Le service fêtera ses {duree(rng)} au printemps.")
+    return d, 0
+
+
 # ---------------------------------------------------------------------------
 
 FABRIQUES = [("realiste", doc_realiste), ("adversarial", doc_adversarial),
-             ("temoin", doc_temoin)]
+             ("temoin", doc_temoin), ("temoin_durees", doc_temoin_durees)]
 
 
 def construit(nom, n, seed):
