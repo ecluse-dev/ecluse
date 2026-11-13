@@ -32,6 +32,8 @@ class Generalization {
   int get hashCode =>
       Object.hash(from, to, fBefore, fAfter, bandBefore, bandAfter);
 
+  /// [from] et [to] s'écrivent par `Qi.toString` : type, niveau et longueur,
+  /// jamais la valeur (P2-170).
   @override
   String toString() => 'Generalization($from -> $to, F: $fBefore -> '
       '$fAfter, ${bandBefore.name} -> ${bandAfter.name})';

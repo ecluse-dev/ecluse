@@ -21,9 +21,9 @@ int populationForLieu(EcluseReference ref, Qi lieu) {
     case 0:
       final pop = ref.geo.population(lieu.value);
       if (pop == null) {
+        // Motif fixe : le code de commune vient du texte (P2-170, F4).
         throw ArgumentError(
-          'lieu: commune "${lieu.value}" inconnue ou sans population '
-          '(cf. Commune.pmun).',
+          'lieu: commune inconnue ou sans population (cf. Commune.pmun).',
         );
       }
       return pop;
@@ -52,7 +52,7 @@ String depForLieu(EcluseReference ref, Qi lieu) {
     case 0:
       final commune = ref.geo.communeByCode(lieu.value);
       if (commune == null) {
-        throw ArgumentError('lieu: commune "${lieu.value}" inconnue.');
+        throw ArgumentError('lieu: commune inconnue.');
       }
       return commune.dep;
     case 1:

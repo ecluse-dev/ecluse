@@ -91,7 +91,14 @@ class ReidTrace {
   /// JSON-sérialisable (types primitifs / String uniquement).
   Map<String, Object?> toAuditMap() {
     return {
-      'qisInitiaux': [for (final qi in qisInitiaux) qi.toString()],
+      // Voie F2 de `agent/specs/P2-169.md`, hors de P2-170 : la sortie est
+      // gardée telle quelle, valeur comprise, jusqu'à P2-172 (décision du
+      // 13 novembre : la trace d'audit ne portera aucune valeur). Écrite ici
+      // en toutes lettres parce que `Qi.toString` ne rend plus la valeur.
+      'qisInitiaux': [
+        for (final qi in qisInitiaux)
+          'Qi(${qi.type.name}, ${qi.value}, niveau ${qi.level})',
+      ],
       'fInitial': estimateInitial.f,
       'bandeInitiale': estimateInitial.band.name,
       'typeDeSortie': outcome.name,

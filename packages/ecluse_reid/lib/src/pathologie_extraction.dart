@@ -71,9 +71,13 @@ class PathologieMention {
   /// de maladies une maladie précise, le plus souvent rare (P2-143).
   final bool eponyme;
 
+  /// Bornes, source et rattachement, comme `DetectedEntity` : ni [text], ni
+  /// [categorie], ni [systeme]. Le texte est une donnée de santé rattachée à
+  /// une personne, et la catégorie de la table maison reprend souvent la
+  /// mention elle-même (« mucoviscidose ») : un `toString` finit dans un
+  /// journal de l'application (P2-170, voie F3 de `agent/specs/P2-169.md`).
   @override
-  String toString() =>
-      'PathologieMention($start-$end « $text » → $categorie, $source'
+  String toString() => 'PathologieMention($start-$end, $source'
       '${rattachee ? ', rattachée' : ''})';
 }
 
