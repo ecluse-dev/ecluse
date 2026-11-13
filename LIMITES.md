@@ -1702,28 +1702,42 @@ son outil de suivi d'erreurs. Depuis P2-170 :
   inexistante) ont un motif fixe, sans la valeur reçue. Le motif
   « estimation impossible : … » d'une évaluation, qui recopie ce message,
   n'en porte donc plus non plus.
+- `ReidTrace.toAuditMap` (la carte destinée à une preuve conservée) ne porte
+  plus de valeur depuis P2-172 : `qisInitiaux` donne, par quasi-identifiant,
+  le type et le niveau de généralisation. **Le format de `qisInitiaux` a
+  changé** (une carte `{type, niveau}` par QI au lieu d'une chaîne).
+- **L'effectif F ne sort plus par ces canaux** (P2-176) : ils donnent la
+  **tranche de risque** (élevé, moyen, faible) à sa place.
+  `ReidEstimate.toString`, `Generalization.toString` et `ReidTrace.toString`
+  n'écrivent plus F. Dans `toAuditMap`, **le format a changé** : la clé
+  `fInitial` disparaît (`bandeInitiale` reste), `fAvant` et `fApres` de
+  chaque candidat deviennent `bandeAvant` et `bandeApres`, `raisonDuChoix`
+  dit « F remonte » ou « F ne remonte pas » avec les deux tranches, et la
+  note de plafonnement ne cite plus la population du lieu (elle change donc
+  aussi dans `ReidEstimate.notes`). Les seuls nombres de la carte sont les
+  niveaux de généralisation et le seuil visé. Cette carte n'a pas de numéro
+  de version de schéma, et celui d'`ecluse_audit` (§ 8) n'est pas concerné.
+  **Ce que la tranche ne dit plus** : deux estimations de la même tranche ne
+  se distinguent plus dans la trace ; une preuve qui doit montrer de combien
+  F a remonté doit garder les champs numériques elle-même, en connaissant
+  le risque ci-dessous.
 
 **Reste** :
 
 - Les **champs** portent toujours la valeur (`Qi.value`,
   `PathologieMention.text`, `BirthDate.year`…) : c'est leur rôle. Une
   application qui les écrit elle-même dans un journal les y met.
-- **F** (un effectif) figure encore dans `Generalization.toString`,
-  `ReidEstimate.toString` et `ReidTrace.toString`. Pour un lieu seul, c'est
-  la population de la commune : dans une petite région, ce nombre peut
-  suffire à la retrouver.
-- `ReidTrace.toAuditMap` (la carte destinée à une preuve conservée) ne porte
-  plus de valeur depuis P2-172 : `qisInitiaux` donne, par quasi-identifiant,
-  le type et le niveau de généralisation ; l'effectif estimé et la tranche de
-  risque de la combinaison restent dans `fInitial` et `bandeInitiale`. **Le
-  format de `qisInitiaux` a changé** (une carte `{type, niveau}` par QI au
-  lieu d'une chaîne) ; cette carte n'a pas de numéro de version de schéma, et
-  celui d'`ecluse_audit` (§ 8) n'est pas concerné. Elle garde des
-  **effectifs** (`fInitial`, `fAvant`, `fApres`, la note de plafonnement à la
-  population du lieu), avec la réserve du point précédent.
+- Les **champs numériques** portent toujours l'effectif F
+  (`ReidEstimate.f`, `fBefore` et `fAfter` d'une généralisation ou d'un
+  candidat) : l'application en a besoin pour décider. Pour un lieu seul, F
+  est la population légale de la commune, et ce nombre désigne souvent la
+  commune : dans `geo_communes.csv.gz`, il est unique en France pour 2 964
+  communes sur 34 855 (8,5 %) et unique dans son département pour 24 416
+  (70,1 %). Une application qui écrit F dans un journal peut donc y écrire
+  la commune.
 - `ReidTrace.explainNarrative` cite **volontairement** les valeurs (commune,
-  âge, profession) : c'est le récit rendu à l'application pour un lecteur
-  humain. L'écrire dans un journal y met ces valeurs.
+  âge, profession) et l'effectif F : c'est le récit rendu à l'application
+  pour un lecteur humain. L'écrire dans un journal y met ces valeurs.
 - `ageOn` cite la date de **référence** (fournie par l'application, pas tirée
   du texte) quand elle précède la naissance.
 - Les motifs et avertissements d'une évaluation, et les limites du rapport de

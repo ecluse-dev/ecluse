@@ -91,29 +91,31 @@ class ReidTrace {
   /// JSON-sérialisable (types primitifs, chaînes, listes et cartes).
   ///
   /// Ne porte **aucune valeur** de quasi-identifiant : par QI, le type et le
-  /// niveau de généralisation ; pour la combinaison, l'effectif estimé et la
-  /// tranche de risque. Même principe que le journal d'`ecluse_audit` (sans
-  /// donnée personnelle). Qui a besoin des valeurs lit [qisInitiaux], ou
+  /// niveau de généralisation ; pour la combinaison, la tranche de risque.
+  /// Même principe que le journal d'`ecluse_audit` (sans donnée
+  /// personnelle). Qui a besoin des valeurs lit [qisInitiaux], ou
   /// [explainNarrative], qui les cite volontairement pour le lecteur humain
   /// et ne doit donc pas être conservé comme une trace.
   ///
-  /// Reste : `fInitial`, `fAvant`, `fApres` et une note de plafonnement sont
-  /// des effectifs. Pour un lieu seul, c'est la population de la commune,
-  /// qui peut suffire à la retrouver dans une petite région (`LIMITES.md`
-  /// § 7).
+  /// Ne porte **aucun effectif** non plus (P2-176) : pour un lieu seul, F
+  /// est la population légale de la commune, unique en France pour 8,5 %
+  /// des communes du référentiel et unique dans son département pour 70 %.
+  /// L'effectif exact désignerait donc la commune. La carte donne la tranche
+  /// de risque (`bandeInitiale`, `bandeAvant`, `bandeApres`) ; les seuls
+  /// nombres sont les niveaux de généralisation et le seuil visé. Qui a
+  /// besoin des effectifs lit `estimateInitial.f` et les candidats.
   Map<String, Object?> toAuditMap() {
     return {
       // Le type et le niveau de généralisation de chaque QI, jamais sa
       // valeur : une commune, un âge ou une profession tirés du texte
       // n'ont pas leur place dans une preuve conservée (P2-172, voie F2 de
       // `agent/specs/P2-169.md`, décision du 13 novembre dans
-      // `DECISIONS.md`). L'effectif et la tranche de risque de la
-      // combinaison sont juste dessous (`fInitial`, `bandeInitiale`).
+      // `DECISIONS.md`). La tranche de risque de la combinaison est juste
+      // dessous (`bandeInitiale`).
       'qisInitiaux': [
         for (final qi in qisInitiaux)
           {'type': qi.type.name, 'niveau': qi.level},
       ],
-      'fInitial': estimateInitial.f,
       'bandeInitiale': estimateInitial.band.name,
       'typeDeSortie': outcome.name,
       'seuilVise': seuilVise,
@@ -125,8 +127,8 @@ class ReidTrace {
             'qiConcerne': c.type.name,
             'niveauAvant': c.from.level,
             'niveauApres': c.to?.level,
-            'fAvant': c.fBefore,
-            'fApres': c.fAfter,
+            'bandeAvant': bandForF(c.fBefore).name,
+            'bandeApres': c.bandAfter?.name,
             'raisonDuChoix': c.raison,
             'retenu': c.retenu,
           },
@@ -135,7 +137,9 @@ class ReidTrace {
     };
   }
 
+  /// Les tranches de risque, jamais l'effectif (P2-176, voir
+  /// `ReidEstimate.toString`).
   @override
-  String toString() => 'ReidTrace(${outcome.name}, F='
-      '${estimateInitial.f}, bande finale=${bandeFinale.name})';
+  String toString() => 'ReidTrace(${outcome.name}, bande initiale='
+      '${estimateInitial.band.name}, bande finale=${bandeFinale.name})';
 }
