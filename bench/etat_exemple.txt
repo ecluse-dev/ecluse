@@ -1,4 +1,4 @@
-## commit c7c7cd7
+## commit 2beaf30
 ## v3 (identifiants structurels)
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
@@ -291,10 +291,10 @@ GLOBAL            1082  1048  85.3%  82.6%  83.9%   98.4%     6.7%
   entites predites 0
 # structurel largeur 90, moteur seul (ecluse_core)
 Ecluse     nir     100.0%  100.0%  100.0%   269     0     0
-Ecluse     rpps     98.2%  100.0%   99.1%   166     3     0
+Ecluse     rpps     98.8%  100.0%   99.4%   166     2     0
 Ecluse     iban    100.0%   87.4%   93.3%   187     0    27
 Ecluse     finess   75.4%  100.0%   86.0%   129    42     0
-Ecluse     TOTAL    94.3%   96.5%   95.4%   751    45    27
+Ecluse     TOTAL    94.5%   96.5%   95.5%   751    44    27
 # structurel largeur 90, détecteur isolé (appel direct des quatre détecteurs)
 finess 129/129  iban 187/214  nir 269/269  rpps 166/166  TOTAL 751/778 (96.5 %)
 # structurel largeur 90, Ecluse.redact (chemin du produit)
