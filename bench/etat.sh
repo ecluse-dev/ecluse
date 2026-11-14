@@ -203,6 +203,18 @@ if produit "code postal en tête, générateur" "$B/flou/corpus_flou_cp_tete.jso
   montre "code postal en tête, Ecluse.redact" -E . 0 non redact run_cp_tete_bench.dart ../../bench/flou/corpus_flou_cp_tete.jsonl --regle-candidate ../../bench/flou/corpus_flou_cinq_chiffres.jsonl || true
 fi
 
+# Balayage des communes (P2-178, mesure de départ ; P2-180, correction
+# « œ »/faux titre). Les 34 875 communes du référentiel, une fois par
+# écriture (libelle, postale, libelle_espaces, capitales_tirets), avec
+# « CEDEX n ». Une commune en partie en clair est un défaut (chiffre de
+# départ de la tâche de correction suivante, tant qu'il n'est pas nul).
+echo "## communes : nom en partie en clair après CEDEX (P2-178, P2-180) : Ecluse.redact (chemin du produit)"
+if produit "communes balayage, générateur" "$B/flou/corpus_cedex_balayage.jsonl" python3 "$B/generate_corpus_cedex.py" --balayage --communes "$R/packages/ecluse_reference/assets/geo_communes.csv.gz" --out "$B/flou/corpus_cedex_balayage.jsonl"; then
+  if produit "communes balayage, Ecluse.redact" "$B/flou/pred_cedex_balayage.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_cedex_balayage.jsonl ../../bench/flou/pred_cedex_balayage.jsonl; then
+    montre "communes balayage, score" -E "^cedex commune longue :|^  ecriture=" 0 non dans_B python3 score_cedex.py --corpus flou/corpus_cedex_balayage.jsonl --pred flou/pred_cedex_balayage.jsonl || true
+  fi
+fi
+
 # Identifiant suivi d'une date, d'un âge ou d'un nombre (P2-174) : 4 types x
 # 4 familles x 3 séparateurs x 100 documents. Un identifiant non couvert est
 # une fuite ; un type faux ou une suite avalée abîme le texte sans fuite.

@@ -745,19 +745,30 @@ adresse. **Restent en clair** : la boîte postale (« BP 12 », « CS 40001 », 
 sa propre ligne (complément intercalé, hors périmètre v0, voir plus haut), et le CEDEX d'une commune de plus de
 quatre mots.
 
-**Nom de commune masqué en partie (mesure P2-178, rien n'est corrigé).** Par `Ecluse.redact`, sur des adresses
-« code postal + commune + CEDEX » dont la commune vient du référentiel (`agent/specs/P2-178.md`,
-`bench/generate_corpus_cedex.py`) : en écriture postale (capitales, espaces), une commune de **cinq mots ou plus**
-laisse sa fin en clair, et « CEDEX » et son numéro avec elle (20,8 % des caractères de l'adresse à cinq mots, 27,6 % à
-six, 34,9 % à sept ; 0 % jusqu'à quatre). Le CEDEX n'est pas la cause : dès que la commune est masquée en entier, il
-l'est aussi. Trois autres causes **ne dépendent pas de la longueur** : la lettre « œ » (« 59112 Annœullin » sort
-« [ADRESSE_1]œullin » ; une commune qui commence par « Œ » n'est pas masquée du tout) ; un mot qui commence par
-« M », « Me », « Pr », « Dr » suivi d'une lettre accentuée, refusé comme une civilité (« 93310 Le Pré-Saint-Gervais »
-sort « [ADRESSE_1] Pré-Saint-Gervais », « 04190 Les Mées » sort « [ADRESSE_1] Mées ») ; un mot de liaison absent de la
-liste, quand le nom est écrit sans tirets (« Moliets et Maa », « Pont à Mousson », « au », « près », « devant »). Sur
-les 34 875 communes du référentiel, **951 (2,7 %)** ont leur nom en partie en clair sous au moins une des quatre
-écritures mesurées, dont **163 sous leur libellé officiel** et 138 en écriture postale. Mesuré en casse ordinaire ;
-un texte tout en capitales ou sans majuscule passe par d'autres détecteurs et n'est pas dans cette mesure.
+**Nom de commune masqué en partie (mesure P2-178 ; deux causes corrigées par P2-180, les autres restent).** Par
+`Ecluse.redact`, sur des adresses « code postal + commune + CEDEX » dont la commune vient du référentiel
+(`agent/specs/P2-178.md`, `bench/generate_corpus_cedex.py`) : en écriture postale (capitales, espaces), une commune de
+**cinq mots ou plus** laisse sa fin en clair, et « CEDEX » et son numéro avec elle (20,8 % des caractères de l'adresse
+à cinq mots, 27,6 % à six, 34,9 % à sept ; 0 % jusqu'à quatre) — **non corrigé**, c'est un arbitrage sur la longueur du
+nom de voie accepté (tâche B de `agent/specs/P2-178.md` § 7). Le CEDEX n'est pas la cause : dès que la commune est
+masquée en entier, il l'est aussi.
+
+Deux autres causes, **indépendantes de la longueur**, sont corrigées (P2-180) : la lettre « œ »/« Œ » (U+0153/U+0152),
+hors des classes Latin-1 (`À-ÖØ-Þ`/`à-öø-ÿ`, qui s'arrêtent à U+00FF) du motif de commune — « 59112 Annœullin » perdait
+tout après « Ann », une commune qui **commence** par « Œ » (« Œuilly ») n'était pas reconnue comme commune du tout ;
+et un mot qui commence comme un titre abrégé (« M », « Me », « Pr », « Dr »…) suivi d'une lettre accentuée, refusé
+comme une civilité annonçant un nom (« 93310 Le **Pr**é-Saint-Gervais », « 04190 Les **M**ées ») — `\b` de Dart se
+fonde sur `\w` ASCII (sans drapeau `unicode`) : il voit une frontière de mot entre un « r »/« m » et une lettre
+accentuée qui suit directement, comme si la civilité s'arrêtait là. Une vraie civilité devant un nom est toujours
+suivie d'un espace ou d'un point (« Mme Durand », « M. Durand », « Dr Faure », « Me Blanc ») : inchangée. Balayage des
+34 875 communes, une fois par écriture : `libelle` (officiel) **163 → 26**, `capitales_tirets` **143 → 14** ; `postale`
+inchangé à 145 (cause dominante : la longueur, non traitée ici) ; `libelle_espaces` descend en sous-produit (901 → 626,
+il partage ces deux causes avec sa cause dominante, les mots de liaison absents de la liste, non traités).
+
+**Reste en clair, non corrigé** : la longueur (`postale`, ci-dessus) et un mot de liaison absent de la liste, quand le
+nom est écrit sans tirets (« Moliets et Maa », « Pont à Mousson », « au », « près », « devant »…, surtout
+`libelle_espaces`). Mesuré en casse ordinaire ; un texte tout en capitales ou sans majuscule passe par d'autres
+détecteurs et n'est pas dans cette mesure (voir aussi P2-183, qui l'évaluera séparément).
 
 **Nombre à cinq chiffres hors adresse (P2-167, 13 novembre).** Par `Ecluse.redact`, « Commande de 70000 unités,
 cedex 9 non concerné. » sortait avec « 70000 unités » masqué comme adresse. Deux règles : `AdresseDetector` seul

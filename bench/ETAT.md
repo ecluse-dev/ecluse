@@ -367,6 +367,45 @@ sans perte ; le masquage à tort est gardé, **aucun détecteur n'est modifié**
 la limite est écrite dans `LIMITES.md` § 5.2. Le témoin reste à 74 (66 en
 tête).
 
+## Communes : nom en partie en clair après CEDEX (P2-178, P2-180)
+
+Balayage des 34 875 communes du référentiel (`geo_communes.csv.gz`,
+populations légales INSEE), une fois par écriture, avec « code postal +
+commune + CEDEX n » (`bench/generate_corpus_cedex.py --balayage`, graine 42).
+Chemin mesuré : **`Ecluse.redact`**. Une commune est « en défaut » dès qu'un
+de ses caractères (ou du mot « CEDEX »/son numéro) reste en clair ; détail
+par cause, longueur et forme de CEDEX dans `agent/specs/P2-178.md`.
+
+| Écriture | Avant (P2-178, mesure) | Après (P2-180) |
+|---|---:|---:|
+| `libelle` (officiel) | 163 / 34 875 | **26** / 34 875 |
+| `postale` | 145 / 34 875 | 145 / 34 875 |
+| `libelle_espaces` | 901 / 34 875 | 626 / 34 875 |
+| `capitales_tirets` | 143 / 34 875 | **14** / 34 875 |
+
+**P2-180 (tâche A de `agent/specs/P2-178.md` § 7)** corrige deux causes
+indépendantes de la longueur, dans `AdresseDetector` : la lettre « œ »/« Œ »
+(hors des classes Latin-1 du motif de commune, « 59112 Annœullin » perdait
+tout après « Ann », « 02000 Œuilly » n'était pas reconnu comme commune du
+tout) et un mot qui commence comme un titre abrégé (« M », « Pr »…) suivi
+d'une lettre accentuée, pris à tort pour une civilité annonçant un nom
+(`\b` de Dart ne voit pas les lettres accentuées comme des lettres sans le
+drapeau `unicode` : « Le **Pr**é-Saint-Gervais », « Les **M**ées »). Les
+civilités réelles devant un nom (« Mme Durand », « M. Durand », « Dr Faure »,
+« Me Blanc ») sont toujours suivies d'un espace ou d'un point, donc
+inchangées. `postale` n'est pas concerné (sa cause dominante est la longueur,
+tâche B) ; `libelle_espaces` baisse en sous-produit (il partage les deux
+causes corrigées ici avec sa cause dominante, les mots de liaison absents,
+non traités par P2-180).
+
+Témoins flous à 0 prédiction à tort, reste du tableau de bord inchangé
+ligne à ligne (vérifié par rejeu complet).
+
+Ce qui reste (tâche B de `agent/specs/P2-178.md` § 7, non traitée ici) :
+communes de cinq mots ou plus (`postale`) et mots de liaison absents de la
+liste courante (« et », « au », « à », « près », « devant »…, surtout
+`libelle_espaces`).
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par
