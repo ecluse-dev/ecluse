@@ -251,8 +251,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-181 | code | Commune de cinq mots ou plus et mots de liaison absents (« et », « au », « à », « près ») : témoin de sur-masquage d'abord, puis correction ou arrêt chiffré | P2-180 | fusionnée |
 | P2-182 | spec | Table des communes dans la détection d'adresses : gain (« 58699 Alpha » contre « 70000 Vesoul », noms longs), perte (faute d'orthographe, lieu-dit), dépendance `ecluse_reference` → `ecluse_redact` | P2-178 | fusionnée |
 | P2-183 | mesure | Communes du balayage de P2-178 en texte tout en capitales et sans majuscule (autres détecteurs) ; mesurer, ne rien corriger | P2-178 | fusionnée |
-| P2-184 | code | Nombre à cinq chiffres hors adresse : vérification en table des communes, en option explicite de `Ecluse.redact` (piste A et C de P2-182) | P2-182 | à faire |
+| P2-184 | code | Nombre à cinq chiffres hors adresse : vérification en table des communes, en option explicite de `Ecluse.redact` (piste A et C de P2-182) | P2-182 | abandonnée (DECISIONS.md, 15 novembre) |
 | P2-185 | code | Texte tout en capitales : commune composée qui commence par « LA », « LE », « LES », « L' » (« 01097 LA BOISSE ») écartée à tort comme mot neutre (tâche A de P2-183) ; balayage en capitales au tableau de bord | P2-183 | à faire |
+| P2-186 | code | Restauration fausse : dans un tableau relu sans séparateurs, le nom avale la fonction en capitales qui suit (« LEFÈVRE Olivier AS ») et deux homonymes reçoivent le même jeton ; `Ecluse.restore` réécrit l'autre ligne | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -768,3 +769,22 @@ ne reprennent que ce qui manque pour la prendre.
   témoin cinq chiffres et reste du tableau de bord inchangés ; `LIMITES.md`
   à jour. Si « LE SERVICE DES ADMISSIONS », « LES 3 PREMIERS » ou une forme
   proche revient comme adresse, s'arrêter et rapporter les deux mesures.
+- **P2-186** : `ecluse_redact`, chemin `Ecluse.redact` puis `Ecluse.restore`.
+  Trouvé le 15 novembre en rejouant la mesure photo (page de planning du lot
+  42, texte relu par Tesseract : les barres du tableau disparaissent).
+  Reproduction synthétique, sur `main` :
+  `LEFÈVRE Olivier ASH 03 53 01 83 08 | RTT` puis, deux lignes plus bas,
+  `LEFÈVRE Olivier AS 02 61 91 76 57 | M`. Le nom de la seconde ligne est
+  détecté « LEFÈVRE Olivier AS » (la fonction « AS » est prise dans le nom) ;
+  la première ligne reçoit le même jeton `[NOM_1]` ; la restauration rend
+  « LEFÈVRE Olivier AS ASH » sur la première ligne. C'est une rupture de
+  l'invariant de réversibilité (alerte « restauration non byte-exacte » de
+  `run_redact_bench.dart`), plus grave qu'un défaut de score. Test d'abord :
+  cas ci-dessus, et un témoin de lignes de planning sans séparateurs (nom en
+  capitales + prénom + fonction courte en capitales : AS, ASH, IDE, ASD,
+  AMP…) avec des homonymes, restauration comparée octet pour octet. **Fini
+  quand** : restauration exacte sur le témoin ; la fonction n'est plus dans
+  l'étendue du nom ; noms des corpus flous et des plannings inchangés au
+  tableau de bord (aucun nom perdu) ; `LIMITES.md` à jour. Si la fonction ne
+  se sépare pas du nom sans perdre de nom (prénom composé en capitales),
+  s'arrêter et rapporter les deux mesures.
