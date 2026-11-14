@@ -108,6 +108,15 @@ ATTENDU = [
         (r"^  ecriture=(libelle|postale|libelle_espaces|capitales_tirets) : "
          r"\d+ / \d+ en défaut", 4, "par écriture"),
     ]),
+    ("## commune suivie de mots ordinaires", [
+        (r"^commune suivie : \d+ documents, \d+ à la suite masquée en "
+         r"partie, \d+ / \d+ caractères de suite masqués", 1,
+         "témoin de sur-masquage (P2-181)"),
+        (r"^  famille=(capitales|liaison|majuscule) : \d+ / \d+ documents",
+         3, "par famille de suite"),
+        (r"^  ecriture=(libelle|postale) : \d+ / \d+ documents", 2,
+         "par écriture"),
+    ]),
     ("## identifiant suivi d'un nombre", [
         (r"^identifiant suivi : \d+ documents, \d+ identifiant\(s\) non "
          r"couvert\(s\)", 1, "témoin identifiant suivi (P2-174)"),

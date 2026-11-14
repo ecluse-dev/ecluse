@@ -742,16 +742,28 @@ clair (global 7,2 % → 6,7 %), toutes variantes de casse et de mise en page com
 reste du tableau de bord inchangés. Contre-exemples testés : « 70000 VESOUL 3 agents » (pas de CEDEX : le nombre
 reste), « CEDEX 2026 dossiers », « CEDEX 9e étage », un nombre à la ligne suivante, « Le service CEDEX 9 » hors
 adresse. **Restent en clair** : la boîte postale (« BP 12 », « CS 40001 », « TSA »), avant le code postal ou sur
-sa propre ligne (complément intercalé, hors périmètre v0, voir plus haut), et le CEDEX d'une commune de plus de
-quatre mots.
+sa propre ligne (complément intercalé, hors périmètre v0, voir plus haut), et, sans « CEDEX » derrière elle, la fin d'une
+commune de plus de quatre mots (ci-dessous, P2-181).
 
-**Nom de commune masqué en partie (mesure P2-178 ; deux causes corrigées par P2-180, les autres restent).** Par
+**Nom de commune masqué en partie (mesure P2-178 ; corrigé par P2-180 et, devant « CEDEX » seulement, par P2-181).** Par
 `Ecluse.redact`, sur des adresses « code postal + commune + CEDEX » dont la commune vient du référentiel
 (`agent/specs/P2-178.md`, `bench/generate_corpus_cedex.py`) : en écriture postale (capitales, espaces), une commune de
-**cinq mots ou plus** laisse sa fin en clair, et « CEDEX » et son numéro avec elle (20,8 % des caractères de l'adresse
-à cinq mots, 27,6 % à six, 34,9 % à sept ; 0 % jusqu'à quatre) — **non corrigé**, c'est un arbitrage sur la longueur du
-nom de voie accepté (tâche B de `agent/specs/P2-178.md` § 7). Le CEDEX n'est pas la cause : dès que la commune est
+**cinq mots ou plus** laissait sa fin en clair, et « CEDEX » et son numéro avec elle (20,8 % des caractères de l'adresse
+à cinq mots, 27,6 % à six, 34,9 % à sept ; 0 % jusqu'à quatre). Le CEDEX n'est pas la cause : dès que la commune est
 masquée en entier, il l'est aussi.
+
+**Corrigé devant « CEDEX » (P2-181).** Ce qui sépare un code postal du mot « CEDEX », sur la même ligne, est la
+localité : devant « CEDEX », le nom accepté va jusqu'à neuf mots et admet les mots de liaison absents de la liste
+courante (« et », « au », « à », « près », « devant », « di », « ès »…). Balayage : `postale` **145 → 7**,
+`libelle_espaces` **626 → 15**, `libelle` 26 → 10, `capitales_tirets` 14 → 9. **Sans « CEDEX » derrière, rien ne
+change** : « 07590 SAINT LAURENT LES BAINS LAVAL D AURELLE » seul sur sa ligne laisse toujours « LAVAL D AURELLE » en
+clair, « 40660 Moliets et Maa » laisse « et Maa » (corpus par longueur, sans CEDEX : 263 adresses en défaut sur 1 960,
+avant comme après). Allonger le nom sans cette borne masquerait davantage le texte ordinaire qui suit une commune : le
+témoin `bench/generate_corpus_commune_suivie.py` mesure déjà 56 % des caractères d'une telle suite masqués (« 70000
+VESOUL SERVICE DES ADMISSIONS » est pris en entier), et une règle « jusqu'à la fin de la ligne » le porterait à 73 %
+(`bench/ETAT.md`). Le choix revient au mainteneur ; une table des communes le trancherait mieux (P2-182). Hypothèse
+assumée de la règle : une mention placée entre la commune et « CEDEX » (« 70000 VESOUL SERVICE DES ADMISSIONS BATIMENT B
+CEDEX 3 ») est masquée avec l'adresse.
 
 Deux autres causes, **indépendantes de la longueur**, sont corrigées (P2-180) : la lettre « œ »/« Œ » (U+0153/U+0152),
 hors des classes Latin-1 (`À-ÖØ-Þ`/`à-öø-ÿ`, qui s'arrêtent à U+00FF) du motif de commune — « 59112 Annœullin » perdait
@@ -765,10 +777,11 @@ suivie d'un espace ou d'un point (« Mme Durand », « M. Durand », « Dr Faure
 inchangé à 145 (cause dominante : la longueur, non traitée ici) ; `libelle_espaces` descend en sous-produit (901 → 626,
 il partage ces deux causes avec sa cause dominante, les mots de liaison absents de la liste, non traités).
 
-**Reste en clair, non corrigé** : la longueur (`postale`, ci-dessus) et un mot de liaison absent de la liste, quand le
-nom est écrit sans tirets (« Moliets et Maa », « Pont à Mousson », « au », « près », « devant »…, surtout
-`libelle_espaces`). Mesuré en casse ordinaire ; un texte tout en capitales ou sans majuscule passe par d'autres
-détecteurs et n'est pas dans cette mesure (voir aussi P2-183, qui l'évaluera séparément).
+**Reste en clair, non corrigé** : sans « CEDEX », la fin d'une commune de cinq mots ou plus en écriture postale et un
+mot de liaison absent de la liste courte quand le nom est écrit sans tirets (« Moliets et Maa », « Pont à Mousson »,
+« au », « près », « devant »…) ; avec ou sans « CEDEX », une parenthèse dans le nom (« Bors (Canton de …) ») et un mot
+en minuscules hors liste (« et ses environs »). Mesuré en casse ordinaire ; un texte tout en capitales ou sans
+majuscule passe par d'autres détecteurs (mesure P2-183).
 
 **Nombre à cinq chiffres hors adresse (P2-167, 13 novembre).** Par `Ecluse.redact`, « Commande de 70000 unités,
 cedex 9 non concerné. » sortait avec « 70000 unités » masqué comme adresse. Deux règles : `AdresseDetector` seul

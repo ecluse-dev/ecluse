@@ -274,6 +274,13 @@ cedex commune longue : 139500 adresses, 811 avec au moins un caractère en clair
   ecriture=postale : 145 / 34875 en défaut, fuite au caractère 0.2 % (1750 / 766136) ; commune 138, mot CEDEX 138, numéro 145
   ecriture=libelle_espaces : 626 / 34875 en défaut, fuite au caractère 1.2 % (9461 / 767096) ; commune 622, mot CEDEX 609, numéro 626
   ecriture=capitales_tirets : 14 / 34875 en défaut, fuite au caractère 0.0 % (245 / 792263) ; commune 14, mot CEDEX 13, numéro 14
+## commune suivie de mots ordinaires (P2-181) : Ecluse.redact (chemin du produit), suite à ne pas masquer
+commune suivie : 480 documents, 308 à la suite masquée en partie, 3739 / 6659 caractères de suite masqués (56.1 %), 0 adresse(s) en partie en clair, 0 refus (Ecluse.redact)
+  famille=capitales : 152 / 160 documents à la suite masquée, 1797 / 2497 caractères ; 0 adresse(s) en clair
+  famille=liaison : 11 / 160 documents à la suite masquée, 44 / 1808 caractères ; 0 adresse(s) en clair
+  famille=majuscule : 145 / 160 documents à la suite masquée, 1898 / 2354 caractères ; 0 adresse(s) en clair
+  ecriture=libelle : 165 / 240 documents à la suite masquée, 2142 / 3294 caractères ; 0 adresse(s) en clair
+  ecriture=postale : 143 / 240 documents à la suite masquée, 1597 / 3365 caractères ; 0 adresse(s) en clair
 ## identifiant suivi d'un nombre (P2-174) : Ecluse.redact (chemin du produit)
 identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) faux, 2 suite(s) avalée(s), 2 document(s) en défaut
   type_id=finess : 1 / 1200 en défaut, 1 non couvert(s)
