@@ -3,7 +3,11 @@
 Toutes les mesures du dépôt rejouées d'un coup sur `main` au commit
 **`d85fb84`** (6 novembre 2026), graine 42 partout, puis rejouées au commit
 **`a263a83`** (7 novembre, après P2-136 à P2-141) ; les lignes modifiées le
-disent. Commande :
+disent. Depuis, ce fichier est mis à jour section par section à chaque
+tâche fusionnée qui change une mesure (voir les dates et les identifiants
+de tâche cités dans chaque section — les plus récents au 13 novembre 2026) ;
+`d85fb84` et `a263a83` ne décrivent donc plus l'état entier du fichier, seul
+le rejeu d'origine (P2-130). Commande :
 
 ```bash
 bash bench/etat.sh > etat.log 2>&1   # depuis la racine, Dart et Python requis
