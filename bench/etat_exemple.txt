@@ -248,6 +248,26 @@ témoin cinq chiffres : 400 phrases, 74 prédiction(s) d'adresse par Ecluse.reda
   suffixe=majuscule : 49 / 88 phrases avec une adresse
   suffixe=minuscule : 25 / 180 phrases avec une adresse
   suffixe=rien : 0 / 132 phrases avec une adresse
+## code postal en tête (P2-177) : Ecluse.redact (chemin du produit), adresses à ne pas perdre
+code postal en tête : 432 adresses, 0 laissée(s) en clair par Ecluse.redact (chemin du produit)
+  casse=minuscules : 0 / 216 en clair
+  casse=ordinaire : 0 / 216 en clair
+  position=apres_phrase : 0 / 144 en clair
+  position=debut_ligne : 0 / 144 en clair
+  position=debut_texte : 0 / 144 en clair
+  suite=ligne : 0 / 108 en clair
+  suite=minuscule : 0 / 108 en clair
+  suite=ponctuation : 0 / 108 en clair
+  suite=rien : 0 / 108 en clair
+règle candidate « nom suivi d'un mot en minuscules » (simulée dans le banc, absente de lib/) :
+  témoin sans adresse : 66 prédiction(s) à tort écartée(s) sur 74 (en tête : 66 sur 66)
+  adresses annotées : 108 perdue(s) sur 432 (partiraient en clair)
+    casse=minuscules : 54 / 216 perdue(s)
+    casse=ordinaire : 54 / 216 perdue(s)
+    position=apres_phrase : 36 / 144 perdue(s)
+    position=debut_ligne : 36 / 144 perdue(s)
+    position=debut_texte : 36 / 144 perdue(s)
+    suite=minuscule : 108 / 108 perdue(s)
 ## identifiant suivi d'un nombre (P2-174) : Ecluse.redact (chemin du produit)
 identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) faux, 2 suite(s) avalée(s), 2 document(s) en défaut
   type_id=finess : 1 / 1200 en défaut, 1 non couvert(s)

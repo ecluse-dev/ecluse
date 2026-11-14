@@ -194,6 +194,15 @@ if produit "témoin cinq chiffres, générateur" "$B/flou/corpus_flou_cinq_chiff
   montre "témoin cinq chiffres, Ecluse.redact" -E . 0 non redact run_cinq_chiffres_bench.dart ../../bench/flou/corpus_flou_cinq_chiffres.jsonl || true
 fi
 
+# Code postal en tête de texte, de ligne ou de phrase (P2-177) : le pendant du
+# témoin ci-dessus, avec des adresses annotées de la même forme. Une adresse
+# en clair est une fuite. La règle candidate est simulée par le banc (elle
+# n'est pas dans lib/) : ce qu'elle retirerait du témoin, ce qu'elle perdrait.
+echo "## code postal en tête (P2-177) : Ecluse.redact (chemin du produit), adresses à ne pas perdre"
+if produit "code postal en tête, générateur" "$B/flou/corpus_flou_cp_tete.jsonl" python3 "$B/generate_corpus_cp_tete.py" --n 432 --seed 42 --out "$B/flou/corpus_flou_cp_tete.jsonl"; then
+  montre "code postal en tête, Ecluse.redact" -E . 0 non redact run_cp_tete_bench.dart ../../bench/flou/corpus_flou_cp_tete.jsonl --regle-candidate ../../bench/flou/corpus_flou_cinq_chiffres.jsonl || true
+fi
+
 # Identifiant suivi d'une date, d'un âge ou d'un nombre (P2-174) : 4 types x
 # 4 familles x 3 séparateurs x 100 documents. Un identifiant non couvert est
 # une fuite ; un type faux ou une suite avalée abîme le texte sans fuite.
