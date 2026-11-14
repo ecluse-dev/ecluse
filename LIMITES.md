@@ -800,7 +800,25 @@ changé dans le détecteur**. Pistes écartées sans mesure : juger les deux pre
 n'existe pas) ne retirerait presque rien, un nombre quelconque ayant presque toujours un préfixe de département
 valide, et ferait perdre des adresses étrangères à cinq chiffres ; une liste de noms de comptage (« unités »,
 « boîtes ») reviendrait à ajuster le détecteur au témoin. Ce qui séparerait vraiment : reconnaître la commune
-(table des communes d'`ecluse_reference`), ce que ce détecteur ne fait pas.
+(table des communes d'`ecluse_reference`), ce que ce détecteur ne fait pas par défaut.
+
+**Option `communes` : la table des communes retire ces nombres, au prix d'une perte bornée (P2-184).** `Ecluse.redact`
+accepte `communes:` (table `geo_communes.csv.gz` chargée **par l'appelant**, comme `prenomsInsee` ; jamais chargée par
+défaut, sans effet avec des détecteurs fournis par l'appelant). Sans elle, rien ne change. Avec elle, une adresse
+« code postal + nom » sans voie et sans « CEDEX » est écartée quand le nom est **suivi d'un mot en minuscules** sur la
+même ligne **et** qu'aucun début de ce qui suit le nombre n'est une commune de la table : « 58699 Alpha livrés » et
+« 71344 boîtes expédiés » ne sont plus masqués, « 25000 Besançon depuis 2019 » le reste. Par `Ecluse.redact` : témoin
+**74 → 5** prédictions à tort ; 0 adresse perdue sur les 432 adresses en tête et sur les corpus flous (dont les communes
+sont toutes dans la table). **Ce que l'option ne couvre pas, et ce qu'elle coûte** : (1) l'homonyme réel (« Plan »,
+commune de l'Isère : 3 phrases) et le nombre dont le mot **finit la phrase** (« Inventaire de 42015 Delta. » : 2
+phrases) restent masqués ; (2) **une commune absente de la table** — faute de frappe (« Vezoul »), lieu-dit, commune
+fusionnée dont l'ancien nom sert encore, commune créée après l'édition embarquée du référentiel — **part en clair avec
+l'option** si elle est sans voie et suivie d'un mot en minuscules (« 70000 Vezoul depuis 2019 ») : 104 adresses sur 432
+du corpus `generate_corpus_cp_tete.py --hors-table`, 0 sans l'option. Partout ailleurs (seule sur sa ligne, en fin de
+phrase, devant une ponctuation, derrière une voie, avec CEDEX) elle garde sa détection ; (3) l'option n'ajoute aucune
+détection et ne borne pas le nom d'une commune longue (piste B de `agent/specs/P2-182.md`, non faite) ; (4) dans un
+texte tout en capitales elle est sans effet. Une application dont les adresses sont saisies à la main, avec des fautes,
+doit peser (2) avant d'activer l'option ; la démo ne l'active pas.
 
 **Identifiant coupé par une fin de ligne (P2-38).** Sonde de 14 formes : un téléphone, un NIR, un
 IBAN ou une date coupés entre deux groupes (« 01 99 00⏎12 34 », « FR76 3000 6000⏎0112 … ») n'étaient

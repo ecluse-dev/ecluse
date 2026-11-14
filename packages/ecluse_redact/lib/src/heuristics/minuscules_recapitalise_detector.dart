@@ -1,5 +1,6 @@
 import 'package:ecluse_core/ecluse_core.dart';
 
+import 'adresse_detector.dart' show CommunesConnues;
 import 'casse.dart';
 import 'etablissement_keywords.dart';
 import 'mots_neutres.dart';
@@ -30,7 +31,15 @@ import 'mots_neutres.dart';
 /// détecteur dédié, `NomMinusculesDetector` (P2-119).
 final class MinusculesRecapitaliseDetector implements EntityDetector {
   const MinusculesRecapitaliseDetector(this.interne,
-      {this.communesSeules = false, this.capitales = true});
+      {this.communesSeules = false, this.capitales = true, this.communes});
+
+  /// Table des communes (P2-184, option `communes` de `Ecluse.redact`), ou
+  /// `null`. Dans le texte d'ombre tous les mots qui suivent un code postal
+  /// ont reçu une majuscule : « 71344 boîtes expédiés » y devient une adresse.
+  /// Avec la table, une telle prédiction est écartée si le premier mot est
+  /// suivi d'un autre mot sur la même ligne **et** qu'aucun début de la suite
+  /// n'est une commune connue ; voir [_horsTableSuiviDeMot].
+  final CommunesConnues? communes;
 
   /// Traiter aussi un texte sans aucune minuscule. Faux pour les adresses :
   /// `AdresseDetector` lit déjà un texte en capitales (1,9 % de fuite sur
@@ -142,6 +151,32 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
     return u.length == text.length ? u : null;
   }
 
+  /// « code postal + premier mot (prolongé par un connecteur : port sur
+  /// saone) + un autre mot », sur une ligne en minuscules.
+  static final RegExp _cpNomPuisMot = RegExp(
+      r"^\d{5}[ \t\u00A0\u202F]+[\p{L}'’-]+"
+      r"(?:[ -](?:(?:de|du|des|la|le|les|en|sur|sous|lès|lez|aux)[ -]|[dl]['’])"
+      r"[\p{L}'’-]+)*"
+      r'[ \t\u00A0\u202F]+\p{Ll}',
+      unicode: true);
+  static final RegExp _cedex = RegExp(r'cedex', caseSensitive: false);
+
+  /// Pendant, pour le texte d'ombre, de la règle d'`AdresseDetector`
+  /// (P2-184) : la prédiction commence par un code postal, n'a pas de
+  /// « CEDEX », son premier mot est suivi d'un autre mot sur la même ligne, et
+  /// aucun début de ce qui suit le nombre n'est une commune de la table.
+  /// [base] est le texte en minuscules (mêmes positions que l'original).
+  bool _horsTableSuiviDeMot(String base, DetectedEntity e) {
+    final table = communes;
+    if (table == null) return false;
+    final finDeLigne = base.indexOf('\n', e.start);
+    final ligne =
+        base.substring(e.start, finDeLigne < 0 ? base.length : finDeLigne);
+    if (!_cpNomPuisMot.hasMatch(ligne)) return false;
+    if (_cedex.hasMatch(base.substring(e.start, e.end))) return false;
+    return !table.debuteParUneCommune(ligne.substring(5).trimLeft());
+  }
+
   @override
   List<DetectedEntity> detect(String text) {
     // Sans majuscule ou en casse de phrase (P2-138, `casse.dart`) : mode
@@ -159,14 +194,15 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
     if (t == null) return const [];
     return [
       for (final e in interne.detect(t))
-        DetectedEntity(
-          type: e.type,
-          start: e.start,
-          end: e.end,
-          value: text.substring(e.start, e.end),
-          confidence: e.confidence,
-          tier: e.tier,
-        ),
+        if (casse != CasseTexte.minuscules || !_horsTableSuiviDeMot(base, e))
+          DetectedEntity(
+            type: e.type,
+            start: e.start,
+            end: e.end,
+            value: text.substring(e.start, e.end),
+            confidence: e.confidence,
+            tier: e.tier,
+          ),
     ];
   }
 }

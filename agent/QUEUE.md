@@ -251,7 +251,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-181 | code | Commune de cinq mots ou plus et mots de liaison absents (« et », « au », « à », « près ») : témoin de sur-masquage d'abord, puis correction ou arrêt chiffré | P2-180 | à faire |
 | P2-182 | spec | Table des communes dans la détection d'adresses : gain (« 58699 Alpha » contre « 70000 Vesoul », noms longs), perte (faute d'orthographe, lieu-dit), dépendance `ecluse_reference` → `ecluse_redact` | P2-178 | fusionnée |
 | P2-183 | mesure | Communes du balayage de P2-178 en texte tout en capitales et sans majuscule (autres détecteurs) ; mesurer, ne rien corriger | P2-178 | fusionnée |
-| P2-184 | code | Nombre à cinq chiffres hors adresse : vérification en table des communes, en option explicite de `Ecluse.redact` (piste A et C de P2-182) | P2-182 | à faire |
+| P2-184 | code | Nombre à cinq chiffres hors adresse : vérification en table des communes, en option explicite de `Ecluse.redact` (piste A et C de P2-182) | P2-182 | PR ouverte |
 | P2-185 | code | Texte tout en capitales : commune composée qui commence par « LA », « LE », « LES », « L' » (« 01097 LA BOISSE ») écartée à tort comme mot neutre (tâche A de P2-183) ; balayage en capitales au tableau de bord | P2-183 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.

@@ -69,6 +69,39 @@ reçoivent pas le même jeton — seule une valeur textuelle strictement
 identique garantit la cohérence du jeton. La résolution de coréférence
 inter-mentions est un chantier de phase 2 (« pseudonymes cohérents »).
 
+## Option `communes` : table des communes (P2-184)
+
+Un nombre à cinq chiffres suivi d'un mot (« 58699 Alpha livrés ») a la forme
+d'un code postal suivi d'une commune : il est masqué à tort comme une adresse.
+L'option `communes` de `Ecluse.redact`, `Ecluse.detect` et `Apercu.propose`
+consulte la table des communes d'`ecluse_reference` pour l'écarter. Elle est
+**désactivée par défaut** et la table est chargée par l'appelant :
+
+```dart
+final geo = EcluseReference(fileAssets(assetsDir: '…/assets')).geo;
+await geo.load(); // une fois, environ 250 ms
+final r = await Ecluse.redact(texte, communes: CommunesConnues(geo));
+```
+
+Ce qu'elle fait : retirer une adresse « code postal + nom » sans voie ni
+CEDEX, quand le nom est suivi d'un mot en minuscules sur la même ligne et
+qu'aucun début de ce qui suit le nombre n'est une commune de la table.
+
+Ce qu'elle ne couvre pas :
+
+- elle **n'ajoute aucune détection** et ne borne pas le nom d'une commune ;
+- un homonyme réel reste masqué (« Plan » est une commune) ;
+- **une commune absente de la table** (faute de frappe, lieu-dit, ancien nom
+  d'une commune fusionnée) part en clair avec l'option dans la forme
+  ci-dessus (« 70000 Vezoul depuis 2019 ») ; ailleurs elle reste masquée ;
+- sans effet dans un texte tout en capitales, et avec `detectors:` (les
+  détecteurs fournis par l'appelant ne sont jamais modifiés : construire
+  alors `AdresseDetector(communes: …)` soi-même) ;
+- la table est une édition datée du référentiel de l'INSEE
+  (`DATA_SOURCES.md`).
+
+Mesures et arbitrage : `bench/ETAT.md`, `LIMITES.md` § 5.2.
+
 ## Cohérence des jetons
 
 Une même valeur détectée (chaîne strictement identique) reçoit toujours

@@ -203,6 +203,29 @@ if produit "code postal en tête, générateur" "$B/flou/corpus_flou_cp_tete.jso
   montre "code postal en tête, Ecluse.redact" -E . 0 non redact run_cp_tete_bench.dart ../../bench/flou/corpus_flou_cp_tete.jsonl --regle-candidate ../../bench/flou/corpus_flou_cinq_chiffres.jsonl || true
 fi
 
+# Option `communes` de `Ecluse.redact` (P2-184) : chaque document passe sans
+# puis avec l'option. Elle doit retirer les prédictions du témoin sans perdre
+# une adresse dont la commune est dans la table ; le corpus « hors table »
+# (fautes de frappe, lieux-dits) dit ce qu'elle fait perdre. Les corpus flous
+# viennent de la section « flou », le témoin et les adresses en tête des deux
+# sections ci-dessus.
+echo "## option communes (P2-184) : Ecluse.redact sans puis avec la table des communes (chemin du produit)"
+if produit "code postal en tête hors table, générateur" "$B/flou/corpus_flou_cp_tete_hors_table.jsonl" python3 "$B/generate_corpus_cp_tete.py" --n 432 --seed 42 --hors-table --out "$B/flou/corpus_flou_cp_tete_hors_table.jsonl"; then
+  montre "option communes" -E "^option communes, " 0 non redact run_communes_bench.dart \
+    "témoin cinq chiffres=../../bench/flou/corpus_flou_cinq_chiffres.jsonl" \
+    "code postal en tête=../../bench/flou/corpus_flou_cp_tete.jsonl" \
+    "code postal en tête hors table=../../bench/flou/corpus_flou_cp_tete_hors_table.jsonl" \
+    "flou realiste=../../bench/flou/corpus_flou_realiste.jsonl" \
+    "flou adversarial=../../bench/flou/corpus_flou_adversarial.jsonl" \
+    "flou temoin=../../bench/flou/corpus_flou_temoin.jsonl" \
+    "flou realiste_minuscules=../../bench/flou/corpus_flou_realiste_minuscules.jsonl" \
+    "flou adversarial_minuscules=../../bench/flou/corpus_flou_adversarial_minuscules.jsonl" \
+    "flou temoin_minuscules=../../bench/flou/corpus_flou_temoin_minuscules.jsonl" \
+    "flou realiste_phrase=../../bench/flou/corpus_flou_realiste_phrase.jsonl" \
+    "flou adversarial_phrase=../../bench/flou/corpus_flou_adversarial_phrase.jsonl" \
+    "flou temoin_phrase=../../bench/flou/corpus_flou_temoin_phrase.jsonl" || true
+fi
+
 # Balayage des communes (P2-178, mesure de départ ; P2-180, correction
 # « œ »/faux titre). Les 34 875 communes du référentiel, une fois par
 # écriture (libelle, postale, libelle_espaces, capitales_tirets), avec

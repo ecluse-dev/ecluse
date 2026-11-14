@@ -133,6 +133,15 @@ abstract final class Ecluse {
   /// `MaladieRareDetector`. Sans [maladiesRares], la sortie est exactement
   /// celle d'avant.
   ///
+  /// **Table des communes** (P2-184) : avec [communes] (table de
+  /// `ecluse_reference` **chargée** par l'appelant, sinon [StateError]), un
+  /// nombre à cinq chiffres suivi d'un mot qui n'est pas une commune, lui-même
+  /// suivi d'un mot en minuscules (« 58699 Alpha livrés »), n'est plus masqué
+  /// comme une adresse. L'option ne fait que **retirer** une prédiction : une
+  /// commune absente de la table garde sa détection, sauf dans cette forme
+  /// précise (`LIMITES.md` § 5.2). Sans effet avec [detectors]. Sans
+  /// [communes], la sortie est exactement celle d'avant.
+  ///
   /// **Prénoms de l'INSEE** (P2-149) : avec [prenomsInsee] (effectifs
   /// **chargés** par l'appelant, sinon [StateError]), un prénom du fichier de
   /// l'INSEE absent de la liste écrite à la main, d'effectif au moins égal au
@@ -150,9 +159,17 @@ abstract final class Ecluse {
     JournalAudit? journal,
     RareDiseaseCatalog? maladiesRares,
     PrenomsInsee? prenomsInsee,
+    CommunesConnues? communes,
   }) {
-    final options = _Options(detectors, restoreSecrets, refuseSecrets,
-        riskReference, journal, _supplementaires(maladiesRares, prenomsInsee));
+    communes?.verifieChargee();
+    final options = _Options(
+        detectors,
+        restoreSecrets,
+        refuseSecrets,
+        riskReference,
+        journal,
+        _supplementaires(maladiesRares, prenomsInsee),
+        communes);
     if (dossier == null) return _redact(text, _Etat(), options);
     return dossier._serialise(() {
       final etat = dossier._etat;
@@ -198,13 +215,17 @@ abstract final class Ecluse {
     Dossier? dossier,
     RareDiseaseCatalog? maladiesRares,
     PrenomsInsee? prenomsInsee,
+    CommunesConnues? communes,
   }) {
+    communes?.verifieChargee();
     final extra = _supplementaires(maladiesRares, prenomsInsee);
-    if (dossier == null) return _detecter(text, _Etat(), detectors, extra);
+    if (dossier == null) {
+      return _detecter(text, _Etat(), detectors, extra, communes);
+    }
     return dossier._serialise(() {
       final etat = dossier._etat;
       if (etat == null) throw const DossierFermeException();
-      return _detecter(text, etat, detectors, extra);
+      return _detecter(text, etat, detectors, extra, communes);
     });
   }
 
@@ -231,14 +252,17 @@ abstract final class Ecluse {
     _Etat etat,
     List<Detector>? detectors, [
     List<Detector> supplementaires = const [],
+    CommunesConnues? communes,
   ]) async {
     // Dans un dossier, les patronymes établis par les documents précédents
     // amorcent la détection de noms (P2-14) ; des détecteurs fournis par
-    // l'appelant ne sont jamais modifiés.
+    // l'appelant ne sont jamais modifiés (l'option `communes` non plus ne
+    // les touche pas : P2-184).
+    final parDefaut = etat.patronymes.isEmpty
+        ? defaultDetectors
+        : _detecteursAvecPatronymes(etat.patronymes);
     final base = detectors ??
-        (etat.patronymes.isEmpty
-            ? defaultDetectors
-            : _detecteursAvecPatronymes(etat.patronymes));
+        (communes == null ? parDefaut : _avecCommunes(parDefaut, communes));
     final engine = EcluseEngine(
         supplementaires.isEmpty ? base : [...base, ...supplementaires]);
     final (vue, positions) = _vueDeDetection(text);
@@ -272,8 +296,8 @@ abstract final class Ecluse {
     _Etat etat,
     _Options options,
   ) async {
-    final resolved =
-        await _detecter(text, etat, options.detectors, options.supplementaires);
+    final resolved = await _detecter(text, etat, options.detectors,
+        options.supplementaires, options.communes);
 
     final secretCount =
         resolved.where((e) => e.type == EntityType.secret).length;
@@ -775,6 +799,25 @@ final RegExp _cleNommee = RegExp(
     r'(?<=[0-9])[ \t]*(?:\([ \t]*)?(?:[Cc]l[ée]f?|CL[ÉE]F?)[ \t]*(?::[ \t]*)?'
     r'(?=[0-9]{2}(?![0-9]))');
 
+/// [base] où les deux détecteurs d'adresses consultent la table [communes]
+/// (P2-184). Mêmes noms, même ordre : seule la règle de retrait s'ajoute.
+List<Detector> _avecCommunes(List<Detector> base, CommunesConnues communes) => [
+      for (final detecteur in base)
+        if (detecteur is LegacyDetectorAdapter && detecteur.name == 'adresse')
+          LegacyDetectorAdapter(
+              AdresseDetector(communes: communes), DetectorTier.pattern,
+              name: 'adresse')
+        else if (detecteur is LegacyDetectorAdapter &&
+            detecteur.name == 'adresse_minuscules')
+          LegacyDetectorAdapter(
+              MinusculesRecapitaliseDetector(const AdresseDetector(),
+                  communesSeules: true, communes: communes),
+              DetectorTier.pattern,
+              name: 'adresse_minuscules')
+        else
+          detecteur,
+    ];
+
 /// Les détecteurs par défaut, avec un [NameDetector] amorcé par [patronymes].
 List<Detector> _detecteursAvecPatronymes(Set<String> patronymes) => [
       for (final detecteur in Ecluse.defaultDetectors)
@@ -1031,7 +1074,9 @@ final class SecretsRefusedException implements Exception {
 /// une à une entre les étapes.
 final class _Options {
   const _Options(this.detectors, this.restoreSecrets, this.refuseSecrets,
-      this.riskReference, this.journal, this.supplementaires);
+      this.riskReference, this.journal, this.supplementaires, this.communes);
+
+  final CommunesConnues? communes;
 
   final List<Detector>? detectors;
   final bool restoreSecrets;

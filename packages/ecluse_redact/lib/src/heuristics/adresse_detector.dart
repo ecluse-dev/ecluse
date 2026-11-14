@@ -1,6 +1,56 @@
 import 'package:ecluse_core/ecluse_core.dart';
+import 'package:ecluse_reference/ecluse_reference.dart' show GeoHierarchy;
 
 import 'mots_neutres.dart';
+
+/// Option `communes` de `Ecluse.redact` (P2-184) : la table des communes de
+/// `ecluse_reference` (`geo_communes.csv.gz`), **chargée par l'appelant**.
+///
+/// Elle ne sert qu'à **retirer** une adresse prédite à tort : un nombre à
+/// cinq chiffres suivi d'un mot qui n'est pas une commune, lui-même suivi
+/// d'un mot en minuscules (« 58699 Alpha livrés », « Stock de 22595 Série au
+/// dernier relevé »). Elle n'ajoute aucune détection et ne borne pas le nom
+/// d'une commune (pistes A et C de `agent/specs/P2-182.md` § 5 ; la piste B
+/// n'est pas faite).
+final class CommunesConnues {
+  /// [geo] doit être chargé (`GeoHierarchy.load()`), sinon [StateError] à
+  /// l'appel de `Ecluse.redact`.
+  const CommunesConnues(this.geo);
+
+  final GeoHierarchy geo;
+
+  /// Lève [StateError] si la table n'est pas chargée (avant toute détection).
+  void verifieChargee() => geo.communesByName('');
+
+  /// Nombre de mots relus après le code postal : la plus longue commune du
+  /// référentiel en compte huit, « CEDEX » peut suivre.
+  static const int _motsMax = 9;
+
+  static final RegExp _suiteDeNom =
+      RegExp(r"^[\p{L}'’\- \t\u00A0\u202F]+", unicode: true);
+  static final RegExp _separateurs = RegExp(r"['’\- \t\u00A0\u202F]+");
+
+  /// Vrai si les premiers mots de [suite] (ce qui suit un code postal sur sa
+  /// ligne) forment le nom d'une commune de la table, quelle qu'en soit
+  /// l'écriture (casse, accents, tirets ou espaces : `normName`). Tous les
+  /// débuts de un à neuf mots sont essayés : « Vesoul depuis 2019 » est connu
+  /// par « Vesoul », « Saint Rémy en Comté demain » par ses quatre premiers.
+  bool debuteParUneCommune(String suite) {
+    final nom = _suiteDeNom.stringMatch(suite);
+    if (nom == null) return false;
+    final mots = [
+      for (final m in nom.split(_separateurs))
+        if (m.isNotEmpty) m
+    ];
+    final n = mots.length < _motsMax ? mots.length : _motsMax;
+    for (var k = n; k >= 1; k--) {
+      if (geo.communesByName(mots.sublist(0, k).join(' ')).isNotEmpty) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
 
 /// Détecteur heuristique d'adresses postales simples — **v0 de
 /// démonstration**.
@@ -22,7 +72,14 @@ import 'mots_neutres.dart';
 /// boîtes postales, ni les formats étrangers. Sera affiné en phase 2 (NER +
 /// table INSEE).
 final class AdresseDetector implements EntityDetector {
-  const AdresseDetector();
+  /// Avec [communes] (P2-184), une adresse « code postal + nom » sans voie est
+  /// écartée quand le nom n'est pas une commune de la table **et** qu'un mot
+  /// en minuscules le suit sur la même ligne : voir [_horsTableSuiviDeMot].
+  /// Sans [communes], rien ne change.
+  const AdresseDetector({this.communes});
+
+  /// Table des communes, ou `null` (comportement d'avant P2-184).
+  final CommunesConnues? communes;
 
   @override
   EntityType get type => EntityType.adresse;
@@ -320,6 +377,44 @@ final class AdresseDetector implements EntityDetector {
     return _introduitParQuantite.hasMatch(text.substring(depart, debut));
   }
 
+  static final RegExp _motEnMinusculesApres =
+      RegExp(r'^[ \t\u00A0\u202F]+\p{Ll}', unicode: true);
+  static final RegExp _finitParCedex =
+      RegExp(r'cedex[ \t\u00A0\u202F]*\d*$', caseSensitive: false);
+
+  /// Faux positif que la table des communes sait écarter (P2-184). Trois
+  /// conditions, toutes requises :
+  ///
+  /// 1. la prédiction est un « code postal + nom » **sans voie** (seul motif
+  ///    où un nombre à cinq chiffres hors adresse est pris pour un code
+  ///    postal : témoin `generate_corpus_cinq_chiffres.py`) et sans « CEDEX » ;
+  /// 2. le nom est **suivi d'un mot en minuscules** sur la même ligne
+  ///    (« 58699 Alpha **livrés** ») : une adresse seule sur sa ligne, en fin
+  ///    de phrase ou devant une ponctuation n'est jamais écartée ;
+  /// 3. **aucun début** de ce qui suit le nombre n'est une commune de la
+  ///    table.
+  ///
+  /// La condition 2 est là pour la commune que la table ne connaît pas (faute
+  /// de frappe, lieu-dit, ancienne commune) : elle garde sa détection partout
+  /// sauf devant un mot en minuscules, forme où la règle sans table perdait
+  /// 108 adresses sur 432 (P2-177) et où la table en sauve toutes celles
+  /// qu'elle connaît. Mieux vaut un nombre masqué à tort qu'une adresse en
+  /// clair : dans le doute, la prédiction reste.
+  bool _horsTableSuiviDeMot(String text, RegExpMatch match) {
+    final table = communes;
+    if (table == null) return false;
+    if (_finitParCedex.hasMatch(match.group(0)!)) return false;
+    final finDeLigne = text.indexOf('\n', match.end);
+    final apres =
+        text.substring(match.end, finDeLigne < 0 ? text.length : finDeLigne);
+    if (!_motEnMinusculesApres.hasMatch(apres)) return false;
+    final debutNom = match.start + 5;
+    final suite = text
+        .substring(debutNom, finDeLigne < 0 ? text.length : finDeLigne)
+        .trimLeft();
+    return !table.debuteParUneCommune(suite);
+  }
+
   static bool _chevauche(List<_Range> tries, int start, int end) {
     var lo = 0;
     var hi = tries.length;
@@ -410,6 +505,7 @@ final class AdresseDetector implements EntityDetector {
       final start = match.start;
       final end = match.end;
       if (_estIntroduitParQuantite(text, start)) continue;
+      if (_horsTableSuiviDeMot(text, match)) continue;
       // Déjà couvert par une adresse complète (numéro + voie) ci-dessus :
       // ne pas ajouter un doublon pour le seul suffixe "code postal +
       // commune" de cette même adresse.
