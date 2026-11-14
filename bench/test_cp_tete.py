@@ -2,10 +2,17 @@
 """Tests du corpus « code postal en tete » (P2-177) :
 `python3 -m unittest discover -s bench`. Donnees synthetiques."""
 
+import gzip
+import os
 import re
+import unicodedata
 import unittest
 
 import generate_corpus_cp_tete as ct
+
+COMMUNES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                        "packages", "ecluse_reference", "assets",
+                        "geo_communes.csv.gz")
 
 
 class CorpusTest(unittest.TestCase):
@@ -74,6 +81,51 @@ class CorpusTest(unittest.TestCase):
         for d in ct.construit(432, 42):
             self.assertEqual(
                 len(re.findall(r"(?<!\d)\d{5}(?!\d)", d["text"])), 1, d["text"])
+
+
+class HorsTableTest(unittest.TestCase):
+    """Variante `--hors-table` (P2-184) : memes axes, noms absents de la
+    table des communes."""
+
+    @staticmethod
+    def norme(nom):
+        # Meme regle que `normName` d'`ecluse_reference`.
+        sans = "".join(c for c in unicodedata.normalize("NFD", nom)
+                       if unicodedata.category(c) != "Mn").upper()
+        return " ".join(re.sub(r"['’\-./]", " ", sans).split())
+
+    def test_aucun_nom_ni_debut_de_nom_dans_la_table(self):
+        with gzip.open(COMMUNES, "rt", encoding="utf-8") as f:
+            next(f)
+            table = {l.rstrip("\n").split(";")[4] for l in f}
+        self.assertGreater(len(table), 30000)
+        for _, nom in ct.HORS_TABLE:
+            mots = self.norme(nom).split()
+            for k in range(1, len(mots) + 1):
+                self.assertNotIn(" ".join(mots[:k]), table, nom)
+        # Garde-fou du test lui-meme : les communes d'origine y sont.
+        for _, nom in ct.COMMUNES:
+            self.assertIn(self.norme(nom), table, nom)
+
+    def test_memes_axes_et_memes_positions_que_le_corpus_d_origine(self):
+        origine = ct.construit(432, 42)
+        hors = ct.construit(432, 42, hors_table=True)
+        self.assertEqual(len(hors), 432)
+        self.assertEqual(hors, ct.construit(432, 42, hors_table=True))
+        noms = {n for _, n in ct.HORS_TABLE}
+        for a, b in zip(origine, hors):
+            self.assertEqual((a["position"], a["suite"], a["casse"]),
+                             (b["position"], b["suite"], b["casse"]))
+            e = b["entities"][0]
+            self.assertEqual(e["start"], a["entities"][0]["start"])
+            valeur = b["text"][e["start"]:e["end"]]
+            self.assertRegex(valeur, r"^\d{5} [^\s,.;()]+$")
+            self.assertIn(valeur[6:].lower(), {n.lower() for n in noms})
+
+    def test_le_corpus_d_origine_ne_change_pas(self):
+        # L'option ajoutee ne consomme aucun tirage de plus.
+        self.assertEqual(ct.construit(432, 42),
+                         ct.construit(432, 42, hors_table=False))
 
 
 if __name__ == "__main__":

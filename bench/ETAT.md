@@ -367,6 +367,66 @@ sans perte ; le masquage à tort est gardé, **aucun détecteur n'est modifié**
 la limite est écrite dans `LIMITES.md` § 5.2. Le témoin reste à 74 (66 en
 tête).
 
+## Option `communes` : la table des communes retire un nombre pris pour une adresse (P2-184)
+
+Option **désactivée par défaut** de `Ecluse.redact` (`communes:`, table
+`geo_communes.csv.gz` d'`ecluse_reference` chargée par l'appelant). Chaque
+document passe deux fois par **`Ecluse.redact`**, sans puis avec l'option
+(`run_communes_bench.dart`). Sans l'option, toutes les autres lignes du
+tableau de bord sont identiques à avant P2-184.
+
+La règle ne fait que **retirer** une adresse « code postal + nom » sans voie,
+quand trois conditions sont réunies : pas de « CEDEX », le nom est **suivi
+d'un mot en minuscules** sur la même ligne, et **aucun début** de ce qui suit
+le nombre n'est une commune de la table.
+
+| Corpus | sans l'option | avec l'option |
+|---|---:|---:|
+| Témoin cinq chiffres (400 phrases, aucune adresse) : adresses prédites à tort | 74 | **5** |
+| Code postal en tête (432 adresses, communes de la table) : adresses perdues | — | **0** |
+| Code postal en tête **hors table** (432 adresses : fautes de frappe, lieux-dits, ancienne commune) : adresses perdues | — | **104** |
+| Corpus flous réaliste et adversarial (159 et 155 adresses), en casse ordinaire, en minuscules et en casse de phrase : adresses perdues | — | **0** |
+| Témoins flous (3 casses) : prédictions | 0 | 0 |
+
+Hors tableau de bord (rejeu à la main du même binaire) : corpus flous en
+capitales, 0 adresse perdue ; balayage des 139 500 adresses de communes,
+0 perdue, 0 document changé.
+
+**La cible de la fiche (3 ou moins) n'est pas atteinte : 5.** Les 5
+prédictions restantes : 3 « Plan » (commune de l'Isère, homonyme d'un nom
+commun, irréductible sans contexte) et 2 phrases où le mot hors table **finit
+la phrase** (« Inventaire de 42015 Delta. », « Inventaire de 21603
+exemplaires. »). Les écarter demande de retirer la condition « suivi d'un mot
+en minuscules ». Mesure de cette **variante littérale** (rejeu à la main,
+**absente de `lib/`**) :
+
+| | règle retenue | variante littérale (hors table = écarté) |
+|---|---:|---:|
+| Témoin cinq chiffres : prédictions à tort | 5 | **3** |
+| Code postal en tête, communes de la table : adresses perdues | 0 | 0 |
+| Code postal en tête **hors table** : adresses perdues | 104 | **401** (toutes celles qui étaient masquées) |
+
+La fiche demande à la fois « 3 ou moins » et « une commune absente de la table
+garde sa détection actuelle » : les deux ne tiennent pas ensemble. La règle
+retenue est du côté qui protège (décision du 13 novembre : un nombre masqué à
+tort coûte de la lisibilité, une adresse en clair est une fuite) ; le choix
+final revient au mainteneur.
+
+**Ce que l'option fait perdre (104 sur 432)** : une commune que la table ne
+connaît pas, sans voie devant, sans CEDEX, **et** suivie d'un mot en
+minuscules (« 70000 Vezoul depuis 2019 »). Seule sur sa ligne, en fin de
+phrase, devant une ponctuation ou derrière une voie, elle reste masquée. Un
+début connu suffit à la garder (« Port-sur-Sône » mal écrit est gardé par
+« Port »). Sur ce corpus, 31 adresses hors table sont déjà en clair **sans**
+l'option (texte sans majuscule, nom qui commence par un article : « 70190
+les-trois-chênes ») : c'est une limite d'avant, que l'option ne change pas.
+
+**Coût** (machine de la session cloud, une mesure) : chargement de la table
+253 ms, une fois, payé par l'appelant ; recherche non mesurable au-dessus du
+bruit (balayage de 139 500 adresses : 60,1 s sans l'option, 59,6 s avec ; la
+table n'est consultée que pour une prédiction sans voie suivie d'un mot en
+minuscules, neuf recherches au plus).
+
 ## Communes : nom en partie en clair après CEDEX (P2-178, P2-180)
 
 Balayage des 34 875 communes du référentiel (`geo_communes.csv.gz`,

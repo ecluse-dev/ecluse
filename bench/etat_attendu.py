@@ -102,6 +102,16 @@ ATTENDU = [
         (r"^  adresses annotées : \d+ perdue\(s\) sur \d+", 1,
          "règle candidate simulée, adresses perdues"),
     ]),
+    ("## option communes", [
+        (r"^option communes, témoin cinq chiffres : \d+ documents, adresses "
+         r"prédites \d+ sans l'option, \d+ avec", 1,
+         "témoin avec l'option (P2-184)"),
+        (r"^option communes, code postal en tête( hors table)? : \d+ "
+         r"documents, .* \d+ perdue\(s\) avec l'option", 2,
+         "adresses en tête, dans la table et hors table"),
+        (r"^option communes, flou \w+ : \d+ documents, .* \d+ perdue\(s\) "
+         r"avec l'option", 9, "corpus flous et variantes de casse"),
+    ]),
     ("## communes : nom en partie en clair après CEDEX", [
         (r"^cedex commune longue : \d+ adresses, \d+ avec au moins un "
          r"caractère en clair", 1, "balayage des communes (P2-178)"),
