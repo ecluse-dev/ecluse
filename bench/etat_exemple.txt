@@ -268,6 +268,12 @@ règle candidate « nom suivi d'un mot en minuscules » (simulée dans le banc, 
     position=debut_ligne : 36 / 144 perdue(s)
     position=debut_texte : 36 / 144 perdue(s)
     suite=minuscule : 108 / 108 perdue(s)
+## communes : nom en partie en clair après CEDEX (P2-178, P2-180) : Ecluse.redact (chemin du produit)
+cedex commune longue : 139500 adresses, 811 avec au moins un caractère en clair, 0 refus (Ecluse.redact)
+  ecriture=libelle : 26 / 34875 en défaut, fuite au caractère 0.1 % (462 / 792263) ; commune 26, mot CEDEX 25, numéro 26
+  ecriture=postale : 145 / 34875 en défaut, fuite au caractère 0.2 % (1750 / 766136) ; commune 138, mot CEDEX 138, numéro 145
+  ecriture=libelle_espaces : 626 / 34875 en défaut, fuite au caractère 1.2 % (9461 / 767096) ; commune 622, mot CEDEX 609, numéro 626
+  ecriture=capitales_tirets : 14 / 34875 en défaut, fuite au caractère 0.0 % (245 / 792263) ; commune 14, mot CEDEX 13, numéro 14
 ## identifiant suivi d'un nombre (P2-174) : Ecluse.redact (chemin du produit)
 identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) faux, 2 suite(s) avalée(s), 2 document(s) en défaut
   type_id=finess : 1 / 1200 en défaut, 1 non couvert(s)
