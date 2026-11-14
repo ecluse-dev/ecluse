@@ -725,9 +725,14 @@ bool _finitParDeuxPoints(String vue, int fin) {
 /// export bureautique coupe « 7460⏎\u00A08432 »). Ce qui suit doit toujours
 /// être un chiffre ; la validation de l'identifiant (clé, forme) reste le
 /// garde-fou contre la fusion de deux lignes sans rapport.
+///
+/// P2-158 : ce qui suit peut aussi être **une** majuscule suivie d'un chiffre
+/// (« 0270⏎D932 », groupe d'IBAN qui commence par une lettre de compte). Les
+/// textes ordinaires (« Salle 4⏎A2 fermée ») ne sont touchés que dans la vue :
+/// sans identifiant valide autour, rien n'est détecté et le texte reste intact.
 final RegExp _coupuresDeLigne = RegExp(r'(?<=[0-9/.\-]|[0-9][A-Z])'
     '[$_blancsDeLigne]*\\r?\\n[$_blancsDeLigne]*'
-    r'(?=[0-9])');
+    r'(?=[0-9]|[A-Z][0-9])');
 
 /// Blancs horizontaux admis autour d'une fin de ligne d'identifiant : ceux de
 /// `DigitCompaction` (jamais le saut de ligne lui-même).

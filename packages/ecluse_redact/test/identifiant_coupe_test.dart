@@ -66,6 +66,39 @@ void main() {
     });
   }
 
+  // P2-158 : la fin de ligne tombe juste avant un groupe qui commence par une
+  // lettre (lettre de compte en tête du groupe suivant). Cas relevé sur le
+  // corpus « mise en page » à 60 colonnes (P2-153). IBAN synthétiques, clés
+  // calculées.
+  const coupesAvantLettre = {
+    'IBAN FR05 0261 2690 0270\nD932 5250 067 avant le': 'IBAN',
+    'IBAN FR05 0261 2690 0270 \nD932 5250 067 avant le': 'IBAN',
+    'IBAN FR05 0261 2690\n0270 D932 5250 067 avant le': 'IBAN',
+  };
+  for (final MapEntry(key: texte, value: type) in coupesAvantLettre.entries) {
+    test('masqué (P2-158) : ${texte.replaceAll('\n', '\\n')}', () async {
+      final r = await Ecluse.redact(texte);
+      expect(r.mapping.keys, contains('[${type}_1]'), reason: r.maskedText);
+      expect(r.maskedText, isNot(contains('D932')), reason: r.maskedText);
+      expect(Ecluse.restore(r.maskedText, r.mapping), texte);
+    });
+  }
+
+  // P2-158 : contre-exemples, une majuscule + chiffre après une fin de ligne
+  // qui n'est pas la suite d'un identifiant : rien n'est masqué.
+  const intactsAvantLettre = [
+    'Salle 4\nA2 fermée',
+    'Vol 12\nB7 porte',
+    'le 3\nC4 du plan',
+    'Étage 2\nB12 couloir nord',
+  ];
+  for (final texte in intactsAvantLettre) {
+    test('inchangé (P2-158) : ${texte.replaceAll('\n', '\\n')}', () async {
+      final r = await Ecluse.redact(texte);
+      expect(r.maskedText, texte, reason: r.maskedText);
+    });
+  }
+
   const intacts = [
     'Total : 150\nPage 12',
     'Chambre 12\nLit 3\nÉtage 4',
