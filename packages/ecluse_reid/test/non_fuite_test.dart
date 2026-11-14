@@ -229,7 +229,7 @@ void main() {
               fAfter: 3400,
               bandAfter: RiskBand.faible,
               retenu: true,
-              raison: 'F : 12.00 -> 3400.00.',
+              raison: 'F remonte (tranche de risque : eleve -> faible).',
             ),
           ],
           seuilVise: 20,
