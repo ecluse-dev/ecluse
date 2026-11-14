@@ -27,6 +27,12 @@ const Map<String, String> typeMap = {
   'iban': 'iban',
   'finess': 'finess',
   'adeli': 'adeli',
+  // Identifiant administratif etiquete (numero de dossier, de patient,
+  // IPP...) : produit par `Ecluse.redact` sur les corpus QI et le corpus
+  // « identifiant suivi », mais aucun corpus flou n'annote ce type. Meme
+  // raisonnement que les detecteurs structurels ci-dessus : conserve tel
+  // quel plutot que signale comme inconnu a chaque execution (P2-179).
+  'identifiant': 'identifiant',
 };
 
 /// Execute `ecluse_redact` sur un corpus JSONL et ecrit les predictions
