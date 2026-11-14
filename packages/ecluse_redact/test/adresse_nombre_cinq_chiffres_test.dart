@@ -98,4 +98,41 @@ void main() {
     final r = await Ecluse.redact('58699 Alpha livrés. Voir la note de Marie.');
     expect(r.entities.where((e) => e.type == EntityType.adresse), isNotEmpty);
   });
+
+  // P2-177 : ce qui distingue « 58699 Alpha livrés. » d'une adresse, c'est le
+  // mot en minuscules qui suit le nom. Une règle qui s'en servirait ferait
+  // partir ces adresses en clair (mesure : `bin/run_cp_tete_bench.dart`, 108
+  // adresses sur 432 de `bench/generate_corpus_cp_tete.py`). Le masquage à
+  // tort est donc gardé ; ces tests tiennent les adresses à ne pas perdre.
+  group('code postal en tête suivi de mots en minuscules : toujours masqué',
+      () {
+    for (final texte in const [
+      // En tête de texte.
+      '25000 Besançon depuis 2019.',
+      '90000 Belfort et environs.',
+      '39100 Dole le 3 mai 2026.',
+      // En tête de ligne : bloc d'adresse, ou prose recoupée comme dans un
+      // PDF.
+      'Résidence des Tilleuls\n70000 Vesoul pour le courrier.',
+      'La famille reste domiciliée au\n25000 Besançon depuis 2019.',
+      // En tête de phrase.
+      'Adresse inchangée. 21000 Dijon jusqu\'à nouvel ordre.',
+      // Texte tapé sans aucune majuscule.
+      '70000 vesoul depuis dix ans.',
+      'le courrier est à envoyer au\n70170 port-sur-saône uniquement.',
+      'dossier complet. 39000 lons-le-saunier à confirmer.',
+    ]) {
+      test(texte.replaceAll('\n', r'\n'), () async {
+        final r = await Ecluse.redact(texte);
+        final codePostal = RegExp(r'\d{5}').stringMatch(texte)!;
+        expect(
+            r.entities.where((e) => e.type == EntityType.adresse), isNotEmpty);
+        expect(r.maskedText, isNot(contains(codePostal)));
+        // La commune ne reste pas en clair non plus.
+        final commune =
+            RegExp(r'\d{5} ([^ .\n]+)').firstMatch(texte)!.group(1)!;
+        expect(r.maskedText, isNot(contains(commune)));
+      });
+    }
+  });
 }

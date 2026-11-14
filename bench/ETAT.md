@@ -323,6 +323,46 @@ d'un code postal en tête de ligne (« 70000 Vesoul ») ; aucune tournure ne les
 sépare, ils restent masqués (66 sur 200). Reste du tableau de bord inchangé
 (adresses des corpus flous comprises).
 
+## Code postal en tête : les adresses à ne pas perdre (P2-177)
+
+Pendant du témoin ci-dessus : `bench/generate_corpus_cp_tete.py` (432 documents,
+graine 42, **une adresse annotée par document**), un code postal qui ouvre le
+texte, une ligne (bloc d'adresse ou prose recoupée) ou une phrase, suivi de sa
+commune puis de rien, d'une fin de ligne, d'une ponctuation ou de mots en
+minuscules (« 25000 Besançon depuis 2019 »), en casse ordinaire et sans
+majuscule. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM). Une
+adresse est « en clair » dès qu'un de ses caractères hors blancs n'est sous
+aucune détection.
+
+| | `Ecluse.redact` |
+|---|---:|
+| Adresses laissées en clair, en tout ou en partie (432) | **0** |
+| dont suivies de mots en minuscules (108) | 0 |
+
+**Règle candidate, simulée par le banc** (`run_cp_tete_bench.dart
+--regle-candidate`, **absente de `lib/`**) : écarter une adresse prédite qui
+commence par un code postal en tête et dont le nom est suivi, sur la même
+ligne, d'un mot en minuscules. Les deux colonnes mesurent `Ecluse.redact`, la
+règle étant appliquée à ses prédictions.
+
+| Règle candidate | sans la règle | avec la règle (simulée) |
+|---|---:|---:|
+| Témoin sans adresse : prédictions à tort (400 phrases) | 74 | 8 |
+| dont nombre en tête de phrase (200 phrases) | 66 | **0** |
+| Corpus « code postal en tête » : adresses en clair (432) | 0 | **108** |
+| dont début de texte / début de ligne / après une phrase | 0 | 36 / 36 / 36 |
+| Corpus flous réaliste et adversarial : adresses en clair (159 et 155)¹ | 0 | 0 |
+
+¹ Hors tableau de bord (rejeu à la main du même binaire sur les corpus flous
+d'origine, en minuscules et recoupés à 60 et 90 colonnes ; réaliste en casse
+de phrase ; 3 documents refusés à 60 colonnes, hors compte) : ces corpus n'ont aucune adresse en tête suivie d'un
+mot en minuscules, ils n'exercent donc pas la perte.
+
+**Décision appliquée (fiche P2-177)** : les deux formes ne se séparent pas
+sans perte ; le masquage à tort est gardé, **aucun détecteur n'est modifié**,
+la limite est écrite dans `LIMITES.md` § 5.2. Le témoin reste à 74 (66 en
+tête).
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par

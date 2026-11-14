@@ -92,6 +92,16 @@ ATTENDU = [
          "compte des adresses prédites à tort (P2-167)"),
         (r"^  position=(debut|milieu) : \d+ / \d+", 2, "par position"),
     ]),
+    ("## code postal en tête", [
+        (r"^code postal en tête : \d+ adresses, \d+ laissée\(s\) en clair", 1,
+         "adresses en tête laissées en clair (P2-177)"),
+        (r"^  suite=(ligne|minuscule|ponctuation|rien) : \d+ / \d+ en clair",
+         4, "par suite"),
+        (r"^  témoin sans adresse : \d+ prédiction\(s\) à tort écartée", 1,
+         "règle candidate simulée, gain sur le témoin"),
+        (r"^  adresses annotées : \d+ perdue\(s\) sur \d+", 1,
+         "règle candidate simulée, adresses perdues"),
+    ]),
     ("## identifiant suivi d'un nombre", [
         (r"^identifiant suivi : \d+ documents, \d+ identifiant\(s\) non "
          r"couvert\(s\)", 1, "témoin identifiant suivi (P2-174)"),

@@ -760,6 +760,23 @@ code postal en tête de ligne (« 70000 Vesoul ») ; un nombre derrière une tou
 de 25000 Besançon » restent masqués ; mieux vaut un nombre masqué à tort qu'un code postal en clair. Une adresse avec numéro et voie (« rue du Lot 46000 Cahors ») n'est pas concernée. Adresses des corpus flous
 et reste du tableau de bord inchangés.
 
+**Nombre à cinq chiffres en tête de phrase : le masquage à tort est gardé (P2-177).** « 58699 Alpha livrés. » et
+« 71344 boîtes expédiés. » (texte sans majuscule) restent masqués comme des adresses : 66 phrases sur 200 du témoin,
+inchangé. La seule tournure qui les distingue de « 70000 Vesoul » est ce qui **suit** le nom : un mot en minuscules sur
+la même ligne. Mesure par `Ecluse.redact` (`run_cp_tete_bench.dart`, règle simulée dans le banc, jamais dans `lib/`) :
+écarter « nombre en tête + nom + mot en minuscules » retirerait les **66** prédictions à tort, mais ferait partir en
+clair **108 adresses sur 432** du corpus `bench/generate_corpus_cp_tete.py` (toutes celles que suit un mot en minuscules :
+« 25000 Besançon depuis 2019 », « domiciliée au⏎25000 Besançon depuis 2019 » dans une prose recoupée comme la rend un
+PDF, « 70000 vesoul et environs » tapé sans majuscule), dont 36 en début de ligne, 36 en début de texte et 36 après une
+phrase. Les adresses des corpus flous du tableau de bord, elles, ne seraient pas touchées (0 perdue) : aucune n'a
+cette forme, ce qui dit seulement qu'ils ne l'exercent pas. Les deux formes ne se séparent donc pas sans perte, et
+une adresse en clair est une fuite quand un nombre masqué à tort ne coûte que de la lisibilité : **rien n'est
+changé dans le détecteur**. Pistes écartées sans mesure : juger les deux premiers chiffres (un département qui
+n'existe pas) ne retirerait presque rien, un nombre quelconque ayant presque toujours un préfixe de département
+valide, et ferait perdre des adresses étrangères à cinq chiffres ; une liste de noms de comptage (« unités »,
+« boîtes ») reviendrait à ajuster le détecteur au témoin. Ce qui séparerait vraiment : reconnaître la commune
+(table des communes d'`ecluse_reference`), ce que ce détecteur ne fait pas.
+
 **Identifiant coupé par une fin de ligne (P2-38).** Sonde de 14 formes : un téléphone, un NIR, un
 IBAN ou une date coupés entre deux groupes (« 01 99 00⏎12 34 », « FR76 3000 6000⏎0112 … ») n'étaient
 pas détectés, alors que l'extraction d'un PDF ou le retour automatique d'un traitement de texte les
