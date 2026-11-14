@@ -626,6 +626,18 @@ La coupure est maintenant admise après **une** majuscule précédée d'un chiff
 que `DigitCompaction` ; ce qui suit doit toujours être un chiffre. Tests d'abord (4 rouges sur 6) ;
 4 contre-exemples intacts (« Chambre 12B⏎34 lits »…) ; échantillon : 5 → 0 ; tableau de bord et
 fichiers de prédiction inchangés octet pour octet ; coût mesuré sur 4 entrées de 400 000 caractères : 1,5 à 2,4 s.
+*P2-158 (14 novembre)* : le seul identifiant resté en clair du corpus « mise en page » à 60 colonnes
+(P2-153, par `Ecluse.redact`) était un IBAN coupé juste **avant** un groupe qui commence par une lettre
+(« …0270⏎D932… »). Ce qui suit la fin de ligne peut maintenant être **une** majuscule suivie d'un chiffre.
+Tests d'abord (2 rouges sur 3) ; contre-exemples intacts (« Salle 4⏎A2 fermée », « Vol 12⏎B7 porte », « le
+3⏎C4 du plan », « Étage 2⏎B12 couloir nord ») : la vue change, mais sans identifiant valide rien n'est
+détecté. Mesure par `Ecluse.redact` sur le corpus structurel (1 000 documents, 778 identifiants), 60
+colonnes : 777/778 → **778/778** ; 90 colonnes et tous les autres chiffres du tableau de bord inchangés.
+Chiffres de P2-153 (mise en page, retours à la ligne d'une page, rien d'autre ne change) : fuite globale des
+entités floues du réaliste 7,5 % → 9,3 % à 90 colonnes et 8,6 % à 60 colonnes (2 documents refusés
+explicitement), adversarial inchangé à 7,2 % ; par `Ecluse.redact`, identifiants structurels 778/778 à 90 et,
+depuis P2-158, à 60 colonnes. Le **moteur seul** (`ecluse_core`) n'a pas cette neutralisation (87,7 % de rappel
+à 60 colonnes ; cf. P2-162).
 
 **Date de naissance séparée de son étiquette (P2-39).** Sonde de formats de formulaire : « Date de
 naissance :⏎12/03/1950 » (étiquette sur sa ligne, valeur sur la suivante), « Date de naissance |
