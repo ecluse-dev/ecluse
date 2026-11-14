@@ -367,7 +367,7 @@ sans perte ; le masquage à tort est gardé, **aucun détecteur n'est modifié**
 la limite est écrite dans `LIMITES.md` § 5.2. Le témoin reste à 74 (66 en
 tête).
 
-## Communes : nom en partie en clair après CEDEX (P2-178, P2-180)
+## Communes : nom en partie en clair après CEDEX (P2-178, P2-180, P2-181)
 
 Balayage des 34 875 communes du référentiel (`geo_communes.csv.gz`,
 populations légales INSEE), une fois par écriture, avec « code postal +
@@ -376,12 +376,12 @@ Chemin mesuré : **`Ecluse.redact`**. Une commune est « en défaut » dès qu'u
 de ses caractères (ou du mot « CEDEX »/son numéro) reste en clair ; détail
 par cause, longueur et forme de CEDEX dans `agent/specs/P2-178.md`.
 
-| Écriture | Avant (P2-178, mesure) | Après (P2-180) |
-|---|---:|---:|
-| `libelle` (officiel) | 163 / 34 875 | **26** / 34 875 |
-| `postale` | 145 / 34 875 | 145 / 34 875 |
-| `libelle_espaces` | 901 / 34 875 | 626 / 34 875 |
-| `capitales_tirets` | 143 / 34 875 | **14** / 34 875 |
+| Écriture | Avant (P2-178, mesure) | Après P2-180 | Après P2-181 |
+|---|---:|---:|---:|
+| `libelle` (officiel) | 163 / 34 875 | 26 / 34 875 | **10** / 34 875 |
+| `postale` | 145 / 34 875 | 145 / 34 875 | **7** / 34 875 |
+| `libelle_espaces` | 901 / 34 875 | 626 / 34 875 | **15** / 34 875 |
+| `capitales_tirets` | 143 / 34 875 | 14 / 34 875 | **9** / 34 875 |
 
 **P2-180 (tâche A de `agent/specs/P2-178.md` § 7)** corrige deux causes
 indépendantes de la longueur, dans `AdresseDetector` : la lettre « œ »/« Œ »
@@ -401,10 +401,78 @@ non traités par P2-180).
 Témoins flous à 0 prédiction à tort, reste du tableau de bord inchangé
 ligne à ligne (vérifié par rejeu complet).
 
-Ce qui reste (tâche B de `agent/specs/P2-178.md` § 7, non traitée ici) :
-communes de cinq mots ou plus (`postale`) et mots de liaison absents de la
-liste courante (« et », « au », « à », « près », « devant »…, surtout
-`libelle_espaces`).
+**P2-181 (tâche B de `agent/specs/P2-178.md` § 7)** : ce qui sépare un code
+postal du mot « CEDEX », sur la même ligne, est la localité. Devant « CEDEX »
+seulement, `AdresseDetector` prend jusqu'à cinq mots de plus et les mots de
+liaison que le balayage avait trouvés absents (« et », « au », « à », « près »,
+« devant », « di », « ès »…). **Sans « CEDEX » derrière, le motif est celui
+d'avant** : la correction ne masque rien de plus dans un texte sans CEDEX
+(témoin ci-dessous, inchangé).
+
+Ce balayage n'a que des adresses avec CEDEX : il ne mesure donc que ce cas.
+Le corpus par longueur (`generate_corpus_cedex.py` sans `--balayage`,
+5 880 adresses, **hors tableau de bord**, rejoué à la main par `Ecluse.redact`)
+dit ce qui reste sans CEDEX :
+
+| Forme (1 960 adresses chacune) | Avant P2-181 | Après P2-181 |
+|---|---:|---:|
+| sans CEDEX | 263 en défaut (4,1 % des caractères) | 263 (4,1 %), **inchangé** |
+| « CEDEX n » | 270 (5,6 %) | **22** (0,8 %) |
+| « Cedex 0n » | 294 (6,2 %) | **22** (0,8 %) |
+
+Restent, au balayage (41 adresses, classement du scoreur) : 30 pour une
+parenthèse ou un tiret isolé dans le nom (« Bors (Canton de …) », non
+traité), 6 pour un mot en minuscules hors liste (« et ses environs », « es »,
+« plages », « sans », « ô »), 3 autres (double espace laissé par un tiret
+isolé retiré, « Bourg Madame » sans tiret : « Madame » annonce un nom) et 2 où
+la fin du nom est prise par une détection de nom (la commune n'est pas en
+clair, le numéro de CEDEX l'est). 15 communes distinctes sur 34 875, contre
+951 à la mesure P2-178.
+
+## Commune suivie de mots ordinaires : le sur-masquage (P2-181)
+
+Témoin `bench/generate_corpus_commune_suivie.py` (480 documents, graine 42) :
+une adresse « code postal + commune » annotée, suivie **sur la même ligne**
+d'une suite qui n'en fait pas partie — mots ordinaires en capitales (« 25000
+BESANCON ET ENVIRONS »), mots à majuscule (« Service des Admissions »), ou mot
+de liaison (« 70000 Vesoul à 9 h », « et Besançon »). Chemin mesuré :
+**`Ecluse.redact`** (`score_commune_suivie.py`). La suite masquée est du texte
+ordinaire que le LLM ne reçoit plus (lisibilité perdue, **pas une fuite**) ;
+l'adresse en clair, elle, serait une fuite.
+
+| | Avant P2-181 | Après P2-181 |
+|---|---:|---:|
+| Documents à la suite masquée en partie (480) | 308 | 308 |
+| Caractères de suite masqués | 3 739 / 6 659 (56,1 %) | 3 739 / 6 659 (56,1 %) |
+| dont suite en capitales (160 documents) | 152 documents, 1 797 / 2 497 | inchangé |
+| dont suite à majuscule (160) | 145 documents, 1 898 / 2 354 | inchangé |
+| dont suite introduite par une liaison (160) | 11 documents, 44 / 1 808 | inchangé |
+| Adresses en partie en clair | 0 | 0 |
+
+Deux lectures :
+
+- **Le témoin ne bouge pas** avec P2-181 (aucune suite du témoin n'est suivie
+  de « CEDEX ») : c'est la condition de la fiche.
+- **Le sur-masquage existait déjà** et il est fort : un mot à majuscule ou en
+  capitales qui suit une commune de moins de quatre mots est pris pour la
+  suite de son nom (« 70000 VESOUL SERVICE DES ADMISSIONS » est masqué en
+  entier). C'est la limite connue du motif « un mot puis trois au plus », sans
+  table des communes ; ce témoin la chiffre pour la première fois.
+
+**Règle candidate mesurée et non retenue** (rejeu à la main du même binaire,
+règle **absente de `lib/`**) : prolonger aussi le nom quand il va jusqu'à la
+**fin de la ligne**, sans CEDEX. Par `Ecluse.redact` :
+
+| Règle candidate « fin de ligne » | P2-181 (retenu) | avec la candidate |
+|---|---:|---:|
+| Corpus par longueur, sans CEDEX : adresses en défaut (1 960) | 263 | **22** |
+| Témoin : caractères de suite masqués (6 659) | 3 739 | **4 858** |
+| dont suite qui finit la ligne (240 documents) | 155 documents, 1 882 car. | 214 documents, 3 001 car. |
+| dont suite introduite par une liaison (160) | 11 documents | 62 documents |
+
+Elle comble la fuite sans CEDEX mais masque nettement plus de texte
+ordinaire : la fiche P2-181 demande de s'arrêter là et de laisser le choix au
+mainteneur.
 
 ## Mise en page : textes recoupés aux espaces (P2-153)
 

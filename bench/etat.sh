@@ -215,6 +215,17 @@ if produit "communes balayage, générateur" "$B/flou/corpus_cedex_balayage.json
   fi
 fi
 
+# Témoin de sur-masquage (P2-181) : une adresse « code postal + commune »
+# suivie, sur la même ligne, de mots ordinaires qui n'en font pas partie
+# (capitales, mots à majuscule, « et », « à »…). La suite masquée est de la
+# lisibilité perdue, pas une fuite ; l'adresse en clair, elle, doit rester à 0.
+echo "## commune suivie de mots ordinaires (P2-181) : Ecluse.redact (chemin du produit), suite à ne pas masquer"
+if produit "commune suivie, générateur" "$B/flou/corpus_flou_commune_suivie.jsonl" python3 "$B/generate_corpus_commune_suivie.py" --n 480 --seed 42 --out "$B/flou/corpus_flou_commune_suivie.jsonl"; then
+  if produit "commune suivie, Ecluse.redact" "$B/flou/pred_commune_suivie.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_flou_commune_suivie.jsonl ../../bench/flou/pred_commune_suivie.jsonl; then
+    montre "commune suivie, score" -E "^commune suivie :|^  (famille|ecriture)=" 0 non dans_B python3 score_commune_suivie.py --corpus flou/corpus_flou_commune_suivie.jsonl --pred flou/pred_commune_suivie.jsonl || true
+  fi
+fi
+
 # Identifiant suivi d'une date, d'un âge ou d'un nombre (P2-174) : 4 types x
 # 4 familles x 3 séparateurs x 100 documents. Un identifiant non couvert est
 # une fuite ; un type faux ou une suite avalée abîme le texte sans fuite.
