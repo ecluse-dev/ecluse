@@ -614,3 +614,20 @@ décision »). Règle commune : dans le doute, le côté qui protège.
   exact désigne la commune dans 70 % des cas, les canaux de texte donnent la
   tranche de risque à la place.
 
+## 2026-11 — P2-184 : option table des communes non retenue (15 novembre)
+
+Décision déléguée par le mainteneur (« prends la meilleure décision »). Règle
+du 13 novembre : dans le doute, le côté qui protège.
+- **#390 est fermée sans fusion.** L'option retirait 69 faux positifs du
+  témoin cinq chiffres (74 → 5) et ne changeait rien quand elle est désactivée,
+  mais avec l'option, 104 adresses sur 432 dont la commune n'est pas dans la
+  table (faute de frappe, lieu-dit, ancienne commune) partaient en clair. La
+  fiche l'excluait : une commune absente de la table devait garder sa
+  détection. La variante qui atteint 3 en perd 401. Un nombre masqué à tort
+  coûte de la lisibilité ; un code postal en clair est une fuite, et ces
+  formes sont justement celles d'un document réel ou d'un texte relu par OCR.
+- **À rouvrir seulement** avec une variante mesurée à 0 adresse perdue sur le
+  corpus hors table (`generate_corpus_cp_tete.py --hors-table`), ou sur
+  demande d'un client gêné par ces faux positifs. La branche
+  `claude/P2-184-table-communes-cinq-chiffres` est gardée ; `CommunesConnues`
+  y est réutilisable pour la piste B de `agent/specs/P2-182.md`.
