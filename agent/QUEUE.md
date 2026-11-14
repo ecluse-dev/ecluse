@@ -250,7 +250,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-180 | code | Commune masquée en entier : lettre « œ »/« Œ » et mot en « M », « Pr », « Dr »… suivi d'une lettre accentuée pris pour une civilité (« Annœullin », « Le Pré-Saint-Gervais ») ; balayage des communes au tableau de bord | P2-178 | fusionnée |
 | P2-181 | code | Commune de cinq mots ou plus et mots de liaison absents (« et », « au », « à », « près ») : témoin de sur-masquage d'abord, puis correction ou arrêt chiffré | P2-180 | à faire |
 | P2-182 | spec | Table des communes dans la détection d'adresses : gain (« 58699 Alpha » contre « 70000 Vesoul », noms longs), perte (faute d'orthographe, lieu-dit), dépendance `ecluse_reference` → `ecluse_redact` | P2-178 | fusionnée |
-| P2-183 | mesure | Communes du balayage de P2-178 en texte tout en capitales et sans majuscule (autres détecteurs) ; mesurer, ne rien corriger | P2-178 | à faire |
+| P2-183 | mesure | Communes du balayage de P2-178 en texte tout en capitales et sans majuscule (autres détecteurs) ; mesurer, ne rien corriger | P2-178 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
