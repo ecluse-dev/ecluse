@@ -40,9 +40,14 @@ class ReidEstimate {
   @override
   int get hashCode => Object.hash(f, band, dominant, upperBound);
 
+  /// La tranche de risque, jamais [f] : pour un lieu seul, l'effectif est la
+  /// population légale de la commune, et cette population désigne à elle
+  /// seule une commune sur douze en France, sept sur dix dans leur
+  /// département (P2-176). Un `toString` finit dans un journal ou une trace
+  /// d'erreur de l'application ; qui a besoin de l'effectif lit [f].
   @override
   String toString() =>
-      'ReidEstimate(F=$f, ${band.name}, dominant: ${dominant?.name}, '
+      'ReidEstimate(${band.name}, dominant: ${dominant?.name}, '
       'upperBound: $upperBound)';
 }
 
@@ -123,8 +128,11 @@ ReidEstimate _estimateCasA(EcluseReference ref, Qi profession, Qi? lieu) {
     final cap = populationForLieu(ref, lieu);
     if (f > cap) {
       f = cap;
+      // La note ne cite pas la population : elle part dans la trace
+      // d'audit, et la population d'une commune suffit souvent à la
+      // retrouver (P2-176). L'effectif plafonné reste dans `f`.
       extra.add(
-        'Borne haute plafonnée à la population du lieu ($cap) : '
+        'Borne haute plafonnée à la population du lieu : '
         "l'effectif du département la dépassait.",
       );
     }

@@ -33,10 +33,12 @@ class Generalization {
       Object.hash(from, to, fBefore, fAfter, bandBefore, bandAfter);
 
   /// [from] et [to] s'écrivent par `Qi.toString` : type, niveau et longueur,
-  /// jamais la valeur (P2-170).
+  /// jamais la valeur (P2-170). Les tranches de risque, jamais [fBefore] ni
+  /// [fAfter] : un effectif peut désigner une commune (P2-176, voir
+  /// `ReidEstimate.toString`).
   @override
-  String toString() => 'Generalization($from -> $to, F: $fBefore -> '
-      '$fAfter, ${bandBefore.name} -> ${bandAfter.name})';
+  String toString() => 'Generalization($from -> $to, '
+      '${bandBefore.name} -> ${bandAfter.name})';
 }
 
 /// Un candidat de généralisation simulé pour un QI présent (§4) — retenu ou
@@ -66,6 +68,11 @@ class GeneralizationCandidate {
   /// `null` si [to] est `null`.
   final RiskBand? bandAfter;
   final bool retenu;
+
+  /// Pourquoi le candidat est retenu ou écarté. Ce texte part tel quel dans
+  /// la trace d'audit (`raisonDuChoix`) : il cite les tranches de risque,
+  /// jamais un effectif (P2-176). Les effectifs sont dans [fBefore] et
+  /// [fAfter].
   final String raison;
 }
 
@@ -202,8 +209,9 @@ List<GeneralizationCandidate> simulateOneStep(
       raison: after == null
           ? 'Généralisation non applicable dans cette combinaison '
               '(recalcul impossible).'
-          : 'F : ${baseline.f.toStringAsFixed(2)} -> '
-              '${after.f.toStringAsFixed(2)}.',
+          : '${after.f > baseline.f ? 'F remonte' : 'F ne remonte pas'} '
+              '(tranche de risque : ${baseline.band.name} -> '
+              '${after.band.name}).',
     ));
   }
   return _markWinner(candidates);
