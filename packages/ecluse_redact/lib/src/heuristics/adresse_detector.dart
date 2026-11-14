@@ -92,7 +92,29 @@ final class AdresseDetector implements EntityDetector {
   ///   laissait un span avaler la ligne suivante en entier.
   static const _codePostalCommune = '(?<!\\d)\\d{5}$_h+(?<commune>$_motCommune)'
       '(?:[ \\u00A0\\u202F-]$_connecteurs*(?!$_titres$_finDeTitre)$_motCommune){0,3}'
+      '$_suiteDevantCedex'
       '$_suffixeCedex';
+
+  /// Suite du nom de la commune **devant « CEDEX »** (P2-181). Le nom accepté
+  /// ci-dessus s'arrête à quatre mots et à la liste courte [_connecteurs] :
+  /// une commune de cinq mots en écriture postale (« SAINT LAURENT LES BAINS
+  /// LAVAL D AURELLE ») ou liée par « et », « au », « à », « près »… (« Moliets
+  /// et Maa ») laissait sa fin en clair, « CEDEX » et son numéro avec elle
+  /// (mesure P2-178 : 132 et 604 communes du référentiel). Allonger le nom
+  /// sans condition masquerait davantage le texte ordinaire qui suit une
+  /// commune (« 70000 Vesoul et Besançon », « 70000 VESOUL SERVICE DES
+  /// ADMISSIONS BATIMENT B » : témoin `generate_corpus_commune_suivie.py`).
+  ///
+  /// La borne retenue ne dépend donc pas d'une longueur : ce qui sépare un
+  /// code postal du mot « CEDEX », **sur la même ligne**, est la localité.
+  /// Jusqu'à cinq mots de plus (la plus longue commune du référentiel en a
+  /// huit) sont pris **seulement si « CEDEX » les suit immédiatement** ; sans
+  /// lui, le motif est celui d'avant, au caractère près. Une civilité arrête
+  /// toujours le nom, comme plus haut.
+  static const _suiteDevantCedex =
+      '(?:(?:[ \\u00A0\\u202F-]$_connecteursDevantCedex*'
+      '(?!$_titres$_finDeTitre)$_motCommune){1,5}'
+      '(?=,?$_h*$_cedex))?';
 
   /// « CEDEX » et son numéro de distribution (P2-164). Le mot « CEDEX » en
   /// capitales ou « Cedex » était déjà pris comme dernier mot de la commune ;
@@ -131,6 +153,17 @@ final class AdresseDetector implements EntityDetector {
   /// supprime l'entité voisine au lieu de la masquer (fuite).
   static const _connecteurs =
       "(?:(?:de|du|des|la|le|les|en|sur|sous|lès|lez|aux)[ -]|[dl]['’])";
+
+  /// Mots de liaison en minuscules admis **seulement devant « CEDEX »**
+  /// ([_suiteDevantCedex]) : ceux de [_connecteurs], plus ceux que le balayage
+  /// des communes a trouvés absents (`agent/specs/P2-178.md` § 4 : « et »,
+  /// « au », « près », « di », « devant », « à », « ès », « ez », « del »,
+  /// « dels », « deux », « derrière », « dit », « entre », « las »). Hors de ce
+  /// contexte ils restent refusés : « 70000 Vesoul et Besançon », « 70000
+  /// Vesoul à 9 h » ne sont pas un nom de commune.
+  static const _connecteursDevantCedex =
+      '(?:(?:de|du|des|la|le|les|en|sur|sous|lès|lez|aux|et|au|près|di|'
+      "devant|à|ès|ez|del|dels|deux|derrière|dit|entre|las)[ -]|[dl]['’])";
 
   /// Civilités et titres qui ne sont jamais le dernier mot d'une commune :
   /// ils annoncent un nom de personne, détecté à part.
