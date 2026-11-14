@@ -245,7 +245,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-175 | code | Extraction des QI : ligne « par `Ecluse.redact` » au tableau de bord, lieux à tort (patronyme homonyme d'une commune), professions abrégées (« pneumo », « gynéco », « pediatre ») | — | fusionnée |
 | P2-176 | code | Effectif F hors des canaux de texte (`toString`, `toAuditMap`, note de plafonnement) : la tranche de risque à la place de l'effectif exact | P2-172 | fusionnée |
 | P2-177 | code | Adresses : nombre de cinq chiffres en tête de phrase suivi d'un mot (« 58699 Alpha livrés ») masqué à tort comme adresse (témoin d'abord) | P2-167 | à faire |
-| P2-178 | mesure | Adresses : CEDEX après une commune de plus de quatre mots ; mesurer, ne rien corriger | P2-164 | à faire |
+| P2-178 | mesure | Adresses : CEDEX après une commune de plus de quatre mots ; mesurer, ne rien corriger | P2-164 | PR ouverte |
 | P2-179 | code | Tableau de bord : en-tête de `bench/ETAT.md` à jour et type `identifiant` reconnu par `run_redact_bench.dart` (avertissement de fin d'`etat.sh`) ; banc seulement | P2-168 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.

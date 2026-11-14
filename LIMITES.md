@@ -745,6 +745,20 @@ adresse. **Restent en clair** : la boîte postale (« BP 12 », « CS 40001 », 
 sa propre ligne (complément intercalé, hors périmètre v0, voir plus haut), et le CEDEX d'une commune de plus de
 quatre mots.
 
+**Nom de commune masqué en partie (mesure P2-178, rien n'est corrigé).** Par `Ecluse.redact`, sur des adresses
+« code postal + commune + CEDEX » dont la commune vient du référentiel (`agent/specs/P2-178.md`,
+`bench/generate_corpus_cedex.py`) : en écriture postale (capitales, espaces), une commune de **cinq mots ou plus**
+laisse sa fin en clair, et « CEDEX » et son numéro avec elle (20,8 % des caractères de l'adresse à cinq mots, 27,6 % à
+six, 34,9 % à sept ; 0 % jusqu'à quatre). Le CEDEX n'est pas la cause : dès que la commune est masquée en entier, il
+l'est aussi. Trois autres causes **ne dépendent pas de la longueur** : la lettre « œ » (« 59112 Annœullin » sort
+« [ADRESSE_1]œullin » ; une commune qui commence par « Œ » n'est pas masquée du tout) ; un mot qui commence par
+« M », « Me », « Pr », « Dr » suivi d'une lettre accentuée, refusé comme une civilité (« 93310 Le Pré-Saint-Gervais »
+sort « [ADRESSE_1] Pré-Saint-Gervais », « 04190 Les Mées » sort « [ADRESSE_1] Mées ») ; un mot de liaison absent de la
+liste, quand le nom est écrit sans tirets (« Moliets et Maa », « Pont à Mousson », « au », « près », « devant »). Sur
+les 34 875 communes du référentiel, **951 (2,7 %)** ont leur nom en partie en clair sous au moins une des quatre
+écritures mesurées, dont **163 sous leur libellé officiel** et 138 en écriture postale. Mesuré en casse ordinaire ;
+un texte tout en capitales ou sans majuscule passe par d'autres détecteurs et n'est pas dans cette mesure.
+
 **Nombre à cinq chiffres hors adresse (P2-167, 13 novembre).** Par `Ecluse.redact`, « Commande de 70000 unités,
 cedex 9 non concerné. » sortait avec « 70000 unités » masqué comme adresse. Deux règles : `AdresseDetector` seul
 (code postal + mot à majuscule, même en casse ordinaire : « Réf. 55090 Standard ») et, dans un texte sans
