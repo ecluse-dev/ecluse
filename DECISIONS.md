@@ -609,6 +609,8 @@ décision »). Règle commune : dans le doute, le côté qui protège.
 - **P2-169, voie F2 : la trace d'audit ne porte aucune valeur.**
   `ReidTrace.toAuditMap` écrit les valeurs des quasi-identifiants sous
   `qisInitiaux`. Principe déjà posé pour `ecluse_audit` (journal sans donnée
-  personnelle) : la preuve AIPD garde le type, le niveau de généralisation et
-  l'effectif, jamais la valeur. Tâche P2-172.
+  personnelle) : la preuve AIPD garde le type et le niveau de généralisation,
+  jamais la valeur. Tâche P2-172. Précisé le 13 novembre (P2-176) : l'effectif
+  exact désigne la commune dans 70 % des cas, les canaux de texte donnent la
+  tranche de risque à la place.
 
