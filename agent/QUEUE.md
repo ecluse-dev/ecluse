@@ -245,8 +245,12 @@ tâches copiées ici sont prises par l'agent.
 | P2-175 | code | Extraction des QI : ligne « par `Ecluse.redact` » au tableau de bord, lieux à tort (patronyme homonyme d'une commune), professions abrégées (« pneumo », « gynéco », « pediatre ») | — | fusionnée |
 | P2-176 | code | Effectif F hors des canaux de texte (`toString`, `toAuditMap`, note de plafonnement) : la tranche de risque à la place de l'effectif exact | P2-172 | fusionnée |
 | P2-177 | code | Adresses : nombre de cinq chiffres en tête de phrase suivi d'un mot (« 58699 Alpha livrés ») masqué à tort comme adresse (témoin d'abord) | P2-167 | fusionnée |
-| P2-178 | mesure | Adresses : CEDEX après une commune de plus de quatre mots ; mesurer, ne rien corriger | P2-164 | PR ouverte |
+| P2-178 | mesure | Adresses : CEDEX après une commune de plus de quatre mots ; mesurer, ne rien corriger | P2-164 | fusionnée |
 | P2-179 | code | Tableau de bord : en-tête de `bench/ETAT.md` à jour et type `identifiant` reconnu par `run_redact_bench.dart` (avertissement de fin d'`etat.sh`) ; banc seulement | P2-168 | à faire |
+| P2-180 | code | Commune masquée en entier : lettre « œ »/« Œ » et mot en « M », « Pr », « Dr »… suivi d'une lettre accentuée pris pour une civilité (« Annœullin », « Le Pré-Saint-Gervais ») ; balayage des communes au tableau de bord | P2-178 | à faire |
+| P2-181 | code | Commune de cinq mots ou plus et mots de liaison absents (« et », « au », « à », « près ») : témoin de sur-masquage d'abord, puis correction ou arrêt chiffré | P2-180 | à faire |
+| P2-182 | spec | Table des communes dans la détection d'adresses : gain (« 58699 Alpha » contre « 70000 Vesoul », noms longs), perte (faute d'orthographe, lieu-dit), dépendance `ecluse_reference` → `ecluse_redact` | P2-178 | à faire |
+| P2-183 | mesure | Communes du balayage de P2-178 en texte tout en capitales et sans majuscule (autres détecteurs) ; mesurer, ne rien corriger | P2-178 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -695,3 +699,42 @@ ne reprennent que ce qui manque pour la prendre.
   table (ou expliquer pourquoi il doit rester compté tel quel). **Fini
   quand** : `etat.sh` sans avertissement ; chiffres du tableau de bord
   inchangés (ou l'écart expliqué ligne par ligne) ; aucun fichier de `lib/`.
+- **P2-180** : adresses, chemin `Ecluse.redact`. Rapport
+  `agent/specs/P2-178.md` (§ 3, § 7 tâche A) et banc `bench/generate_corpus_cedex.py`
+  `--balayage`. Deux causes indépendantes de la longueur : la lettre « œ »
+  (109 communes en libellé officiel ; « 59112 Annœullin » sort
+  « [ADRESSE_1]œullin », une commune qui commence par « Œ » n'est pas masquée)
+  et un mot en « M », « Me », « Pr », « Dr » suivi d'une lettre accentuée,
+  refusé comme une civilité (28 communes en libellé officiel, 151 sans tirets).
+  Test d'abord : mettre le balayage au tableau de bord (`bench/etat.sh`, lignes
+  `libelle` et `capitales_tirets`), chiffre de départ. Puis corriger sans
+  toucher aux civilités réelles devant un nom (« M. Éric », « Pr Émile » doivent
+  rester lus comme civilités hors adresse : le vérifier sur les corpus de noms).
+  **Fini quand** : `libelle` 163 → 26 ou moins, `capitales_tirets` 143 → 18 ou
+  moins ; témoins flous à 0 ; noms derrière une civilité inchangés au tableau
+  de bord ; `LIMITES.md` § 5.2 à jour.
+- **P2-181** : suite de P2-180, tâche B de `agent/specs/P2-178.md` § 7.
+  132 communes en écriture postale (cinquième mot) et 604 en libellé sans
+  tirets (mots de liaison « et », « au », « à », « près », « devant »).
+  Test d'abord : un témoin de sur-masquage (phrases où une adresse est suivie
+  de mots ordinaires en capitales ou de « et », « à » : « 25000 BESANÇON ET
+  ENVIRONS », « 70000 Vesoul à 9 h ») mesuré avant tout changement. **Fini
+  quand** : `postale` 145 → 13 ou moins sans nouvelle prédiction sur les
+  témoins ; sinon s'arrêter et rapporter les deux mesures, la décision revenant
+  au mainteneur.
+- **P2-182** : spec dans `agent/specs/P2-182.md`, aucun code. Une table des
+  communes (`geo_communes.csv.gz`, déjà dans `ecluse_reference`) consultée par
+  la détection d'adresses séparerait « 58699 Alpha livrés » de « 70000 Vesoul »
+  (66 faux positifs de P2-177) et borne la fin des noms longs (P2-178).
+  **Fini quand** : le document chiffre, par sonde sur les corpus existants, le
+  gain (faux positifs retirés, fuites comblées) et la perte (commune mal
+  orthographiée, sans accent, lieu-dit, ancienne commune fusionnée) ; donne le
+  coût en taille et en temps ; dit si `ecluse_reference` devient une dépendance
+  d'`ecluse_redact` et ce que cela change pour `ecluse_core` (règle 6 de
+  `CLAUDE.md`) ; propose une décision au mainteneur sans la prendre.
+- **P2-183** : mesure seule, prolonge P2-178 (§ « non mesuré »). Même
+  balayage des 34 875 communes, texte entièrement en capitales et entièrement
+  en minuscules, par `Ecluse.redact`. Rapport dans `agent/specs/P2-183.md`.
+  **Fini quand** : nombre de communes en partie en clair par écriture et par
+  cause, exemples synthétiques, proposition de tâche si la fuite n'est pas
+  nulle ; aucun fichier de `lib/` modifié.
