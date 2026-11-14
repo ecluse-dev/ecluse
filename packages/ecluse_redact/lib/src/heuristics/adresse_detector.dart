@@ -91,7 +91,7 @@ final class AdresseDetector implements EntityDetector {
   ///   un document réel ; `\s` matche aussi le saut de ligne, ce qui
   ///   laissait un span avaler la ligne suivante en entier.
   static const _codePostalCommune = '(?<!\\d)\\d{5}$_h+(?<commune>$_motCommune)'
-      '(?:[ \\u00A0\\u202F-]$_connecteurs*(?!$_titres\\b)$_motCommune){0,3}'
+      '(?:[ \\u00A0\\u202F-]$_connecteurs*(?!$_titres$_finDeTitre)$_motCommune){0,3}'
       '$_suffixeCedex';
 
   /// « CEDEX » et son numéro de distribution (P2-164). Le mot « CEDEX » en
@@ -115,8 +115,14 @@ final class AdresseDetector implements EntityDetector {
   static const _h = '[ \\t\\u00A0\\u202F]';
 
   /// Mot de commune : majuscule initiale (le motif est sensible à la casse,
-  /// voir [_pattern]).
-  static const _motCommune = "[A-ZÀ-ÖØ-Þ][\\wÀ-ÖØ-Þà-öø-ÿ'’-]*";
+  /// voir [_pattern]). `\w` ne couvre que l'ASCII sans le drapeau `unicode`
+  /// (Dart) : les classes `À-ÖØ-Þ`/`à-öø-ÿ` ajoutent les lettres accentuées
+  /// latin-1, mais s'arrêtent à `ÿ` (U+00FF) et laissent dehors la ligature
+  /// « œ »/« Œ » (U+0153/U+0152, hors Latin-1) — 109 communes du référentiel
+  /// (« Annœullin », « Œuilly ») perdaient leur nom à partir de cette lettre
+  /// ou, en initiale, n'étaient pas reconnues comme commune du tout
+  /// (P2-180, § 1).
+  static const _motCommune = "[A-ZÀ-ÖØ-ÞŒ][\\wÀ-ÖØ-Þà-öø-ÿœŒ'’-]*";
 
   /// Petits mots **en minuscules** qui lient les parties d'un nom de commune
   /// (« Saint-Rémy en Comté », « Neuilly sur Seine », « Villeneuve d'Ascq »).
@@ -130,6 +136,18 @@ final class AdresseDetector implements EntityDetector {
   /// ils annoncent un nom de personne, détecté à part.
   static const _titres =
       '(?:Mme|Mlle|Mr|Madame|Monsieur|Mademoiselle|Dr|Docteur|Pr|Professeur|Me|Maître|M)';
+
+  /// Fin de mot après un titre (« M », « Pr »…), équivalent de `\b` mais qui
+  /// tient compte des lettres accentuées : `\b` de Dart se fonde sur `\w`
+  /// ASCII (sans drapeau `unicode`), qui ne voit pas « é » comme une lettre.
+  /// « Pr\b » matchait donc déjà entre le « r » et le « é » de « Pré » : un
+  /// nom de commune en un seul mot qui commence comme un titre abrégé
+  /// (« Le Pré-Saint-Gervais », « Les Mées », « Le Mée-sur-Seine ») était pris
+  /// pour une civilité annonçant un nom et n'était jamais inclus dans la
+  /// commune (P2-180, § 1). Une vraie civilité est toujours suivie d'un
+  /// espace ou d'un point avant le nom (« Mme Durand », « M. Durand ») : la
+  /// différence ne change donc rien aux civilités réelles.
+  static const _finDeTitre = "(?![\\wÀ-ÖØ-Þà-öø-ÿœŒ'’-])";
 
   /// Sépare le nom de voie du `CP_COMMUNE` qui suit : soit sur la **même
   /// ligne** (virgule optionnelle, comportement historique), soit via **un
@@ -257,7 +275,7 @@ final class AdresseDetector implements EntityDetector {
   /// même occasion et laissait passer des faux positifs comme
   /// « 70000 euros ». Vérification a posteriori, sur la sous-chaîne
   /// réellement matchée, indépendante du flag de casse du motif.
-  static final RegExp _uppercaseFirstLetter = RegExp(r'^[A-ZÀ-ÖØ-Þ]');
+  static final RegExp _uppercaseFirstLetter = RegExp(r'^[A-ZÀ-ÖØ-ÞŒ]');
 
   static bool _communeStartsWithUppercase(RegExpMatch match) {
     final commune = match.namedGroup('commune');

@@ -102,6 +102,12 @@ ATTENDU = [
         (r"^  adresses annotées : \d+ perdue\(s\) sur \d+", 1,
          "règle candidate simulée, adresses perdues"),
     ]),
+    ("## communes : nom en partie en clair après CEDEX", [
+        (r"^cedex commune longue : \d+ adresses, \d+ avec au moins un "
+         r"caractère en clair", 1, "balayage des communes (P2-178)"),
+        (r"^  ecriture=(libelle|postale|libelle_espaces|capitales_tirets) : "
+         r"\d+ / \d+ en défaut", 4, "par écriture"),
+    ]),
     ("## identifiant suivi d'un nombre", [
         (r"^identifiant suivi : \d+ documents, \d+ identifiant\(s\) non "
          r"couvert\(s\)", 1, "témoin identifiant suivi (P2-174)"),
