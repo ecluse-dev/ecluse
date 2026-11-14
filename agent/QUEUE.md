@@ -251,6 +251,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-181 | code | Commune de cinq mots ou plus et mots de liaison absents (« et », « au », « à », « près ») : témoin de sur-masquage d'abord, puis correction ou arrêt chiffré | P2-180 | à faire |
 | P2-182 | spec | Table des communes dans la détection d'adresses : gain (« 58699 Alpha » contre « 70000 Vesoul », noms longs), perte (faute d'orthographe, lieu-dit), dépendance `ecluse_reference` → `ecluse_redact` | P2-178 | fusionnée |
 | P2-183 | mesure | Communes du balayage de P2-178 en texte tout en capitales et sans majuscule (autres détecteurs) ; mesurer, ne rien corriger | P2-178 | fusionnée |
+| P2-184 | code | Nombre à cinq chiffres hors adresse : vérification en table des communes, en option explicite de `Ecluse.redact` (piste A et C de P2-182) | P2-182 | à faire |
+| P2-185 | code | Texte tout en capitales : commune composée qui commence par « LA », « LE », « LES », « L' » (« 01097 LA BOISSE ») écartée à tort comme mot neutre (tâche A de P2-183) ; balayage en capitales au tableau de bord | P2-183 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -738,3 +740,31 @@ ne reprennent que ce qui manque pour la prendre.
   **Fini quand** : nombre de communes en partie en clair par écriture et par
   cause, exemples synthétiques, proposition de tâche si la fuite n'est pas
   nulle ; aucun fichier de `lib/` modifié.
+- **P2-184** : adresses, chemin `Ecluse.redact`. Spec `agent/specs/P2-182.md`
+  § 1.1, § 5 pistes A et C : 71 des 74 faux positifs du témoin cinq chiffres
+  (P2-167, P2-177) seraient écartés si le mot qui suit le nombre n'est pas une
+  commune de `geo_communes.csv.gz`. La table est **chargée par l'appelant** et
+  passée en option de `Ecluse.redact`, comme `prenomsInsee` ; jamais chargée
+  par défaut ni à l'intérieur d'un détecteur. Sans l'option, aucun
+  comportement ne change. La vérification **s'ajoute** aux règles existantes
+  et ne fait que retirer un faux positif : une commune absente de la table
+  (faute d'orthographe, lieu-dit, ancienne commune) garde sa détection
+  actuelle. Test d'abord : ligne du témoin avec l'option au tableau de bord,
+  chiffre de départ 74. **Fini quand** : témoin avec l'option 74 → 3 ou
+  moins ; témoin sans l'option inchangé ; jeu de 432 adresses de P2-177 et
+  corpus flous : 0 adresse perdue avec l'option ; coût de chargement et de
+  recherche écrits dans la PR ; `LIMITES.md` et README d'`ecluse_redact`
+  (l'option et ce qu'elle ne couvre pas) à jour. La démo n'active pas l'option
+  dans cette tâche.
+- **P2-185** : adresses, branche « tout en capitales » d'`AdresseDetector`.
+  Rapport `agent/specs/P2-183.md` § 3.1 et § 4 tâche A : 2 222 communes
+  (6,4 % du référentiel) sont écartées en entier en capitales parce que leur
+  premier mot est un déterminant. Distinguer « 70000 LA » seul (rejet,
+  comportement actuel correct) de « 01097 LA BOISSE » (un second mot de
+  commune suit : accepter). Test d'abord : mettre le balayage « tout
+  capitales » de P2-183 au tableau de bord, chiffre de départ. **Fini
+  quand** : cause « déterminant initial » du balayage en capitales proche de
+  0 (chiffre exact dans la PR) ; témoin en capitales de P2-122 toujours à 0 ;
+  témoin cinq chiffres et reste du tableau de bord inchangés ; `LIMITES.md`
+  à jour. Si « LE SERVICE DES ADMISSIONS », « LES 3 PREMIERS » ou une forme
+  proche revient comme adresse, s'arrêter et rapporter les deux mesures.
