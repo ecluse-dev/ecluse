@@ -36,7 +36,7 @@ Toute adresse non locale est refusée et bloque tout.
 | Route | Corps | Réponse |
 |---|---|---|
 | `POST /v1/redact` | `{ "session", "text" }` | `{ "text", "entities" }` |
-| `POST /v1/restore` | `{ "session", "text" }` | `{ "text" }` |
+| `POST /v1/restore` | `{ "session", "text" }` | `{ "text", "nonRestaures": [{ "type", "numero" }] }` (le champ `nonRestaures` est ajouté par P2-192 ; le mod actuel l'ignore) |
 
 La table de correspondance reste dans le moteur, en mémoire, par session,
 avec des jetons stables sur toute la conversation. Le mod ne la voit jamais.

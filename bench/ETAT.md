@@ -474,21 +474,42 @@ Elle comble la fuite sans CEDEX mais masque nettement plus de texte
 ordinaire : la fiche P2-181 demande de s'arrêter là et de laisser le choix au
 mainteneur.
 
-## Communes en capitales : nom en partie en clair après CEDEX (P2-183, P2-185)
+## Communes en capitales : nom en partie en clair après CEDEX (P2-183, P2-185, P2-187)
 
 Même balayage que ci-dessus (34 875 communes × 4 écritures, 139 500
 adresses), le document **tout en capitales** (`variantes_casse.py`, branche
 `capitales` d'`AdresseDetector`). Chemin mesuré : **`Ecluse.redact`** (ce que
-reçoit le LLM). 0 refus. Ajouté à `etat.sh` par P2-185 ; **aucun détecteur
-modifié** (P2-185 s'est arrêtée sur la condition d'arrêt de sa fiche, voir
-`agent/specs/P2-185.md`).
+reçoit le LLM). 0 refus. Ajouté à `etat.sh` par P2-185 (qui s'était arrêtée
+sans toucher de détecteur, `agent/specs/P2-185.md`) ; la correction est livrée
+par P2-187.
 
 | | Adresses en défaut | Fuite au caractère | dont cause « déterminant initial » |
 |---|---:|---:|---:|
-| état de `main` | 8 885 / 139 500 | 6,5 % (202 070 / 3 117 758) | **8 457** |
-| essai de correction (non livré) | 317 | 0,1 % (4 674) | 4 |
+| `main` avant P2-187 (rejoué le 15 novembre)¹ | 8 736 / 139 500 | 6,4 % (200 271 / 3 117 758) | **8 457** |
+| après P2-187 | **95** | **0,1 %** (2 020) | **4** |
 
-Autres causes à l'état de `main` : longueur 141, autre 63, ponctuation 30.
+¹ Le tableau de P2-185 donnait 8 885 / 6,5 % (202 070) : `main` avait bougé
+depuis (cause « autre » 63 aujourd'hui) ; le chiffre « avant » ci-dessus est
+celui rejoué sur `main` le 15 novembre, la cause « déterminant initial »
+(8 457) n'a pas changé. Autres causes après P2-187 : autre 59, ponctuation 30.
+
+**Coût (P2-187)** : témoin `bench/generate_corpus_determinant.py` (400
+phrases, graine 42, **aucune adresse annotée**), « nombre à cinq chiffres +
+LE/LA/LES/L' + mots ordinaires », chemin **`Ecluse.redact`**. Toute adresse
+prédite est un masquage en trop (de la lisibilité perdue ; la commune en clair
+serait une fuite) :
+
+| Phrases avec une adresse prédite (sur 200) | Avant | Après |
+|---|---:|---:|
+| en capitales | 26 | **107** |
+| en casse ordinaire | 113 | 113 (inchangé) |
+
+La casse ordinaire est le comportement de `main` depuis P2-167/P2-177 ;
+l'essai y aligne les capitales (107 contre 113). En capitales, la « commune »
+avale les mots à majuscule qui suivent : « VOIR 12345 LE SERVICE DES
+ADMISSIONS. » devient « VOIR [ADRESSE_1]. ». Restent intacts : déterminant seul
+(« 70000 LA »), second mot neutre (« 70000 LES DOSSIERS DU MOIS »), « 70000 LES
+3 PREMIERS ».
 
 ## Mise en page : textes recoupés aux espaces (P2-153)
 

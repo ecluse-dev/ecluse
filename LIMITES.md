@@ -228,6 +228,23 @@ une coupure au milieu d'un groupe ne l'est pas.
   `DigitCompaction` — un identifiant aux espaces internes insécables ou
   multiples n'est pas couvert par cette exception (il reste couvert si sa
   clé est valide, par le détecteur strict correspondant).
+  **Lecture par OCR (P2-191).** Derrière le même libellé fort, et là
+  seulement, sont aussi acceptés : la lettre O ou o pour 0 et l ou I pour 1
+  (corps d'un NIR ou d'un RPPS, clé d'un IBAN : « FRO2… » ; le corps d'un IBAN
+  admet déjà des lettres, il n'est pas « corrigé »), et **une ligne vide**
+  insérée entre deux groupes. Un tel identifiant est masqué **même si sa clé
+  est juste après correction** (le détecteur strict ne le voit pas), avec le
+  même avertissement « à vérifier ». Les détecteurs stricts de `ecluse_core`
+  ne changent pas ; sans libellé fort, « 1 85 05 78 OO6 084 91 » reste en
+  clair. **Pas couvert** : une confusion autre que O/o/l/I (« S » pour 5, « B »
+  pour 8, « | » pour 1), plusieurs lignes vides ou une seule fin de ligne
+  (sans ligne vide) au milieu, un libellé lui-même mal lu (« lBAN »), un O dans
+  le premier chiffre d'un NIR (qui ne peut être que 1 à 8). Un libellé fort
+  suivi d'un début d'IBAN tronqué puis d'une ligne vide peut faire avaler les
+  lettres de la ligne suivante : sur-masquage, jamais une fuite. Non mesuré sur
+  de vrais textes OCR : seul le témoin synthétique de
+  `identifiant_cle_invalide_ocr_test.dart` (13 cas positifs, 12 négatifs)
+  est chiffré.
 
 ## 3. Lieux et quasi-identifiants
 
@@ -697,6 +714,22 @@ le témoin. Depuis P2-123, les noms en capitales passent par `NomMinusculesDetec
 23,7 % → 18,7 % (adversarial) ; fuite globale réaliste en capitales 9,7 % →
 0,6 % ; 0 faux positif sur le témoin. Aucun avertissement n'est émis pour un
 texte en capitales.
+
+**Texte en capitales : communes en « LA », « LE », « LES », « L' » (P2-187).**
+Une commune qui commence par un déterminant (« 01097 LA BOISSE CEDEX 1 », 2 222
+communes du référentiel) était écartée avec les mots neutres : ni la commune,
+ni le code postal, ni le CEDEX n'étaient masqués. Balayage des communes en
+capitales, chemin `Ecluse.redact` : 8 736 adresses sur 139 500 en partie en
+clair → 95 ; cause « déterminant initial » 8 457 → 4. **Coût, dit
+franchement : un masquage en trop.** Un nombre à cinq chiffres suivi d'un
+déterminant et d'un mot ordinaire non neutre (« VOIR 12345 LE SERVICE DES
+ADMISSIONS. ») est masqué comme une adresse, et en capitales la « commune »
+avale tous les mots qui suivent (« VOIR [ADRESSE_1]. »). Témoin versionné
+(400 phrases, `bench/generate_corpus_determinant.py`) : phrases masquées en
+capitales 26 / 200 → 107 / 200, en casse ordinaire 113 / 200 (inchangé).
+Décision du mainteneur (15 novembre, `DECISIONS.md`) : un masquage en trop
+coûte de la lisibilité, une commune en clair est une fuite. Le coût sur du
+texte réel en capitales n'est pas mesuré.
 
 **Lettres hors du jeu français usuel dans un nom (P2-33).** La majuscule initiale d'un mot de
 nom ne couvrait que A-Z et quelques lettres françaises : un nom commençant par Á, Ó, Ñ, Œ,

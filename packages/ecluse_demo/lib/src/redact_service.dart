@@ -14,6 +14,7 @@ final class ProcessResult {
     required this.maskedInstruction,
     required this.llmResponse,
     required this.restoredText,
+    this.nonRestaures = const [],
     this.warnings = const [],
     this.risque,
   });
@@ -27,6 +28,11 @@ final class ProcessResult {
   final String maskedInstruction;
   final String llmResponse;
   final String restoredText;
+
+  /// Jetons de forme connue restés dans [restoredText] (jeton sans crochets,
+  /// inventé ou traduit par le LLM) : type et numéro seulement, jamais de
+  /// valeur (P2-192).
+  final List<JetonNonRestaure> nonRestaures;
 
   /// Avertissements du moteur (secret masqué, texte sans majuscule…), à
   /// montrer à l'utilisateur : ils disent ce que le masquage n'a pas pu
@@ -95,7 +101,8 @@ final class RedactService {
         instruction: maskedInstruction,
       );
 
-      final restoredText = dossier.restore(llmResponse);
+      final (restoredText, nonRestaures) =
+          dossier.restoreAvecRapport(llmResponse);
       final warnings = {...redacted.warnings, ...consigne.warnings}.toList();
 
       return ProcessResult(
@@ -105,6 +112,7 @@ final class RedactService {
         maskedInstruction: maskedInstruction,
         llmResponse: llmResponse,
         restoredText: restoredText,
+        nonRestaures: nonRestaures,
         warnings: warnings,
         risque: redacted.risque,
       );

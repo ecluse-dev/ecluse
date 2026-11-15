@@ -194,6 +194,14 @@ if produit "témoin cinq chiffres, générateur" "$B/flou/corpus_flou_cinq_chiff
   montre "témoin cinq chiffres, Ecluse.redact" -E . 0 non redact run_cinq_chiffres_bench.dart ../../bench/flou/corpus_flou_cinq_chiffres.jsonl || true
 fi
 
+# Témoin « cinq chiffres + LE/LA/LES/L' + mots ordinaires » (P2-187), en
+# capitales et en casse ordinaire : le coût (masquage en trop) de la
+# correction « commune composée en LA, LE, LES, L' » de la branche capitales.
+echo "## témoin déterminant après cinq chiffres (P2-187) : Ecluse.redact (chemin du produit), aucune adresse annotée"
+if produit "témoin déterminant, générateur" "$B/flou/corpus_flou_determinant.jsonl" python3 "$B/generate_corpus_determinant.py" --n 400 --seed 42 --out "$B/flou/corpus_flou_determinant.jsonl"; then
+  montre "témoin déterminant, Ecluse.redact" -E . 0 non redact run_cinq_chiffres_bench.dart ../../bench/flou/corpus_flou_determinant.jsonl || true
+fi
+
 # Code postal en tête de texte, de ligne ou de phrase (P2-177) : le pendant du
 # témoin ci-dessus, avec des adresses annotées de la même forme. Une adresse
 # en clair est une fuite. La règle candidate est simulée par le banc (elle

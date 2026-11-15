@@ -60,10 +60,12 @@ final class SasSession {
     return (text: masked, entities: result.entities.length);
   }
 
-  /// Restaure les jetons de cette session présents dans [text].
-  String restore(String text) {
+  /// Restaure les jetons de cette session présents dans [text] et rend aussi
+  /// les jetons de forme connue restés dans le texte (sans crochets, inventés,
+  /// traduits : P2-192). Type et numéro seulement, jamais de valeur.
+  (String, List<JetonNonRestaure>) restore(String text) {
     lastUse = DateTime.now();
-    return Ecluse.restore(text, _valueByToken);
+    return Ecluse.restoreAvecRapport(text, _valueByToken);
   }
 }
 
@@ -99,7 +101,10 @@ const _loopbackHosts = {'127.0.0.1', 'localhost', '::1', '[::1]'};
 /// Handler du sas Écluse pour Claude Code (mod `ecluse-sas`).
 ///
 /// - `POST /v1/redact`  `{session, text}` → `{text, entities}`
-/// - `POST /v1/restore` `{session, text}` → `{text}`
+/// - `POST /v1/restore` `{session, text}` → `{text, nonRestaures}`, où
+///   `nonRestaures` liste `{type, numero}` des jetons de forme connue restés
+///   dans le texte (P2-192) ; le champ `text` est inchangé pour les clients
+///   existants.
 ///
 /// Toute anomalie renvoie un code d'erreur HTTP : le mod bloque alors
 /// l'envoi du prompt. La table de correspondance ne sort jamais du
@@ -152,8 +157,20 @@ Handler buildSasHandler({SasStore? store}) {
     }
 
     final known = sessions.existing(session);
-    stdout.writeln('Écluse sas : réponse restaurée.');
-    return _json({'text': known == null ? text : known.restore(text)});
+    // Session inconnue : rien n'est restauré, et tout jeton de forme connue
+    // du texte est signalé comme tel.
+    final (restaure, nonRestaures) = known == null
+        ? Ecluse.restoreAvecRapport(text, const {})
+        : known.restore(text);
+    // Compteurs seulement : ni texte, ni type, ni numéro dans la sortie.
+    stdout.writeln('Écluse sas : réponse restaurée '
+        '(${nonRestaures.length} jeton(s) non restauré(s)).');
+    return _json({
+      'text': restaure,
+      'nonRestaures': [
+        for (final j in nonRestaures) {'type': j.type, 'numero': j.numero},
+      ],
+    });
   };
 }
 

@@ -117,6 +117,22 @@ void main() {
       expect(b.restore('[NOM_1]'), 'Thomas Fabrier');
     });
 
+    test('restoreAvecRapport signale les jetons restés, sans valeur (P2-192)',
+        () async {
+      final d = Dossier();
+      await Ecluse.redact('Mme Sophie Verdier arrive.', dossier: d);
+      final (texte, restes) = d.restoreAvecRapport('[NOM_1], [NOM_3], NOM_1');
+      expect(texte, 'Sophie Verdier, [NOM_3], NOM_1');
+      expect(restes, [
+        const JetonNonRestaure('NOM', '3'),
+        const JetonNonRestaure('NOM', '1'),
+      ]);
+      expect(restes.join(), isNot(contains('Verdier')));
+      d.fermer();
+      expect(() => d.restoreAvecRapport('[NOM_1]'),
+          throwsA(isA<DossierFermeException>()));
+    });
+
     test('un jeton inconnu du dossier est laissé tel quel', () async {
       final d = Dossier();
       await Ecluse.redact('Mme Sophie Verdier arrive.', dossier: d);

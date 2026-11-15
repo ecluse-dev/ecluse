@@ -248,6 +248,19 @@ témoin cinq chiffres : 400 phrases, 74 prédiction(s) d'adresse par Ecluse.reda
   suffixe=majuscule : 49 / 88 phrases avec une adresse
   suffixe=minuscule : 25 / 180 phrases avec une adresse
   suffixe=rien : 0 / 132 phrases avec une adresse
+## témoin déterminant après cinq chiffres (P2-187) : Ecluse.redact (chemin du produit), aucune adresse annotée
+témoin cinq chiffres : 400 phrases, 220 prédiction(s) d'adresse par Ecluse.redact (chemin du produit)
+  voie : détecteur seul 194, texte d'ombre 1, les deux 25 (phrases avec prédiction)
+  casse=capitales : 107 / 200 phrases avec une adresse
+  casse=ordinaire : 113 / 200 phrases avec une adresse
+  famille=quantite : 103 / 208 phrases avec une adresse
+  famille=reference : 117 / 192 phrases avec une adresse
+  position=debut : 196 / 200 phrases avec une adresse
+  position=milieu : 24 / 200 phrases avec une adresse
+  suffixe=l : 52 / 100 phrases avec une adresse
+  suffixe=la : 56 / 100 phrases avec une adresse
+  suffixe=le : 58 / 100 phrases avec une adresse
+  suffixe=les : 54 / 100 phrases avec une adresse
 ## code postal en tête (P2-177) : Ecluse.redact (chemin du produit), adresses à ne pas perdre
 code postal en tête : 432 adresses, 0 laissée(s) en clair par Ecluse.redact (chemin du produit)
   casse=minuscules : 0 / 216 en clair
