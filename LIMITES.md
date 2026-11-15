@@ -209,6 +209,25 @@ une coupure au milieu d'un groupe ne l'est pas.
   masqué que si c'est un NIR à clé valide.
 - Les identifiants professionnels autres que RPPS et FINESS, et les
   identifiants d'établissement autres que FINESS.
+- **NIR, IBAN FR ou RPPS à clé fausse, annoncé par un libellé fort (P2-188).**
+  `Ecluse.redact` masque quand même, à confiance 0,3, avec l'avertissement
+  « identifiant à clé invalide masqué : à vérifier », un NIR précédé de
+  « NIR », « N° de sécurité sociale », « numéro de sécurité sociale » ou
+  « numéro SS », un IBAN précédé de « IBAN » ou un RPPS précédé de « RPPS »,
+  même si la clé de contrôle est fausse (chiffre changé, typo de recopie) —
+  déroge à « clé validée ou rien » (`DECISIONS.md`) comme ADELI ci-dessus, et
+  pour la même raison : un champ explicitement étiqueté qui fuit est pire
+  qu'un sur-masquage. Fonctionne sur le texte d'origine, jamais sur la vue
+  de détection : un NIR à clé nommée à part (P2-42, « 2550814168025 clé 38 »)
+  et **fausse** reste intact, conformément à P2-42 (« une clé fausse n'est
+  jamais acceptée », pour ne pas masquer « Chambre 12 clé 38 »). Un libellé
+  sans forme d'identifiant à sa suite (« NIR : non communiqué », « IBAN :
+  voir pièce jointe », un montant, une date) n'est jamais masqué. Limite
+  assumée : le candidat n'est reconnu qu'avec un séparateur simple (espace,
+  point, tiret) entre groupes de chiffres, sans passer par
+  `DigitCompaction` — un identifiant aux espaces internes insécables ou
+  multiples n'est pas couvert par cette exception (il reste couvert si sa
+  clé est valide, par le détecteur strict correspondant).
 
 ## 3. Lieux et quasi-identifiants
 
