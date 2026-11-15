@@ -59,6 +59,45 @@ void main() {
       expect(body['text'], 'Alice Martin remplace Jean Dupont.');
     });
 
+    test('signale les jetons non restaurés, sans valeur (P2-192)', () async {
+      final handler = buildSasHandler();
+      await handler(_post(
+          'v1/redact', {'session': 's1', 'text': 'M. Jean Dupont arrive.'}));
+      // [NOM_3] inventé, NOM_1 sans crochets, [NAME_1] traduit, [NOM_1] connu.
+      final body = await _json(await handler(_post('v1/restore', {
+        'session': 's1',
+        'text': '[NOM_1] voit [NOM_3], NOM_1 et [NAME_1].',
+      })));
+
+      // Les champs existants ne changent pas pour les clients actuels.
+      expect(body['text'], 'Jean Dupont voit [NOM_3], NOM_1 et [NAME_1].');
+      expect(body['nonRestaures'], [
+        {'type': 'NOM', 'numero': '3'},
+        {'type': 'NAME', 'numero': '1'},
+        {'type': 'NOM', 'numero': '1'},
+      ]);
+      expect(jsonEncode(body['nonRestaures']), isNot(contains('Dupont')));
+    });
+
+    test('tout restauré : liste vide', () async {
+      final handler = buildSasHandler();
+      await handler(_post(
+          'v1/redact', {'session': 's1', 'text': 'M. Jean Dupont arrive.'}));
+      final body = await _json(await handler(
+          _post('v1/restore', {'session': 's1', 'text': '[NOM_1] part.'})));
+      expect(body['text'], 'Jean Dupont part.');
+      expect(body['nonRestaures'], isEmpty);
+    });
+
+    test('session inconnue : texte inchangé, jetons signalés', () async {
+      final body = await _json(await buildSasHandler()(
+          _post('v1/restore', {'session': 'x', 'text': '[NOM_1] part.'})));
+      expect(body['text'], '[NOM_1] part.');
+      expect(body['nonRestaures'], [
+        {'type': 'NOM', 'numero': '1'},
+      ]);
+    });
+
     test('une session ne restaure pas les jetons d\'une autre', () async {
       final handler = buildSasHandler();
       await handler(_post(

@@ -12,6 +12,13 @@ final class _EchoClient implements LlmClient {
       maskedText;
 }
 
+final class _JetonsAbimesClient implements LlmClient {
+  @override
+  Future<String> complete(String maskedText,
+          {required String instruction}) async =>
+      '[NOM_1] a vu [NOM_3] et NOM_1.';
+}
+
 final class _FailingClient implements LlmClient {
   @override
   Future<String> complete(String maskedText, {required String instruction}) {
@@ -80,6 +87,32 @@ void main() {
       expect(body['warnings'], isA<List<dynamic>>());
       expect(body['restoredText'], 'M. Jean Dupont est arrivé.');
       expect(body.containsKey('mapping'), isFalse);
+      expect(body['nonRestaures'], isEmpty);
+    });
+
+    test('POST /api/process signale les jetons non restaurés (P2-192)',
+        () async {
+      final handler = buildHandler(
+        redactService: RedactService(_JetonsAbimesClient()),
+        webDirectory: tempWebDir,
+      );
+      final response = await handler(Request(
+        'POST',
+        Uri.parse('http://l/api/process'),
+        headers: {'content-type': 'application/json'},
+        body: jsonEncode({
+          'text': 'M. Jean Dupont est arrivé.',
+          'instruction': 'Résume.',
+        }),
+      ));
+      final body =
+          jsonDecode(await response.readAsString()) as Map<String, dynamic>;
+      expect(body['restoredText'], 'Jean Dupont a vu [NOM_3] et NOM_1.');
+      expect(body['nonRestaures'], [
+        {'type': 'NOM', 'numero': '3'},
+        {'type': 'NOM', 'numero': '1'},
+      ]);
+      expect(jsonEncode(body['nonRestaures']), isNot(contains('Dupont')));
     });
 
     test('une erreur LLM revient comme {error} clair, sans planter', () async {

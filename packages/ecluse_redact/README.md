@@ -102,6 +102,9 @@ for (final jeton in nonRestaures) {
 }
 ```
 
+Avec un `Dossier`, `dossier.restoreAvecRapport(reponseDuLLM)` fait de même
+sur la table du dossier (P2-192) ; c'est ce qu'utilisent la démo et le sas.
+
 Chaque entrée ne porte que le type et le numéro tels que vus dans le
 texte (jamais la valeur réelle attendue à cet endroit, et jamais un
 entier — un jeton inventé peut porter n'importe quoi). La recherche

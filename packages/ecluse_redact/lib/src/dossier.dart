@@ -41,6 +41,16 @@ final class Dossier {
     return Ecluse.restore(text, etat.mapping);
   }
 
+  /// Comme [restore], et rend aussi les jetons de forme connue **restés** dans
+  /// le texte restauré (jeton sans crochets, inventé, traduit : voir
+  /// [Ecluse.restoreAvecRapport]). Ne porte jamais de valeur (P2-192). Lève
+  /// [DossierFermeException] si le dossier est fermé.
+  (String, List<JetonNonRestaure>) restoreAvecRapport(String text) {
+    final etat = _etat;
+    if (etat == null) throw const DossierFermeException();
+    return Ecluse.restoreAvecRapport(text, etat.mapping);
+  }
+
   /// Exécute [action] après les appels précédents du dossier : la numérotation
   /// et la fusion des noms ne se courent jamais après.
   Future<T> _serialise<T>(Future<T> Function() action) {
