@@ -18,6 +18,15 @@ final class _EchoClient implements LlmClient {
   }
 }
 
+/// Réponse de LLM simulée : un jeton connu, un jeton inventé et un jeton
+/// dépouillé de ses crochets (P2-192).
+final class _JetonsAbimesClient implements LlmClient {
+  @override
+  Future<String> complete(String maskedText,
+          {required String instruction}) async =>
+      '[NOM_1] a vu [NOM_3] et NOM_1.';
+}
+
 final class _FailingClient implements LlmClient {
   @override
   Future<String> complete(String maskedText, {required String instruction}) {
@@ -136,6 +145,24 @@ void main() {
         () => service.process('Texte quelconque.', instruction: 'Résume.'),
         throwsA(isA<LlmError>()),
       );
+    });
+  });
+
+  group('jetons non restaurés (P2-192)', () {
+    test('un jeton inventé et un jeton sans crochets sont signalés', () async {
+      final service = RedactService(_JetonsAbimesClient());
+      final r = await service.process('M. Jean Dupont est arrivé.',
+          instruction: 'Résume.');
+      expect(r.restoredText, 'Jean Dupont a vu [NOM_3] et NOM_1.');
+      expect([for (final j in r.nonRestaures) '$j'], ['NOM_3', 'NOM_1']);
+      // Jamais de valeur dans le rapport.
+      expect(r.nonRestaures.join(), isNot(contains('Dupont')));
+    });
+
+    test('rien à signaler quand tout est restauré', () async {
+      final r = await RedactService(_EchoClient())
+          .process('M. Jean Dupont est arrivé.', instruction: 'Résume.');
+      expect(r.nonRestaures, isEmpty);
     });
   });
 }

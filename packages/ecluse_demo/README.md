@@ -83,7 +83,12 @@ dart run bin/sas.dart        # 127.0.0.1:8787, ECLUSE_SAS_PORT pour changer
 ```
 
 Il n'appelle aucun LLM et ne demande aucune clé. Deux routes :
-`POST /v1/redact` et `POST /v1/restore`, corps `{session, text}`. La table de
+`POST /v1/redact` et `POST /v1/restore`, corps `{session, text}`. La réponse
+de `/v1/restore` garde son champ `text` et ajoute `nonRestaures` : la liste
+`{type, numero}` des jetons de forme connue que le LLM a laissés sous une
+forme non restaurable (jeton sans crochets, inventé, traduit ; jamais de
+valeur ; P2-192). La page de démo l'affiche en une ligne (« 2 jetons non
+restaurés ») et la sortie console ne porte que le nombre. La table de
 correspondance reste en mémoire, par session, avec des jetons stables sur
 toute la conversation ; elle n'est jamais renvoyée, journalisée ni écrite
 sur disque. Un hôte autre que la machine locale ou un corps non JSON est

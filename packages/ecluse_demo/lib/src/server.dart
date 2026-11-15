@@ -170,6 +170,10 @@ Future<Response> _handleProcess(
       'maskedInstruction': result.maskedInstruction,
       'llmResponse': result.llmResponse,
       'restoredText': result.restoredText,
+      'nonRestaures': [
+        for (final j in result.nonRestaures)
+          {'type': j.type, 'numero': j.numero},
+      ],
       'warnings': result.warnings,
       'risque': _encodeRisque(result.risque),
     });

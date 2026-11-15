@@ -773,8 +773,15 @@
       data.entities.length > 0 ? countsSentence(data.entities) : 'Aucun élément détecté.';
     const warnings = document.getElementById('warnings');
     const liste = Array.isArray(data.warnings) ? data.warnings : [];
-    warnings.innerHTML = liste.map((w) => '<p>⚠ ' + escapeHtml(w) + '</p>').join('');
-    warnings.hidden = liste.length === 0;
+    // Jetons que le LLM a laissés sous une forme non restaurable (sans
+    // crochets, inventés, traduits) : une ligne, le nombre seulement (P2-192).
+    const nonRestaures = Array.isArray(data.nonRestaures) ? data.nonRestaures.length : 0;
+    const lignes = liste.map((w) => '<p>⚠ ' + escapeHtml(w) + '</p>');
+    if (nonRestaures > 0) {
+      lignes.push('<p>⚠ ' + nonRestaures + (nonRestaures > 1 ? ' jetons non restaurés' : ' jeton non restauré') + '</p>');
+    }
+    warnings.innerHTML = lignes.join('');
+    warnings.hidden = lignes.length === 0;
     renderRisque(data.risque);
   }
 

@@ -30,6 +30,18 @@ import 'package:ecluse_core/ecluse_core.dart';
 /// passe pas par `DigitCompaction` et ne reconnaît donc pas un identifiant
 /// aux espaces internes insécables ou multiples (voir `LIMITES.md`).
 ///
+/// **Lecture par OCR ou recopie (P2-191)** : derrière un libellé fort
+/// **seulement**, le candidat accepte aussi les confusions de lecture
+/// courantes — la lettre O ou o pour 0, l ou I pour 1 (dans le corps d'un NIR
+/// ou d'un RPPS, dans la clé d'un IBAN : `FRO2…`) — et **une ligne vide** que
+/// l'OCR insère entre deux groupes. Un tel candidat est masqué **même si sa
+/// clé est juste après correction** : le détecteur strict ne le voit pas
+/// (lettres, ligne vide), donc personne d'autre ne le masquera. Ces
+/// tolérances restent ici, jamais dans les détecteurs stricts de
+/// `ecluse_core` (« clé validée ou rien » y reste entière). Dans le corps
+/// d'un IBAN, les lettres sont déjà permises (le RIB en contient) et ne sont
+/// pas « corrigées ».
+///
 /// **Ne masque jamais** un libellé seul (« NIR : non communiqué »), suivi
 /// d'autre chose qu'une forme d'identifiant (un montant, une date), ou d'un
 /// candidat déjà **valide** (couvert par le détecteur strict correspondant,
@@ -69,24 +81,37 @@ final class IdentifiantCleInvalideDetector implements EntityDetector {
     caseSensitive: false,
   );
 
+  /// Séparateur entre deux groupes d'un candidat : un séparateur simple
+  /// (espace, point, tiret) ou, depuis P2-191, **une ligne vide** (deux fins
+  /// de ligne, blancs permis) que l'OCR insère au milieu d'un identifiant.
+  static const String _sepGroupe = '(?:[ .\\-]|$_h*\\r?\\n$_h*\\r?\\n$_h*)?';
+
+  /// Un chiffre ou sa confusion de lecture courante (O, o pour 0 ; l, I pour 1).
+  static const String _d = '[0-9OoIl]';
+
   /// Même forme que `NirDetector._candidate` (15 chiffres, 1-8 puis six
-  /// groupes, 2A/2B toléré), non ancrée à `DigitCompaction`.
+  /// groupes, 2A/2B toléré), non ancrée à `DigitCompaction`, avec les
+  /// confusions O/o → 0 et l/I → 1 (P2-191). Le premier chiffre ne peut être
+  /// que 1 à 8 : O n'y est pas toléré.
   static final RegExp _candidatNir = RegExp(
-    r'[1-8][ .\-]?[0-9]{2}[ .\-]?[0-9]{2}[ .\-]?(?:[0-9]{2}|2[ABab])[ .\-]?'
-    r'[0-9]{3}[ .\-]?[0-9]{3}[ .\-]?[0-9]{2}',
+    '[1-8Il]$_sepGroupe$_d{2}$_sepGroupe$_d{2}$_sepGroupe'
+    '(?:$_d{2}|2[ABab])$_sepGroupe$_d{3}$_sepGroupe$_d{3}$_sepGroupe$_d{2}',
   );
 
-  /// Même forme que `IbanFrDetector._candidate`.
+  /// Même forme que `IbanFrDetector._candidate` ; la clé (deux chiffres après
+  /// « FR ») tolère les confusions de lecture (`FRO2…`, P2-191), le corps
+  /// admet déjà des lettres.
   static final RegExp _candidatIban = RegExp(
-    r'[Ff][Rr][0-9]{2}(?:[ \-.]?[0-9A-Za-z]){23}',
+    '[Ff][Rr]$_d{2}(?:$_sepGroupe[0-9A-Za-z]){23}',
   );
 
-  /// Même forme que `RppsDetector._candidate` (11 chiffres).
+  /// Même forme que `RppsDetector._candidate` (11 chiffres), avec les
+  /// confusions de lecture (P2-191).
   static final RegExp _candidatRpps = RegExp(
-    r'[0-9](?:[ .\-]?[0-9]){10}',
+    '$_d(?:$_sepGroupe$_d){10}',
   );
 
-  static final RegExp _separators = RegExp(r'[ .\-]');
+  static final RegExp _separators = RegExp(r'[ .\-\t\r\n\u00A0\u202F]');
 
   /// Ce qui suit immédiatement ne doit pas être un chiffre : sinon le
   /// candidat déborde dans une séquence plus longue (traité par le
@@ -150,6 +175,10 @@ final class IdentifiantCleInvalideDetector implements EntityDetector {
     return sum % 10 == 0;
   }
 
+  /// O/o → 0, l/I → 1, sans toucher au reste (2A/2B d'un NIR corse inclus).
+  static String _chiffres(String s) =>
+      s.replaceAll(RegExp('[Oo]'), '0').replaceAll(RegExp('[Il]'), '1');
+
   void _detecteType(
     String text,
     RegExp etiquette,
@@ -157,8 +186,9 @@ final class IdentifiantCleInvalideDetector implements EntityDetector {
     int longueur,
     bool Function(String normalise) cleValide,
     EntityType entityType,
-    List<DetectedEntity> resultats,
-  ) {
+    List<DetectedEntity> resultats, {
+    required bool iban,
+  }) {
     for (final e in etiquette.allMatches(text)) {
       final sepMatch = RegExp(_sep).matchAsPrefix(text, e.end);
       if (sepMatch == null) continue;
@@ -168,10 +198,25 @@ final class IdentifiantCleInvalideDetector implements EntityDetector {
       if (!_nonAlphanumAvant(text, c.start) || !_nonChiffreApres(text, c.end)) {
         continue;
       }
-      final normalise = brut.replaceAll(_separators, '').toUpperCase();
+      final sansSeparateur = brut.replaceAll(_separators, '');
+      // Lecture par OCR (P2-191) : O/o → 0, l/I → 1 ; pour un IBAN, dans la
+      // clé seulement (le corps admet des lettres). Une ligne vide dans
+      // l'identifiant est elle aussi hors de portée du détecteur strict.
+      final normalise = (iban
+              ? sansSeparateur.substring(0, 2) +
+                  _chiffres(sansSeparateur.substring(2, 4)) +
+                  sansSeparateur.substring(4)
+              : _chiffres(sansSeparateur))
+          .toUpperCase();
       if (normalise.length != longueur) continue;
-      // Valide : affaire du détecteur strict correspondant.
-      if (cleValide(normalise)) continue;
+      final atypique = RegExp(r'[\r\n]').hasMatch(brut) ||
+          (iban
+              ? RegExp(r'[OoIl]').hasMatch(sansSeparateur.substring(2, 4))
+              : RegExp(r'[OoIl]').hasMatch(sansSeparateur));
+      // Valide et de forme ordinaire : affaire du détecteur strict
+      // correspondant. Valide mais atypique : le détecteur strict ne le voit
+      // pas, on le masque ici.
+      if (!atypique && cleValide(normalise)) continue;
       resultats.add(
         DetectedEntity(
           type: entityType,
@@ -188,11 +233,14 @@ final class IdentifiantCleInvalideDetector implements EntityDetector {
   List<DetectedEntity> detect(String text) {
     final resultats = <DetectedEntity>[];
     _detecteType(text, _etiquetteNir, _candidatNir, 15, _cleNirValide,
-        EntityType.nir, resultats);
+        EntityType.nir, resultats,
+        iban: false);
     _detecteType(text, _etiquetteIban, _candidatIban, 27, _cleIbanValide,
-        EntityType.iban, resultats);
+        EntityType.iban, resultats,
+        iban: true);
     _detecteType(text, _etiquetteRpps, _candidatRpps, 11, _cleRppsValide,
-        EntityType.rpps, resultats);
+        EntityType.rpps, resultats,
+        iban: false);
     resultats.sort((a, b) => a.start - b.start);
     return resultats;
   }

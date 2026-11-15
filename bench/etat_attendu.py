@@ -92,6 +92,11 @@ ATTENDU = [
          "compte des adresses prédites à tort (P2-167)"),
         (r"^  position=(debut|milieu) : \d+ / \d+", 2, "par position"),
     ]),
+    ("## témoin déterminant après cinq chiffres", [
+        (r"^témoin cinq chiffres : \d+ phrases, \d+ prédiction", 1,
+         "compte des adresses prédites à tort (P2-187)"),
+        (r"^  casse=(capitales|ordinaire) : \d+ / \d+", 2, "par casse"),
+    ]),
     ("## code postal en tête", [
         (r"^code postal en tête : \d+ adresses, \d+ laissée\(s\) en clair", 1,
          "adresses en tête laissées en clair (P2-177)"),
