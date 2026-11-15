@@ -255,6 +255,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-185 | code | Texte tout en capitales : commune composée qui commence par « LA », « LE », « LES », « L' » (« 01097 LA BOISSE ») écartée à tort comme mot neutre (tâche A de P2-183) ; balayage en capitales au tableau de bord | P2-183 | bloquée (#394 : mesure livrée ; suite P2-187) |
 | P2-186 | code | Restauration fausse : dans un tableau relu sans séparateurs, le nom avale la fonction en capitales qui suit (« LEFÈVRE Olivier AS ») et deux homonymes reçoivent le même jeton ; `Ecluse.restore` réécrit l'autre ligne | — | à faire |
 | P2-187 | code | Texte tout en capitales : livrer la correction d'essai de P2-185 (commune composée en « LA », « LE », « LES », « L' » masquée en entier), avec d'abord un témoin « cinq chiffres + LE/LA/LES » en capitales et en casse ordinaire | P2-185 | à faire |
+| P2-188 | code | Identifiant à clé fausse annoncé par son libellé (« NIR », « sécurité sociale », « IBAN », « RPPS ») : aujourd'hui en clair ; le masquer quand même et avertir (témoin d'abord) | — | à faire |
+| P2-189 | spec | Table de correspondance : un type dédié qui ne s'affiche jamais en clair et se vide sur demande, à la place de `Map<String, String>` (changement d'API à décider) | — | à faire |
+| P2-190 | code | Restauration : signaler les jetons non restaurés (jeton sans crochets, inventé, traduit) et corriger la barre oblique laissée par `\[NOM_1]` | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -804,3 +807,46 @@ ne reprennent que ce qui manque pour la prendre.
   balayage en capitales ; témoin en capitales de P2-122 à 0 ; le nouveau
   témoin chiffré avant/après et écrit dans `LIMITES.md` (le masquage en trop
   y est dit) ; reste du tableau de bord inchangé.
+- **P2-188** : `ecluse_redact`, chemin `Ecluse.redact`. Constat du 15 novembre
+  (sonde sur `main`) : « NIR 2 33 10 70 482 017 23 » et « Numéro de sécurité
+  sociale : 2 33 10 70 482 017 23. », clé fausse, partent en clair, alors que la
+  même suite à clé juste est masquée. Une faute de frappe ou une erreur de
+  lecture laisse ainsi passer un vrai NIR presque complet. La règle de
+  `DECISIONS.md` (« clé validée ou rien ») vaut pour la **détection** d'un
+  identifiant sans contexte ; ici, le libellé fait la preuve. Test d'abord : un
+  témoin versionné, pour NIR, IBAN FR et RPPS, avec libellé fort devant
+  (« NIR », « N° de sécurité sociale », « numéro SS », « IBAN », « RPPS ») et
+  clé fausse (un chiffre changé, deux chiffres inversés, O pour 0, l ou I pour
+  1), et un témoin négatif : même libellé suivi d'autre chose (« NIR : non
+  communiqué », « IBAN : voir pièce jointe », un montant, une date). Correction :
+  dans `ecluse_redact`, pas dans `ecluse_core` (le détecteur pur reste strict) ;
+  masquer avec le type de l'identifiant, confiance basse, et un avertissement
+  dans `RedactResult.warnings` (« identifiant à clé invalide masqué : à
+  vérifier »), sans valeur dans le message. **Fini quand** : témoin positif
+  100 % masqué ; témoin négatif sans masquage nouveau ; tableau de bord
+  inchangé ailleurs (les 42 FP FINESS/SIREN du moteur seul ne bougent pas) ;
+  `LIMITES.md` § 1 et `DECISIONS.md` (précision de la règle « clé validée ou
+  rien ») proposés dans la PR, la décision restant au mainteneur.
+- **P2-189** : spec dans `agent/specs/P2-189.md`, aucun code de production.
+  Constat du 15 novembre : `RedactResult.mapping` est un `Map<String, String>`
+  ordinaire ; un `print(result.mapping)` d'une application écrit toutes les
+  valeurs en clair (vu en sonde). Le récapitulatif du projet promet une table
+  « chiffrée » ; le code ne chiffre rien et ne conserve rien. **Fini quand** :
+  le document propose un type dédié (`toString` sans valeur, pas de
+  sérialisation implicite, `vider()`), mesure ce qu'il casse (API publique,
+  démo, sas Claude Code, bancs, tests, README), propose une transition
+  (dépréciation de `mapping` ou rupture en version majeure), dit ce que le
+  chiffrement apporterait ou non tant que rien n'est conservé, et liste les
+  décisions à prendre par le mainteneur.
+- **P2-190** : `ecluse_redact`, `Ecluse.restore`. Sonde du 15 novembre sur
+  `main` : `NOM_1` sans crochets, `[NOM_3]` inventé et `[NAME_1]` traduit
+  restent tels quels sans aucun signal ; `\[NOM_1]` (échappement Markdown
+  incomplet) donne `\Élodie Fabrier`. Test d'abord, avec ces quatre cas.
+  Correction : une fonction de restauration qui rend aussi la liste des
+  jetons de forme connue non restaurés (type et numéro seulement, jamais de
+  valeur), sans changer `Ecluse.restore` pour ses appelants actuels ; et la
+  barre oblique qui précède un jeton restauré retirée seulement quand elle
+  échappe le crochet. Ne jamais restaurer par approximation (`[NOM_1]` ne
+  matche pas `[NOM_10]`). **Fini quand** : les quatre cas testés ; aucun
+  autre test ni chiffre du tableau de bord modifié ; README d'`ecluse_redact`
+  à jour.
