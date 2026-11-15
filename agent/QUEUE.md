@@ -264,7 +264,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-194 | code | Tableau de bord : témoin « libellé fort » (NIR, IBAN, RPPS, ADELI, sécurité sociale derrière leur libellé, clé fausse et variantes OCR de P2-191), voie aujourd'hui couverte par les tests seulement | P2-191 | fusionnée |
 | P2-195 | code | Texte tout en capitales : borner la « commune » qui suit un code postal et un déterminant, pour réduire le masquage en trop de P2-187 sans perdre de commune | P2-187 | à faire |
 | P2-196 | mesure | Balayage des communes en capitales : décrire les 95 adresses encore en partie en clair (causes « autre » 59, « ponctuation » 30, longueur) | P2-187 | fusionnée |
-| P2-197 | code | Sas Claude Code (mod TypeScript) : lire le champ `nonRestaures` de `POST /v1/restore` et l'afficher en une ligne | P2-192 | à faire |
+| P2-197 | code | Sas Claude Code (mod TypeScript) : lire le champ `nonRestaures` de `POST /v1/restore` et l'afficher en une ligne | P2-192 | fusionnée |
 | P2-198 | spec | Journal d'audit : que faire quand la version du moteur change (0.2.0) entre deux entrées d'un même journal | P2-193 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
