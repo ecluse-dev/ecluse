@@ -85,6 +85,36 @@ correspondance floue : un jeton trop modifié (ex. chiffre différent)
 n'est pas restauré, et reste tel quel dans le texte final plutôt que de
 risquer une substitution erronée.
 
+Jusqu'ici, rien ne permettait à l'appelant de savoir qu'un jeton attendu
+n'avait pas été restauré : le texte final le contenait tel quel, sans
+signal. `Ecluse.restoreAvecRapport` fait le même travail que
+`Ecluse.restore` (même texte en sortie, `Ecluse.restore` est inchangé)
+et rend en plus la liste des jetons de forme connue restés dans le texte
+— un jeton sans ses crochets (le LLM les a retirés), un numéro que
+`redact` n'a jamais émis (inventé), ou un libellé inattendu (traduit,
+mal recopié) :
+
+```dart
+final (texteFinal, nonRestaures) =
+    Ecluse.restoreAvecRapport(reponseDuLLM, result.mapping);
+for (final jeton in nonRestaures) {
+  print('jeton non restauré : $jeton'); // ex. « NOM_3 », jamais de valeur
+}
+```
+
+Chaque entrée ne porte que le type et le numéro tels que vus dans le
+texte (jamais la valeur réelle attendue à cet endroit, et jamais un
+entier — un jeton inventé peut porter n'importe quoi). La recherche
+hors crochets se limite aux libellés qu'`entityTypeLabel` émet
+réellement (sans délimiteur, rien d'autre ne distingue un jeton
+dépouillé d'un mot ordinaire) ; entre crochets, la forme `[<libellé>_<n>]`
+suffit, y compris pour un libellé inconnu, pour couvrir le cas d'un
+libellé traduit. Cette détection par forme reste approximative par
+nature : un texte contenant par coïncidence un segment de cette forme,
+sans lien avec Écluse, serait aussi signalé. Un jeton correctement
+restauré — y compris `\[NOM_1]`, où la barre oblique est un séparateur
+de chemin conservé à dessein (P2-72) — n'apparaît jamais dans la liste.
+
 ## Aperçu avec validation (bibliothèque seulement)
 
 `Apercu` sépare la détection de l'application, pour qu'une interface puisse
