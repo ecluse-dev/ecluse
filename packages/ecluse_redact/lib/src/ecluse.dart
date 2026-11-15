@@ -524,6 +524,66 @@ abstract final class Ecluse {
     });
   }
 
+  /// Comme [restore], mais rend en plus la liste des jetons de forme connue
+  /// restés dans le texte après restauration : un jeton sans crochets (le
+  /// LLM les a retirés), un numéro que [redact] n'a jamais émis (inventé),
+  /// ou un libellé qui n'est pas celui attendu (traduit, mal recopié) — voir
+  /// [JetonNonRestaure]. Sondé le 15 novembre (P2-190) : aucun appelant ne
+  /// pouvait jusqu'ici s'apercevoir qu'un jeton attendu n'avait pas été
+  /// restauré, donc qu'une information pseudonymisée restait affichée telle
+  /// quelle — risque de fuite résiduelle silencieuse.
+  ///
+  /// Ne change rien au texte rendu par [restore] ni à sa signature : cette
+  /// fonction l'appelle et analyse seulement son résultat. Un jeton
+  /// correctement restauré (y compris `\[NOM_1]`, où la barre oblique est un
+  /// séparateur de chemin conservé à dessein, P2-72) n'apparaît jamais dans
+  /// la liste rendue.
+  ///
+  /// La liste ne contient jamais la valeur réelle : seulement le type et le
+  /// numéro tels que vus dans le texte (jamais interprétés comme un entier,
+  /// un jeton inventé peut porter n'importe quoi). Une détection par forme
+  /// reste approximative par nature : un texte contenant par coïncidence un
+  /// segment `[QUELQUE_CHOSE_3]` sans lien avec Écluse serait aussi signalé
+  /// (voir `packages/ecluse_redact/README.md`).
+  static (String, List<JetonNonRestaure>) restoreAvecRapport(
+    String text,
+    Map<String, String> mapping,
+  ) {
+    final texteRestaure = restore(text, mapping);
+    return (texteRestaure, _jetonsNonRestaures(texteRestaure));
+  }
+
+  /// Segment entre crochets, forme générique `[<libellé>_<numéro>]` —
+  /// n'importe quel libellé, pas seulement ceux qu'[entityTypeLabel] connaît
+  /// (un libellé traduit comme `NAME` doit aussi être signalé).
+  static final RegExp _formeJetonCrochets =
+      RegExp(r'\\?\[([^\[\]]*?)_([0-9]+)\]');
+
+  /// Occurrence sans crochets d'un libellé *connu* suivi de `_<numéro>`, aux
+  /// frontières du mot. Restreint aux libellés d'[entityTypeLabel] (et non à
+  /// toute suite de lettres) : sans crochets, rien ne distingue plus un
+  /// jeton dépouillé d'un mot ordinaire, donc on ne cherche que les formes
+  /// qu'Écluse aurait pu réellement émettre.
+  static final RegExp _formeJetonSansCrochets = RegExp(
+    '(?<![\\[\\w])(?:${EntityType.values.map((t) => RegExp.escape(entityTypeLabel(t))).join('|')})_[0-9]+(?!\\w)',
+  );
+
+  static List<JetonNonRestaure> _jetonsNonRestaures(String texteRestaure) {
+    final trouves = <JetonNonRestaure>[];
+    for (final m in _formeJetonCrochets.allMatches(texteRestaure)) {
+      trouves.add(JetonNonRestaure(m[1]!, m[2]!));
+    }
+    for (final m in _formeJetonSansCrochets.allMatches(texteRestaure)) {
+      final sansCrochets = m[0]!;
+      final coupure = sansCrochets.lastIndexOf('_');
+      trouves.add(JetonNonRestaure(
+        sansCrochets.substring(0, coupure),
+        sansCrochets.substring(coupure + 1),
+      ));
+    }
+    return trouves;
+  }
+
   static final RegExp _segment = RegExp(r'\\?\[[^\[\]]*\]');
 
   /// Une valeur ne peut recréer ni défaire un jeton que si elle contient une
@@ -555,6 +615,34 @@ abstract final class Ecluse {
     }
     return result;
   }
+}
+
+/// Jeton de forme connue (`[TYPE_N]` ou `TYPE_N`) resté dans le texte après
+/// [Ecluse.restoreAvecRapport] : ni retrouvé dans la table de
+/// correspondance, ni reconnu comme jeton correctement échappé. Ne porte
+/// jamais la valeur réelle attendue à cet endroit — seulement ce qui permet
+/// de diagnostiquer sans réexposer de contenu (P2-190).
+final class JetonNonRestaure {
+  /// Partie avant le dernier `_`, telle que vue dans le texte (`NOM`,
+  /// `DATE_NAISSANCE`, ou un libellé que le LLM a traduit comme `NAME`).
+  final String type;
+
+  /// Partie après le dernier `_`, telle que vue dans le texte — jamais
+  /// interprétée comme un entier : un jeton inventé ou déformé peut porter
+  /// n'importe quoi à cet endroit.
+  final String numero;
+
+  const JetonNonRestaure(this.type, this.numero);
+
+  @override
+  String toString() => '${type}_$numero';
+
+  @override
+  bool operator ==(Object other) =>
+      other is JetonNonRestaure && other.type == type && other.numero == numero;
+
+  @override
+  int get hashCode => Object.hash(type, numero);
 }
 
 /// Caractères sans largeur ou de contrôle bidirectionnel qu'un copier-coller
