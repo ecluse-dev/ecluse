@@ -130,6 +130,20 @@ ATTENDU = [
         (r"^  separateur=(espace|ligne|virgule) : \d+ / \d+ en défaut", 3,
          "par séparateur"),
     ]),
+    ("## identifiant derrière un libellé fort", [
+        (r"^libellé fort : \d+ identifiants positifs, \d+ en clair, \d+ au "
+         r"type faux ; \d+ documents témoins, \d+ masqués à tort", 1,
+         "synthèse du témoin libellé fort (P2-194)"),
+        (r"^  variante=(cle_juste|cle_fausse|ocr_zero|ocr_un|ligne_vide|"
+         r"ocr_et_ligne_vide) : \d+ / \d+ en clair", 6, "par variante"),
+        (r"^  libellé=.+ : \d+ / \d+ en clair", 6, "par libellé"),
+        (r"^  .+ x (cle_juste|cle_fausse|ocr_zero|ocr_un|ligne_vide|"
+         r"ocr_et_ligne_vide) : \d+ / \d+ en clair", 36,
+         "6 libellés x 6 variantes"),
+        (r"^  témoin négatif=(libelle_seul|non_communique|mot_ordinaire|"
+         r"nombre_sans_libelle) : \d+ / \d+ masqués à tort", 4,
+         "4 formes de témoin négatif"),
+    ]),
     ("## mise en page", [
         (r"^# \w+ largeur \d+ : \d+ refus$", 6, "3 corpus x 2 largeurs"),
         (r"^GLOBAL +\d+", 4, "GLOBAL du réaliste et de l'adversarial"),
@@ -154,6 +168,19 @@ ATTENDU = [
          "colonnes de 9, 11 et 13 chiffres"),
     ]),
 ]
+
+# Identifiant derrière un libellé fort (P2-194) : plafond de documents
+# positifs laissés en clair, par (libellé, variante). Absent = 0 : un
+# identifiant positif qui repasse en clair fait échouer `etat.sh`
+# (`verifie_etat.py`). Une case ne figure ici qu'avec le constat d'un défaut
+# déjà connu, chiffre de départ de P2-194 (sur 50 documents par case) ; le
+# plafond ne peut que baisser, et se retire quand la correction est livrée.
+PLAFOND_LIBELLE_FORT = {
+    ("ADELI", "ocr_zero"): 50,
+    ("ADELI", "ocr_un"): 50,
+    ("ADELI", "ligne_vide"): 50,
+    ("ADELI", "ocr_et_ligne_vide"): 50,
+}
 
 # Une ligne qui commence ainsi est un échec en soi.
 LIGNES_ECHEC = ("ÉCHEC", "section vide")
