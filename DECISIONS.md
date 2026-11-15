@@ -631,3 +631,25 @@ du 13 novembre : dans le doute, le côté qui protège.
   demande d'un client gêné par ces faux positifs. La branche
   `claude/P2-184-table-communes-cinq-chiffres` est gardée ; `CommunesConnues`
   y est réutilisable pour la piste B de `agent/specs/P2-182.md`.
+
+## 2026-11 — P2-188 : précision proposée de « clé validée ou rien » (15 novembre)
+
+Proposition d'un agent, **à confirmer par le mainteneur** (comme l'exception
+ADELI de 2026-10, non encore confirmée explicitement elle non plus).
+
+Un NIR, un IBAN FR ou un RPPS dont la clé de contrôle est fausse, mais qui
+est précédé d'un libellé fort (« NIR », « N° de sécurité sociale », « numéro
+de sécurité sociale », « numéro SS », « IBAN », « RPPS »), est maintenant
+masqué par `Ecluse.redact` (pas par les détecteurs stricts d'`ecluse_core`,
+qui restent inchangés), à confiance 0,3, avec un avertissement. Même
+raisonnement que l'exception ADELI : « clé validée ou rien » protège contre
+le faux positif d'un nombre sans contexte ; un champ explicitement étiqueté
+qui fuit (faute de frappe, erreur de lecture) est pire qu'un sur-masquage.
+
+**Explicitement laissé intact** : la clé nommée à part (P2-42,
+« 2550814168025 clé 38 ») quand elle est fausse — ce cas reste couvert par
+la règle plus ancienne et plus spécifique de P2-42 (« une clé fausse n'est
+jamais acceptée », pour ne jamais masquer « Chambre 12 clé 38 » comme un
+NIR). Les deux règles coexistent en opérant sur des vues différentes du
+texte (voir `LIMITES.md` § 2 et le commentaire de `Ecluse.defaultDetectors`
+dans `ecluse_redact/lib/src/ecluse.dart`).
