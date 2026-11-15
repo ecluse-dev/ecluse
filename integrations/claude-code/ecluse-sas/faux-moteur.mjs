@@ -27,9 +27,18 @@ function redact(session, text) {
   return { text, entities: n }
 }
 
+// Comme le vrai moteur (P2-192) : `nonRestaures` liste, par {type, numero},
+// les jetons du texte qui n'ont pas de valeur dans la table de la session
+// (jeton inventé par le LLM, ou d'une autre session). Jamais de valeur.
 function restore(session, text) {
   const table = tables.get(session) ?? new Map()
-  return { text: text.replace(/\[[A-Z_]+_\d+\]/g, (t) => table.get(t) ?? t) }
+  const nonRestaures = []
+  const restaure = text.replace(/\[([A-Z_]+)_(\d+)\]/g, (t, type, numero) => {
+    if (table.has(t)) return table.get(t)
+    nonRestaures.push({ type, numero: Number(numero) })
+    return t
+  })
+  return { text: restaure, nonRestaures }
 }
 
 http.createServer((req, res) => {

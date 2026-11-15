@@ -305,6 +305,66 @@ identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) f
   separateur=virgule : 0 / 1600 en défaut, 0 non couvert(s)
   défaut : finess lu « rpps », nombre, espace : 1
   défaut : rpps lu « nir », nombre, ligne : 1
+## identifiant derrière un libellé fort (P2-194) : Ecluse.redact (chemin du produit)
+libellé fort : 1800 identifiants positifs, 200 en clair, 0 au type faux ; 1200 documents témoins, 8 masqués à tort (8 prédiction(s))
+  variante=cle_juste : 0 / 300 en clair, 0 au type faux
+  variante=cle_fausse : 0 / 300 en clair, 0 au type faux
+  variante=ocr_zero : 50 / 300 en clair, 0 au type faux
+  variante=ocr_un : 50 / 300 en clair, 0 au type faux
+  variante=ligne_vide : 50 / 300 en clair, 0 au type faux
+  variante=ocr_et_ligne_vide : 50 / 300 en clair, 0 au type faux
+  libellé=NIR : 0 / 300 en clair, 0 au type faux
+  libellé=N° de sécurité sociale : 0 / 300 en clair, 0 au type faux
+  libellé=numéro SS : 0 / 300 en clair, 0 au type faux
+  libellé=IBAN : 0 / 300 en clair, 0 au type faux
+  libellé=RPPS : 0 / 300 en clair, 0 au type faux
+  libellé=ADELI : 200 / 300 en clair, 0 au type faux
+  NIR x cle_juste : 0 / 50 en clair, 0 au type faux
+  NIR x cle_fausse : 0 / 50 en clair, 0 au type faux
+  NIR x ocr_zero : 0 / 50 en clair, 0 au type faux
+  NIR x ocr_un : 0 / 50 en clair, 0 au type faux
+  NIR x ligne_vide : 0 / 50 en clair, 0 au type faux
+  NIR x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
+  N° de sécurité sociale x cle_juste : 0 / 50 en clair, 0 au type faux
+  N° de sécurité sociale x cle_fausse : 0 / 50 en clair, 0 au type faux
+  N° de sécurité sociale x ocr_zero : 0 / 50 en clair, 0 au type faux
+  N° de sécurité sociale x ocr_un : 0 / 50 en clair, 0 au type faux
+  N° de sécurité sociale x ligne_vide : 0 / 50 en clair, 0 au type faux
+  N° de sécurité sociale x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
+  numéro SS x cle_juste : 0 / 50 en clair, 0 au type faux
+  numéro SS x cle_fausse : 0 / 50 en clair, 0 au type faux
+  numéro SS x ocr_zero : 0 / 50 en clair, 0 au type faux
+  numéro SS x ocr_un : 0 / 50 en clair, 0 au type faux
+  numéro SS x ligne_vide : 0 / 50 en clair, 0 au type faux
+  numéro SS x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
+  IBAN x cle_juste : 0 / 50 en clair, 0 au type faux
+  IBAN x cle_fausse : 0 / 50 en clair, 0 au type faux
+  IBAN x ocr_zero : 0 / 50 en clair, 0 au type faux
+  IBAN x ocr_un : 0 / 50 en clair, 0 au type faux
+  IBAN x ligne_vide : 0 / 50 en clair, 0 au type faux
+  IBAN x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
+  RPPS x cle_juste : 0 / 50 en clair, 0 au type faux
+  RPPS x cle_fausse : 0 / 50 en clair, 0 au type faux
+  RPPS x ocr_zero : 0 / 50 en clair, 0 au type faux
+  RPPS x ocr_un : 0 / 50 en clair, 0 au type faux
+  RPPS x ligne_vide : 0 / 50 en clair, 0 au type faux
+  RPPS x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
+  ADELI x cle_juste : 0 / 50 en clair, 0 au type faux
+  ADELI x cle_fausse : 0 / 50 en clair, 0 au type faux
+  ADELI x ocr_zero : 50 / 50 en clair, 0 au type faux
+  ADELI x ocr_un : 50 / 50 en clair, 0 au type faux
+  ADELI x ligne_vide : 50 / 50 en clair, 0 au type faux
+  ADELI x ocr_et_ligne_vide : 50 / 50 en clair, 0 au type faux
+  témoin négatif=libelle_seul : 0 / 300 masqués à tort (0 prédiction(s))
+  témoin négatif=non_communique : 0 / 300 masqués à tort (0 prédiction(s))
+  témoin négatif=mot_ordinaire : 0 / 300 masqués à tort (0 prédiction(s))
+  témoin négatif=nombre_sans_libelle : 8 / 300 masqués à tort (8 prédiction(s))
+  témoin négatif, libellé=NIR : 1 / 200 masqués à tort
+  témoin négatif, libellé=N° de sécurité sociale : 0 / 200 masqués à tort
+  témoin négatif, libellé=numéro SS : 3 / 200 masqués à tort
+  témoin négatif, libellé=IBAN : 1 / 200 masqués à tort
+  témoin négatif, libellé=RPPS : 2 / 200 masqués à tort
+  témoin négatif, libellé=ADELI : 1 / 200 masqués à tort
 ## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90
 # realiste largeur 60 : 2 refus
 adresse            157   157  91.7%  91.7%  91.7%  100.0%     1.3%

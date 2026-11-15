@@ -4,10 +4,14 @@ const ORIGINAL = 'Résume le dossier de Jean Dupont, NIR 1 84 12 75 123 456 78'
 const MASKED = 'Résume le dossier de [NOM_1], NIR [NIR_1]'
 
 // Stubs communs : ce que Claude Code répondrait à la place du moteur.
-function engine(on, fetch) {
+function engine(on, fetch, logs?: string[]) {
   on('session.id', () => ({ value: 'sess-test' }))
   on('ui.status', () => ({ value: undefined }))
-  on('ui.log', () => ({ value: undefined }))
+  on('ui.log', ($, e) => {
+    // Forme exacte de `e` inconnue du banc : on garde sa représentation texte.
+    logs?.push(JSON.stringify(e))
+    return { value: undefined }
+  })
   on('http.fetch', fetch)
   // Ce qui arrive au bout de la chaîne : on renvoie le texte reçu, pour vérifier
   // ce qui serait parti vers Claude.
@@ -94,6 +98,64 @@ test('restauration à l\'affichage d\'une réponse', async ($, on) => {
     expect(drawn?.props.text).toBe('Le dossier de Jean Dupont est complet.')
     await ui.unmount()
   }
+})
+
+// ---------- Jetons non restaurés à l'affichage (P2-197) ----------
+
+async function afficheReponse($, on, text: string) {
+  on('ui.render', ($, e) => ({ type: 'Markdown', props: { text: e.props.text } }))
+  const ui = await $.ui.mount({
+    plugin: 'ecluse-sas',
+    surface: 'terminal',
+    component: 'AssistantMessage',
+    requestId: 'msg-nr',
+    props: { text, isFirstOfReply: true },
+  })
+  const drawn = await ui.find({ type: 'Markdown' })
+  await ui.unmount()
+  return drawn?.props.text as string
+}
+
+test('jetons non restaurés : une ligne avec le nombre seulement', async ($, on) => {
+  const logs: string[] = []
+  // Le moteur rend deux jetons non restaurés (un inventé, un sans valeur).
+  engine(on, () => ok({
+    text: 'Jean Dupont, [NOM_7] et [NIR_9].',
+    nonRestaures: [{ type: 'NOM', numero: 7 }, { type: 'NIR', numero: 9 }],
+  }), logs)
+  const drawn = await afficheReponse($, on, '[NOM_1], [NOM_7] et [NIR_9].')
+  expect(drawn).toBe('Jean Dupont, [NOM_7] et [NIR_9].')
+  const lignes = logs.filter((l) => l.includes('non restauré'))
+  expect(lignes).toHaveLength(1)
+  expect(lignes[0]).toContain('2 jeton(s) non restauré(s)')
+  // Ni type, ni numéro, ni texte dans la ligne.
+  for (const interdit of ['NOM_7', 'NIR_9', 'NOM', 'NIR', 'Dupont']) {
+    expect(lignes[0]).not.toContain(interdit)
+  }
+})
+
+test('jetons non restaurés : liste vide, aucune ligne', async ($, on) => {
+  const logs: string[] = []
+  engine(on, () => ok({ text: 'Le dossier de Jean Dupont.', nonRestaures: [] }), logs)
+  const drawn = await afficheReponse($, on, 'Le dossier de [NOM_1] (zéro).')
+  expect(drawn).toBe('Le dossier de Jean Dupont.')
+  expect(logs.filter((l) => l.includes('non restauré'))).toHaveLength(0)
+})
+
+test('moteur ancien sans le champ : affichage comme avant, aucune ligne', async ($, on) => {
+  const logs: string[] = []
+  engine(on, () => ok({ text: 'Le dossier de Jean Dupont (ancien).' }), logs)
+  const drawn = await afficheReponse($, on, 'Le dossier de [NOM_1] (ancien).')
+  expect(drawn).toBe('Le dossier de Jean Dupont (ancien).')
+  expect(logs.filter((l) => l.includes('non restauré'))).toHaveLength(0)
+})
+
+test('champ nonRestaures qui n\'est pas une liste : ignoré, la réponse s\'affiche', async ($, on) => {
+  const logs: string[] = []
+  engine(on, () => ok({ text: 'Le dossier de Jean Dupont (champ faux).', nonRestaures: 'deux' }), logs)
+  const drawn = await afficheReponse($, on, 'Le dossier de [NOM_1] (champ faux).')
+  expect(drawn).toBe('Le dossier de Jean Dupont (champ faux).')
+  expect(logs.filter((l) => l.includes('non restauré'))).toHaveLength(0)
 })
 
 // ---------- Outils : lecture pseudonymisée, écriture restaurée ----------

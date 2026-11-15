@@ -9,7 +9,7 @@ des trous (une section manquante, un motif trop rare) et des lignes ÉCHEC.
 import re
 import sys
 
-from etat_attendu import ATTENDU, LIGNES_ECHEC
+from etat_attendu import ATTENDU, LIGNES_ECHEC, PLAFOND_LIBELLE_FORT
 
 
 def sections(lignes):
@@ -44,6 +44,33 @@ def verifie(texte):
                 problemes.append(
                     f"{prefixe} : {n} ligne(s) pour /{motif}/ "
                     f"({explication}), {minimum} attendue(s)")
+    problemes += plafonds_libelle_fort(par_section)
+    return problemes
+
+
+_CASE_LIBELLE_FORT = re.compile(
+    r"^  (?P<lib>.+) x (?P<var>cle_juste|cle_fausse|ocr_zero|ocr_un|"
+    r"ligne_vide|ocr_et_ligne_vide) : (?P<n>\d+) / (?P<tot>\d+) en clair")
+
+
+def plafonds_libelle_fort(par_section):
+    """P2-194 : un identifiant positif derrière un libellé fort ne doit pas
+    repasser en clair (plafond 0, sauf défaut connu dans
+    `PLAFOND_LIBELLE_FORT`). Rend la liste des dépassements."""
+    problemes = []
+    for titre, contenu in par_section.items():
+        if not titre.startswith("## identifiant derrière un libellé fort"):
+            continue
+        for l in contenu:
+            m = _CASE_LIBELLE_FORT.match(l)
+            if not m:
+                continue
+            cle = (m["lib"], m["var"])
+            plafond = PLAFOND_LIBELLE_FORT.get(cle, 0)
+            if int(m["n"]) > plafond:
+                problemes.append(
+                    f"libellé fort, {m['lib']} x {m['var']} : {m['n']} "
+                    f"identifiant(s) positif(s) en clair (plafond {plafond})")
     return problemes
 
 

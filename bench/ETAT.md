@@ -297,6 +297,60 @@ que le moteur seul ne lit pas comme un IBAN et dont le dernier bloc est
 maintenant lu comme un RPPS. Rappels inchangés partout ; v3 d'origine :
 toujours 42 faux positifs (FINESS/SIREN).
 
+## Identifiant derrière un libellé fort : clé fausse, O/l d'OCR, ligne vide (P2-194)
+
+Témoin `bench/generate_corpus_libelle_fort.py` (graine 42, `--n 50`) : 3 000
+documents synthétiques (clés calculées), scoreur `bench/score_libelle_fort.py`.
+Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM), pas le moteur
+seul. Il mesure pour la première fois la voie de P2-188 (clé fausse) et de
+P2-191 (O pour 0, l ou I pour 1, ligne vide), que seuls des tests unitaires de
+`IdentifiantCleInvalideDetector` couvraient : « tableau de bord inchangé » ne
+disait rien sur elle.
+
+- **1 800 positifs** : 6 libellés (NIR, « N° de sécurité sociale », « numéro
+  SS », IBAN, RPPS, ADELI) x 6 variantes (`cle_juste`, `cle_fausse`,
+  `ocr_zero`, `ocr_un`, `ligne_vide`, `ocr_et_ligne_vide`) x 50. « En clair » =
+  au moins un caractère de l'identifiant (hors blancs) sous aucune détection.
+- **1 200 négatifs** (aucune entité annotée) : `libelle_seul` (« IBAN : voir
+  pièce jointe »), `non_communique`, `mot_ordinaire` (« RPPS du praticien »),
+  `nombre_sans_libelle` (nombre de forme d'identifiant, clé fausse, parfois
+  avec des lettres d'OCR, sans libellé), 6 libellés x 50 chacun.
+
+Chiffres de départ, `main` au commit `b3b6d8e`, aucune correction dans cette
+tâche :
+
+| Positifs en clair, sur 50 par case | cle_juste | cle_fausse | ocr_zero | ocr_un | ligne_vide | ocr_et_ligne_vide |
+|---|---:|---:|---:|---:|---:|---:|
+| NIR, « N° de sécurité sociale », « numéro SS » (3 x 50) | 0 | 0 | 0 | 0 | 0 | 0 |
+| IBAN | 0 | 0 | 0 | 0 | 0 | 0 |
+| RPPS | 0 | 0 | 0 | 0 | 0 | 0 |
+| **ADELI** | 0 | 0 | **50** | **50** | **50** | **50** |
+
+Total : **200 identifiants positifs sur 1 800 en clair, tous ADELI**. P2-191
+n'a pas étendu ses tolérances à ADELI (le libellé « ADELI » a son détecteur
+contextuel, sans O/l ni ligne vide) : un numéro ADELI lu par OCR avec la lettre
+O ou l, ou coupé par une ligne vide, part en clair derrière son libellé, 200
+fois sur 200. L'ADELI à clé fausse, lui, est couvert (50 sur 50 masqués).
+Aucun identifiant couvert sous un autre type. `bench/etat_attendu.py`
+(`PLAFOND_LIBELLE_FORT`) fixe un plafond de 50 sur ces quatre cases et zéro
+partout ailleurs : `etat.sh` échoue si un identifiant positif repasse en
+clair ailleurs, ou si ces quatre cases montent. Le plafond ne peut que
+baisser ; il se retire quand une tâche de correction aura couvert ADELI.
+
+Témoins négatifs : **8 documents sur 1 200 masqués** (0 sur `libelle_seul`,
+`non_communique`, `mot_ordinaire` ; 8 sur 300 `nombre_sans_libelle`). Ce sont
+des collisions de hasard, jamais l'effet du libellé : une sous-suite de onze
+ou neuf chiffres qui passe Luhn (lue RPPS ou FINESS), un nombre à cinq
+chiffres suivi d'un mot (adresse), un IBAN dont la clé fausse redevient juste
+par la lettre d'OCR du corps. Le libellé fort n'ajoute donc aucun masquage
+sur ses faux amis.
+
+Non mesuré ici : l'avertissement « à vérifier » attaché aux masquages à
+confiance basse (le banc ne lit que les empans et types, pas la confiance) ;
+les libellés « sécurité sociale » seuls ou en minuscules accentuées variées ;
+les identifiants dans un tableau ou un PDF. Corpus synthétique : aucun chiffre
+ne vaut fréquence réelle.
+
 ## Nombres à cinq chiffres hors adresse (P2-167)
 
 Témoin `bench/generate_corpus_cinq_chiffres.py` (400 phrases, graine 42,
