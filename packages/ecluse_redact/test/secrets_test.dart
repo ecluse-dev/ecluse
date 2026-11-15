@@ -20,7 +20,7 @@ void main() {
   test('restauration désactivée par défaut : le secret ne revient pas',
       () async {
     final result = await Ecluse.redact(text);
-    expect(result.mapping.values, isNot(contains(_token)));
+    expect(result.mapping.entrees.map((e) => e.$2), isNot(contains(_token)));
     final restored = Ecluse.restore('Réponse sur [SECRET_1].', result.mapping);
     expect(restored, 'Réponse sur [SECRET_1].');
   });

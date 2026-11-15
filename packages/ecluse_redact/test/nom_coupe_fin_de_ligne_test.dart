@@ -61,7 +61,7 @@ void main() {
         for (final mot in absents) {
           expect(r.maskedText, isNot(contains(mot)), reason: vis(r.maskedText));
         }
-        expect(r.mapping.keys, contains('[ETABLISSEMENT_1]'));
+        expect(r.mapping.jetons, contains('[ETABLISSEMENT_1]'));
         expect(Ecluse.restore(r.maskedText, r.mapping), texte);
       });
     }
@@ -89,7 +89,7 @@ void main() {
         for (final mot in absents) {
           expect(r.maskedText, isNot(contains(mot)), reason: vis(r.maskedText));
         }
-        expect(r.mapping.keys, contains('[ADRESSE_1]'));
+        expect(r.mapping.jetons, contains('[ADRESSE_1]'));
         expect(Ecluse.restore(r.maskedText, r.mapping), texte);
       });
     }
@@ -129,10 +129,10 @@ void main() {
     test('une civilité en tête de ligne garde son jeton de nom', () async {
       const texte = 'Retour à l\'EHPAD\nMadame Odile Verdier est attendue.';
       final r = await Ecluse.redact(texte);
-      expect(r.mapping.keys, contains('[NOM_1]'));
+      expect(r.mapping.jetons, contains('[NOM_1]'));
       expect(r.maskedText, isNot(contains('Verdier')));
-      expect(
-          r.mapping.keys.where((k) => k.startsWith('[ETABLISSEMENT')), isEmpty);
+      expect(r.mapping.jetons.where((k) => k.startsWith('[ETABLISSEMENT')),
+          isEmpty);
     });
   });
 
@@ -140,7 +140,7 @@ void main() {
     const texte = 'Première ligne de\nTexte ordinaire sur\nTrois lignes.';
     final r = await Ecluse.redact(texte);
     expect(r.maskedText, texte);
-    expect(r.mapping, isEmpty);
+    expect(r.mapping.isEmpty, isTrue);
   });
 
   test('coût linéaire : des milliers de lignes finissant par un mot-clé', () {

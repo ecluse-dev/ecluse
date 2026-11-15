@@ -24,8 +24,8 @@ void main() {
         final sans = await Ecluse.redact(t);
         final avec = await Ecluse.redact(t, dossier: Dossier());
         expect(avec.maskedText, sans.maskedText);
-        expect(avec.mapping, sans.mapping);
-        expect(avec.mapping.keys.toList(), sans.mapping.keys.toList());
+        expect(avec.mapping.entrees.toList(), sans.mapping.entrees.toList());
+        expect(avec.mapping.jetons.toList(), sans.mapping.jetons.toList());
         expect(avec.warnings, sans.warnings);
         expect(avec.entities.length, sans.entities.length);
       });
@@ -35,7 +35,7 @@ void main() {
       final a = await Ecluse.redact(textes[0]);
       final b = await Ecluse.redact(textes[0], dossier: null);
       expect(b.maskedText, a.maskedText);
-      expect(b.mapping, a.mapping);
+      expect(b.mapping.entrees.toList(), a.mapping.entrees.toList());
     });
   });
 
@@ -88,7 +88,7 @@ void main() {
       final r3 = await Ecluse.redact('Mme Laure Loyer rappelle.', dossier: d);
       expect(r2.maskedText, 'Mme [NOM_2] rappelle.');
       expect(r3.maskedText, 'Mme [NOM_3] rappelle.');
-      expect(r2.mapping, {'[NOM_2]': 'Loyer'});
+      expect(r2.mapping.entrees, unorderedEquals([('[NOM_2]', 'Loyer')]));
     });
 
     test('dans un document, la règle d\'inclusion est inchangée', () async {
@@ -143,7 +143,8 @@ void main() {
       final d = Dossier();
       await Ecluse.redact('Mme Sophie Verdier arrive.', dossier: d);
       final r = await Ecluse.redact('M. Thomas Fabrier arrive.', dossier: d);
-      expect(r.mapping, {'[NOM_2]': 'Thomas Fabrier'});
+      expect(
+          r.mapping.entrees, unorderedEquals([('[NOM_2]', 'Thomas Fabrier')]));
     });
   });
 
@@ -223,8 +224,8 @@ void main() {
       ];
       final resultats = await Future.wait(futurs);
       for (var i = 0; i < personnes.length; i++) {
-        expect(resultats[i].mapping,
-            {'[NOM_${i + 1}]': personnes[i].split(' ').skip(1).join(' ')});
+        expect(resultats[i].mapping.entrees,
+            [('[NOM_${i + 1}]', personnes[i].split(' ').skip(1).join(' '))]);
       }
     });
   });

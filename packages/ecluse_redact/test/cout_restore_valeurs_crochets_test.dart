@@ -56,7 +56,8 @@ void main() {
     ];
     for (final m in cas) {
       for (final t in textes) {
-        expect(Ecluse.restore(t, m), ancien(t, m), reason: '$m sur $t');
+        expect(Ecluse.restore(t, TableDeCorrespondance.depuis(m)), ancien(t, m),
+            reason: '$m sur $t');
       }
     }
   });

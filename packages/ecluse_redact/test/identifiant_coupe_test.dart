@@ -25,7 +25,7 @@ void main() {
     test('masqué : ${texte.replaceAll('\n', '\\n').replaceAll('\r', '\\r')}',
         () async {
       final r = await Ecluse.redact(texte);
-      expect(r.mapping.keys, contains('[${type}_1]'), reason: r.maskedText);
+      expect(r.mapping.jetons, contains('[${type}_1]'), reason: r.maskedText);
       expect(r.maskedText, isNot(contains(RegExp(r'\d{2}'))),
           reason: r.maskedText);
       expect(Ecluse.restore(r.maskedText, r.mapping), texte);
@@ -48,7 +48,7 @@ void main() {
       in coupesLettreOuInsecable.entries) {
     test('masqué (P2-152) : ${texte.replaceAll('\n', '\\n')}', () async {
       final r = await Ecluse.redact(texte);
-      expect(r.mapping.keys, contains('[${type}_1]'), reason: r.maskedText);
+      expect(r.mapping.jetons, contains('[${type}_1]'), reason: r.maskedText);
       expect(Ecluse.restore(r.maskedText, r.mapping), texte);
     });
   }
@@ -64,7 +64,7 @@ void main() {
   for (final MapEntry(key: texte, value: type) in coupesAvantLettre.entries) {
     test('masqué (P2-158) : ${texte.replaceAll('\n', '\\n')}', () async {
       final r = await Ecluse.redact(texte);
-      expect(r.mapping.keys, contains('[${type}_1]'), reason: r.maskedText);
+      expect(r.mapping.jetons, contains('[${type}_1]'), reason: r.maskedText);
       expect(Ecluse.restore(r.maskedText, r.mapping), texte);
     });
   }

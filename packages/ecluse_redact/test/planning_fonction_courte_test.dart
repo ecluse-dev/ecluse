@@ -22,7 +22,7 @@ void main() {
     final (r, restaure) = await aller(texte);
     expect(restaure, texte, reason: 'restauration non byte-exacte');
     // La fonction ne doit plus jamais faire partie de la valeur masquée.
-    for (final valeur in r.mapping.values) {
+    for (final valeur in r.mapping.entrees.map((e) => e.$2)) {
       expect(valeur, isNot(contains('ASH')));
       expect(valeur, isNot(contains(RegExp(r'\bAS\b'))));
     }

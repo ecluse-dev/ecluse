@@ -1544,6 +1544,21 @@ identique à l'original, **hors dossier** (voir ci-dessous pour les dossiers).
 Choix assumé : cohérence d'identité pour le LLM > fidélité mot-à-mot d'une
 re-mention.
 
+**La table de correspondance : opaque, non chiffrée, non conservée (P2-193).**
+`RedactResult.mapping` est une `TableDeCorrespondance` (plus un
+`Map<String, String>`) : `print`, interpolation, message d'exception ou
+`toString` ne montrent que le nombre de jetons, `jsonEncode` la refuse, elle n'a
+pas d'`==`, et `vider()` en efface le contenu. Ce que cela **ne** fait **pas** :
+elle n'est **pas chiffrée**, et il n'y a rien à chiffrer au repos puisque rien
+n'est écrit sur disque ni conservé (ni la table, ni le dossier, § ci-dessous) ;
+chiffrer une structure en mémoire ne protégerait pas de quelqu'un qui lit la
+mémoire du processus (décision du 15 novembre, `DECISIONS.md`). L'opacité
+protège de l'affichage accidentel, pas d'un appelant qui lit volontairement
+`entrees` ou `[]`. Rupture d'API assumée en 0.2.0 : `Ecluse.restore` et
+`restoreAvecRapport` exigent le nouveau type ; une table construite à la main
+passe par `TableDeCorrespondance.depuis(carte)`. La recopie de la carte
+laisse la carte d'origine en clair chez l'appelant qui la possédait.
+
 **Entre plusieurs documents (dossier).** Sans `Dossier`, chaque appel repart de
 `[NOM_1]` : la même personne reçoit des jetons différents d'un document à
 l'autre et deux personnes peuvent recevoir le même jeton. Avec

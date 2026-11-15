@@ -41,7 +41,7 @@ void main() {
   for (final texte in intacts) {
     test('aucun nom : $texte', () async {
       final r = await Ecluse.redact(texte);
-      expect(r.mapping, isEmpty, reason: r.maskedText);
+      expect(r.mapping.isEmpty, isTrue, reason: r.maskedText);
     });
   }
 }

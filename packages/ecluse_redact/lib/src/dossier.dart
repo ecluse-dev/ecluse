@@ -38,7 +38,7 @@ final class Dossier {
   String restore(String text) {
     final etat = _etat;
     if (etat == null) throw const DossierFermeException();
-    return Ecluse.restore(text, etat.mapping);
+    return Ecluse.restore(text, TableDeCorrespondance.depuis(etat.mapping));
   }
 
   /// Comme [restore], et rend aussi les jetons de forme connue **restés** dans
@@ -48,7 +48,8 @@ final class Dossier {
   (String, List<JetonNonRestaure>) restoreAvecRapport(String text) {
     final etat = _etat;
     if (etat == null) throw const DossierFermeException();
-    return Ecluse.restoreAvecRapport(text, etat.mapping);
+    return Ecluse.restoreAvecRapport(
+        text, TableDeCorrespondance.depuis(etat.mapping));
   }
 
   /// Exécute [action] après les appels précédents du dossier : la numérotation

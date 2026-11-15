@@ -58,7 +58,7 @@ void main() {
     ]) {
       expect(r.maskedText, isNot(contains(mot)), reason: mot);
     }
-    expect(r.mapping.values, contains('Oleksandr Guimard'));
+    expect(r.mapping.entrees.map((e) => e.$2), contains('Oleksandr Guimard'));
     expect(Ecluse.restore(r.maskedText, r.mapping), texte);
   });
 

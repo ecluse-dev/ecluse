@@ -44,7 +44,7 @@ void main() {
       final r = await Ecluse.redact('Verdier a confirmé.', dossier: d);
       // N1 : une mention partielle d'un autre document reçoit un nouveau jeton.
       expect(r.maskedText, '[NOM_2] a confirmé.');
-      expect(r.mapping, {'[NOM_2]': 'Verdier'});
+      expect(r.mapping.entrees, unorderedEquals([('[NOM_2]', 'Verdier')]));
     });
 
     test('avec N2, la mention rejoint l\'identité du premier document',

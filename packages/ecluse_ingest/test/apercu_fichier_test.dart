@@ -55,7 +55,7 @@ void main() {
             texteAEnvoyer: texte);
         final attendu = await Ecluse.redact(texte);
         expect(r.maskedText, attendu.maskedText);
-        expect(r.mapping, attendu.mapping);
+        expect(r.mapping.entrees.toList(), attendu.mapping.entrees.toList());
       });
 
       test('un refus laisse en clair et se restaure à l\'identique', () async {

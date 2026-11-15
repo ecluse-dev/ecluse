@@ -136,6 +136,6 @@ void main() {
   test('Ecluse.redact masque le nom d\'un texte en minuscules', () async {
     final r = await Ecluse.redact('rdv avec m. julien chevrier demain matin');
     expect(r.maskedText, isNot(contains('chevrier')));
-    expect(r.mapping.values, contains('julien chevrier'));
+    expect(r.mapping.entrees.map((e) => e.$2), contains('julien chevrier'));
   });
 }

@@ -18,11 +18,11 @@ import 'package:test/test.dart';
 /// Jetons d'un type donne presents dans la table de correspondance.
 ///
 /// Tolere les deux conventions de cle (`[ADRESSE_1]` ou `ADRESSE_1`).
-Iterable<String> tokensOfType(Map<String, String> mapping, String type) =>
-    mapping.keys.where((k) => k.contains('${type}_'));
+Iterable<String> tokensOfType(TableDeCorrespondance mapping, String type) =>
+    mapping.jetons.where((k) => k.contains('${type}_'));
 
 /// Valeurs reelles associees aux jetons d'un type donne.
-Iterable<String> valuesOfType(Map<String, String> mapping, String type) =>
+Iterable<String> valuesOfType(TableDeCorrespondance mapping, String type) =>
     tokensOfType(mapping, type).map((k) => mapping[k]!);
 
 /// Verifie l'invariant fondamental : restaurer un texte masque redonne

@@ -10,7 +10,7 @@ import 'package:test/test.dart';
 /// la liste de ces jetons non restaurés (type et numéro seulement, jamais
 /// de valeur — voir la doc de [JetonNonRestaure]).
 void main() {
-  late Map<String, String> carte;
+  late TableDeCorrespondance carte;
   setUp(() async {
     final r = await Ecluse.redact('M. Jean Dupont a appelé le 01 99 00 12 34.');
     carte = r.mapping;

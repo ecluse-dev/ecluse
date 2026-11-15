@@ -28,7 +28,7 @@ void main() {
   for (final texte in masques) {
     test('masqué : $texte', () async {
       final r = await Ecluse.redact(texte);
-      expect(r.mapping.keys, contains('[DATE_NAISSANCE_1]'),
+      expect(r.mapping.jetons, contains('[DATE_NAISSANCE_1]'),
           reason: r.maskedText);
       expect(r.maskedText, isNot(contains(RegExp(r'1950|\b50\b'))),
           reason: r.maskedText);
@@ -48,7 +48,7 @@ void main() {
   for (final texte in intacts) {
     test('aucune date de naissance : $texte', () async {
       final r = await Ecluse.redact(texte);
-      expect(r.mapping.keys, isNot(contains('[DATE_NAISSANCE_1]')),
+      expect(r.mapping.jetons, isNot(contains('[DATE_NAISSANCE_1]')),
           reason: r.maskedText);
     });
   }

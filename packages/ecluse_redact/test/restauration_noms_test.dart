@@ -16,7 +16,7 @@ void main() {
       final (r, restaure) = await aller(
         'Costa arrive. Dr Nadia Costa part. Nadia Costa revient.',
       );
-      expect(r.mapping.values.toSet(), {'Dr Nadia Costa'});
+      expect(r.mapping.entrees.map((e) => e.$2).toSet(), {'Dr Nadia Costa'});
       // Aucune mention ne perd le prénom ni le titre à la restauration.
       expect(restaure, contains('Nadia'));
       expect(restaure.contains('Dr Nadia Costa part'), isTrue);
@@ -27,7 +27,7 @@ void main() {
       final (r, restaure) = await aller(
         'Dr Costa arrive. Plus tard Dr Nadia Costa part.',
       );
-      expect(r.mapping.values.toSet(), {'Dr Nadia Costa'});
+      expect(r.mapping.entrees.map((e) => e.$2).toSet(), {'Dr Nadia Costa'});
       expect(restaure, isNot(contains('Dr Costa')));
     });
 
@@ -35,7 +35,7 @@ void main() {
       final (r, restaure) = await aller(
         'Mme Alice Martin est là. Mme Martin part.',
       );
-      expect(r.mapping.values.toSet(), {'Alice Martin'});
+      expect(r.mapping.entrees.map((e) => e.$2).toSet(), {'Alice Martin'});
       expect(restaure, 'Mme Alice Martin est là. Mme Alice Martin part.');
     });
   });
@@ -45,25 +45,25 @@ void main() {
         () async {
       const texte = 'M. Jean Dupont et son épouse Mme Dupont.';
       final (r, restaure) = await aller(texte);
-      expect(r.mapping, hasLength(2));
+      expect(r.mapping.length, 2);
       expect(restaure, texte);
     });
 
     test('Mme Dupont puis M. Pierre Dupont : deux jetons', () async {
       const texte = 'Mme Dupont est venue. M. Pierre Dupont aussi.';
       final (r, restaure) = await aller(texte);
-      expect(r.mapping, hasLength(2));
+      expect(r.mapping.length, 2);
       expect(restaure, texte);
     });
 
     test('même sexe, même patronyme : toujours fusionnés', () async {
       final (r, _) = await aller('M. Jean Dupont est là. M. Dupont part.');
-      expect(r.mapping, hasLength(1));
+      expect(r.mapping.length, 1);
     });
 
     test('sans civilité : fusion inchangée', () async {
       final (r, _) = await aller('Dr Nadia Costa part. Costa revient.');
-      expect(r.mapping, hasLength(1));
+      expect(r.mapping.length, 1);
     });
   });
 }

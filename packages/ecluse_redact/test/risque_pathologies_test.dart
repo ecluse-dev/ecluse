@@ -79,7 +79,7 @@ void main() {
           g.maskedText, contains('atteinte de la maladie neurologique rare'));
       expect(g.maskedText, contains('suivie pour maladie chronique'));
       expect(g.maskedText, isNot(contains('Huntington')));
-      expect(g.mapping, r.mapping);
+      expect(g.mapping.entrees.toList(), r.mapping.entrees.toList());
       expect(
           Ecluse.restore(g.maskedText, g.mapping), contains('Odile Verdier'));
       expect(g.risque!.pathologies, isEmpty, reason: 'rapport recalculé');
