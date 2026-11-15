@@ -9,6 +9,7 @@ import 'heuristics/adresse_detector.dart';
 import 'heuristics/date_naissance_detector.dart';
 import 'heuristics/email_detector.dart';
 import 'heuristics/etablissement_detector.dart';
+import 'heuristics/identifiant_cle_invalide_detector.dart';
 import 'heuristics/identifiant_detector.dart';
 import 'heuristics/initiale_libelle_detector.dart';
 import 'heuristics/maladie_rare_detector.dart';
@@ -90,6 +91,18 @@ abstract final class Ecluse {
         name: 'identifiant'),
     SecretDetector(),
   ];
+
+  // `IdentifiantCleInvalideDetector` (P2-188) n'est volontairement **pas**
+  // dans cette liste : contrairement aux autres détecteurs, il doit lire le
+  // texte d'origine, jamais la vue de détection (`_vueDeDetection`). Cette
+  // vue neutralise notamment la clé d'un NIR nommée à part (P2-42,
+  // « 2550814168025 clé 38 ») pour que le NIR se reconnaisse malgré le mot
+  // « clé » entre le numéro et sa clé — mais à la condition stricte que
+  // cette clé soit juste (« une clé fausse n'est jamais acceptée »,
+  // P2-42). Sur la vue, un NIR à clé séparée **fausse** se présenterait à
+  // `IdentifiantCleInvalideDetector` comme un NIR normal à clé fausse, et
+  // serait masqué à tort : exactement le compromis que P2-42 a refusé. Voir
+  // [_detecter], qui l'appelle à part, sur [text].
 
   /// Détecte les entités personnelles de [text] et produit un texte masqué
   /// par jetons typés, ainsi que la table de correspondance nécessaire à
@@ -243,28 +256,48 @@ abstract final class Ecluse {
         supplementaires.isEmpty ? base : [...base, ...supplementaires]);
     final (vue, positions) = _vueDeDetection(text);
     final entites = (await engine.run(vue)).entities;
-    if (identical(vue, text)) return entites;
     // Les positions et la valeur sont ramenées au texte d'origine : le texte
     // n'est jamais réécrit, la table garde la valeur exacte (invariant 3).
-    return [
-      for (final e in entites)
-        () {
-          final debut = positions == null ? e.start : positions[e.start];
-          var fin = positions == null ? e.end : positions[e.end - 1] + 1;
-          // Les diacritiques qui suivent la dernière lettre en font partie.
-          while (fin < text.length && _estCombinant(text.codeUnitAt(fin))) {
-            fin++;
-          }
-          return DetectedEntity(
-            type: e.type,
-            start: debut,
-            end: fin,
-            value: text.substring(debut, fin),
-            confidence: e.confidence,
-            tier: e.tier,
-          );
-        }()
-    ];
+    final surLeTexte = identical(vue, text)
+        ? entites
+        : [
+            for (final e in entites)
+              () {
+                final debut = positions == null ? e.start : positions[e.start];
+                var fin = positions == null ? e.end : positions[e.end - 1] + 1;
+                // Les diacritiques qui suivent la dernière lettre en font
+                // partie.
+                while (
+                    fin < text.length && _estCombinant(text.codeUnitAt(fin))) {
+                  fin++;
+                }
+                return DetectedEntity(
+                  type: e.type,
+                  start: debut,
+                  end: fin,
+                  value: text.substring(debut, fin),
+                  confidence: e.confidence,
+                  tier: e.tier,
+                );
+              }()
+          ];
+    // P2-188 : identifiant à clé invalide annoncé par un libellé fort, sur
+    // [text] directement — jamais sur [vue] (voir le commentaire de
+    // `defaultDetectors`).
+    final cleInvalide = const IdentifiantCleInvalideDetector().detect(text);
+    if (cleInvalide.isEmpty) return surLeTexte;
+    return resolveOverlaps([
+      ...surLeTexte,
+      for (final e in cleInvalide)
+        DetectedEntity(
+          type: e.type,
+          start: e.start,
+          end: e.end,
+          value: e.value,
+          confidence: e.confidence,
+          tier: DetectorTier.pattern,
+        ),
+    ]);
   }
 
   static Future<RedactResult> _redact(
@@ -313,6 +346,16 @@ abstract final class Ecluse {
   ) {
     final secretCount =
         resolved.where((e) => e.type == EntityType.secret).length;
+    // Identifiant à clé invalide masqué quand même, grâce au libellé fort
+    // qui l'annonce (P2-188) : confiance 0.3, unique à
+    // `IdentifiantCleInvalideDetector` parmi les types nir/iban/rpps.
+    final cleInvalideCount = resolved
+        .where((e) =>
+            (e.type == EntityType.nir ||
+                e.type == EntityType.iban ||
+                e.type == EntityType.rpps) &&
+            e.confidence == 0.3)
+        .length;
 
     // Jetons déjà attribués dans le dossier qui figurent en clair dans ce
     // texte : ils seront remplacés à la restauration (relevé avant tout
@@ -373,6 +416,9 @@ abstract final class Ecluse {
           'Un secret a été masqué ($secretCount occurrence'
               '${secretCount > 1 ? 's' : ''}) : pensez à le révoquer s\'il a '
               'déjà été partagé ailleurs.',
+        if (cleInvalideCount > 0)
+          'identifiant à clé invalide masqué : à vérifier'
+              '${cleInvalideCount > 1 ? " ($cleInvalideCount occurrences)" : ""}.',
         if (_sansMajuscule(text))
           _avertissementSansMajuscule
         else if (_casseDePhrase(text, resolved))
