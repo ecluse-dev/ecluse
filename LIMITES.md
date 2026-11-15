@@ -1543,6 +1543,27 @@ la réponse plutôt que remplacé à tort. Le numéro reste exact : `\[NOM\_10\]
 jamais `[NOM_1]`. Effet de bord de P2-31, **corrigé en P2-72** : une barre oblique
 inversée placée devant un jeton exact était consommée avec lui (voir P2-72).
 
+**Fonction courte avalée dans le nom, ligne de planning (P2-186, corrigé).**
+Dans une ligne de planning relue sans séparateurs (texte issu d'un tableau à
+barres disparues, ex. OCR), une fonction courte en capitales collée au
+prénom (« LEFÈVRE Olivier AS 02 61 91 76 57 ») pouvait être avalée dans
+l'étendue du nom : la règle bidirectionnelle prénom connu / mot capitalisé
+adjacent ne distinguait pas une fonction d'un patronyme. Deux mentions de la
+même personne avec une fonction différente d'une ligne à l'autre (« ASH »
+puis « AS ») recevaient alors des valeurs différentes, fusionnées en une
+seule identité par inclusion de segments ; la restauration réinjectait la
+forme la plus longue sur la mention qui n'avait jamais perdu sa fonction —
+**troisième cas** de restauration non octet-pour-octet, celui-ci une
+véritable rupture (du texte apparaissait en double : « LEFÈVRE Olivier AS
+ASH »), pas seulement une harmonisation de graphie. Corrigé en ajoutant `AS`
+et `ASD` à la liste des sigles exclus de `NameDetector` (qui protégeait déjà
+`ASH`, `AMP`, `IDE`). **Limite résiduelle** : la liste reste fermée — une
+fonction courte en capitales absente d'elle (variante locale non vue,
+nouvelle abréviation de poste) reproduirait le même défaut ; aucune règle
+générale (longueur du mot, présence d'un nombre juste après) n'a été
+retenue pour ne pas élargir à l'aveugle le risque de perdre un vrai
+patronyme court.
+
 ### 5.4 Portée du rattrapage des mentions partielles
 
 Les mentions partielles sont rattrapées **uniquement via un patronyme établi
