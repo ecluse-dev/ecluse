@@ -259,7 +259,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-189 | spec | Table de correspondance : un type dédié qui ne s'affiche jamais en clair et se vide sur demande, à la place de `Map<String, String>` (changement d'API à décider) | — | fusionnée |
 | P2-190 | code | Restauration : signaler les jetons non restaurés (jeton sans crochets, inventé, traduit) et corriger la barre oblique laissée par `\[NOM_1]` | — | fusionnée |
 | P2-191 | code | Identifiant annoncé par un libellé fort, lu par OCR : O pour 0, l ou I pour 1, ligne vide au milieu ; suite de P2-188, qui ne couvre que les chiffres | P2-188 | fusionnée |
-| P2-192 | code | Démo et sas Claude Code : utiliser `restoreAvecRapport` et remonter les jetons non restaurés (type et numéro seulement) | P2-190 | à faire |
+| P2-192 | code | Démo et sas Claude Code : utiliser `restoreAvecRapport` et remonter les jetons non restaurés (type et numéro seulement) | P2-190 | fusionnée |
 | P2-193 | code | Table de correspondance : type dédié `TableDeCorrespondance` à la place de `Map<String, String>`, selon les décisions du 15 novembre (`DECISIONS.md`), rupture nette en 0.2.0 | P2-189 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
