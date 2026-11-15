@@ -523,6 +523,15 @@ final class NameDetector implements EntityDetector {
     'ECPA', 'GCS', 'ECG', 'EEG', 'IRM', 'TDM', 'VNI', 'AVC', 'IDM', 'HTA',
     'BPCO', 'IRC', 'IRA', 'AVK', 'INR', 'TSH', 'NFS', 'CRP', 'IMC', 'ETP',
     'ASH', 'AMP', 'PTH', //
+    // Fonctions courtes d'une ligne de planning (P2-186) : abréviation de
+    // poste en capitales, collée au prénom sans séparateur (« Olivier AS
+    // 02 61 91 76 57 »). Sans cette exclusion, la fonction était avalée
+    // dans l'étendue du nom, et deux mentions de la même personne avec une
+    // fonction différente d'une ligne à l'autre fusionnaient par inclusion
+    // de segments — la restauration réinjectait alors la forme la plus
+    // longue sur la mention qui n'avait jamais perdu sa fonction (voir
+    // `LIMITES.md`).
+    'AS', 'ASD', //
   };
 
   static bool _isExcludedAcronym(String word) =>
