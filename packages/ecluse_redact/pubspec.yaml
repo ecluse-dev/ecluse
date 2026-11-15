@@ -2,7 +2,7 @@ name: ecluse_redact
 description: >-
   Pseudonymisation réversible pour Écluse — masque les entités personnelles
   avant l'envoi à un LLM et restaure les valeurs réelles dans la réponse.
-version: 0.1.0
+version: 0.2.0
 publish_to: none
 
 environment:

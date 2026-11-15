@@ -86,7 +86,7 @@ void main() {
 
   test('le type est exposé à l\'appelant', () async {
     final r = await Ecluse.redact('IPP : 12345678');
-    expect(r.mapping.keys.single, '[IDENTIFIANT_1]');
+    expect(r.mapping.jetons.single, '[IDENTIFIANT_1]');
     expect(
       EntityType.values.map((t) => t.name),
       containsAll(['identifiant', 'pieceIdentite', 'vehicule', 'reseau']),

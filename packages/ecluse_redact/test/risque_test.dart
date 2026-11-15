@@ -51,7 +51,8 @@ void main() {
           () async {
         final r = await Ecluse.redact(texte);
         expect(r.maskedText, masque);
-        expect(r.mapping, carte);
+        expect(r.mapping.entrees,
+            unorderedEquals([for (final e in carte.entries) (e.key, e.value)]));
         expect(r.warnings, isEmpty);
         expect(r.risque, isNull, reason: 'fonction inactive : pas de rapport');
       });
@@ -66,7 +67,8 @@ void main() {
         final avec = await Ecluse.redact(texte, riskReference: ref);
         expect(avec.maskedText, masque);
         expect(avec.maskedText, sans.maskedText);
-        expect(avec.mapping, carte);
+        expect(avec.mapping.entrees,
+            unorderedEquals([for (final e in carte.entries) (e.key, e.value)]));
         expect(avec.warnings, sans.warnings);
         expect(avec.entities.length, sans.entities.length);
         expect(avec.risque, isNotNull);

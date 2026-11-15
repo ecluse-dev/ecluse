@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 /// **deux** crochets ; une barre oblique devant le seul crochet ouvrant est un
 /// séparateur de chemin et reste.
 void main() {
-  late Map<String, String> carte;
+  late TableDeCorrespondance carte;
   setUp(() async {
     final r = await Ecluse.redact('M. Jean Dupont a appelé le 01 99 00 12 34.');
     carte = r.mapping;

@@ -22,6 +22,7 @@ import 'heuristics/telephone_detector.dart';
 import 'coupures_de_nom.dart';
 import 'redact_result.dart';
 import 'risque.dart';
+import 'table_de_correspondance.dart';
 import 'tokenizer.dart';
 
 part 'apercu.dart';
@@ -176,7 +177,7 @@ abstract final class Ecluse {
 
   /// Version du moteur écrite dans le journal d'audit. Tenue égale à la
   /// version de `pubspec.yaml` par un test.
-  static const String versionMoteur = 'ecluse_redact 0.1.0';
+  static const String versionMoteur = 'ecluse_redact 0.2.0';
 
   /// Description du moteur pour le journal (décision P2-96a n° 4) : version et
   /// noms des détecteurs actifs, construite ici plutôt que fournie par
@@ -406,7 +407,7 @@ abstract final class Ecluse {
     final maskedText = buffer.toString();
     return RedactResult(
       maskedText: maskedText,
-      mapping: Map.unmodifiable({
+      mapping: TableDeCorrespondance.depuis({
         for (final token in utilises)
           if (etat.mapping.containsKey(token)) token: etat.mapping[token]!
       }),
@@ -485,7 +486,11 @@ abstract final class Ecluse {
   /// [mapping]. Tolère une déformation raisonnable du jeton par le LLM
   /// (espaces superflus, casse) mais ne devine jamais une correspondance
   /// approximative — voir [tolerantTokenPattern].
-  static String restore(String text, Map<String, String> mapping) {
+  static String restore(String text, TableDeCorrespondance table) =>
+      _restoreCarte(
+          text, {for (final (jeton, valeur) in table.entrees) jeton: valeur});
+
+  static String _restoreCarte(String text, Map<String, String> mapping) {
     // Un jeton ne peut se trouver que dans un segment `[...]` sans crochet. Si
     // aucune valeur ne contient de crochet ni de barre oblique inversée, les
     // remplacements ne peuvent ni en créer ni en défaire : un seul parcours des
@@ -547,9 +552,9 @@ abstract final class Ecluse {
   /// (voir `packages/ecluse_redact/README.md`).
   static (String, List<JetonNonRestaure>) restoreAvecRapport(
     String text,
-    Map<String, String> mapping,
+    TableDeCorrespondance table,
   ) {
-    final texteRestaure = restore(text, mapping);
+    final texteRestaure = restore(text, table);
     return (texteRestaure, _jetonsNonRestaures(texteRestaure));
   }
 

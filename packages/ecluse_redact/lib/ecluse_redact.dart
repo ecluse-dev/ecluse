@@ -29,4 +29,5 @@ export 'src/heuristics/telephone_detector.dart';
 export 'src/redact_result.dart';
 export 'src/risque.dart';
 export 'src/samples.dart';
+export 'src/table_de_correspondance.dart';
 export 'src/tokenizer.dart' show entityTypeLabel;

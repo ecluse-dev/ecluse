@@ -72,7 +72,7 @@ void main() {
       final r = await Ecluse.redact(_texte, dossier: d);
       final attendu = await Ecluse.redact(_texte, dossier: temoin);
       expect(r.maskedText, attendu.maskedText);
-      expect(r.mapping, attendu.mapping);
+      expect(r.mapping.entrees.toList(), attendu.mapping.entrees.toList());
     });
 
     test('décision invalide, dossier fermé, proposition périmée : refus',

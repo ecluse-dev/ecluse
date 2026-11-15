@@ -37,6 +37,6 @@ void main() {
     const t = 'Le mot Œuvre et le mot Ångström désignent des choses.';
     final r = await Ecluse.redact(t);
     expect(r.maskedText, t);
-    expect(r.mapping, isEmpty);
+    expect(r.mapping.isEmpty, isTrue);
   });
 }

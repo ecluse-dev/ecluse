@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 /// exacte et sans perte, contrairement à une déformation des chiffres : seule
 /// elle est tolérée en plus (jamais d'approximation sur le numéro).
 void main() {
-  late Map<String, String> carte;
+  late TableDeCorrespondance carte;
   setUp(() async {
     final r = await Ecluse.redact('M. Jean Dupont a appelé le 01 99 00 12 34.');
     carte = r.mapping;

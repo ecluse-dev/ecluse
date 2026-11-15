@@ -47,7 +47,7 @@ void main() {
         final r = await Ecluse.redact(texte);
         expect(r.entities.any((e) => e.type == type), isTrue,
             reason: 'identifiant à clé fausse non masqué : $texte');
-        expect(r.mapping.values, isNot(contains(texte)));
+        expect(r.mapping.entrees.map((e) => e.$2), isNot(contains(texte)));
         expect(
           r.warnings.any((w) => w.contains('identifiant à clé invalide')),
           isTrue,
@@ -74,7 +74,7 @@ void main() {
       test(texte, () async {
         final r = await Ecluse.redact(texte);
         expect(r.maskedText, texte);
-        expect(r.mapping, isEmpty);
+        expect(r.mapping.isEmpty, isTrue);
       });
     }
   });

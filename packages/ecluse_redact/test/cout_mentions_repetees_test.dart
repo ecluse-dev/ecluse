@@ -17,7 +17,7 @@ void main() {
     test('mentions « $motif » répétées : coût linéaire', () async {
       await expectCroissanceLineaire((n) async {
         final r = await Ecluse.redact(motif * n);
-        expect(r.mapping, isNotEmpty);
+        expect(r.mapping.isNotEmpty, isTrue);
       }, n: 1000);
     });
   }

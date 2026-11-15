@@ -40,6 +40,6 @@ void main() {
     const t = 'Le résultat est arrivé hier.';
     final r = await Ecluse.redact(t);
     expect(r.maskedText, t);
-    expect(r.mapping, isEmpty);
+    expect(r.mapping.isEmpty, isTrue);
   });
 }
