@@ -34,7 +34,7 @@ void main() {
     final r = await Ecluse.redact(texte);
     expect(_averti(r), isTrue);
     expect(r.maskedText, isNot(contains('06 12 34 56 78')));
-    expect(r.mapping.values, contains('06 12 34 56 78'));
+    expect(r.mapping.entrees.map((e) => e.$2), contains('06 12 34 56 78'));
   });
 
   test('le message ne prétend plus que rien n\'est détecté (P2-133)', () async {

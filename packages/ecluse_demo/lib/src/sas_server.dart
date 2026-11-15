@@ -32,21 +32,20 @@ final class SasSession {
     final result = await Ecluse.redact(text);
 
     final sessionTokenByLocal = <String, String>{};
-    for (final entry in result.mapping.entries) {
-      final match = _tokenPattern.matchAsPrefix(entry.key);
-      if (match == null || match.end != entry.key.length) {
+    for (final (jeton, valeur) in result.mapping.entrees) {
+      final match = _tokenPattern.matchAsPrefix(jeton);
+      if (match == null || match.end != jeton.length) {
         // Jeton de forme inattendue : on refuse plutôt que de laisser
         // passer un texte au masquage incertain.
         throw StateError('Jeton de forme inattendue.');
       }
       final label = match.group(1)!;
-      final identity = '$label:${entry.value}';
-      sessionTokenByLocal[entry.key] =
-          _tokenByIdentity.putIfAbsent(identity, () {
+      final identity = '$label:$valeur';
+      sessionTokenByLocal[jeton] = _tokenByIdentity.putIfAbsent(identity, () {
         final next = (_counterByLabel[label] ?? 0) + 1;
         _counterByLabel[label] = next;
         final token = '[${label}_$next]';
-        _valueByToken[token] = entry.value;
+        _valueByToken[token] = valeur;
         return token;
       });
     }
@@ -65,7 +64,10 @@ final class SasSession {
   /// traduits : P2-192). Type et numéro seulement, jamais de valeur.
   (String, List<JetonNonRestaure>) restore(String text) {
     lastUse = DateTime.now();
-    return Ecluse.restoreAvecRapport(text, _valueByToken);
+    return Ecluse.restoreAvecRapport(
+      text,
+      TableDeCorrespondance.depuis(_valueByToken),
+    );
   }
 }
 
@@ -160,7 +162,8 @@ Handler buildSasHandler({SasStore? store}) {
     // Session inconnue : rien n'est restauré, et tout jeton de forme connue
     // du texte est signalé comme tel.
     final (restaure, nonRestaures) = known == null
-        ? Ecluse.restoreAvecRapport(text, const {})
+        ? Ecluse.restoreAvecRapport(
+            text, TableDeCorrespondance.depuis(const {}))
         : known.restore(text);
     // Compteurs seulement : ni texte, ni type, ni numéro dans la sortie.
     stdout.writeln('Écluse sas : réponse restaurée '

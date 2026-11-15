@@ -28,8 +28,8 @@ void main() {
             await Apercu.applique(p, const DecisionApercu(), texteAEnvoyer: t);
         final attendu = await Ecluse.redact(t);
         expect(r.maskedText, attendu.maskedText);
-        expect(r.mapping, attendu.mapping);
-        expect(r.mapping.keys.toList(), attendu.mapping.keys.toList());
+        expect(r.mapping.entrees.toList(), attendu.mapping.entrees.toList());
+        expect(r.mapping.jetons.toList(), attendu.mapping.jetons.toList());
         expect(r.warnings, attendu.warnings);
         expect(r.entities, attendu.entities);
       });
@@ -44,7 +44,7 @@ void main() {
             texteAEnvoyer: t, dossier: a);
         final attendu = await Ecluse.redact(t, dossier: b);
         expect(r.maskedText, attendu.maskedText);
-        expect(r.mapping, attendu.mapping);
+        expect(r.mapping.entrees.toList(), attendu.mapping.entrees.toList());
       }
     });
   });
@@ -147,7 +147,7 @@ void main() {
               ajouts: [AjoutManuel(debut, debut + 8, EntityType.nom)]),
           texteAEnvoyer: t);
       expect(r.maskedText, 'Le dossier de [NOM_1] est clos.');
-      expect(r.mapping, {'[NOM_1]': 'Zanzibar'});
+      expect(r.mapping.entrees, unorderedEquals([('[NOM_1]', 'Zanzibar')]));
       expect(Ecluse.restore(r.maskedText, r.mapping), t);
     });
 
@@ -180,7 +180,7 @@ void main() {
             AjoutManuel(b, b + 'chef de projet'.length, EntityType.nom),
           ]),
           texteAEnvoyer: t);
-      expect(r.mapping.values, ['chef de projet']);
+      expect(r.mapping.entrees.map((e) => e.$2), ['chef de projet']);
       expect(r.maskedText, 'Voir le [NOM_1] puis le [NOM_1] encore.');
       expect(Ecluse.restore(r.maskedText, r.mapping), t);
     });
@@ -408,7 +408,7 @@ void main() {
       final r = await Ecluse.redact(_texte, dossier: d);
       final attendu = await Ecluse.redact(_texte, dossier: temoin);
       expect(r.maskedText, attendu.maskedText);
-      expect(r.mapping, attendu.mapping);
+      expect(r.mapping.entrees.toList(), attendu.mapping.entrees.toList());
     });
   });
 

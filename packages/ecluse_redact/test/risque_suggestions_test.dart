@@ -20,7 +20,7 @@ void main() {
     final sans = await Ecluse.redact(_texte);
     final avec = await Ecluse.redact(_texte, riskReference: ref);
     expect(avec.maskedText, sans.maskedText);
-    expect(avec.mapping, sans.mapping);
+    expect(avec.mapping.entrees.toList(), sans.mapping.entrees.toList());
   });
 
   test('profession, lieu et âge : au moins une suggestion, la retenue en tête',

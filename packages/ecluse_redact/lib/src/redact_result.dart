@@ -1,6 +1,7 @@
 import 'package:ecluse_core/ecluse_core.dart';
 
 import 'risque.dart';
+import 'table_de_correspondance.dart';
 
 /// Résultat d'un appel à `Ecluse.redact`.
 final class RedactResult {
@@ -20,8 +21,12 @@ final class RedactResult {
   /// Table de correspondance jeton ↔ valeur réelle.
   ///
   /// **Ne quitte jamais le processus local** : ni envoyée, ni journalisée,
-  /// ni écrite sur disque. Elle ne sert qu'à l'appel à `Ecluse.restore`.
-  final Map<String, String> mapping;
+  /// ni écrite sur disque, et pas conservée : elle ne sert qu'à l'appel à
+  /// `Ecluse.restore`. Son type ne s'affiche jamais en clair
+  /// ([TableDeCorrespondance.toString] ne donne que le nombre de jetons) ; elle
+  /// n'est **pas chiffrée** (rien n'est persisté). Depuis P2-193, ce n'est plus
+  /// un `Map<String, String>`.
+  final TableDeCorrespondance mapping;
 
   /// Entités détectées dans le texte d'origine, triées par position,
   /// sans chevauchement (voir `resolveOverlaps`).

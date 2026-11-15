@@ -22,7 +22,7 @@ void main() {
   for (final texte in valides) {
     test('masqué : $texte', () async {
       final r = await Ecluse.redact(texte);
-      expect(r.mapping.keys, contains('[NIR_1]'), reason: r.maskedText);
+      expect(r.mapping.jetons, contains('[NIR_1]'), reason: r.maskedText);
       expect(r.maskedText, isNot(contains(RegExp(r'\d{6}'))),
           reason: r.maskedText);
       expect(Ecluse.restore(r.maskedText, r.mapping), texte);
@@ -38,7 +38,8 @@ void main() {
   for (final texte in intacts) {
     test('aucun NIR : $texte', () async {
       final r = await Ecluse.redact(texte);
-      expect(r.mapping.keys, isNot(contains('[NIR_1]')), reason: r.maskedText);
+      expect(r.mapping.jetons, isNot(contains('[NIR_1]')),
+          reason: r.maskedText);
     });
   }
 }

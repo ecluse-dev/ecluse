@@ -21,6 +21,12 @@ void main() async {
 }
 ```
 
+`result.mapping` est une `TableDeCorrespondance` (0.2.0, P2-193) : un
+`print(result.mapping)` n'écrit que le nombre de jetons, jamais une valeur ;
+`jsonEncode` la refuse ; `vider()` en efface le contenu. Elle n'est **pas
+chiffrée** (rien n'est conservé hors de la mémoire du processus). Une table
+construite à la main : `TableDeCorrespondance.depuis({'[NOM_1]': '…'})`.
+
 ## Principe : aucun seuil de confiance ne filtre le masquage
 
 `Ecluse.redact` masque **toute** entité détectée, quelle que soit sa

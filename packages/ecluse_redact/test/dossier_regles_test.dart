@@ -34,7 +34,7 @@ void main() {
         final ra = await Ecluse.redact(t, dossier: a);
         final rb = await Ecluse.redact(t, dossier: b);
         expect(rb.maskedText, ra.maskedText);
-        expect(rb.mapping, ra.mapping);
+        expect(rb.mapping.entrees.toList(), ra.mapping.entrees.toList());
       }
     });
   });
@@ -46,7 +46,7 @@ void main() {
         final avec = await Ecluse.redact(t,
             dossier: Dossier(regle: RegleNoms.inclusion));
         expect(avec.maskedText, sans.maskedText);
-        expect(avec.mapping, sans.mapping);
+        expect(avec.mapping.entrees.toList(), sans.mapping.entrees.toList());
       }
     });
 
@@ -57,7 +57,8 @@ void main() {
       await Ecluse.redact('Mme Sophie Verdier arrive.', dossier: d);
       final r = await Ecluse.redact('Mme Verdier rappelle.', dossier: d);
       expect(r.maskedText, 'Mme [NOM_1] rappelle.');
-      expect(r.mapping, {'[NOM_1]': 'Sophie Verdier'});
+      expect(
+          r.mapping.entrees, unorderedEquals([('[NOM_1]', 'Sophie Verdier')]));
     });
 
     test('une mention complète enrichit une identité partielle antérieure',

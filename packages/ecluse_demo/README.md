@@ -52,7 +52,8 @@ Si vous préférez un fichier `.env`, il est déjà couvert par le
 
 ## Garanties
 
-- La table de correspondance jeton ↔ valeur réelle (`RedactResult.mapping`)
+- La table de correspondance jeton ↔ valeur réelle (`RedactResult.mapping`, une
+  `TableDeCorrespondance` opaque)
   ne quitte jamais `RedactService.process` : elle n'est ni renvoyée au
   navigateur, ni journalisée, ni écrite sur disque.
 - Le prompt envoyé au LLM ne contient que le texte masqué et la consigne

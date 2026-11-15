@@ -15,7 +15,7 @@ void main() {
     const texte = 'Voir [NOM_1] et M. Jean Dupont.';
     final r = await Ecluse.redact(texte);
     expect(r.maskedText, contains('[NOM_1]')); // le littéral reste tel quel
-    expect(r.mapping.keys, isNot(contains('[NOM_1]')));
+    expect(r.mapping.jetons, isNot(contains('[NOM_1]')));
     await aller(texte);
   });
 
@@ -31,12 +31,12 @@ void main() {
       () async {
     const texte = '[NOM_1] [NOM_2] M. Jean Dupont et Mme Alice Martin';
     final r = await Ecluse.redact(texte);
-    expect(r.mapping.keys.toSet(), {'[NOM_3]', '[NOM_4]'});
+    expect(r.mapping.jetons.toSet(), {'[NOM_3]', '[NOM_4]'});
     await aller(texte);
   });
 
   test('sans jeton littéral, la numérotation ne change pas', () async {
     final r = await Ecluse.redact('M. Jean Dupont et Mme Alice Martin');
-    expect(r.mapping.keys.toSet(), {'[NOM_1]', '[NOM_2]'});
+    expect(r.mapping.jetons.toSet(), {'[NOM_1]', '[NOM_2]'});
   });
 }

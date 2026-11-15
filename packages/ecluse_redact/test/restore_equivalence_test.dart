@@ -67,8 +67,8 @@ void main() {
         for (var i = 0; i < 1 + r.nextInt(20); i++)
           _formes[r.nextInt(_formes.length)]
       ].join(r.nextBool() ? ' ' : '');
-      expect(
-          Ecluse.restore(texte, valeursSures), _reference(texte, valeursSures),
+      expect(Ecluse.restore(texte, TableDeCorrespondance.depuis(valeursSures)),
+          _reference(texte, valeursSures),
           reason: 'graine $seed : $texte');
     }
   });
@@ -86,7 +86,8 @@ void main() {
         for (var i = 0; i < 1 + r.nextInt(12); i++)
           _formes[r.nextInt(_formes.length)]
       ].join(' ');
-      expect(Ecluse.restore(texte, pieges), _reference(texte, pieges),
+      expect(Ecluse.restore(texte, TableDeCorrespondance.depuis(pieges)),
+          _reference(texte, pieges),
           reason: 'graine $seed : $texte');
     }
   });
@@ -113,7 +114,7 @@ void main() {
     final sorties = <int, String>{};
     await expectCroissanceLineaire((n) {
       final (t, x) = entrees[n]!;
-      sorties[n] = Ecluse.restore(x, t);
+      sorties[n] = Ecluse.restore(x, TableDeCorrespondance.depuis(t));
     }, n: 2500, seuil: 10);
     final attendu = [for (var i = 1; i <= 10000; i++) 'Nom$i'].join(' ');
     expect(sorties[10000], attendu);

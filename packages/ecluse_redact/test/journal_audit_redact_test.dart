@@ -44,7 +44,7 @@ void main() {
     final journal = JournalAudit(sink: InMemoryAuditSink(), horloge: _horloge);
     final avec = await Ecluse.redact(_texte, journal: journal);
     expect(avec.maskedText, sans.maskedText);
-    expect(avec.mapping, sans.mapping);
+    expect(avec.mapping.entrees.toList(), sans.mapping.entrees.toList());
     expect(avec.warnings, sans.warnings);
   });
 
@@ -109,7 +109,7 @@ void main() {
     final apres = await Ecluse.redact(_texte, dossier: dossier);
     final attendu = await Ecluse.redact(_texte, dossier: temoin);
     expect(apres.maskedText, attendu.maskedText);
-    expect(apres.mapping, attendu.mapping);
+    expect(apres.mapping.entrees.toList(), attendu.mapping.entrees.toList());
   });
 
   test('un nom de détecteur hors forme devient « autre »', () {

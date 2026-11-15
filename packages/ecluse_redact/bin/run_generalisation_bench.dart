@@ -104,7 +104,10 @@ Future<void> main(List<String> args) async {
         cur.risque!.evaluation.statut.name;
     bandesFin[bf] = (bandesFin[bf] ?? 0) + 1;
 
-    if (cur.mapping.toString() != base.mapping.toString() ||
+    // Comparaison du contenu des tables, couple par couple : depuis P2-193,
+    // `toString()` d'une table ne dit plus que son nombre de jetons, il ne
+    // suffit donc plus à les comparer.
+    if (!_memeTable(cur.mapping, base.mapping) ||
         cur.entities.length != base.entities.length) {
       tokensChanges++;
     }
@@ -112,8 +115,8 @@ Future<void> main(List<String> args) async {
     final restaureBase = Ecluse.restore(base.maskedText, base.mapping);
     // Les entités masquées doivent revenir à l'identique : on compare ce que
     // la restauration rend en dehors des zones généralisées via la table.
-    final valeursOk = base.mapping.entries.every(
-        (e) => restaure.contains(e.value) == restaureBase.contains(e.value));
+    final valeursOk = base.mapping.entrees
+        .every((e) => restaure.contains(e.$2) == restaureBase.contains(e.$2));
     if (!valeursOk) restaurationFausse++;
   }
 
@@ -149,3 +152,14 @@ Future<void> main(List<String> args) async {
 
 String _fmt(Map<String, int> m) =>
     (m.keys.toList()..sort()).map((k) => '$k=${m[k]}').join(', ');
+
+/// Vrai si les deux tables portent les mêmes couples (jeton, valeur), dans le
+/// même ordre. Les valeurs ne sont ni imprimées ni conservées.
+bool _memeTable(TableDeCorrespondance a, TableDeCorrespondance b) {
+  final x = a.entrees.toList(), y = b.entrees.toList();
+  if (x.length != y.length) return false;
+  for (var i = 0; i < x.length; i++) {
+    if (x[i].$1 != y[i].$1 || x[i].$2 != y[i].$2) return false;
+  }
+  return true;
+}

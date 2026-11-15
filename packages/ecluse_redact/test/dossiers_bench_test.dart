@@ -18,7 +18,8 @@ void main() {
       expect(mentions[i]['end'], e.end);
       expect(r.maskedText, contains(mentions[i]['jeton'] as String));
       // Le jeton de la mention restaure la valeur de l'entité.
-      expect(r.mapping[mentions[i]['jeton']], isNotNull, reason: texte);
+      expect(r.mapping[mentions[i]['jeton'] as String], isNotNull,
+          reason: texte);
     }
   }
 

@@ -47,6 +47,6 @@ void main() {
     const t = 'Ｒéunion ｄｕ ｓｅｒｖｉｃｅ ｒｅｐｏｒｔéｅ.';
     final r = await Ecluse.redact(t);
     expect(r.maskedText, t);
-    expect(r.mapping, isEmpty);
+    expect(r.mapping.isEmpty, isTrue);
   });
 }

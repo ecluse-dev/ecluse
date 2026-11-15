@@ -67,7 +67,7 @@ void main() {
     final r = await Ecluse.redact(_texte, riskReference: ref);
     final g = appliquerGeneralisations(r, const [], reference: ref);
     expect(g.maskedText, r.maskedText);
-    expect(g.mapping, r.mapping);
+    expect(g.mapping.entrees.toList(), r.mapping.entrees.toList());
   });
 
   test('la suggestion retenue remplace chaque occurrence du QI', () async {
@@ -84,8 +84,8 @@ void main() {
     final r = await Ecluse.redact(_texte, riskReference: ref);
     final retenue = r.risque!.suggestions.first;
     final g = appliquerGeneralisations(r, [retenue], reference: ref);
-    expect(g.mapping, r.mapping);
-    for (final jeton in r.mapping.keys) {
+    expect(g.mapping.entrees.toList(), r.mapping.entrees.toList());
+    for (final jeton in r.mapping.jetons) {
       expect(g.maskedText, contains(jeton));
     }
     final restaure = Ecluse.restore(g.maskedText, g.mapping);

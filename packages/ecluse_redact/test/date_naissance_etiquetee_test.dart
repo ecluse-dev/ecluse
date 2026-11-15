@@ -21,7 +21,7 @@ void main() {
     test('masqué : ${texte.replaceAll('\n', '\\n').replaceAll('\r', '\\r')}',
         () async {
       final r = await Ecluse.redact(texte);
-      expect(r.mapping.keys, contains('[DATE_NAISSANCE_1]'),
+      expect(r.mapping.jetons, contains('[DATE_NAISSANCE_1]'),
           reason: r.maskedText);
       expect(r.maskedText, isNot(contains('1950')), reason: r.maskedText);
       expect(Ecluse.restore(r.maskedText, r.mapping), texte);
