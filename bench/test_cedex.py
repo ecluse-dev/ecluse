@@ -159,6 +159,10 @@ class ScoreTest(unittest.TestCase):
             ("Bors (Canton de Tude)", len("Bors"), "ponctuation"),
             ("Annœullin", len("Ann"), "milieu de mot"),
             ("Le Mans", len("Le"), "autre"),
+            ("LA BOISSE", 0, "déterminant initial"),
+            ("La Boisse", 0, "déterminant initial"),
+            ("L'ISLE SUR LE DOUBS", 0, "déterminant initial"),
+            ("LES MAILLYS", 0, "déterminant initial"),
         ]:
             d = doc(commune)
             self.assertEqual(sc.cause(d, couverts(pred_jusqu_a(d, fin))),

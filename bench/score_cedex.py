@@ -57,6 +57,8 @@ def juge(doc, pred):
 # classer les causes ; le scoreur ne juge pas le detecteur avec.
 CONNECTEURS = {"de", "du", "des", "la", "le", "les", "en", "sur", "sous",
                "lès", "lez", "aux"}
+# Determinants qui ouvrent un nom de commune (« La Boisse », « L'Isle… »).
+DETERMINANTS = {"le", "la", "les", "l"}
 # Civilites et titres que le detecteur refuse comme mot de commune (`_titres`).
 TITRES = ("Mme", "Mlle", "Mr", "Madame", "Monsieur", "Mademoiselle", "Dr",
           "Docteur", "Pr", "Professeur", "Me", "Maître", "M")
@@ -84,6 +86,8 @@ def cause(doc, couverts):
 
     - `faux titre` : ce mot commence par « M », « Me », « Pr », « Dr »… suivi
       d'une lettre accentuee (« Le Mémont », « Saint-Martin-sur-le-Pré ») ;
+    - `déterminant initial` : rien du nom n'est masqué et le premier mot est
+      « Le », « La », « Les » ou « L' » (« LA BOISSE » en capitales, P2-185) ;
     - `liaison absente : <mot>` : mot en minuscules hors de la liste des
       connecteurs (« et », « au », « à », « près ») ;
     - `ponctuation` : parenthese ou tiret isole dans le nom ;
@@ -101,6 +105,8 @@ def cause(doc, couverts):
     k = max(i for i, (pos, _) in enumerate(mots) if pos <= clair[0])
     if mots[k][0] != clair[0]:
         return "milieu de mot"
+    if k == 0 and re.split(r"['’]", mots[0][1])[0].lower() in DETERMINANTS:
+        return "déterminant initial"
     pleins_avant = sum(1 for _, m in mots[:k] if m[0].isupper())
     j = k
     while j < len(mots) and mots[j][1] in CONNECTEURS:

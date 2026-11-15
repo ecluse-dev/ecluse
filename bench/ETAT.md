@@ -474,6 +474,22 @@ Elle comble la fuite sans CEDEX mais masque nettement plus de texte
 ordinaire : la fiche P2-181 demande de s'arrêter là et de laisser le choix au
 mainteneur.
 
+## Communes en capitales : nom en partie en clair après CEDEX (P2-183, P2-185)
+
+Même balayage que ci-dessus (34 875 communes × 4 écritures, 139 500
+adresses), le document **tout en capitales** (`variantes_casse.py`, branche
+`capitales` d'`AdresseDetector`). Chemin mesuré : **`Ecluse.redact`** (ce que
+reçoit le LLM). 0 refus. Ajouté à `etat.sh` par P2-185 ; **aucun détecteur
+modifié** (P2-185 s'est arrêtée sur la condition d'arrêt de sa fiche, voir
+`agent/specs/P2-185.md`).
+
+| | Adresses en défaut | Fuite au caractère | dont cause « déterminant initial » |
+|---|---:|---:|---:|
+| état de `main` | 8 885 / 139 500 | 6,5 % (202 070 / 3 117 758) | **8 457** |
+| essai de correction (non livré) | 317 | 0,1 % (4 674) | 4 |
+
+Autres causes à l'état de `main` : longueur 141, autre 63, ponctuation 30.
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par
