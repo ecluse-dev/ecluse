@@ -261,6 +261,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-191 | code | Identifiant annoncé par un libellé fort, lu par OCR : O pour 0, l ou I pour 1, ligne vide au milieu ; suite de P2-188, qui ne couvre que les chiffres | P2-188 | fusionnée |
 | P2-192 | code | Démo et sas Claude Code : utiliser `restoreAvecRapport` et remonter les jetons non restaurés (type et numéro seulement) | P2-190 | fusionnée |
 | P2-193 | code | Table de correspondance : type dédié `TableDeCorrespondance` à la place de `Map<String, String>`, selon les décisions du 15 novembre (`DECISIONS.md`), rupture nette en 0.2.0 | P2-189 | fusionnée |
+| P2-194 | code | Tableau de bord : témoin « libellé fort » (NIR, IBAN, RPPS, ADELI, sécurité sociale derrière leur libellé, clé fausse et variantes OCR de P2-191), voie aujourd'hui couverte par les tests seulement | P2-191 | à faire |
+| P2-195 | code | Texte tout en capitales : borner la « commune » qui suit un code postal et un déterminant, pour réduire le masquage en trop de P2-187 sans perdre de commune | P2-187 | à faire |
+| P2-196 | mesure | Balayage des communes en capitales : décrire les 95 adresses encore en partie en clair (causes « autre » 59, « ponctuation » 30, longueur) | P2-187 | à faire |
+| P2-197 | code | Sas Claude Code (mod TypeScript) : lire le champ `nonRestaures` de `POST /v1/restore` et l'afficher en une ligne | P2-192 | à faire |
+| P2-198 | spec | Journal d'audit : que faire quand la version du moteur change (0.2.0) entre deux entrées d'un même journal | P2-193 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -894,3 +899,59 @@ ne reprennent que ce qui manque pour la prendre.
   les 5 tests d'égalité sont réécrits sans `==` ; tableau de bord inchangé ;
   aucune valeur dans un `toString`, une exception ou une sortie console ;
   `LIMITES.md` (table non chiffrée, non conservée) à jour.
+
+- **P2-194** : `bench/` (tableau de bord), chemin `Ecluse.redact`. P2-188 et
+  P2-191 ne sont mesurés que par des tests : « tableau de bord inchangé » ne
+  prouve rien sur cette voie. Test d'abord : générateur synthétique versionné,
+  seed explicite, avec pour chaque libellé fort (NIR, N° de sécurité sociale,
+  numéro SS, IBAN, RPPS, ADELI) des identifiants à clé fausse, à clé juste
+  lus avec O/o pour 0 et l/I pour 1, et coupés par une ligne vide ; plus un
+  témoin négatif (« IBAN : voir pièce jointe », « NIR : non communiqué », mot
+  ordinaire après le libellé, mêmes nombres sans libellé). **Fini quand** :
+  une section d'`etat.sh` donne, par libellé et par variante, le nombre
+  d'identifiants en clair et le nombre de masquages nouveaux sur le témoin
+  négatif ; chiffres de départ écrits dans `bench/ETAT.md` ; `etat_attendu.py`
+  échoue si un identifiant positif repasse en clair ; aucune correction de
+  détecteur dans cette tâche.
+- **P2-195** : `AdresseDetector`, branche « tout en capitales ». Constat de
+  #403 : en capitales, après « 12345 LE SERVICE », la « commune » avale tous
+  les mots qui suivent ; témoin P2-187 en capitales : 107 phrases sur 200
+  masquées en trop. Règle commune de `DECISIONS.md` : dans le doute, le côté
+  qui protège ; on ne retire un masquage que s'il ne coûte aucune commune.
+  Test d'abord : cas de phrase longue en capitales où la commune s'arrête
+  (fin de ligne, ponctuation, mot neutre, nombre). **Fini quand** : sur le
+  balayage des communes en capitales, adresses en partie en clair ≤ 95 et
+  cause « déterminant initial » ≤ 10 (aucune régression) ; témoin P2-187 en
+  capitales sous 107 / 200, chiffré avant/après ; longueur moyenne du span
+  masqué en trop chiffrée avant/après ; `LIMITES.md` à jour ; reste du
+  tableau de bord inchangé.
+- **P2-196** : mesure seulement, aucune correction. Sur `main`, balayage des
+  communes en capitales (`etat.sh`) : 95 adresses sur 139 500 encore en
+  partie en clair (cause « autre » 59, « ponctuation » 30, « déterminant
+  initial » 4). **Fini quand** : rapport `agent/specs/P2-196.md` qui classe
+  les 95 par forme de commune (ponctuation interne, apostrophe, longueur,
+  mot neutre au milieu, etc.), avec 3 exemples synthétiques par classe (pas
+  de nom de commune réel au-delà du référentiel déjà versionné), le nombre
+  par classe, et pour chaque classe une piste de correction et son risque de
+  faux positif ; rien ne change dans `lib/`.
+- **P2-197** : `integrations/claude-code/ecluse-sas` (TypeScript). #405 a
+  ajouté `nonRestaures` (`{type, numero}`) à la réponse de `POST /v1/restore`
+  sans toucher au mod. Test d'abord : dans `tests/ecluse-sas.test.ts`, le
+  faux moteur (`faux-moteur.mjs`) rend deux jetons non restaurés ; le mod
+  doit le signaler. **Fini quand** : le mod affiche une ligne « N jeton(s)
+  non restauré(s) » (nombre seulement, ni type, ni numéro, ni texte) quand
+  la liste n'est pas vide, rien sinon ; un moteur ancien sans le champ
+  fonctionne comme avant ; tests du mod verts là où ils s'exécutent ; la PR
+  dit précisément ce que le mainteneur doit lancer sur son poste
+  (`claude plugin test .`) puisque l'agent ne peut pas l'exécuter. Aucune
+  dépendance npm ajoutée.
+- **P2-198** : spec seulement (`agent/specs/P2-198.md`). Depuis #406,
+  `Ecluse.versionMoteur` vaut « ecluse_redact 0.2.0 » ; un journal d'audit
+  peut contenir des entrées des deux versions. Questions à trancher, chacune
+  avec options, avantages, risques et une recommandation : la chaîne de
+  version fait-elle partie de l'empreinte chaînée ; un journal mixte est-il
+  valide, signalé ou refusé ; que dit l'export AIPD d'un changement de
+  version en cours de période ; faut-il une entrée « changement de moteur ».
+  **Fini quand** : la spec répond aux quatre questions en citant le code
+  actuel d'`ecluse_audit` (fichiers et lignes), sans changer de code ; les
+  décisions restent au mainteneur.
