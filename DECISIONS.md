@@ -632,10 +632,19 @@ du 13 novembre : dans le doute, le côté qui protège.
   `claude/P2-184-table-communes-cinq-chiffres` est gardée ; `CommunesConnues`
   y est réutilisable pour la piste B de `agent/specs/P2-182.md`.
 
-## 2026-11 — P2-188 : précision proposée de « clé validée ou rien » (15 novembre)
+## 2026-11 — P2-188 : précision de « clé validée ou rien » (15 novembre)
 
-Proposition d'un agent, **à confirmer par le mainteneur** (comme l'exception
-ADELI de 2026-10, non encore confirmée explicitement elle non plus).
+**Confirmée** par décision déléguée du mainteneur (15 novembre). L'exception
+ADELI était déjà confirmée (section « ADELI » plus haut : « confirmée
+uniquement quand le mot « ADELI » est accolé au numéro ») ; la remarque de
+l'agent qui la disait en attente était inexacte. Règle unique désormais :
+**sans contexte, clé validée ou rien ; derrière un libellé fort explicite
+(« ADELI », « NIR », « sécurité sociale », « numéro SS », « IBAN », « RPPS »),
+masquage à confiance basse avec un avertissement « à vérifier »**, jamais par
+les détecteurs stricts d'`ecluse_core`. Toute nouvelle exception suit ce
+même patron, sans nouvelle décision. Les erreurs de lecture OCR derrière un
+libellé (O pour 0, l ou I pour 1, ligne vide) relèvent de cette règle :
+tâche P2-191.
 
 Un NIR, un IBAN FR ou un RPPS dont la clé de contrôle est fausse, mais qui
 est précédé d'un libellé fort (« NIR », « N° de sécurité sociale », « numéro
@@ -653,3 +662,29 @@ jamais acceptée », pour ne jamais masquer « Chambre 12 clé 38 » comme un
 NIR). Les deux règles coexistent en opérant sur des vues différentes du
 texte (voir `LIMITES.md` § 2 et le commentaire de `Ecluse.defaultDetectors`
 dans `ecluse_redact/lib/src/ecluse.dart`).
+
+## 2026-11 — P2-189 : type dédié pour la table de correspondance (15 novembre)
+
+Décision déléguée par le mainteneur (« je te laisse choisir »), sur les cinq
+questions de `agent/specs/P2-189.md` § 5. Recommandations de la spec suivies,
+sauf la question 4.
+1. **Type** : `TableDeCorrespondance`, avec les opérations proposées
+   (`length`, `jetons`, `operator []`, `contient`, `entrees`, `vider()`,
+   `toString()` sans valeur). Aucune sérialisation implicite.
+2. **Égalité** : option A. Le type reste opaque, sans `==` ; les 5 tests qui
+   comparent des tables sont réécrits.
+3. **Transition** : rupture nette en une PR. Les paquets sont en 0.x
+   (0.1.0) : un changement d'API publique est admis en version mineure
+   (0.2.0), sans dépréciation, ce qui évite le conflit `@Deprecated` /
+   `--fatal-infos`. README, démo, sas Claude Code et bancs migrés dans la
+   même PR.
+4. **Entrée de `Ecluse.restore`** : le nouveau type est exigé partout, y
+   compris en entrée. Un appelant qui construit sa table à la main passe par
+   un constructeur explicite (`TableDeCorrespondance.depuis(Map)`), pour que
+   le passage d'une table en clair reste un geste visible dans le code.
+5. **Chiffrement** : hors périmètre tant qu'Écluse ne conserve rien sur
+   disque. À rouvrir dès qu'une persistance de la table est demandée
+   (HelpCadre, restauration différée). Le récapitulatif du projet doit dire
+   « ne quitte jamais l'appareil, n'est pas conservée », pas « chiffrée ».
+
+Implémentation : tâche P2-193.
