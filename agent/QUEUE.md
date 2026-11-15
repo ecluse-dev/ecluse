@@ -261,7 +261,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-191 | code | Identifiant annoncé par un libellé fort, lu par OCR : O pour 0, l ou I pour 1, ligne vide au milieu ; suite de P2-188, qui ne couvre que les chiffres | P2-188 | fusionnée |
 | P2-192 | code | Démo et sas Claude Code : utiliser `restoreAvecRapport` et remonter les jetons non restaurés (type et numéro seulement) | P2-190 | fusionnée |
 | P2-193 | code | Table de correspondance : type dédié `TableDeCorrespondance` à la place de `Map<String, String>`, selon les décisions du 15 novembre (`DECISIONS.md`), rupture nette en 0.2.0 | P2-189 | fusionnée |
-| P2-194 | code | Tableau de bord : témoin « libellé fort » (NIR, IBAN, RPPS, ADELI, sécurité sociale derrière leur libellé, clé fausse et variantes OCR de P2-191), voie aujourd'hui couverte par les tests seulement | P2-191 | à faire |
+| P2-194 | code | Tableau de bord : témoin « libellé fort » (NIR, IBAN, RPPS, ADELI, sécurité sociale derrière leur libellé, clé fausse et variantes OCR de P2-191), voie aujourd'hui couverte par les tests seulement | P2-191 | fusionnée |
 | P2-195 | code | Texte tout en capitales : borner la « commune » qui suit un code postal et un déterminant, pour réduire le masquage en trop de P2-187 sans perdre de commune | P2-187 | à faire |
 | P2-196 | mesure | Balayage des communes en capitales : décrire les 95 adresses encore en partie en clair (causes « autre » 59, « ponctuation » 30, longueur) | P2-187 | à faire |
 | P2-197 | code | Sas Claude Code (mod TypeScript) : lire le champ `nonRestaures` de `POST /v1/restore` et l'afficher en une ligne | P2-192 | à faire |

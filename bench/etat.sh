@@ -256,6 +256,19 @@ if produit "identifiant suivi, Ecluse.redact" "$B/flou/pred_identifiant_suivi.js
   montre "identifiant suivi, score" -E "^identifiant suivi|type_id=|separateur=|^  défaut" 0 non dans_B python3 score_identifiant_suivi.py --corpus flou/corpus_identifiant_suivi.jsonl --pred flou/pred_identifiant_suivi.jsonl || true
 fi
 
+# Identifiant derrière un libellé fort (P2-194) : la voie de P2-188 (clé
+# fausse) et de P2-191 (O pour 0, l ou I pour 1, ligne vide), que seuls des
+# tests unitaires mesuraient. 6 libellés x 6 variantes x 50 positifs, plus des
+# témoins négatifs (libellé sans identifiant, nombre sans libellé). Chemin
+# mesuré : Ecluse.redact. Un positif en clair est une fuite ; le plafond par
+# case (zéro, sauf défaut connu) est vérifié par `verifie_etat.py`.
+echo "## identifiant derrière un libellé fort (P2-194) : Ecluse.redact (chemin du produit)"
+if produit "libellé fort, générateur" "$B/flou/corpus_libelle_fort.jsonl" dans_B python3 generate_corpus_libelle_fort.py --n 50 --seed 42 --out flou/corpus_libelle_fort.jsonl; then
+  if produit "libellé fort, Ecluse.redact" "$B/flou/pred_libelle_fort.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_libelle_fort.jsonl ../../bench/flou/pred_libelle_fort.jsonl; then
+    montre "libellé fort, score" -E "^libellé fort|^  (variante|libellé)=|^  .+ x [a-z_]+ :|^  témoin négatif" 0 non dans_B python3 score_libelle_fort.py --corpus flou/corpus_libelle_fort.jsonl --pred flou/pred_libelle_fort.jsonl || true
+  fi
+fi
+
 echo "## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90"
 # Un refus explicite (tableau ambigu) n'envoie rien : il est compté à part et
 # retiré du corpus noté ; la fuite se lit sur les documents traités.

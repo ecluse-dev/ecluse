@@ -36,7 +36,7 @@ Toute adresse non locale est refusée et bloque tout.
 | Route | Corps | Réponse |
 |---|---|---|
 | `POST /v1/redact` | `{ "session", "text" }` | `{ "text", "entities" }` |
-| `POST /v1/restore` | `{ "session", "text" }` | `{ "text", "nonRestaures": [{ "type", "numero" }] }` (le champ `nonRestaures` est ajouté par P2-192 ; le mod actuel l'ignore) |
+| `POST /v1/restore` | `{ "session", "text" }` | `{ "text", "nonRestaures": [{ "type", "numero" }] }` (champ `nonRestaures` ajouté par P2-192 ; le mod en lit le nombre depuis P2-197, un moteur ancien sans le champ vaut zéro) |
 
 La table de correspondance reste dans le moteur, en mémoire, par session,
 avec des jetons stables sur toute la conversation. Le mod ne la voit jamais.
@@ -59,8 +59,9 @@ avec des jetons stables sur toute la conversation. Le mod ne la voit jamais.
 | Image ou pièce jointe dans le prompt | prompt bloqué |
 | Adresse du moteur non locale | tout bloqué |
 | Restauration impossible à l'affichage | la réponse s'affiche avec ses jetons |
+| Le moteur signale des jetons non restaurés (jeton inventé, sans valeur dans la session) | une ligne dans le fil : « Écluse : N jeton(s) non restauré(s) », **le nombre seulement** (ni type, ni numéro, ni texte) ; rien si la liste est vide ou absente |
 
-`claude plugin test .` : 14 tests, 14 réussis.
+`claude plugin test .` : 14 tests, 14 réussis avant P2-197 ; 4 tests ajoutés par P2-197 (jetons non restaurés), non exécutés dans la session qui les a écrits : à relancer sur le poste du mainteneur.
 
 ## Ce que le prototype NE couvre PAS
 

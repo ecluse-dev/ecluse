@@ -31,7 +31,17 @@ async function redact($, endpoint: string, session: string, text: string) {
   return out as { text: string; entities: number }
 }
 
-async function restore($, endpoint: string, session: string, text: string) {
+// Nombre de jetons que le moteur n'a pas pu restaurer (P2-197). Champ
+// `nonRestaures` de `POST /v1/restore`, ajouté côté moteur par P2-192 :
+// `[{ type, numero }]`. On n'en garde que le NOMBRE : ni le type ni le numéro
+// ni le texte n'atteignent l'écran ou les journaux du mod. Un moteur ancien
+// sans le champ, ou un champ qui n'est pas une liste, vaut zéro : l'affichage
+// se fait comme avant.
+function countNotRestored(out: { nonRestaures?: unknown }): number {
+  return Array.isArray(out.nonRestaures) ? out.nonRestaures.length : 0
+}
+
+async function restoreWithReport($, endpoint: string, session: string, text: string) {
   const res = await $.http.fetch(endpoint + '/v1/restore', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -40,7 +50,11 @@ async function restore($, endpoint: string, session: string, text: string) {
   if (!res.ok) throw new Error('moteur Écluse : HTTP ' + res.status)
   const out = JSON.parse(res.text)
   if (typeof out.text !== 'string') throw new Error('moteur Écluse : réponse illisible')
-  return out.text as string
+  return { text: out.text as string, notRestored: countNotRestored(out) }
+}
+
+async function restore($, endpoint: string, session: string, text: string) {
+  return (await restoreWithReport($, endpoint, session, text)).text
 }
 
 // Outils qui travaillent sur les fichiers locaux : leurs entrées sont
@@ -159,8 +173,19 @@ export const register: Register = (on, options) => {
     let clear = restored.get(text)
     if (clear === undefined) {
       const session = await $.session.id()
-      clear = await restore($, endpoint, session, text)
+      const out = await restoreWithReport($, endpoint, session, text)
+      clear = out.text
       restored.set(text, clear)
+      // Une ligne, une seule fois par réponse (le cache évite de la répéter à
+      // chaque redessin) : le nombre de jetons restés tels quels, rien d'autre.
+      if (out.notRestored > 0) {
+        try {
+          $.ui.log('Écluse : ' + out.notRestored + ' jeton(s) non restauré(s)')
+        } catch {
+          // L'avertissement est un confort : son échec ne doit pas faire
+          // sauter la restauration déjà calculée.
+        }
+      }
     }
     return next({ ...e, props: { ...e.props, text: clear } })
   })
