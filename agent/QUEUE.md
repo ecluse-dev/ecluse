@@ -254,10 +254,12 @@ tâches copiées ici sont prises par l'agent.
 | P2-184 | code | Nombre à cinq chiffres hors adresse : vérification en table des communes, en option explicite de `Ecluse.redact` (piste A et C de P2-182) | P2-182 | abandonnée (DECISIONS.md, 15 novembre) |
 | P2-185 | code | Texte tout en capitales : commune composée qui commence par « LA », « LE », « LES », « L' » (« 01097 LA BOISSE ») écartée à tort comme mot neutre (tâche A de P2-183) ; balayage en capitales au tableau de bord | P2-183 | bloquée (#394 : mesure livrée ; suite P2-187) |
 | P2-186 | code | Restauration fausse : dans un tableau relu sans séparateurs, le nom avale la fonction en capitales qui suit (« LEFÈVRE Olivier AS ») et deux homonymes reçoivent le même jeton ; `Ecluse.restore` réécrit l'autre ligne | — | fusionnée |
-| P2-187 | code | Texte tout en capitales : livrer la correction d'essai de P2-185 (commune composée en « LA », « LE », « LES », « L' » masquée en entier), avec d'abord un témoin « cinq chiffres + LE/LA/LES » en capitales et en casse ordinaire | P2-185 | à faire |
+| P2-187 | code | Texte tout en capitales : livrer la correction d'essai de P2-185 (commune composée en « LA », « LE », « LES », « L' » masquée en entier), avec d'abord un témoin « cinq chiffres + LE/LA/LES » en capitales et en casse ordinaire | — | à faire |
 | P2-188 | code | Identifiant à clé fausse annoncé par son libellé (« NIR », « sécurité sociale », « IBAN », « RPPS ») : aujourd'hui en clair ; le masquer quand même et avertir (témoin d'abord) | — | fusionnée |
 | P2-189 | spec | Table de correspondance : un type dédié qui ne s'affiche jamais en clair et se vide sur demande, à la place de `Map<String, String>` (changement d'API à décider) | — | fusionnée |
 | P2-190 | code | Restauration : signaler les jetons non restaurés (jeton sans crochets, inventé, traduit) et corriger la barre oblique laissée par `\[NOM_1]` | — | fusionnée |
+| P2-191 | code | Identifiant annoncé par un libellé fort, lu par OCR : O pour 0, l ou I pour 1, ligne vide au milieu ; suite de P2-188, qui ne couvre que les chiffres | P2-188 | à faire |
+| P2-192 | code | Démo et sas Claude Code : utiliser `restoreAvecRapport` et remonter les jetons non restaurés (type et numéro seulement) | P2-190 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -850,3 +852,31 @@ ne reprennent que ce qui manque pour la prendre.
   matche pas `[NOM_10]`). **Fini quand** : les quatre cas testés ; aucun
   autre test ni chiffre du tableau de bord modifié ; README d'`ecluse_redact`
   à jour.
+- **P2-187** (précision du 15 novembre) : la dépendance à P2-185 est levée.
+  P2-185 est « bloquée » volontairement (sa mesure est fusionnée, #394) ;
+  la session du 15 novembre a sauté P2-187 parce que sa dépendance n'était
+  pas « fusionnée ». La fiche ci-dessus reste valable telle quelle.
+- **P2-191** : `ecluse_redact`, `IdentifiantCleInvalideDetector`. Constat du
+  15 novembre au rejeu de la mesure photo, sur `main` après P2-188 : les deux
+  IBAN des pages EP-001 et EP-008 restent en clair alors qu'ils suivent le
+  libellé « IBAN » ; le candidat n'accepte que des chiffres (`FRO2…` lu avec
+  la lettre O) et un séparateur simple (ligne vide insérée par l'OCR entre
+  deux groupes). La fiche de P2-188 demandait aussi O pour 0 et l ou I pour 1 :
+  non couverts. Test d'abord : témoin versionné, synthétique, pour NIR, IBAN
+  et RPPS derrière un libellé fort, avec O/o pour 0, l/I pour 1 dans le
+  corps ou la clé, et une ligne vide (`\n\n`) entre deux groupes ; témoin
+  négatif inchangé (« IBAN : voir pièce jointe », « NIR : non communiqué »,
+  un mot ordinaire après le libellé). Ces confusions ne sont acceptées
+  **que** derrière un libellé fort, jamais par les détecteurs stricts.
+  **Fini quand** : témoin positif 100 % masqué avec l'avertissement « à
+  vérifier » ; témoin négatif sans masquage nouveau ; tableau de bord
+  inchangé ailleurs ; `LIMITES.md` § 2 à jour.
+- **P2-192** : `ecluse_demo` (serveur du sas) et
+  `integrations/claude-code/ecluse-sas`. P2-190 a livré
+  `Ecluse.restoreAvecRapport` sans le brancher. Test d'abord : une réponse
+  de LLM simulée contenant un jeton inventé (`[NOM_3]`) et un jeton sans
+  crochets (`NOM_1`). **Fini quand** : la réponse du sas inclut la liste des
+  jetons non restaurés (type et numéro, jamais de valeur) dans un champ
+  nouveau, sans changer les champs existants pour les clients actuels ; la
+  page de démo l'affiche en une ligne (« 2 jetons non restaurés ») ; aucune
+  valeur dans les logs ; README de la démo à jour.
