@@ -225,6 +225,19 @@ if produit "commune suivie, générateur" "$B/flou/corpus_flou_commune_suivie.js
     montre "commune suivie, score" -E "^commune suivie :|^  (famille|ecriture)=" 0 non dans_B python3 score_commune_suivie.py --corpus flou/corpus_flou_commune_suivie.jsonl --pred flou/pred_commune_suivie.jsonl || true
   fi
 fi
+# Même balayage, document tout en capitales (P2-183, P2-185) : texte « sans
+# aucune minuscule », branche `capitales` d'`AdresseDetector`. Chiffre de départ
+# de P2-185 ; la cause « déterminant initial » (« 01097 LA BOISSE ») doit y
+# baisser. Le texte sans majuscule (autre branche) n'est pas rejoué ici.
+echo "## communes en capitales : nom en partie en clair après CEDEX (P2-183, P2-185) : Ecluse.redact (chemin du produit)"
+if [ -s "$B/flou/corpus_cedex_balayage.jsonl" ] \
+   && produit "communes balayage capitales, variantes" "$B/flou/corpus_cedex_balayage_majuscules.jsonl" python3 "$B/variantes_casse.py" "$B/flou/corpus_cedex_balayage.jsonl"; then
+  if produit "communes balayage capitales, Ecluse.redact" "$B/flou/pred_cedex_balayage_majuscules.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_cedex_balayage_majuscules.jsonl ../../bench/flou/pred_cedex_balayage_majuscules.jsonl; then
+    montre "communes balayage capitales, score" -E "^cedex commune longue :|^  cedex=|^  cause=" 0 non dans_B python3 score_cedex.py --corpus flou/corpus_cedex_balayage_majuscules.jsonl --pred flou/pred_cedex_balayage_majuscules.jsonl || true
+  fi
+else
+  echec "communes balayage capitales : corpus ordinaire absent ou variantes non produites"
+fi
 
 # Identifiant suivi d'une date, d'un âge ou d'un nombre (P2-174) : 4 types x
 # 4 familles x 3 séparateurs x 100 documents. Un identifiant non couvert est

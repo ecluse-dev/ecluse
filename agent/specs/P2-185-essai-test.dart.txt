@@ -1,0 +1,45 @@
+import 'package:ecluse_redact/ecluse_redact.dart';
+import 'package:test/test.dart';
+
+/// Texte tout en capitales : une commune dont le premier mot est un
+/// déterminant (« 01097 LA BOISSE », « 93310 LE PRÉ SAINT GERVAIS ») était
+/// écartée en entier par le filtre des mots neutres (P2-122) : ni la commune,
+/// ni le code postal, ni le CEDEX n'étaient masqués (P2-183 : 2 222 communes,
+/// 6,4 % du référentiel). Un déterminant **seul** (« 70000 LA ») ou suivi d'un
+/// mot neutre reste refusé. Noms de communes publics, numéros fabriqués.
+void main() {
+  const adresses = {
+    '01097 LA BOISSE CEDEX 1': '[ADRESSE_1]',
+    '93310 LE PRÉ SAINT GERVAIS CEDEX 2': '[ADRESSE_1]',
+    '39100 LES MAILLYS': '[ADRESSE_1]',
+    "25250 L'ISLE-SUR-LE-DOUBS": '[ADRESSE_1]',
+    "25250 L'ISLE SUR LE DOUBS CEDEX 4": '[ADRESSE_1]',
+  };
+  for (final MapEntry(key: adresse, value: masque) in adresses.entries) {
+    test('masquée : $adresse', () async {
+      final texte = 'COURRIER À ADRESSER À :\n$adresse\nMERCI DE VOTRE RETOUR.';
+      final r = await Ecluse.redact(texte);
+      expect(r.maskedText,
+          'COURRIER À ADRESSER À :\n$masque\nMERCI DE VOTRE RETOUR.',
+          reason: r.maskedText);
+      expect(Ecluse.restore(r.maskedText, r.mapping), texte);
+    });
+  }
+
+  // Contre-exemples : une phrase en capitales qui commence par un déterminant
+  // après un nombre à cinq chiffres n'est pas une adresse.
+  const intacts = [
+    "LE DEVIS S'ÉLÈVE À 70000 EUROS HORS TAXES.",
+    'COMMANDE DE 70000 LA',
+    'LISTE DE 70000 LES 3 PREMIERS ARTICLES.',
+    'VOIR 12345 LE SERVICE DES ADMISSIONS.',
+    'TOTAL 54321 LES DOSSIERS DU MOIS.',
+    'REÇU 70000 LA SUITE EST ATTENDUE.',
+  ];
+  for (final texte in intacts) {
+    test('inchangé : $texte', () async {
+      final r = await Ecluse.redact(texte);
+      expect(r.maskedText, texte, reason: r.maskedText);
+    });
+  }
+}

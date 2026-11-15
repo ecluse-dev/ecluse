@@ -1,0 +1,48 @@
+diff --git a/packages/ecluse_redact/lib/src/heuristics/adresse_detector.dart b/packages/ecluse_redact/lib/src/heuristics/adresse_detector.dart
+index fe86003..dcfe09e 100644
+--- a/packages/ecluse_redact/lib/src/heuristics/adresse_detector.dart
++++ b/packages/ecluse_redact/lib/src/heuristics/adresse_detector.dart
+@@ -259,7 +259,42 @@ final class AdresseDetector implements EntityDetector {
+     final commune = match.namedGroup('commune');
+     if (commune == null) return false;
+     final premier = RegExp(r"^[^ \t\u00A0\u202F'’-]+").stringMatch(commune);
+-    return premier != null && motsNeutres.contains(premier.toLowerCase());
++    if (premier == null || !motsNeutres.contains(premier.toLowerCase())) {
++      return false;
++    }
++    return !_determinantDeCommune(match, premier);
++  }
++
++  /// Déterminants qui ouvrent un nom de commune (« La Boisse », « Le Plan »,
++  /// « Les Mées », « L'Isle… ») : 2 222 communes, 6,4 % du référentiel
++  /// (P2-183). En texte tout en capitales ils étaient écartés avec les mots
++  /// neutres, et la commune n'était masquée ni avec son code postal ni avec
++  /// son CEDEX (P2-185).
++  static const Set<String> _determinants = {'le', 'la', 'les', 'l'};
++
++  /// Mots qui, juste après un déterminant, ne confirment pas une commune.
++  static final RegExp _separateursDeMot = RegExp(r"[ \t\u00A0\u202F'’-]+");
++
++  /// Vrai si le premier mot (un déterminant) est suivi, dans le texte déjà
++  /// reconnu comme « code postal + commune », d'**un second mot de commune**
++  /// qui n'est ni un mot neutre ni « CEDEX » : « 01097 LA BOISSE » est une
++  /// adresse, « 70000 LA » seul ou « 70000 LE DEVIS DES… » (second mot
++  /// neutre) ne l'est pas. Le motif n'avale que des mots à initiale
++  /// majuscule : « 70000 LES 3 PREMIERS » s'arrête après « LES ».
++  static bool _determinantDeCommune(RegExpMatch match, String premier) {
++    if (!_determinants.contains(premier.toLowerCase())) return false;
++    final debut = match.start;
++    final commune = match.namedGroup('commune')!;
++    final brut = match.group(0)!;
++    final depuis = brut.indexOf(commune, 5) + premier.length;
++    if (depuis < premier.length || debut < 0) return false;
++    final reste = brut.substring(depuis).split(_separateursDeMot);
++    for (final mot in reste) {
++      if (mot.isEmpty) continue;
++      final bas = mot.toLowerCase();
++      return !motsNeutres.contains(bas) && !RegExp(r'^cedex$').hasMatch(bas);
++    }
++    return false;
+   }
+ 
+   static bool _looksLikeUnit(RegExpMatch match) {
