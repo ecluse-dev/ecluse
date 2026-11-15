@@ -688,3 +688,25 @@ sauf la question 4.
    « ne quitte jamais l'appareil, n'est pas conservée », pas « chiffrée ».
 
 Implémentation : tâche P2-193.
+
+## 2026-11 — Suites de la session du 15 novembre au soir (15 novembre)
+
+Décisions déléguées par le mainteneur (« je te laisse choisir »).
+1. **P2-195 abandonnée** (#409) : le masquage en trop des phrases « cinq
+   chiffres + déterminant + mot » en capitales est le prix assumé de P2-187.
+   La liste de deuxièmes mots de commune n'est pas retenue, parce qu'une
+   commune mal orthographiée ou mal lue repasserait en clair.
+2. **Communes en capitales devant CEDEX** (`agent/specs/P2-196.md`) : on
+   mesure d'abord le balayage sans CEDEX et les faux positifs avec CEDEX
+   (P2-200), puis on lève la règle du mot neutre et on admet parenthèse,
+   tiret isolé et blancs multiples, **seulement devant « CEDEX »** (P2-201).
+   Sans CEDEX, la règle du mot neutre reste.
+3. **Version du moteur dans le journal d'audit** (`agent/specs/P2-198.md`) :
+   les quatre recommandations sont retenues. `engine` reste dans le hash ; un
+   journal mixte est valide et `verify` ne change pas ; aucune nouvelle
+   opération ; l'export liste les moteurs dans l'ordre de première apparition
+   et dit combien de fois le moteur a changé, sans compte par version
+   (P2-202).
+4. **Plafond ADELI de 50** au témoin P2-194 : accepté comme état de départ
+   connu, à ramener à 0 par P2-199.
+

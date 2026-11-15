@@ -262,10 +262,15 @@ tâches copiées ici sont prises par l'agent.
 | P2-192 | code | Démo et sas Claude Code : utiliser `restoreAvecRapport` et remonter les jetons non restaurés (type et numéro seulement) | P2-190 | fusionnée |
 | P2-193 | code | Table de correspondance : type dédié `TableDeCorrespondance` à la place de `Map<String, String>`, selon les décisions du 15 novembre (`DECISIONS.md`), rupture nette en 0.2.0 | P2-189 | fusionnée |
 | P2-194 | code | Tableau de bord : témoin « libellé fort » (NIR, IBAN, RPPS, ADELI, sécurité sociale derrière leur libellé, clé fausse et variantes OCR de P2-191), voie aujourd'hui couverte par les tests seulement | P2-191 | fusionnée |
-| P2-195 | code | Texte tout en capitales : borner la « commune » qui suit un code postal et un déterminant, pour réduire le masquage en trop de P2-187 sans perdre de commune | P2-187 | à faire |
+| P2-195 | code | Texte tout en capitales : borner la « commune » qui suit un code postal et un déterminant, pour réduire le masquage en trop de P2-187 sans perdre de commune | P2-187 | abandonnée (#409 ; décision du 15 novembre, `DECISIONS.md`) |
 | P2-196 | mesure | Balayage des communes en capitales : décrire les 95 adresses encore en partie en clair (causes « autre » 59, « ponctuation » 30, longueur) | P2-187 | fusionnée |
 | P2-197 | code | Sas Claude Code (mod TypeScript) : lire le champ `nonRestaures` de `POST /v1/restore` et l'afficher en une ligne | P2-192 | fusionnée |
 | P2-198 | spec | Journal d'audit : que faire quand la version du moteur change (0.2.0) entre deux entrées d'un même journal | P2-193 | fusionnée |
+| P2-199 | code | ADELI derrière son libellé, lu par OCR (O pour 0, l ou I pour 1) ou coupé par une ligne vide : 200 identifiants sur 300 en clair au témoin P2-194 | P2-194 | à faire |
+| P2-200 | code | Tableau de bord : balayage des communes en capitales **sans** « CEDEX » et témoin de faux positifs « cinq chiffres + mot neutre + CEDEX », avant toute correction devant CEDEX | P2-196 | à faire |
+| P2-201 | code | Communes en capitales devant « CEDEX » : lever la règle du mot neutre, admettre parenthèse, tiret isolé et blancs multiples, numéro de CEDEX après un nom (classes 1 à 5 de `agent/specs/P2-196.md`) | P2-200 | à faire |
+| P2-202 | code | Export AIPD : moteurs dans l'ordre de première apparition, nombre de changements de moteur et mention d'honnêteté (recommandations de `agent/specs/P2-198.md`) | P2-198 | à faire |
+| P2-203 | mesure | Mesurer la confiance des masquages et l'avertissement « à vérifier » au tableau de bord (le banc ne lit pas la confiance aujourd'hui) | P2-194 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -955,3 +960,58 @@ ne reprennent que ce qui manque pour la prendre.
   **Fini quand** : la spec répond aux quatre questions en citant le code
   actuel d'`ecluse_audit` (fichiers et lignes), sans changer de code ; les
   décisions restent au mainteneur.
+- **P2-195** (décision du 15 novembre) : abandonnée. Le critère « témoin sous
+  107 / 200 » n'est pas atteignable par une borne (#409) ; le masquage en trop
+  des phrases « cinq chiffres + déterminant + mot » en capitales est le prix
+  assumé de P2-187. La liste de deuxièmes mots n'est pas retenue : une commune
+  mal lue repasserait en clair.
+- **P2-199** : `IdentifiantCleInvalideDetector` (`ecluse_redact`), chemin
+  `Ecluse.redact`. Constat de #408 : derrière « ADELI », les variantes
+  `ocr_zero`, `ocr_un`, `ligne_vide` et `ocr_et_ligne_vide` laissent 50
+  identifiants en clair chacune (200 / 300) ; NIR, IBAN et RPPS sont à 0. Test
+  d'abord : cas ADELI dans `identifiant_cle_invalide_ocr_test.dart` (rouges
+  sur `main`). Les confusions restent acceptées **seulement** derrière un
+  libellé fort, jamais par les détecteurs stricts. **Fini quand** : les quatre
+  cases ADELI du témoin P2-194 à 0 / 50 ; leur entrée retirée de
+  `PLAFOND_LIBELLE_FORT` (plafond 0 partout) ; témoins négatifs inchangés
+  (8 / 1 200 au plus) ; reste du tableau de bord inchangé ; `LIMITES.md` § 2
+  à jour.
+- **P2-200** : `bench/`, chemin `Ecluse.redact`, aucune correction de
+  détecteur. Le balayage des communes en capitales écrit toujours
+  « CEDEX n » ; le rapport `agent/specs/P2-196.md` note que l'exposition sans
+  CEDEX n'est pas chiffrée et qu'aucun témoin ne mesure les faux positifs
+  avec CEDEX. **Fini quand** : `etat.sh` donne le balayage en capitales sans
+  CEDEX (axe `cedex=sans` du générateur), avec les mêmes causes que la
+  version avec CEDEX ; un témoin versionné, seed explicite, de textes
+  ordinaires « cinq chiffres + mot neutre (+ parenthèse, tiret) + CEDEX n »
+  (« 70000 EUROS CEDEX ») donne son nombre de masquages ; chiffres de départ
+  écrits dans `bench/ETAT.md`.
+- **P2-201** : `AdresseDetector`, branche « tout en capitales ». Décision du
+  15 novembre sur les trois questions de `agent/specs/P2-196.md` : (3) mesurer
+  d'abord, c'est P2-200 ; (1) et (2) oui, mais **seulement quand « CEDEX »
+  suit sur la même ligne**, conformément à la règle « dans le doute, le côté
+  qui protège ». Test d'abord : un cas par classe de la spec (mot neutre en
+  tête, parenthèse, tiret isolé ou blancs multiples, déterminant puis mot
+  neutre, numéro de CEDEX après un nom), rouge sur `main`. **Fini quand** :
+  balayage en capitales avec CEDEX ≤ 4 adresses en partie en clair (95 au
+  départ) ; balayage sans CEDEX inchangé ou meilleur ; témoin de faux
+  positifs de P2-200 chiffré avant/après et le coût écrit dans `LIMITES.md` ;
+  reste du tableau de bord inchangé.
+- **P2-202** : `ecluse_audit` (export seulement). Décision du 15 novembre :
+  les quatre recommandations de `agent/specs/P2-198.md` sont retenues
+  (`engine` reste dans le hash ; journal mixte valide, `verify` inchangé ;
+  pas de nouvelle opération ; signalement par l'export). Test d'abord : un
+  journal à deux versions avec trois changements, et l'ordre `0.10.0` après
+  `0.2.0`. **Fini quand** : `AuditExport.moteurs` est une liste dans l'ordre
+  de première apparition, avec rang et horodatage au jour ; l'export dit « le
+  moteur a changé N fois pendant la période » quand N ≥ 1 ; aucun compte par
+  version (recoupement P2-26) ; la mention d'honnêteté ajoutée ; version du
+  format d'export augmentée ; `LIMITES.md` § 8 et `agent/specs/P2-09.md` à
+  jour.
+- **P2-203** : mesure seulement, rien dans `lib/`. P2-188 et P2-191 masquent
+  à confiance 0,3 avec l'avertissement « à vérifier » ; le banc ne lit ni la
+  confiance ni l'avertissement. **Fini quand** : `etat.sh` donne, sur le
+  témoin P2-194, la répartition des confiances des masquages et le nombre de
+  documents avec l'avertissement « à vérifier » (positifs et négatifs) ;
+  aucun texte ni valeur dans la sortie ; chiffres de départ dans
+  `bench/ETAT.md`.
