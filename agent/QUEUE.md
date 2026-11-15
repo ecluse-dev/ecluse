@@ -252,8 +252,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-182 | spec | Table des communes dans la détection d'adresses : gain (« 58699 Alpha » contre « 70000 Vesoul », noms longs), perte (faute d'orthographe, lieu-dit), dépendance `ecluse_reference` → `ecluse_redact` | P2-178 | fusionnée |
 | P2-183 | mesure | Communes du balayage de P2-178 en texte tout en capitales et sans majuscule (autres détecteurs) ; mesurer, ne rien corriger | P2-178 | fusionnée |
 | P2-184 | code | Nombre à cinq chiffres hors adresse : vérification en table des communes, en option explicite de `Ecluse.redact` (piste A et C de P2-182) | P2-182 | abandonnée (DECISIONS.md, 15 novembre) |
-| P2-185 | code | Texte tout en capitales : commune composée qui commence par « LA », « LE », « LES », « L' » (« 01097 LA BOISSE ») écartée à tort comme mot neutre (tâche A de P2-183) ; balayage en capitales au tableau de bord | P2-183 | à faire |
+| P2-185 | code | Texte tout en capitales : commune composée qui commence par « LA », « LE », « LES », « L' » (« 01097 LA BOISSE ») écartée à tort comme mot neutre (tâche A de P2-183) ; balayage en capitales au tableau de bord | P2-183 | bloquée (#394 : mesure livrée ; suite P2-187) |
 | P2-186 | code | Restauration fausse : dans un tableau relu sans séparateurs, le nom avale la fonction en capitales qui suit (« LEFÈVRE Olivier AS ») et deux homonymes reçoivent le même jeton ; `Ecluse.restore` réécrit l'autre ligne | — | à faire |
+| P2-187 | code | Texte tout en capitales : livrer la correction d'essai de P2-185 (commune composée en « LA », « LE », « LES », « L' » masquée en entier), avec d'abord un témoin « cinq chiffres + LE/LA/LES » en capitales et en casse ordinaire | P2-185 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -788,3 +789,18 @@ ne reprennent que ce qui manque pour la prendre.
   tableau de bord (aucun nom perdu) ; `LIMITES.md` à jour. Si la fonction ne
   se sépare pas du nom sans perdre de nom (prénom composé en capitales),
   s'arrêter et rapporter les deux mesures.
+- **P2-187** : `AdresseDetector`, branche « tout en capitales ». Rapport
+  `agent/specs/P2-185.md` et essai `agent/specs/P2-185-essai.patch`. Décision
+  du 15 novembre, règle commune de `DECISIONS.md` (dans le doute, le côté qui
+  protège) : l'essai est livré. Il fait passer la cause « déterminant
+  initial » du balayage en capitales de 8 457 à 4 adresses ; en échange,
+  « 12345 LE SERVICE DES ADMISSIONS. » est masqué comme une adresse, ce que la
+  casse ordinaire fait déjà. Un masquage en trop coûte de la lisibilité, une
+  commune en clair est une fuite. Test d'abord : un témoin versionné « nombre
+  à cinq chiffres + LE/LA/LES + mots ordinaires », en capitales et en casse
+  ordinaire, au tableau de bord, avec son chiffre de départ. Puis l'essai,
+  repris tel quel ou resserré s'il retire des faux positifs sans perdre de
+  commune. **Fini quand** : cause « déterminant initial » ≤ 10 sur le
+  balayage en capitales ; témoin en capitales de P2-122 à 0 ; le nouveau
+  témoin chiffré avant/après et écrit dans `LIMITES.md` (le masquage en trop
+  y est dit) ; reste du tableau de bord inchangé.
