@@ -1,5 +1,7 @@
 import 'package:ecluse_core/ecluse_core.dart';
+import 'package:ecluse_reference/ecluse_reference.dart' show normName;
 
+import 'communes_nom_exact.dart';
 import 'mots_neutres.dart';
 
 /// Détecteur heuristique d'adresses postales simples — **v0 de
@@ -530,6 +532,91 @@ final class AdresseDetector implements EntityDetector {
     return !_estIntroduitParQuantite(text, match.start);
   }
 
+  /// Mot d'un nom de commune pour la règle « nom exact » : une suite de
+  /// lettres ou de chiffres, accents compris.
+  static final RegExp _motDeNom = RegExp(r'[\p{L}\p{N}]+', unicode: true);
+
+  /// Ce qui peut séparer deux mots d'un nom de commune du référentiel, sur la
+  /// même ligne : blancs, tiret, apostrophe, parenthèses (« CHATEAU CHINON
+  /// (VILLE) », « SARROUX - SAINT JULIEN »). Ni virgule, ni point, ni saut de
+  /// ligne : ils ferment le nom.
+  static final RegExp _entreMotsDeNom = RegExp("^[ \\t\\u00A0\\u202F'’()-]+\$");
+
+  /// Portion de ligne relue derrière un code postal : le plus long nom de
+  /// [communesNomExact] a huit mots et moins de 60 caractères.
+  static const int _fenetreNomExact = 120;
+
+  /// Règle « nom exact du référentiel » (P2-214, décision du 16 novembre) :
+  /// fin du **plus long** nom de [communesNomExact] qui commence juste après
+  /// le code postal placé en [codePostal], ou `null`.
+  ///
+  /// Pourquoi : le motif s'arrête au quatrième mot et à la première
+  /// parenthèse ; en capitales sans « CEDEX », 252 adresses du balayage du
+  /// référentiel gardaient la fin de leur nom en clair (« 02213 DHUYS ET MORIN
+  /// EN [BRIE] », « 58120 CHATEAU CHINON [(VILLE)] », P2-206). Allonger le
+  /// motif masquerait le texte ordinaire qui suit une commune ; le nom exact
+  /// ne masque que ce qui **est** une commune connue, écrite en entier. Le
+  /// texte est comparé sans accent ni ponctuation, comme la table.
+  ///
+  /// Le nom doit finir à une limite de mot ; une parenthèse fermante qui le
+  /// suit immédiatement en fait partie. Une écriture hors du référentiel
+  /// (« ST » pour « SAINT », une faute) n'est pas reconnue : `LIMITES.md`.
+  static int? _finNomExact(String text, int codePostal) {
+    final i = codePostal + 5;
+    if (i >= text.length) return null;
+    var limite = text.indexOf('\n', i);
+    if (limite < 0) limite = text.length;
+    if (limite - i > _fenetreNomExact) limite = i + _fenetreNomExact;
+    final ligne = text.substring(i, limite);
+    final cle = StringBuffer();
+    var mots = 0;
+    var precedent = 0;
+    int? fin;
+    for (final mot in _motDeNom.allMatches(ligne)) {
+      final entre = ligne.substring(precedent, mot.start);
+      // Avant le premier mot : des blancs seulement (le motif l'exige déjà).
+      if (entre.isEmpty || !_entreMotsDeNom.hasMatch(entre)) break;
+      if (++mots > communesNomExactMotsMax) break;
+      if (mots > 1) cle.write(' ');
+      cle.write(normName(mot.group(0)!));
+      precedent = mot.end;
+      if (communesNomExact.contains(cle.toString())) {
+        var f = mot.end;
+        if (f < ligne.length && ligne[f] == ')') f++;
+        fin = i + f;
+      }
+    }
+    return fin;
+  }
+
+  /// Fin de l'adresse quand la règle « nom exact » a parlé ([exact]). Cas
+  /// ordinaire : la plus lointaine des deux fins (le nom exact prolonge un
+  /// motif arrêté au quatrième mot ; « CEDEX n » prolonge le nom). Si la
+  /// commune commence par un mot neutre ([neutre], « 70000 LES PLACES
+  /// RESTANTES »), seul le nom exact justifie l'adresse : elle s'arrête à sa
+  /// fin, le reste de la ligne n'est pas masqué.
+  static int _finRetenue(RegExpMatch match, int? exact, bool neutre) {
+    if (exact == null) return match.end;
+    if (neutre) return exact;
+    return exact > match.end ? exact : match.end;
+  }
+
+  /// Position du code postal dans une adresse reconnue par un motif de voie :
+  /// le dernier nombre de cinq chiffres suivi d'un blanc (le nom de commune
+  /// et « CEDEX n » n'en contiennent pas).
+  static final RegExp _codePostalDansVoie = RegExp('(?<!\\d)\\d{5}$_h');
+
+  /// Fin du nom exact pour [match] en texte tout en capitales, sinon `null`.
+  /// [seul] : le motif est « code postal + commune » (le code postal ouvre le
+  /// texte reconnu) ; sinon il est cherché derrière la voie.
+  static int? _nomExact(String text, RegExpMatch match, bool capitales,
+      {required bool seul}) {
+    if (!capitales) return null;
+    if (seul) return _finNomExact(text, match.start);
+    final dans = match.group(0)!.lastIndexOf(_codePostalDansVoie);
+    return dans < 0 ? null : _finNomExact(text, match.start + dans);
+  }
+
   static bool _chevauche(List<_Range> tries, int start, int end) {
     var lo = 0;
     var hi = tries.length;
@@ -600,8 +687,10 @@ final class AdresseDetector implements EntityDetector {
     for (final match in _pattern.allMatches(text)) {
       if (_looksLikeUnit(match)) continue;
       if (!_communeStartsWithUppercase(match)) continue;
-      if (capitales && _communeNeutre(match)) continue;
-      final end = match.end;
+      final exact = _nomExact(text, match, capitales, seul: false);
+      final neutre = capitales && _communeNeutre(match);
+      if (neutre && exact == null) continue;
+      final end = _finRetenue(match, exact, neutre);
       final start = debutReel(match, numerote: true);
       if (start == null) continue;
       results.add(
@@ -621,9 +710,10 @@ final class AdresseDetector implements EntityDetector {
     for (final match in _patternSansNumero.allMatches(text)) {
       if (_looksLikeUnit(match)) continue;
       if (!_communeStartsWithUppercase(match)) continue;
-      if (capitales && _communeNeutre(match)) continue;
-      final end = match.end;
-      if (claimed.any((r) => r.overlaps(match.start, end))) continue;
+      final exact = _nomExact(text, match, capitales, seul: false);
+      final neutre = capitales && _communeNeutre(match);
+      if (neutre && exact == null) continue;
+      final end = _finRetenue(match, exact, neutre);
       final start = debutReel(match, numerote: false);
       if (start == null) continue;
       if (claimed.any((r) => r.overlaps(start, end))) continue;
@@ -660,9 +750,13 @@ final class AdresseDetector implements EntityDetector {
     for (final match in _codePostalCommuneOnly.allMatches(text)) {
       if (_looksLikeUnit(match)) continue;
       if (!_communeStartsWithUppercase(match)) continue;
-      if (capitales && _communeNeutre(match)) continue;
+      // Nom exact du référentiel (P2-214) : il lève la règle du mot neutre
+      // (« 12345 LES PLACES ») et porte la fin de l'adresse à la fin du nom.
+      final exact = _nomExact(text, match, capitales, seul: true);
+      final neutre = capitales && _communeNeutre(match);
+      if (neutre && exact == null) continue;
       final start = match.start;
-      final end = match.end;
+      final end = _finRetenue(match, exact, neutre);
       if (_estIntroduitParQuantite(text, start)) continue;
       // Déjà couvert par une adresse complète (numéro + voie) ci-dessus :
       // ne pas ajouter un doublon pour le seul suffixe "code postal +
@@ -673,7 +767,7 @@ final class AdresseDetector implements EntityDetector {
           type: EntityType.adresse,
           start: start,
           end: end,
-          value: match.group(0)!,
+          value: text.substring(start, end),
           confidence: 0.55,
         ),
       );
