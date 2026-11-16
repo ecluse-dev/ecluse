@@ -390,6 +390,23 @@ libellé fort : 1800 identifiants positifs, 0 en clair, 0 au type faux ; 1200 do
   témoin négatif, libellé=IBAN : 1 / 200 masqués à tort
   témoin négatif, libellé=RPPS : 2 / 200 masqués à tort
   témoin négatif, libellé=ADELI : 1 / 200 masqués à tort
+confiance des masquages (chemin : Ecluse.redact) :
+  confiance positifs : 0.3=1250, 0.55=1, 0.6=50, 0.9=50, 0.95=50, 1=200, aucune=199
+  confiance variante=cle_juste : 0.9=50, 0.95=50, 1=200
+  confiance variante=cle_fausse : 0.3=250, 0.6=50
+  confiance variante=ocr_zero : 0.3=250, aucune=50
+  confiance variante=ocr_un : 0.3=250, 0.55=1, aucune=49
+  confiance variante=ligne_vide : 0.3=250, aucune=50
+  confiance variante=ocr_et_ligne_vide : 0.3=250, aucune=50
+  confiance détections des négatifs : 0.5=1, 0.55=4, 0.9=2, 1=1
+  avertissement à vérifier : positifs 1250 / 1800, négatifs 0 / 1200
+  à vérifier variante=cle_juste : 0 / 300
+  à vérifier variante=cle_fausse : 250 / 300
+  à vérifier variante=ocr_zero : 250 / 300
+  à vérifier variante=ocr_un : 250 / 300
+  à vérifier variante=ligne_vide : 250 / 300
+  à vérifier variante=ocr_et_ligne_vide : 250 / 300
+  incohérence confiance 0.3 / avertissement : positifs 0, négatifs 0
 ## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90
 # realiste largeur 60 : 3 refus
 adresse            156   156 100.0% 100.0% 100.0%  100.0%     0.0%

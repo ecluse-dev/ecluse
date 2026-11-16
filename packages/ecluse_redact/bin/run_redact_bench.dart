@@ -41,14 +41,22 @@ const Map<String, String> typeMap = {
 /// Usage :
 ///   dart run bin/run_redact_bench.dart [--prenoms-insee[=SEUIL]] <corpus.jsonl> <sortie.jsonl>
 ///
+/// `--confiance` (P2-203) : ajoute à chaque entité sa `confidence` et, par
+/// document, `a_verifier` (vrai si un avertissement de `Ecluse.redact` contient
+/// « à vérifier », donc si un masquage à confiance basse a eu lieu). Aucun
+/// texte ni valeur : seulement un nombre et un booléen. Sans l'option, la
+/// sortie est identique à celle d'avant (les scoreurs existants n'en lisent
+/// pas plus).
+///
 /// `--prenoms-insee` (P2-149) : active l'option `prenomsInsee` de
 /// `Ecluse.redact` avec les effectifs de `ecluse_reference`, au seuil par
 /// défaut ou à `SEUIL`.
 Future<void> main(List<String> argv) async {
   final option = argv.where((a) => a.startsWith('--prenoms-insee')).toList();
+  final avecConfiance = argv.contains('--confiance');
   final args = [
     for (final a in argv)
-      if (!a.startsWith('--prenoms-insee')) a
+      if (!a.startsWith('--prenoms-insee') && a != '--confiance') a
   ];
   PrenomsInsee? gazetteer;
   if (option.isNotEmpty) {
@@ -116,10 +124,20 @@ Future<void> main(List<String> argv) async {
       if (mappe == null) typesInconnus.add(brut);
       final type = mappe ?? brut;
       parType[type] = (parType[type] ?? 0) + 1;
-      entities.add({'type': type, 'start': e.start, 'end': e.end});
+      entities.add({
+        'type': type,
+        'start': e.start,
+        'end': e.end,
+        if (avecConfiance) 'confidence': e.confidence,
+      });
     }
 
-    sink.writeln(jsonEncode({'id': doc['id'], 'entities': entities}));
+    sink.writeln(jsonEncode({
+      'id': doc['id'],
+      'entities': entities,
+      if (avecConfiance)
+        'a_verifier': result.warnings.any((w) => w.contains('à vérifier')),
+    }));
     documents++;
     entityCount += entities.length;
   }
