@@ -278,6 +278,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-208 | code | « SAINT M HERVE » : le « M » isolé après SAINT n'est pas une civilité ; seule adresse en défaut qui reste au balayage en capitales avec CEDEX | P2-201 | fusionnée |
 | P2-209 | code | Une seule implémentation de la clé Luhn : exporter celle de `ecluse_core` et retirer la copie de `ecluse.dart` (P2-204), sans changer de comportement | P2-204 | fusionnée |
 | P2-210 | mesure | Fréquence réaliste de « cinq chiffres + mot neutre + CEDEX » en capitales sur des courriers synthétiques, pour trancher le coût de P2-201 (113 / 200 au témoin pire cas) | P2-201 | fusionnée |
+| P2-211 | mesure | Mots neutres de `mots_neutres.dart`, avec et sans accent, capitales et casse ordinaire : nombre de phrases où la liste ne protège pas le nombre (témoin de 400 phrases par mot) | P2-210 | à faire |
+| P2-212 | code | Mots neutres sans accent en capitales (« 39314 NUMEROS EN ATTENTE » masqué en adresse) : 35 lignes sur 3 185 au témoin des courriers | P2-211 | à faire |
+| P2-213 | code | Commune dont le nom contient un mot de voie (« 52417 GRAFFIGNY CHEMIN CEDEX 7 ») : code postal et nom restent en clair quand une ligne « code postal + mot » suit | P2-210 | à faire |
+| P2-214 | code | Communes en capitales sans « CEDEX » : règle « nom exact du référentiel » pour les formes A, C et D de P2-206 (309 adresses en partie en clair) | P2-206, P2-207 | à faire |
+| P2-215 | spec | Écritures de communes hors référentiel (« ST », « STE », fautes, apostrophe perdue) : ce que la règle « nom exact » ne couvre pas, options et recommandation | P2-206 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1081,3 +1086,57 @@ ne reprennent que ce qui manque pour la prendre.
   (en-têtes, références, montants) dont le motif de construction est écrit ;
   `etat.sh` donne le nombre de phrases masquées en trop sur ce corpus ; chiffre
   de départ dans `bench/ETAT.md` ; aucune correction.
+- **P2-211** : mesure seulement, rien dans `lib/`. #427 ne couvre que les
+  mots de son générateur. **Fini quand** : un générateur versionné, graine
+  42, produit 400 phrases par mot de `mots_neutres.dart` (forme accentuée et
+  forme sans accent quand elle diffère, capitales et casse ordinaire,
+  « nombre à cinq chiffres + mot ») ; `etat.sh` donne, par mot et par casse,
+  le nombre de phrases où le nombre est masqué en adresse (chemin
+  `Ecluse.redact`) ; chiffres de départ dans `bench/ETAT.md` ; aucune
+  correction.
+- **P2-212** : `mots_neutres.dart` (`ecluse_redact`). Constat de #427 : la
+  liste n'a que les formes accentuées (« numéros », « salariés »,
+  « résidents ») ; en capitales sans accent, « 39314 NUMEROS EN ATTENTE » est
+  masqué en adresse (35 / 469 lignes de la famille « quantité »). Test
+  d'abord, rouge sur `main`. Une forme sans accent n'est ajoutée que si elle
+  n'est pas aussi un nom de commune du référentiel versionné ; sinon la
+  laisser et le dire. **Fini quand** : témoin des courriers (P2-210) à 0
+  ligne masquée en trop ; témoin de P2-211 chiffré avant/après ; balayages de
+  communes (avec et sans CEDEX) et témoins P2-167, P2-187, P2-200 inchangés
+  ou meilleurs : aucune commune perdue ; reste du tableau de bord inchangé.
+- **P2-213** : `AdresseDetector`, chemin `Ecluse.redact`. Constat de #427,
+  vu à la main, fréquence non mesurée : « 52417 GRAFFIGNY CHEMIN CEDEX 7 »
+  suivi d'une ligne « 39314 NUMEROS EN ATTENTE » donne « 52417 GRAFFIGNY
+  [ADRESSE_1] » : le mot de voie dans le nom de commune fait lire une voie, et
+  le code postal et le début du nom restent en clair. C'est une fuite : elle
+  passe avant le masquage en trop. Mesurer d'abord : balayage versionné des
+  communes du référentiel dont le nom contient un mot de voie (CHEMIN, RUE,
+  PLACE, etc.), avec et sans CEDEX, suivies ou non d'une ligne « code postal
+  + mot », capitales et casse ordinaire. **Fini quand** : ce balayage est dans
+  `etat.sh`, chiffré avant/après ; 0 adresse en partie en clair sur ce
+  balayage ; vraies voies (« 12 CHEMIN DES VIGNES ») toujours masquées ;
+  reste du tableau de bord inchangé ; `LIMITES.md` à jour.
+- **P2-214** : `AdresseDetector`, branche « tout en capitales », sans CEDEX.
+  Décision du 16 novembre (`DECISIONS.md`) : la règle « nom exact du
+  référentiel » est retenue pour les formes A (plus de quatre mots), C
+  (parenthèse, tiret isolé, blancs multiples) et D (déterminant puis mot
+  neutre) de `agent/specs/P2-205.md` ; simulation de #423 : 309 → 0 sur A à D,
+  coût +0 au témoin « commune suivie », 1 / 200 au témoin déterminant (« LA
+  REUNION »). La forme B (mot neutre en tête : « SON », « VERS ») est
+  **laissée de côté** : coût simulé +200 / 200 au témoin construit. Le
+  détecteur reste pur (référentiel embarqué, pas de réseau). Test d'abord : un
+  cas par forme, rouge sur `main`. **Fini quand** : balayage sans CEDEX de 309
+  à 57 au plus (la forme B reste) ; balayage avec CEDEX inchangé (0) ; témoins
+  P2-167, P2-187, P2-200, P2-206 (commune neutre) et P2-210 chiffrés
+  avant/après, aucun ne se dégrade de plus de ce que la simulation annonçait,
+  tout écart expliqué ; `LIMITES.md` à jour (dont « LA REUNION » et la forme
+  B) ; reste du tableau de bord inchangé.
+- **P2-215** : spec seulement (`agent/specs/P2-215.md`), aucune ligne de
+  code. Le « 0 » de #423 est vrai par construction : la règle lit les noms du
+  référentiel. **Fini quand** : la spec chiffre, sur un balayage d'écritures
+  générées depuis le référentiel (« ST » / « STE » pour SAINT / SAINTE,
+  apostrophe ou tiret perdus, une lettre fautive, accent perdu), la part que
+  le nom exact ne couvre pas (script de mesure hors `lib/`, versionné dans
+  `bench/`) ; donne les options (normalisation avant comparaison, distance
+  d'édition bornée, rien) avec leur risque de faux positifs, et une
+  recommandation ; les décisions restent au mainteneur.

@@ -722,3 +722,14 @@ Décisions déléguées par le mainteneur (« oui », file complétée).
 3. **Coût de P2-201** (113 / 200 au témoin pire cas) : accepté provisoirement,
    à rouvrir selon le chiffre réaliste de P2-210.
 
+## 2026-11 — Communes en capitales sans CEDEX : nom exact du référentiel (16 novembre)
+
+Après la mesure de P2-206 (#423), le mainteneur met en file la règle « nom
+exact du référentiel » (P2-214) pour les formes A, C et D : 309 → 0 simulé,
+aucun caractère masqué en plus au témoin « commune suivie ». « Fin de ligne »
+n'est pas retenue (+1 069 caractères masqués). La forme B (mot neutre en tête)
+reste hors de la règle : son coût simulé est de 200 phrases sur 200 au témoin
+construit. Les écritures hors référentiel font l'objet d'une spec (P2-215).
+Le coût de P2-201, mesuré à 0 / 133 sur des courriers synthétiques (P2-210),
+est accepté ; le chiffre de 113 / 200 reste écrit comme pire cas.
+
