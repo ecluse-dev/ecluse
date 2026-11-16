@@ -247,6 +247,27 @@ else
   echec "communes balayage capitales : corpus ordinaire absent ou variantes non produites"
 fi
 
+# Même balayage en capitales SANS « CEDEX » (P2-200) : exposition du
+# référentiel quand rien n'annonce une adresse de courrier d'entreprise. Mêmes
+# causes que la version avec CEDEX ; la règle du mot neutre y est entière.
+echo "## communes en capitales sans CEDEX : nom en partie en clair (P2-200) : Ecluse.redact (chemin du produit)"
+if produit "communes balayage sans CEDEX, générateur" "$B/flou/corpus_cedex_balayage_sans.jsonl" python3 "$B/generate_corpus_cedex.py" --balayage --cedex sans --communes "$R/packages/ecluse_reference/assets/geo_communes.csv.gz" --out "$B/flou/corpus_cedex_balayage_sans.jsonl" \
+   && produit "communes balayage sans CEDEX, variantes" "$B/flou/corpus_cedex_balayage_sans_majuscules.jsonl" python3 "$B/variantes_casse.py" "$B/flou/corpus_cedex_balayage_sans.jsonl"; then
+  if produit "communes balayage sans CEDEX, Ecluse.redact" "$B/flou/pred_cedex_balayage_sans_majuscules.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_cedex_balayage_sans_majuscules.jsonl ../../bench/flou/pred_cedex_balayage_sans_majuscules.jsonl; then
+    montre "communes balayage sans CEDEX, score" -E "^cedex commune longue :|^  cedex=|^  cause=" 0 non dans_B python3 score_cedex.py --corpus flou/corpus_cedex_balayage_sans_majuscules.jsonl --pred flou/pred_cedex_balayage_sans_majuscules.jsonl || true
+  fi
+else
+  echec "communes balayage sans CEDEX : corpus absent ou variantes non produites"
+fi
+
+# Témoin de faux positifs « cinq chiffres + mot neutre (+ parenthèse, tiret) +
+# CEDEX n » (P2-200), aucune adresse annotée : ce que coûterait la levée de la
+# règle du mot neutre devant CEDEX (P2-201). Chiffre avant toute correction.
+echo "## témoin mot neutre devant CEDEX (P2-200) : Ecluse.redact (chemin du produit), aucune adresse annotée"
+if produit "témoin neutre CEDEX, générateur" "$B/flou/corpus_flou_neutre_cedex.jsonl" python3 "$B/generate_corpus_neutre_cedex.py" --n 400 --seed 42 --out "$B/flou/corpus_flou_neutre_cedex.jsonl"; then
+  montre "témoin neutre CEDEX, Ecluse.redact" -E . 0 non redact run_cinq_chiffres_bench.dart ../../bench/flou/corpus_flou_neutre_cedex.jsonl || true
+fi
+
 # Identifiant suivi d'une date, d'un âge ou d'un nombre (P2-174) : 4 types x
 # 4 familles x 3 séparateurs x 100 documents. Un identifiant non couvert est
 # une fuite ; un type faux ou une suite avalée abîme le texte sans fuite.

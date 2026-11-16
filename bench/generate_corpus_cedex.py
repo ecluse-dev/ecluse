@@ -36,6 +36,8 @@ Deux tirages :
   ecriture, avec « CEDEX n » et sans voie : dit combien de communes sont
   touchees.
 
+`--balayage --cedex sans` (P2-200) : le meme balayage sans mot CEDEX.
+
 Usage :
     python3 generate_corpus_cedex.py --par-longueur 40 --seed 42 \\
         --communes ../packages/ecluse_reference/assets/geo_communes.csv.gz \\
@@ -119,7 +121,11 @@ def construit_doc(rng, dep, norm, libelle, ecriture, cedex, voie):
     return texte, debut, fin, parties
 
 
-def construit(par_mots, par_longueur, seed, balayage=False):
+def construit(par_mots, par_longueur, seed, balayage=False,
+              cedex_balayage="CEDEX n"):
+    """`cedex_balayage` (P2-200) : valeur de l'axe `cedex` du balayage,
+    `CEDEX n` (defaut, corpus inchange) ou `sans` (meme communes, sans mot
+    CEDEX : mesure l'exposition du referentiel hors CEDEX)."""
     rng = random.Random(f"{seed}-cedex{'-balayage' if balayage else ''}")
     docs = []
     for mots in sorted(par_mots):
@@ -129,7 +135,7 @@ def construit(par_mots, par_longueur, seed, balayage=False):
                   else rng.sample(communes, par_longueur))
         for code, dep, norm, libelle in tirage:
             for ecriture in ECRITURES:
-                for cedex in (("CEDEX n",) if balayage else CEDEX):
+                for cedex in ((cedex_balayage,) if balayage else CEDEX):
                     for voie in (("sans",) if balayage else AVEC_VOIE):
                         texte, debut, fin, parties = construit_doc(
                             rng, dep, norm, libelle, ecriture, cedex, voie)
@@ -147,12 +153,14 @@ def main():
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--par-longueur", type=int, default=40)
     p.add_argument("--balayage", action="store_true")
+    p.add_argument("--cedex", choices=("CEDEX n", "sans"), default="CEDEX n",
+                   help="avec --balayage : ecriture du CEDEX (P2-200)")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--communes", required=True)
     p.add_argument("--out", default="corpus_cedex.jsonl")
     a = p.parse_args()
     docs = construit(lit_communes(a.communes), a.par_longueur, a.seed,
-                     a.balayage)
+                     a.balayage, a.cedex)
     with open(a.out, "w", encoding="utf-8") as f:
         for d in docs:
             f.write(json.dumps(d, ensure_ascii=False) + "\n")
