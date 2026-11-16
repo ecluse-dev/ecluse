@@ -271,6 +271,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-201 | code | Communes en capitales devant « CEDEX » : lever la règle du mot neutre, admettre parenthèse, tiret isolé et blancs multiples, numéro de CEDEX après un nom (classes 1 à 5 de `agent/specs/P2-196.md`) | P2-200 | à faire |
 | P2-202 | code | Export AIPD : moteurs dans l'ordre de première apparition, nombre de changements de moteur et mention d'honnêteté (recommandations de `agent/specs/P2-198.md`) | P2-198 | fusionnée |
 | P2-203 | mesure | Mesurer la confiance des masquages et l'avertissement « à vérifier » au tableau de bord (le banc ne lit pas la confiance aujourd'hui) | P2-194 | fusionnée |
+| P2-204 | code | ADELI à clé fausse derrière son libellé : masqué à confiance 0,6 sans avertissement « à vérifier », alors que NIR, IBAN et RPPS à clé fausse en portent un | P2-199 | à faire |
+| P2-205 | spec | Communes en capitales sans « CEDEX » : 338 adresses sur 139 500 en partie en clair, dont 216 par la longueur (commune de plus de quatre mots) ; options et risque de faux positifs avant toute correction | P2-200 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1015,3 +1017,26 @@ ne reprennent que ce qui manque pour la prendre.
   documents avec l'avertissement « à vérifier » (positifs et négatifs) ;
   aucun texte ni valeur dans la sortie ; chiffres de départ dans
   `bench/ETAT.md`.
+- **P2-204** : `ecluse_redact`, chemin `Ecluse.redact`. Constat de #417 (témoin
+  P2-194, 50 documents) : un ADELI à clé fausse derrière son libellé est
+  masqué par `AdeliDetector` à confiance 0,6 sans avertissement « à vérifier »,
+  alors que NIR, IBAN et RPPS à clé fausse (confiance 0,3) en portent un ; les
+  ADELI lus par OCR (P2-199) en portent un. Rien ne fuit : c'est une
+  incohérence d'information donnée à l'utilisateur. Test d'abord : un cas
+  « ADELI » + 9 chiffres à clé fausse, sans avertissement sur `main`. Ne pas
+  changer la confiance 0,6 (`LIMITES.md` § 2) sans le dire : si l'avertissement
+  ne peut pas se donner sans la changer, s'arrêter et poser la question dans la
+  PR. **Fini quand** : l'avertissement est donné pour ce cas, sans valeur dans
+  le message ; au tableau de bord, « avertissement à vérifier » passe de 0 à
+  50 / 300 sur ADELI × `cle_fausse` ; négatifs inchangés (0 / 1 200) ; reste
+  du tableau de bord inchangé ; `LIMITES.md` à jour.
+- **P2-205** : spec seulement (`agent/specs/P2-205.md`), aucune ligne de
+  code. Constat de #415 (chemin `Ecluse.redact`, balayage en capitales sans
+  CEDEX) : 338 adresses sur 139 500 gardent une partie du nom de commune en
+  clair (longueur 216, autre 60, ponctuation 30, déterminant initial 16). La
+  cause « longueur » est la commune de plus de quatre mots, que la suite
+  devant « CEDEX » de P2-181 couvrait. **Fini quand** : la spec donne, pour
+  chaque cause, le motif du détecteur en cause (fichier et lignes), les
+  options avec avantages et risques de faux positifs (sans CEDEX, un texte
+  ordinaire peut ressembler à une commune longue), une mesure à faire avant la
+  correction, et une recommandation ; les décisions restent au mainteneur.
