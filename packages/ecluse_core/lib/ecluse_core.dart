@@ -29,4 +29,5 @@ export 'src/detectors/nir_detector.dart';
 export 'src/detectors/rpps_detector.dart';
 export 'src/detectors/secret_detector.dart';
 export 'src/entity.dart';
+export 'src/luhn.dart' show isLuhnValid;
 export 'src/resolver.dart';

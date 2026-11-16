@@ -175,26 +175,12 @@ final class IdentifiantCleInvalideDetector implements EntityDetector {
   static bool _cleAdeliValide(String adeli) =>
       adeli.length == 9 && _cleRppsValide(adeli.padLeft(11, '0'));
 
-  /// Clé RPPS (Luhn), duplication volontaire et minimale de l'algorithme de
-  /// `ecluse_core/src/luhn.dart` (« source unique : ne pas dupliquer
-  /// ailleurs » y vaut à l'intérieur du paquet ; d'un paquet à l'autre, la
-  /// frontière publique ne l'exporte pas).
-  static bool _cleRppsValide(String rpps) {
-    if (rpps.length != 11) return false;
-    var sum = 0;
-    var double = false;
-    for (var i = rpps.length - 1; i >= 0; i--) {
-      var d = rpps.codeUnitAt(i) - 0x30;
-      if (d < 0 || d > 9) return false;
-      if (double) {
-        d *= 2;
-        if (d > 9) d -= 9;
-      }
-      sum += d;
-      double = !double;
-    }
-    return sum % 10 == 0;
-  }
+  /// Clé RPPS (Luhn) : onze chiffres exactement, puis l'algorithme unique
+  /// d'`ecluse_core` (`isLuhnValid`, exporté par P2-209 : plus de copie ici).
+  static final RegExp _onzeChiffres = RegExp(r'^[0-9]{11}$');
+
+  static bool _cleRppsValide(String rpps) =>
+      _onzeChiffres.hasMatch(rpps) && isLuhnValid(rpps);
 
   /// O/o → 0, l/I → 1, sans toucher au reste (2A/2B d'un NIR corse inclus).
   static String _chiffres(String s) =>
