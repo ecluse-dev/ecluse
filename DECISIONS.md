@@ -710,3 +710,15 @@ Décisions déléguées par le mainteneur (« je te laisse choisir »).
 4. **Plafond ADELI de 50** au témoin P2-194 : accepté comme état de départ
    connu, à ramener à 0 par P2-199.
 
+## 2026-11 — Suites de la session du 16 novembre au matin (16 novembre)
+
+Décisions déléguées par le mainteneur (« oui », file complétée).
+1. **Communes en capitales sans CEDEX** (`agent/specs/P2-205.md`, décisions 1 à 3) :
+   on mesure d'abord (P2-206), sans toucher à `lib/` ; le choix entre « nom exact
+   du référentiel » et « fin de ligne » se fait sur ces chiffres. La
+   recommandation de la spec (nom exact) reste l'hypothèse de travail.
+2. **Mot-clé d'établissement dans une commune** (décision 4) : on traite E, par
+   P2-207 (frontière de mot, étendue limitée au nom).
+3. **Coût de P2-201** (113 / 200 au témoin pire cas) : accepté provisoirement,
+   à rouvrir selon le chiffre réaliste de P2-210.
+
