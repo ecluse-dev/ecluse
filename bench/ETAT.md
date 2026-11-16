@@ -630,6 +630,40 @@ Aujourd'hui la règle du mot neutre protège entièrement ce cas ; le chiffre à
 suivre pour P2-201 est donc **0 → ?** (coût de la levée devant CEDEX). Témoin
 construit : il dit le pire cas, pas une fréquence. Corpus synthétique.
 
+## Communes en capitales devant « CEDEX » (P2-201)
+
+Avant : `main` au commit `1cb1e9b` (rejoué le 16 novembre, identique à P2-200).
+Après : branche `claude/P2-201-commune-capitales-cedex`. Graine 42. Chemin
+mesuré : **`Ecluse.redact`** (ce que reçoit le LLM). Détecteur modifié :
+`AdresseDetector` (règle du mot neutre levée quand le texte reconnu finit par
+« CEDEX » ; parenthèse, tiret entouré de blancs et deux ou trois blancs admis
+dans la suite devant « CEDEX »). Rien d'autre dans `lib/`.
+
+| Mesure | Avant | Après |
+|---|---:|---:|
+| Balayage en capitales avec « CEDEX n » : adresses en partie en clair | 95 / 139 500 | **1** / 139 500 |
+| fuite au caractère | 0,1 % (2 020 / 3 117 758) | **0,0 %** (1 / 3 117 758) |
+| Balayage en capitales **sans** « CEDEX » | 338 / 139 500 | 338 (inchangé) |
+| Témoin « nombre + mot neutre + CEDEX », capitales (sur 200) | 0 | **113** |
+| Témoin « nombre + mot neutre + CEDEX », casse ordinaire (sur 200) | 0 | 0 |
+
+Le reste d'une adresse en défaut après P2-201 : « SAINT M HERVE » en écriture
+postale (le « M » isolé est lu comme une civilité, le numéro de CEDEX reste).
+Témoin par forme de suite (mot / parenthèse / tiret) : 38 / 136, 37 / 132,
+38 / 132 ; par position : 100 / 200 en tête de phrase, 13 / 200 après des mots
+(les tournures de quantité « total de », « lot », « réf. » protègent le nombre) ;
+par famille : quantité 64 / 204, référence 49 / 196. Témoin construit : il dit
+le pire cas (une phrase par forme, toutes avec « CEDEX »), pas une fréquence.
+
+**Changement que la fiche ne prévoyait pas** : le motif de la suite devant
+« CEDEX » est partagé avec la casse ordinaire, donc le balayage **en casse
+ordinaire** avec « CEDEX n » (section P2-178 ci-dessus) passe de 41 à **8**
+adresses en partie en clair (`libelle` 10 → 1, `postale` 7 → 1,
+`libelle_espaces` 15 → 6, `capitales_tirets` 9 → 0). C'est une amélioration de
+la même règle (« devant CEDEX seulement »), pas une régression ; aucun témoin
+de faux positifs en casse ordinaire ne bouge (0 / 200 au témoin ci-dessus). Le
+mainteneur peut demander de la limiter aux capitales.
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par
