@@ -42,6 +42,9 @@ import 'package:ecluse_core/ecluse_core.dart';
 /// d'un IBAN, les lettres sont déjà permises (le RIB en contient) et ne sont
 /// pas « corrigées ».
 ///
+/// **ADELI (P2-199)** : même traitement derrière le mot « ADELI » (9
+/// chiffres) ; sans lui, le nombre n'est jamais accepté.
+///
 /// **Ne masque jamais** un libellé seul (« NIR : non communiqué »), suivi
 /// d'autre chose qu'une forme d'identifiant (un montant, une date), ou d'un
 /// candidat déjà **valide** (couvert par le détecteur strict correspondant,
@@ -81,6 +84,12 @@ final class IdentifiantCleInvalideDetector implements EntityDetector {
     caseSensitive: false,
   );
 
+  /// Libellé fort d'un ADELI (P2-199) : le sigle seul, comme `AdeliDetector`.
+  static final RegExp _etiquetteAdeli = RegExp(
+    r'(?<![A-Za-zÀ-ÿ])ADELI(?![A-Za-zÀ-ÿ])',
+    caseSensitive: false,
+  );
+
   /// Séparateur entre deux groupes d'un candidat : un séparateur simple
   /// (espace, point, tiret) ou, depuis P2-191, **une ligne vide** (deux fins
   /// de ligne, blancs permis) que l'OCR insère au milieu d'un identifiant.
@@ -109,6 +118,13 @@ final class IdentifiantCleInvalideDetector implements EntityDetector {
   /// confusions de lecture (P2-191).
   static final RegExp _candidatRpps = RegExp(
     '$_d(?:$_sepGroupe$_d){10}',
+  );
+
+  /// ADELI (P2-199) : 9 chiffres, mêmes confusions de lecture et même ligne
+  /// vide que les autres types, derrière le libellé « ADELI » seulement. Le
+  /// numéro corse (`2A`/`2B`) reste l'affaire d'`AdeliDetector`.
+  static final RegExp _candidatAdeli = RegExp(
+    '$_d(?:$_sepGroupe$_d){8}',
   );
 
   static final RegExp _separators = RegExp(r'[ .\-\t\r\n\u00A0\u202F]');
@@ -153,6 +169,11 @@ final class IdentifiantCleInvalideDetector implements EntityDetector {
     }
     return remainder == 1;
   }
+
+  /// Clé ADELI : Luhn sur 9 chiffres, comme `AdeliDetector` (hypothèse non
+  /// vérifiée sur la fiche officielle, voir `LIMITES.md`).
+  static bool _cleAdeliValide(String adeli) =>
+      adeli.length == 9 && _cleRppsValide(adeli.padLeft(11, '0'));
 
   /// Clé RPPS (Luhn), duplication volontaire et minimale de l'algorithme de
   /// `ecluse_core/src/luhn.dart` (« source unique : ne pas dupliquer
@@ -240,6 +261,9 @@ final class IdentifiantCleInvalideDetector implements EntityDetector {
         iban: true);
     _detecteType(text, _etiquetteRpps, _candidatRpps, 11, _cleRppsValide,
         EntityType.rpps, resultats,
+        iban: false);
+    _detecteType(text, _etiquetteAdeli, _candidatAdeli, 9, _cleAdeliValide,
+        EntityType.adeli, resultats,
         iban: false);
     resultats.sort((a, b) => a.start - b.start);
     return resultats;

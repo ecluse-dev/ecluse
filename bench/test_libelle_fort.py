@@ -159,13 +159,21 @@ class Plafond(unittest.TestCase):
         self.assertEqual(p, [])
 
     def test_le_defaut_connu_est_toleree_jusqu_a_son_plafond_et_pas_au_dela(self):
-        (lib, var), plafond = next(iter(etat_attendu.PLAFOND_LIBELLE_FORT.items()))
-        ok = f"  {lib} x {var} : {plafond} / 50 en clair, 0 au type faux"
-        trop = f"  {lib} x {var} : {plafond + 1} / 50 en clair, 0 au type faux"
-        self.assertEqual(verifie_etat.plafonds_libelle_fort(
-            verifie_etat.sections(self.section(ok).splitlines())), [])
-        self.assertEqual(len(verifie_etat.plafonds_libelle_fort(
-            verifie_etat.sections(self.section(trop).splitlines()))), 1)
+        # Depuis P2-199 aucun défaut n'est plus connu : le plafond est vide,
+        # donc zéro partout. Le mécanisme reste testé avec un plafond injecté.
+        self.assertEqual(etat_attendu.PLAFOND_LIBELLE_FORT, {})
+        sauve = dict(verifie_etat.PLAFOND_LIBELLE_FORT)
+        verifie_etat.PLAFOND_LIBELLE_FORT.update({("ADELI", "ocr_zero"): 5})
+        try:
+            ok = "  ADELI x ocr_zero : 5 / 50 en clair, 0 au type faux"
+            trop = "  ADELI x ocr_zero : 6 / 50 en clair, 0 au type faux"
+            self.assertEqual(verifie_etat.plafonds_libelle_fort(
+                verifie_etat.sections(self.section(ok).splitlines())), [])
+            self.assertEqual(len(verifie_etat.plafonds_libelle_fort(
+                verifie_etat.sections(self.section(trop).splitlines()))), 1)
+        finally:
+            verifie_etat.PLAFOND_LIBELLE_FORT.clear()
+            verifie_etat.PLAFOND_LIBELLE_FORT.update(sauve)
 
     def test_verifie_remonte_le_depassement(self):
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
