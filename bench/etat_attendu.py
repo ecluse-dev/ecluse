@@ -143,6 +143,24 @@ ATTENDU = [
         (r"^  casse=\w+ : \d+ / \d+ phrases à adresse prédite", 5,
          "par casse, trois témoins"),
     ]),
+    ("## commune à mot de voie", [
+        (r"^commune à mot de voie : \d+ documents, \d+ communes, \d+ "
+         r"document\(s\) à adresse en partie en clair", 1,
+         "balayage des communes à mot de voie (P2-213)"),
+        (r"^  casse=(ordinaire|capitales) : \d+ / \d+ en défaut", 2,
+         "par casse"),
+        (r"^  cedex=(avec|sans) : \d+ / \d+ en défaut", 2, "par CEDEX"),
+        (r"^  suite=(sans|mot|adresse) : \d+ / \d+ en défaut", 3,
+         "par ligne suivante"),
+        (r"^  voie=(sans|avec) : \d+ / \d+ en défaut", 2,
+         "derrière ou non une vraie voie"),
+        (r"^  mot de voie=\S+ : \d+ / \d+ en défaut", 5, "par mot de voie"),
+        (r"^  en clair : vraie voie \d+, code postal \d+, commune \d+, "
+         r"seconde adresse \d+", 1, "ce qui reste en clair"),
+        (r"^  début en clair .* : \d+ document\(s\) ; fin du nom seule en "
+         r"clair : \d+", 1, "signature du défaut"),
+        (r"^  ligne « code postal \+ mot » masquée", 1, "masquage en trop"),
+    ]),
     ("## courriers en capitales", [
         (r"^courriers : \d+ courriers, \d+ lignes, \d+ adresses annotées, "
          r"\d+ courrier\(s\) à adresse en partie en clair", 1,
@@ -153,6 +171,19 @@ ATTENDU = [
          r"montant_adresse) : \d+ / \d+ lignes masquées en trop", 6,
          "six familles de lignes"),
         (r"^  types en trop : ", 1, "types de détection en trop"),
+    ]),
+    ("## mots neutres, un mot à la fois", [
+        (r"^mots neutres : \d+ mots, \d+ phrases, \d+ nombre\(s\) "
+         r"masqué\(s\) en adresse, \d+ sous un autre type, \d+ mot\(s\) "
+         r"touché\(s\)", 1, "témoin des mots neutres (P2-211)"),
+        (r"^  casse=(capitales|ordinaire) : \d+ / \d+", 2, "par casse"),
+        (r"^  forme=(accentuee|sans_accent) : \d+ / \d+", 2, "par forme"),
+        (r"^  suite=(rien|neutre|nom) : \d+ / \d+", 3, "par suite"),
+        (r"^  mot=\S+ : capitales \d+ / \d+, ordinaire \d+ / \d+", 70,
+         "une ligne par mot de mots_neutres.dart (78 au 16 novembre)"),
+        (r"^  mot=\S+ : .* ; sans accent : capitales \d+ / \d+, "
+         r"ordinaire \d+ / \d+", 1, "au moins un mot accentué, forme sans accent"),
+        (r"^  types sur le nombre : ", 1, "types de détection sur le nombre"),
     ]),
     ("## témoin mot neutre devant CEDEX", [
         (r"^témoin cinq chiffres : \d+ phrases, \d+ prédiction", 1,

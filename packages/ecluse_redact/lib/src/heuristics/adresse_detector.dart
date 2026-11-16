@@ -520,6 +520,107 @@ final class AdresseDetector implements EntityDetector {
     return dans < 0 ? null : _finNomExact(text, match.start + dans);
   }
 
+  /// Ce qui précède, **sur la même ligne**, un type de voie qui est en
+  /// réalité un mot d'un nom de commune (P2-213) : un code postal, puis zéro à
+  /// six mots de commune. 52 communes du référentiel ont un mot de voie dans
+  /// leur nom (« Graffigny-Chemin », « La Chaussée-Tirancourt », « Cours-la-
+  /// Ville », « Saulon-la-Rue »). Suivies d'une ligne « code postal + mot »
+  /// (une liste d'adresses), elles donnaient « 52417 GRAFFIGNY [ADRESSE_1] » :
+  /// la voie était lue à partir de « CHEMIN », la ligne suivante en devenait le
+  /// code postal, et le vrai code postal restait en clair avec le début du nom
+  /// (641 documents sur 3 744 au balayage
+  /// `bench/generate_corpus_commune_voie.py`).
+  ///
+  /// Les mots ont la forme d'un mot de commune (majuscule initiale, liaisons
+  /// en minuscules de [_connecteursDevantCedex]) : « le lot 54321 livré rue des
+  /// Lilas » n'est pas concerné, la voie y commence bien à « rue ».
+  static final RegExp _codePostalAvantVoie = RegExp(
+    '(?<!\\d)\\d{5}$_h+'
+    '(?:$_connecteursDevantCedex*$_motCommune[ \\u00A0\\u202F-]+){0,6}'
+    '$_connecteursDevantCedex*\$',
+  );
+
+  /// Un numéro de voie qui est la **fin d'un code postal** : « 80120 Rue
+  /// Cedex 1 » (la commune de Rue) était lu « 0120 Rue », numéro 120, et le
+  /// premier chiffre restait en clair. Vrai si [debut] est le deuxième chiffre
+  /// d'un nombre d'exactement cinq chiffres que le type de voie suit.
+  static final RegExp _quatreChiffresPuisVoie = RegExp('\\d{4}$_h*[A-Za-zÀ-ÿ]');
+
+  /// Fenêtre relue avant un type de voie : un code postal et six mots de
+  /// commune tiennent largement dans 80 caractères ; le coût reste linéaire.
+  static const int _fenetreCommune = 80;
+
+  /// Début réel d'une adresse reconnue à partir d'un type de voie
+  /// ([debut]) : la position du code postal qui précède sur la même ligne si
+  /// le « type de voie » est un mot du nom de la commune ; `null` sinon (cas
+  /// ordinaire : la voie commence bien là).
+  static int? _debutDepuisCodePostal(String text, int debut, bool numerote) {
+    if (numerote) {
+      // « 80120 Rue … » : seul cas pris pour une voie numérotée. Une commune
+      // puis une vraie voie numérotée (« 70000 Vesoul 12 rue… ») sont deux
+      // adresses et le restent.
+      if (debut < 1 || !_estChiffre(text.codeUnitAt(debut - 1))) return null;
+      if (debut >= 2 && _estChiffre(text.codeUnitAt(debut - 2))) return null;
+      return _quatreChiffresPuisVoie.matchAsPrefix(text, debut) == null
+          ? null
+          : debut - 1;
+    }
+    var depart = debut > _fenetreCommune ? debut - _fenetreCommune : 0;
+    final ligne = text.lastIndexOf('\n', debut - 1);
+    if (ligne >= depart) depart = ligne + 1;
+    final m = _codePostalAvantVoie.firstMatch(text.substring(depart, debut));
+    return m == null ? null : depart + m.start;
+  }
+
+  static bool _estChiffre(int c) => c >= 0x30 && c <= 0x39;
+
+  /// Blancs, virgule et fin de ligne : ce qui peut séparer deux adresses
+  /// sans être une valeur à masquer.
+  static bool _estSeparateur(int c) =>
+      c == 0x20 ||
+      c == 0x09 ||
+      c == 0x0A ||
+      c == 0x0D ||
+      c == 0x2C ||
+      c == 0xA0 ||
+      c == 0x202F;
+
+  /// Les « code postal + commune » de [valides] qui, à eux seuls, couvrent
+  /// tout `[debut, fin)` aux séparateurs près ; `null` s'il reste un
+  /// caractère hors d'eux. [valides] est trié et sans chevauchement.
+  static List<_Range>? _couvertPar(
+      String text, List<_Range> valides, int debut, int fin) {
+    final morceaux = <_Range>[];
+    var i = debut;
+    for (final r in valides) {
+      if (r.end <= debut) continue;
+      if (r.start >= fin) break;
+      for (; i < r.start; i++) {
+        if (!_estSeparateur(text.codeUnitAt(i))) return null;
+      }
+      morceaux.add(r);
+      if (r.end > i) i = r.end;
+    }
+    for (; i < fin; i++) {
+      if (!_estSeparateur(text.codeUnitAt(i))) return null;
+    }
+    return morceaux;
+  }
+
+  /// Étendue d'un « code postal + commune » que le dernier passage de
+  /// [detect] retiendrait (mêmes garde-fous, règle « nom exact » de P2-214
+  /// comprise), ou `null` s'il l'écarterait.
+  _Range? _codePostalCommuneRetenu(
+      String text, RegExpMatch match, bool capitales) {
+    if (_looksLikeUnit(match)) return null;
+    if (!_communeStartsWithUppercase(match)) return null;
+    final exact = _nomExact(text, match, capitales, seul: true);
+    final neutre = capitales && _communeNeutre(match);
+    if (neutre && exact == null) return null;
+    if (_estIntroduitParQuantite(text, match.start)) return null;
+    return _Range(match.start, _finRetenue(match, exact, neutre));
+  }
+
   static bool _chevauche(List<_Range> tries, int start, int end) {
     var lo = 0;
     var hi = tries.length;
@@ -546,14 +647,54 @@ final class AdresseDetector implements EntityDetector {
     final results = <DetectedEntity>[];
     final claimed = <_Range>[];
 
+    // « Code postal + commune » que le dernier passage retiendrait, calculés
+    // seulement si un type de voie se révèle être un mot de commune (P2-213).
+    List<_Range>? valides;
+    List<_Range> codesPostauxRetenus() => valides ??= [
+          for (final m in _codePostalCommuneOnly.allMatches(text))
+            if (_codePostalCommuneRetenu(text, m, capitales) case final r?) r
+        ];
+
+    // Début de l'adresse reconnue par un motif de voie. Cas ordinaire : le
+    // début du motif. Si le « type de voie » est un mot du nom d'une commune
+    // qui suit son code postal sur la même ligne (P2-213), deux issues, et
+    // dans les deux rien de ce que le motif couvrait ne repasse en clair :
+    // - les « code postal + commune » couvrent déjà tout, du vrai code postal
+    //   à la fin du motif : ils sont retenus à sa place, un par adresse
+    //   (`null` : le motif de voie est écarté) ;
+    // - sinon l'adresse est étendue jusqu'au vrai code postal.
+    int? debutReel(RegExpMatch match, int fin, {required bool numerote}) {
+      final debut = _debutDepuisCodePostal(text, match.start, numerote);
+      if (debut == null) return match.start;
+      final morceaux = _couvertPar(text, codesPostauxRetenus(), debut, fin);
+      if (morceaux == null ||
+          morceaux.any((m) => claimed.any((r) => r.overlaps(m.start, m.end)))) {
+        return debut;
+      }
+      for (final m in morceaux) {
+        results.add(
+          DetectedEntity(
+            type: EntityType.adresse,
+            start: m.start,
+            end: m.end,
+            value: text.substring(m.start, m.end),
+            confidence: 0.55,
+          ),
+        );
+        claimed.add(m);
+      }
+      return null;
+    }
+
     for (final match in _pattern.allMatches(text)) {
       if (_looksLikeUnit(match)) continue;
       if (!_communeStartsWithUppercase(match)) continue;
       final exact = _nomExact(text, match, capitales, seul: false);
       final neutre = capitales && _communeNeutre(match);
       if (neutre && exact == null) continue;
-      final start = match.start;
       final end = _finRetenue(match, exact, neutre);
+      final start = debutReel(match, end, numerote: true);
+      if (start == null) continue;
       results.add(
         DetectedEntity(
           type: EntityType.adresse,
@@ -574,8 +715,10 @@ final class AdresseDetector implements EntityDetector {
       final exact = _nomExact(text, match, capitales, seul: false);
       final neutre = capitales && _communeNeutre(match);
       if (neutre && exact == null) continue;
-      final start = match.start;
       final end = _finRetenue(match, exact, neutre);
+      if (claimed.any((r) => r.overlaps(match.start, end))) continue;
+      final start = debutReel(match, end, numerote: false);
+      if (start == null) continue;
       if (claimed.any((r) => r.overlaps(start, end))) continue;
       results.add(
         DetectedEntity(
