@@ -268,6 +268,43 @@ if produit "témoin neutre CEDEX, générateur" "$B/flou/corpus_flou_neutre_cede
   montre "témoin neutre CEDEX, Ecluse.redact" -E . 0 non redact run_cinq_chiffres_bench.dart ../../bench/flou/corpus_flou_neutre_cedex.jsonl || true
 fi
 
+# Communes en capitales sans « CEDEX » : ventilation en cinq formes et coût de
+# deux règles candidates (P2-206). Mesure seulement : les règles « nom exact du
+# référentiel » et « fin de ligne » sont simulées par `regles_candidates_
+# communes.py` en ajoutant leur étendue aux détections de `Ecluse.redact`, rien
+# n'est dans lib/. Chemin mesuré : Ecluse.redact (ce que reçoit le LLM).
+echo "## communes en capitales sans CEDEX : formes et règles candidates (P2-206) : Ecluse.redact (chemin du produit), règles simulées hors lib/"
+if [ -s "$B/flou/pred_cedex_balayage_sans_majuscules.jsonl" ]; then
+  montre "formes sans CEDEX" -E "^sans CEDEX :|^  forme " 0 non dans_B python3 classe_communes_capitales.py --sans || true
+  montre "règles candidates, balayage sans CEDEX" -E "^balayage sans CEDEX|^  règle=|^  forme E" 0 non dans_B python3 regles_candidates_communes.py balayage --corpus flou/corpus_cedex_balayage_sans_majuscules.jsonl --pred flou/pred_cedex_balayage_sans_majuscules.jsonl || true
+else
+  echec "formes sans CEDEX : prédictions du balayage sans CEDEX absentes"
+fi
+echo "# coût sur le témoin commune suivie (P2-181) : règle appliquée à toute ligne, puis aux seuls textes en capitales"
+if [ -s "$B/flou/pred_commune_suivie.jsonl" ] \
+   && produit "commune suivie capitales, variantes" "$B/flou/corpus_flou_commune_suivie_majuscules.jsonl" python3 "$B/variantes_casse.py" "$B/flou/corpus_flou_commune_suivie.jsonl" \
+   && produit "commune suivie capitales, Ecluse.redact" "$B/flou/pred_commune_suivie_majuscules.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_flou_commune_suivie_majuscules.jsonl ../../bench/flou/pred_commune_suivie_majuscules.jsonl; then
+  montre "règles candidates, témoin suivie (toute ligne)" -E "^commune suivie, règles|^  règle=" 0 non dans_B python3 regles_candidates_communes.py suivie --corpus flou/corpus_flou_commune_suivie.jsonl --pred flou/pred_commune_suivie.jsonl || true
+  montre "règles candidates, témoin suivie (capitales)" -E "^commune suivie, règles|^  règle=" 0 non dans_B python3 regles_candidates_communes.py suivie --casse capitales --corpus flou/corpus_flou_commune_suivie_majuscules.jsonl --pred flou/pred_commune_suivie_majuscules.jsonl || true
+else
+  echec "règles candidates, témoin suivie : corpus ou prédictions absents"
+fi
+echo "# coût sur les témoins sans adresse annotée : noms de communes de forme neutre (P2-206), puis témoins P2-167 et P2-187"
+echo "# témoin commune neutre (P2-206)"
+if produit "témoin commune neutre, générateur" "$B/flou/corpus_flou_commune_neutre.jsonl" dans_B python3 generate_corpus_commune_neutre.py --n 400 --seed 42 --out flou/corpus_flou_commune_neutre.jsonl; then
+  if produit "témoin commune neutre, Ecluse.redact" "$B/flou/pred_commune_neutre.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_flou_commune_neutre.jsonl ../../bench/flou/pred_commune_neutre.jsonl; then
+    montre "règles candidates, témoin commune neutre" -E "^témoin sans adresse annotée|^  casse=" 0 non dans_B python3 regles_candidates_communes.py neutre --corpus flou/corpus_flou_commune_neutre.jsonl --pred flou/pred_commune_neutre.jsonl || true
+  fi
+fi
+for t in cinq_chiffres determinant; do
+  echo "# témoin $t (P2-167, P2-187)"
+  if [ -s "$B/flou/corpus_flou_$t.jsonl" ] && produit "règles candidates, témoin $t, Ecluse.redact" "$B/flou/pred_$t.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_flou_$t.jsonl ../../bench/flou/pred_$t.jsonl; then
+    montre "règles candidates, témoin $t" -E "^témoin sans adresse annotée|^  casse=" 0 non dans_B python3 regles_candidates_communes.py neutre --corpus flou/corpus_flou_$t.jsonl --pred flou/pred_$t.jsonl || true
+  else
+    echec "règles candidates, témoin $t : corpus ou prédictions absents"
+  fi
+done
+
 # Identifiant suivi d'une date, d'un âge ou d'un nombre (P2-174) : 4 types x
 # 4 familles x 3 séparateurs x 100 documents. Un identifiant non couvert est
 # une fuite ; un type faux ou une suite avalée abîme le texte sans fuite.

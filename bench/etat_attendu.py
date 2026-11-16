@@ -123,6 +123,26 @@ ATTENDU = [
          r"caractère en clair", 1, "balayage en capitales sans CEDEX (P2-200)"),
         (r"^  cedex=sans : \d+ / \d+ en défaut", 1, "axe cedex=sans"),
     ]),
+    ("## communes en capitales sans CEDEX : formes et règles candidates", [
+        (r"^sans CEDEX : \d+ adresses en partie en clair sur \d+, par forme",
+         1, "ventilation par forme (P2-206)"),
+        (r"^  forme [ABCDE] : \d+ adresse\(s\), \d+ commune\(s\)", 5,
+         "formes A à E"),
+        (r"^  forme autre : \d+ adresse\(s\)", 1, "forme « autre » (reste)"),
+        (r"^balayage sans CEDEX : \d+ adresses en partie en clair", 1,
+         "balayage, règles candidates simulées"),
+        (r"^  règle=(exact_prefixe|exact_ligne|fin_de_ligne) : \d+ → \d+ en "
+         r"partie en clair", 3, "balayage : trois règles"),
+        (r"^  forme E : \d+ adresses, non simulable", 1, "forme E non simulée"),
+        (r"^commune suivie, règles candidates \(", 2,
+         "témoin commune suivie, deux régimes de casse"),
+        (r"^  règle=(exact_prefixe|exact_ligne|fin_de_ligne) : \d+ / \d+ "
+         r"caractères de suite masqués", 6, "témoin suivie : trois règles x 2"),
+        (r"^témoin sans adresse annotée, règles candidates : \d+ phrases", 3,
+         "témoins sans adresse : commune neutre, cinq chiffres, déterminant"),
+        (r"^  casse=\w+ : \d+ / \d+ phrases à adresse prédite", 5,
+         "par casse, trois témoins"),
+    ]),
     ("## témoin mot neutre devant CEDEX", [
         (r"^témoin cinq chiffres : \d+ phrases, \d+ prédiction", 1,
          "adresses prédites à tort devant CEDEX (P2-200)"),
