@@ -316,26 +316,25 @@ disait rien sur elle.
   `nombre_sans_libelle` (nombre de forme d'identifiant, clé fausse, parfois
   avec des lettres d'OCR, sans libellé), 6 libellés x 50 chacun.
 
-Chiffres de départ, `main` au commit `b3b6d8e`, aucune correction dans cette
-tâche :
+État après P2-199 (au départ, P2-194, `main` au commit `b3b6d8e` : 50 positifs en
+clair sur chacune des quatre cases ADELI OCR et ligne vide, 0 ailleurs) :
 
 | Positifs en clair, sur 50 par case | cle_juste | cle_fausse | ocr_zero | ocr_un | ligne_vide | ocr_et_ligne_vide |
 |---|---:|---:|---:|---:|---:|---:|
 | NIR, « N° de sécurité sociale », « numéro SS » (3 x 50) | 0 | 0 | 0 | 0 | 0 | 0 |
 | IBAN | 0 | 0 | 0 | 0 | 0 | 0 |
 | RPPS | 0 | 0 | 0 | 0 | 0 | 0 |
-| **ADELI** | 0 | 0 | **50** | **50** | **50** | **50** |
+| ADELI | 0 | 0 | 0 | 0 | 0 | 0 |
 
-Total : **200 identifiants positifs sur 1 800 en clair, tous ADELI**. P2-191
-n'a pas étendu ses tolérances à ADELI (le libellé « ADELI » a son détecteur
-contextuel, sans O/l ni ligne vide) : un numéro ADELI lu par OCR avec la lettre
-O ou l, ou coupé par une ligne vide, part en clair derrière son libellé, 200
-fois sur 200. L'ADELI à clé fausse, lui, est couvert (50 sur 50 masqués).
-Aucun identifiant couvert sous un autre type. `bench/etat_attendu.py`
-(`PLAFOND_LIBELLE_FORT`) fixe un plafond de 50 sur ces quatre cases et zéro
-partout ailleurs : `etat.sh` échoue si un identifiant positif repasse en
-clair ailleurs, ou si ces quatre cases montent. Le plafond ne peut que
-baisser ; il se retire quand une tâche de correction aura couvert ADELI.
+Total : **0 identifiant positif sur 1 800 en clair** (200 au départ, tous
+ADELI, `main` au commit `3b03ca1`). P2-199 a étendu à ADELI les tolérances de
+P2-191 (O/o pour 0, l/I pour 1, ligne vide), derrière le libellé « ADELI »
+seulement, dans `IdentifiantCleInvalideDetector`, et écarté une adresse qui
+chevauche un identifiant annoncé (un cas, « ADELI 209l73939 noté » : « 73939
+noté » lu comme une adresse, de confiance plus haute, laissait « 209l » en
+clair). Chemin mesuré : `Ecluse.redact`. Le plafond
+`PLAFOND_LIBELLE_FORT` de `bench/etat_attendu.py` est vide : zéro partout,
+`etat.sh` échoue si un identifiant positif repasse en clair.
 
 Témoins négatifs : **8 documents sur 1 200 masqués** (0 sur `libelle_seul`,
 `non_communique`, `mot_ordinaire` ; 8 sur 300 `nombre_sans_libelle`). Ce sont

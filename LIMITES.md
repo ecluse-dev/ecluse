@@ -236,7 +236,12 @@ une coupure au milieu d'un groupe ne l'est pas.
   est juste après correction** (le détecteur strict ne le voit pas), avec le
   même avertissement « à vérifier ». Les détecteurs stricts de `ecluse_core`
   ne changent pas ; sans libellé fort, « 1 85 05 78 OO6 084 91 » reste en
-  clair. **Pas couvert** : une confusion autre que O/o/l/I (« S » pour 5, « B »
+  clair. **ADELI (P2-199)** : le libellé « ADELI » reçoit les mêmes
+  tolérances (neuf chiffres, O/o/l/I, ligne vide) ; un numéro ADELI lu par OCR
+  derrière son libellé est masqué à confiance 0,3 avec le même avertissement
+  (le numéro corse `2A`/`2B` reste l'affaire d'`AdeliDetector`). Sans le mot
+  « ADELI », un nombre de neuf chiffres lu par OCR reste en clair.
+  **Pas couvert** : une confusion autre que O/o/l/I (« S » pour 5, « B »
   pour 8, « | » pour 1), plusieurs lignes vides ou une seule fin de ligne
   (sans ligne vide) au milieu, un libellé lui-même mal lu (« lBAN »), un O dans
   le premier chiffre d'un NIR (qui ne peut être que 1 à 8). Un libellé fort

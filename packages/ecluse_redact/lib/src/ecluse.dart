@@ -287,8 +287,37 @@ abstract final class Ecluse {
     // `defaultDetectors`).
     final cleInvalide = const IdentifiantCleInvalideDetector().detect(text);
     if (cleInvalide.isEmpty) return surLeTexte;
+    // P2-199 : le libellé fort est une preuve plus forte que l'heuristique
+    // d'adresse « cinq chiffres + mot ». Sur « ADELI 209l73939 noté », elle
+    // lisait « 73939 noté » comme une adresse, de confiance plus haute que
+    // 0,3, et `resolveOverlaps` gardait l'adresse en laissant « 209l » en
+    // clair. Une adresse qui chevauche un identifiant annoncé est écartée.
+    // Coût en n log m (jamais n x m) : début des candidats triés + plus
+    // grande fin vue jusque-là, dichotomie sur le début.
+    final candidats = [...cleInvalide]..sort((a, b) => a.start - b.start);
+    final finMax = <int>[];
+    var plusGrande = 0;
+    for (final c in candidats) {
+      if (c.end > plusGrande) plusGrande = c.end;
+      finMax.add(plusGrande);
+    }
+    bool chevauche(DetectedEntity e) {
+      var bas = 0;
+      var haut = candidats.length;
+      while (bas < haut) {
+        final milieu = (bas + haut) >> 1;
+        if (candidats[milieu].start < e.end) {
+          bas = milieu + 1;
+        } else {
+          haut = milieu;
+        }
+      }
+      return bas > 0 && finMax[bas - 1] > e.start;
+    }
+
     return resolveOverlaps([
-      ...surLeTexte,
+      for (final e in surLeTexte)
+        if (e.type != EntityType.adresse || !chevauche(e)) e,
       for (final e in cleInvalide)
         DetectedEntity(
           type: e.type,
@@ -354,7 +383,8 @@ abstract final class Ecluse {
         .where((e) =>
             (e.type == EntityType.nir ||
                 e.type == EntityType.iban ||
-                e.type == EntityType.rpps) &&
+                e.type == EntityType.rpps ||
+                e.type == EntityType.adeli) &&
             e.confidence == 0.3)
         .length;
 

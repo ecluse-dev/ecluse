@@ -80,6 +80,28 @@ void main() {
       EntityType.rpps,
       '1000\n\n1234565',
     ),
+    // P2-199 : ADELI (9 chiffres, clé de Luhn). Fixture synthétique
+    // `810012344`, clé calculée pour ce test, jamais une valeur réelle.
+    'ADELI : O pour 0': (
+      'ADELI : 81O012344 noté.',
+      EntityType.adeli,
+      '81O012344',
+    ),
+    'ADELI : l pour 1, groupes': (
+      'ADELI : 8l0 0l2 344 noté.',
+      EntityType.adeli,
+      '8l0 0l2 344',
+    ),
+    'ADELI : ligne vide entre deux groupes': (
+      'ADELI 810\n\n012 344 noté.',
+      EntityType.adeli,
+      '810\n\n012 344',
+    ),
+    'ADELI : O pour 0 et ligne vide': (
+      'ADELI : 81O 012\n\n344.',
+      EntityType.adeli,
+      '81O 012\n\n344',
+    ),
   };
 
   group('témoin positif : libellé fort + lecture OCR, masqué en entier', () {
@@ -105,6 +127,18 @@ void main() {
     }
   });
 
+  test(
+      'ADELI lu par OCR dont les cinq derniers chiffres + un mot ressemblent '
+      'à une adresse : masqué en entier, rien en clair', () async {
+    const texte = 'ADELI 209l73939 noté au dossier.';
+    final r = await Ecluse.redact(texte);
+    expect(r.maskedText, isNot(contains('209l')));
+    expect(r.maskedText, isNot(contains('73939')));
+    expect(r.entities.where((e) => e.type == EntityType.adeli), hasLength(1));
+    expect(r.entities.single.value, '209l73939');
+    expect(Ecluse.restore(r.maskedText, r.mapping), texte);
+  });
+
   group('témoin négatif : libellé seul ou suivi d\'autre chose, intact', () {
     const phrases = [
       'IBAN : voir pièce jointe',
@@ -113,6 +147,9 @@ void main() {
       'NIR : à compléter',
       'IBAN : FRANCE',
       'RPPS : 10OO1234',
+      'ADELI : de l\'infirmière',
+      'ADELI : 81O01234',
+      'ADELI : à renseigner',
       'NIR : l\'ordre du jour',
       'NIR : 450 euros',
       'IBAN : le 12/03/2026',
@@ -120,6 +157,7 @@ void main() {
       'Dossier 1 85 05 78 OO6 084 91',
       'Réf. 10OO1234565',
       'Compte FRl3 3000 6000 0100 0000 0001 189',
+      'Référence interne 81O 012 344 noté au dossier.',
     ];
     for (final texte in phrases) {
       test(texte, () async {
