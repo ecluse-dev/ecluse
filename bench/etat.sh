@@ -318,6 +318,20 @@ if produit "courriers capitales, générateur" "$B/flou/corpus_courriers.jsonl" 
   fi
 fi
 
+# Mots neutres, un mot à la fois (P2-211) : tous les mots de `mots_neutres.dart`
+# (lus dans le fichier Dart, aucune liste recopiée), 400 phrases « nombre à cinq
+# chiffres + mot » par mot, forme accentuée et forme sans accent quand elle
+# diffère, capitales et casse ordinaire. Aucune entité annotée : un nombre sous
+# une détection `adresse` est un masquage en trop (lisibilité perdue, pas une
+# fuite). Chemin mesuré : Ecluse.redact. Les déterminants (« le », « la »,
+# « les », « l ») suivis d'un nom en capitales sont le coût connu de P2-187.
+echo "## mots neutres, un mot à la fois (P2-211) : Ecluse.redact (chemin du produit), nombres masqués en adresse"
+if produit "mots neutres, générateur" "$B/flou/corpus_flou_mots_neutres.jsonl" python3 "$B/generate_corpus_mots_neutres.py" --n 400 --seed 42 --mots "$R/packages/ecluse_redact/lib/src/heuristics/mots_neutres.dart" --out "$B/flou/corpus_flou_mots_neutres.jsonl"; then
+  if produit "mots neutres, Ecluse.redact" "$B/flou/pred_mots_neutres.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_flou_mots_neutres.jsonl ../../bench/flou/pred_mots_neutres.jsonl; then
+    montre "mots neutres, score" -E "^mots neutres :|^  (casse|forme|position|suite|majuscules)=|^  mot=|^  types sur le nombre" 0 non dans_B python3 score_mots_neutres.py --corpus flou/corpus_flou_mots_neutres.jsonl --pred flou/pred_mots_neutres.jsonl || true
+  fi
+fi
+
 # Identifiant suivi d'une date, d'un âge ou d'un nombre (P2-174) : 4 types x
 # 4 familles x 3 séparateurs x 100 documents. Un identifiant non couvert est
 # une fuite ; un type faux ou une suite avalée abîme le texte sans fuite.
