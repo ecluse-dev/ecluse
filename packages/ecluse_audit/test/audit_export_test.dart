@@ -54,7 +54,7 @@ void main() {
       expect(e.entites, {'nir': 12, 'iban': 6});
       expect(e.refus, {'pdf_image': 5});
       expect(e.parOperation, {'redact': 6, 'ingest_refused': 5});
-      expect(e.moteurs, [_engine]);
+      expect(e.moteurs.map((m) => m.moteur), [_engine]);
     });
 
     test('faible effectif : « moins de 5 » et période au jour', () {
@@ -85,19 +85,121 @@ void main() {
           () => AuditExporter.agrege(const [], seuil: 0), throwsArgumentError);
     });
 
-    test('plusieurs moteurs sont tous listés, sans doublon, triés', () {
+    List<AuditEntry> avecMoteurs(List<String> moteurs,
+        {Duration pas = const Duration(hours: 1)}) {
       final entries = <AuditEntry>[];
-      for (var i = 0; i < 6; i++) {
+      for (var i = 0; i < moteurs.length; i++) {
         entries.add(AuditChain.next(
           previous: entries.isEmpty ? null : entries.last,
-          at: _t0.add(Duration(hours: i)),
-          engine: i.isEven ? 'ecluse_core 0.2.0 [nir]' : _engine,
+          at: _t0.add(pas * i),
+          engine: moteurs[i],
           op: AuditOp.redact,
           counts: const {'nir': 1},
         ));
       }
-      final e = AuditExporter.agrege(entries);
-      expect(e.moteurs, [_engine, 'ecluse_core 0.2.0 [nir]']);
+      return entries;
+    }
+
+    test('moteurs dans l\'ordre de première apparition, sans doublon', () {
+      final e = AuditExporter.agrege(avecMoteurs([
+        'ecluse_core 0.2.0 [nir]',
+        _engine,
+        'ecluse_core 0.2.0 [nir]',
+        _engine,
+        'ecluse_core 0.2.0 [nir]',
+        _engine,
+      ]));
+      expect(
+          e.moteurs.map((m) => m.moteur), ['ecluse_core 0.2.0 [nir]', _engine]);
+      expect(e.moteurs.map((m) => m.rang), [1, 2]);
+    });
+
+    test(
+        '0.10.0 vient après 0.2.0 : l\'ordre est chronologique, pas '
+        'alphabétique', () {
+      final e = AuditExporter.agrege(avecMoteurs([
+        'ecluse_redact 0.2.0 [nir]',
+        'ecluse_redact 0.2.0 [nir]',
+        'ecluse_redact 0.10.0 [nir]',
+        'ecluse_redact 0.10.0 [nir]',
+        'ecluse_redact 0.10.0 [nir]',
+        'ecluse_redact 0.10.0 [nir]',
+      ]));
+      expect(e.moteurs.map((m) => m.moteur),
+          ['ecluse_redact 0.2.0 [nir]', 'ecluse_redact 0.10.0 [nir]']);
+      // Un tri alphabétique donnerait l'ordre inverse.
+      expect(e.moteurs.first.moteur.compareTo(e.moteurs.last.moteur),
+          greaterThan(0));
+    });
+
+    test(
+        'journal à deux versions et trois changements (retour en arrière '
+        'compris)', () {
+      final e = AuditExporter.agrege(avecMoteurs([
+        'ecluse_redact 0.2.0 [nir]',
+        'ecluse_redact 0.2.0 [nir]',
+        'ecluse_redact 0.3.0 [nir]',
+        'ecluse_redact 0.2.0 [nir]',
+        'ecluse_redact 0.3.0 [nir]',
+        'ecluse_redact 0.3.0 [nir]',
+      ]));
+      expect(e.moteurs, hasLength(2));
+      expect(e.changementsDeMoteur, 3);
+      expect(
+          e.toTexte(),
+          contains('Le moteur a changé 3 fois pendant la '
+              'période'));
+    });
+
+    test('un seul moteur : aucun changement, aucune phrase de changement', () {
+      final e = AuditExporter.agrege(
+          avecMoteurs([for (var i = 0; i < 6; i++) _engine]));
+      expect(e.changementsDeMoteur, 0);
+      expect(e.toTexte(), isNot(contains('a changé')));
+      expect(e.moteurs, hasLength(1));
+    });
+
+    test('un seul changement : singulier', () {
+      final e = AuditExporter.agrege(avecMoteurs([
+        for (var i = 0; i < 6; i++) i < 3 ? _engine : 'ecluse_core 0.2.0 [nir]'
+      ]));
+      expect(e.changementsDeMoteur, 1);
+      expect(e.toTexte(), contains('Le moteur a changé 1 fois'));
+    });
+
+    test('horodatage de première apparition au jour, jamais à la minute', () {
+      final e = AuditExporter.agrege(avecMoteurs([
+        for (var i = 0; i < 8; i++) i < 4 ? _engine : 'ecluse_core 0.2.0 [nir]'
+      ], pas: const Duration(hours: 6)));
+      expect(e.moteurs.first.depuis, '2026-10-25');
+      expect(e.moteurs.last.depuis, '2026-10-26');
+      for (final m in e.moteurs) {
+        expect(m.depuis, matches(r'^\d{4}-\d{2}-\d{2}$'));
+      }
+    });
+
+    test(
+        'aucun compte par version dans le JSON ni dans le texte '
+        '(recoupement P2-26)', () {
+      final e = AuditExporter.agrege(avecMoteurs([
+        for (var i = 0; i < 9; i++) i < 7 ? _engine : 'ecluse_core 0.2.0 [nir]'
+      ]));
+      final json = e.toJson();
+      expect(json['version'], 2);
+      final moteurs = json['moteurs'] as List;
+      for (final m in moteurs) {
+        expect((m as Map).keys.toSet(), {'rang', 'moteur', 'depuis'});
+      }
+      expect(json['changements_de_moteur'], 1);
+      // Ni le rang d'entrée, ni le nombre d'entrées de l'ancien moteur.
+      expect(jsonEncode(moteurs), isNot(contains('seq')));
+      expect(e.toTexte(), isNot(contains('7 entrée')));
+    });
+
+    test('mention d\'honnêteté sur le changement de version', () {
+      final e = AuditExporter.agrege(const []);
+      expect(
+          e.mentions.any((m) => m.contains('ne sont pas comparables')), isTrue);
     });
   });
 
@@ -130,6 +232,7 @@ void main() {
       ]));
       const admises = {
         'chaine',
+        'changements_de_moteur',
         'entites',
         'mentions',
         'moteurs',
