@@ -852,6 +852,76 @@ le code postal et « GRAFFIGNY » restent en clair. Avec « DOSSIERS » à la pl
 « NUMEROS » : masqué en entier. Cas construit à la main, une commune du
 référentiel public ; fréquence non mesurée.
 
+## Mots neutres, un mot à la fois : là où la liste ne protège pas le nombre (P2-211)
+
+Mesure de départ, `main` au commit `bd7d24b`, graine 42, **aucun `lib/`
+modifié**. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM).
+Générateur `bench/generate_corpus_mots_neutres.py`, scoreur
+`bench/score_mots_neutres.py`. Le générateur lit les mots dans
+`mots_neutres.dart` lui-même (78 mots, aucune liste recopiée) et écrit 400
+phrases « nombre à cinq chiffres + mot » par mot, à parts égales entre ses
+cases : forme accentuée et, **quand elle diffère**, forme sans accent (cinq
+mots : « à », « numéro », « numéros », « salariés », « résidents ») ; capitales
+et casse ordinaire (mot en minuscules). 31 200 phrases, aucune entité annotée :
+un nombre sous une détection `adresse` est un **masquage en trop** (de la
+lisibilité perdue, **pas une fuite**).
+
+**Motif de construction** (écrit dans le générateur, une hypothèse et non une
+observation). Dans chaque case, les phrases tournent sur la position du nombre
+(en tête, ou après « Total de », « Reste », « Lot », « Soit », « Compte de »,
+« Suivi : »), sur ce qui suit le mot (rien ; une suite neutre : « en attente »,
+« par an » ; un nom commun : « traites », « valides ») et, en casse ordinaire,
+sur la présence d'une majuscule hors début de phrase. Tournures et suites sont
+écrites sans accent, pour que seule l'écriture du mot change entre les deux
+formes.
+
+| Mesure (`Ecluse.redact`) | Nombres masqués en adresse |
+|---|---:|
+| Toutes les phrases | **846 / 31 200** (9 mots touchés sur 78) |
+| Capitales | 639 / 15 600 |
+| Casse ordinaire | 207 / 15 600 |
+| Forme de la liste (accentuée ou sans accent possible) | 218 / 30 200 |
+| Forme sans accent (cinq mots) | **628 / 1 000** |
+| Sous un autre type que `adresse` | 0 |
+
+Les neuf mots touchés (les 69 autres sont à 0 dans les deux casses) :
+
+| Mot | Forme | Capitales | Casse ordinaire |
+|---|---|---:|---:|
+| « à » | sans accent (« A », « a ») | 83 / 100 | 38 / 100 |
+| « numéro » | sans accent | 87 / 100 | 44 / 100 |
+| « numéros » | sans accent | 82 / 100 | 43 / 100 |
+| « résidents » | sans accent | 87 / 100 | 43 / 100 |
+| « salariés » | sans accent | 82 / 100 | 39 / 100 |
+| les cinq, forme accentuée | | 0 / 500 | 0 / 500 |
+| « le » | de la liste | 56 / 200 | 0 / 200 |
+| « la » | de la liste | 57 / 200 | 0 / 200 |
+| « les » | de la liste | 54 / 200 | 0 / 200 |
+| « l » | de la liste | 51 / 200 | 0 / 200 |
+
+Trois lectures.
+
+1. **Forme sans accent : la liste ne protège rien.** Les cinq mots accentués de
+   la liste sont tous dans le même cas que « NUMEROS » (P2-210), « A » compris
+   (« 70000 A TRAITER »). En capitales, 421 / 500 ; les 79 phrases épargnées
+   commencent toutes par « TOTAL DE » ou « LOT » (la tournure de quantité ou de
+   référence avant le nombre les protège, pas la liste) : hors de ces deux
+   tournures, **421 / 421**. La forme accentuée en capitales (« NUMÉROS ») est
+   à 0 / 500.
+2. **Casse ordinaire : seulement en casse de phrase.** Les 207 phrases sont
+   toutes de la forme sans accent et n'ont qu'une majuscule, l'initiale
+   (« 39314 numeros en attente. ») : 207 / 250, les 43 épargnées étant encore
+   « Total de » et « Lot ». Avec une majuscule hors début de phrase : 0 / 250.
+3. **Déterminants : le coût connu de P2-187, chiffré mot par mot.** « LE »,
+   « LA », « LES », « L » ne sont masqués que suivis d'un nom commun, en
+   capitales : 218 / 264 (les 46 épargnées : « TOTAL DE », « LOT ») ; 0 / 536
+   quand rien ou une suite neutre les suit, 0 / 800 en casse ordinaire. Ce
+   n'est pas un défaut nouveau (décision du 15 novembre, P2-195 abandonnée).
+
+Ce que ce témoin ne dit pas : une fréquence (une phrase par forme, pire cas
+construit) ; le mot écrit avec une majuscule initiale en casse ordinaire
+(« 39314 Numeros ») ; les mots absents de la liste.
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par
