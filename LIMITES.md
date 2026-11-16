@@ -1966,6 +1966,25 @@ Ces règles couvrent les sommes que l'export publie lui-même ; elles ne protèg
 contre un attaquant qui connaît d'autres comptes (autres exports, journaux de
 l'application) : le seuil reste provisoire.
 
+**Changement de moteur dans un journal (P2-202, spec P2-198).** `engine`
+(version et détecteurs) reste dans l'empreinte chaînée ; un journal qui mêle
+deux versions est valide, `AuditVerifier.verify` n'y change rien. C'est
+l'export qui le signale : `AuditExport.moteurs` liste les valeurs distinctes
+**dans l'ordre de première apparition** (pas alphabétique : `0.10.0` suit
+`0.2.0`), chacune avec son rang (1, 2…) et le **jour** de sa première entrée ;
+`changementsDeMoteur` compte les entrées dont `engine` diffère de la
+précédente (un retour à une version antérieure compte pour un changement de
+plus), et le texte dit « Le moteur a changé N fois pendant la période » dès que
+N ≥ 1. **Aucun compte par version** (il serait retrouvé par soustraction,
+P2-26) ni rang d'entrée. La comparaison porte sur la chaîne entière : un
+changement de détecteurs sans changement de version est aussi un changement, et
+une description tronquée à 200 caractères (nombre de détecteurs seul) ne voit
+pas une liste qui change à nombre égal. Le journal n'écrit pas d'entrée
+« changement de moteur » : le marqueur est déduit à la lecture, il n'est pas, à
+lui seul, une preuve. Format de l'export passé en **version 2** (`moteurs` est
+une liste d'objets `rang`/`moteur`/`depuis`, nouvelle clé
+`changements_de_moteur`).
+
 Falsification de la chaîne (26 octobre 2026, 2 000 journaux synthétiques de 3 à 12
 entrées, graine 42, script jetable) : toute modification d'un champ (comptes,
 moteur, horodatage, rang), suppression au milieu ou de la première entrée, échange

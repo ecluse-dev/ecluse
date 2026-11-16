@@ -1,6 +1,33 @@
 import 'audit_entry.dart';
 import 'audit_verifier.dart';
 
+/// Un moteur rencontré dans le journal, dans l'ordre de sa première
+/// apparition (P2-202, recommandations de `agent/specs/P2-198.md`).
+///
+/// Ni compte ni rang d'entrée : ils donneraient le nombre d'entrées de chaque
+/// version, que le masquage de faible effectif (P2-26) retrouverait par
+/// soustraction. [rang] est l'ordre de première apparition (1, 2, …) ; [depuis]
+/// est le **jour** (`AAAA-MM-JJ`) de la première entrée, jamais la minute.
+final class MoteurExport {
+  const MoteurExport({
+    required this.rang,
+    required this.moteur,
+    required this.depuis,
+  });
+
+  /// Ordre de première apparition, à partir de 1.
+  final int rang;
+
+  /// Valeur de `engine` : version du moteur et noms des détecteurs actifs.
+  final String moteur;
+
+  /// Jour de la première entrée portant ce moteur.
+  final String depuis;
+
+  Map<String, Object> toJson() =>
+      {'rang': rang, 'moteur': moteur, 'depuis': depuis};
+}
+
 /// Agrégat factuel d'un journal d'audit, à reprendre dans un registre des
 /// activités de traitement ou une analyse d'impact (P2-15, spec P2-09).
 ///
@@ -27,6 +54,7 @@ final class AuditExport {
     required this.entites,
     required this.refus,
     required this.moteurs,
+    required this.changementsDeMoteur,
     required this.premiere,
     required this.derniere,
     required this.periodeAuJour,
@@ -48,8 +76,14 @@ final class AuditExport {
   /// Refus par code de motif.
   final Map<String, Object> refus;
 
-  /// Valeurs distinctes de `engine` rencontrées, triées.
-  final List<String> moteurs;
+  /// Valeurs distinctes de `engine` rencontrées, **dans l'ordre de première
+  /// apparition** (pas alphabétique : `0.10.0` suit `0.2.0`), avec rang et jour.
+  final List<MoteurExport> moteurs;
+
+  /// Nombre de fois où `engine` diffère de celui de l'entrée précédente. La
+  /// comparaison porte sur la chaîne entière (version et détecteurs) : un
+  /// retour à une version antérieure compte pour un changement de plus.
+  final int changementsDeMoteur;
 
   /// Première et dernière entrée : à la minute, ou au jour quand le nombre
   /// d'opérations est inférieur au seuil. `null` pour un journal vide.
@@ -65,13 +99,14 @@ final class AuditExport {
   List<String> get mentions => mentionsAudit;
 
   Map<String, Object?> toJson() => {
-        'version': 1,
+        'version': 2,
         'seuil': seuil,
         'operations': operations,
         'par_operation': parOperation,
         'entites': entites,
         'refus': refus,
-        'moteurs': moteurs,
+        'moteurs': [for (final m in moteurs) m.toJson()],
+        'changements_de_moteur': changementsDeMoteur,
         'periode': {
           'debut': premiere,
           'fin': derniere,
@@ -106,7 +141,18 @@ final class AuditExport {
     _liste(b, 'Opérations', parOperation);
     _liste(b, 'Entités détectées par type', entites);
     _liste(b, 'Refus par code de motif', refus);
-    b.writeln('Moteurs : ${moteurs.isEmpty ? 'aucun' : moteurs.join(' ; ')}');
+    if (moteurs.isEmpty) {
+      b.writeln('Moteurs : aucun');
+    } else {
+      b.writeln('Moteurs (ordre de première apparition) :');
+      for (final m in moteurs) {
+        b.writeln('  ${m.rang}. ${m.moteur} (depuis le ${m.depuis})');
+      }
+    }
+    if (changementsDeMoteur >= 1) {
+      b.writeln('Le moteur a changé $changementsDeMoteur fois pendant la '
+          'période.');
+    }
     switch (verification) {
       case AuditIntact():
         b.writeln('Chaîne : intacte sur $operations entrée(s) ; la troncature '
@@ -145,6 +191,8 @@ const List<String> mentionsAudit = [
   'La vérification de chaîne ne détecte ni la troncature en fin de journal ni '
       'une réécriture complète ; l\'horodatage vient de l\'horloge de '
       'l\'appareil.',
+  'Un changement de version du moteur ne change pas les garanties du journal, '
+      'mais les détections avant et après ne sont pas comparables.',
   'La nature juridique de ce journal n\'est pas établie (avis d\'un DPO '
       'attendu) : ne pas le publier comme une preuve.',
 ];
@@ -161,7 +209,9 @@ abstract final class AuditExporter {
     final parOperation = <String, int>{};
     final entites = <String, int>{};
     final refus = <String, int>{};
-    final moteurs = <String>{};
+    final moteurs = <String, String>{}; // moteur -> jour de première entrée
+    var changements = 0;
+    String? precedent;
     for (final e in liste) {
       parOperation[e.op.wire] = (parOperation[e.op.wire] ?? 0) + 1;
       for (final c in e.counts.entries) {
@@ -169,7 +219,9 @@ abstract final class AuditExporter {
       }
       final r = e.reason;
       if (r != null) refus[r.wire] = (refus[r.wire] ?? 0) + 1;
-      moteurs.add(e.engine);
+      moteurs.putIfAbsent(e.engine, () => e.ts.substring(0, 10));
+      if (precedent != null && precedent != e.engine) changements++;
+      precedent = e.engine;
     }
 
     final auJour = liste.isNotEmpty && liste.length < seuil;
@@ -198,7 +250,11 @@ abstract final class AuditExporter {
       parOperation: opsMasquees,
       entites: _masqueTout(entites, seuil),
       refus: refusMasques,
-      moteurs: moteurs.toList()..sort(),
+      moteurs: [
+        for (final (i, m) in moteurs.entries.indexed)
+          MoteurExport(rang: i + 1, moteur: m.key, depuis: m.value),
+      ],
+      changementsDeMoteur: changements,
       premiere: liste.isEmpty ? null : jour(liste.first.ts),
       derniere: liste.isEmpty ? null : jour(liste.last.ts),
       periodeAuJour: auJour,
