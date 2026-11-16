@@ -209,6 +209,13 @@ une coupure au milieu d'un groupe ne l'est pas.
   masqué que si c'est un NIR à clé valide.
 - Les identifiants professionnels autres que RPPS et FINESS, et les
   identifiants d'établissement autres que FINESS.
+- **ADELI à clé fausse derrière son libellé : avertissement (P2-204).** Un
+  ADELI de neuf chiffres à clé Luhn fausse, masqué à confiance 0,6 (inchangée,
+  voir ADELI plus haut), porte désormais l'avertissement « identifiant à clé
+  invalide masqué : à vérifier », comme NIR, IBAN et RPPS. Le message ne
+  contient jamais la valeur. Un numéro corse (« 2A… ») n'a pas de règle de clé
+  établie : il n'est pas jugé faux et n'avertit pas. Chemin `Ecluse.redact` :
+  ADELI × clé fausse 0 → 50 / 300 avec avertissement, négatifs 0 / 1 200.
 - **NIR, IBAN FR ou RPPS à clé fausse, annoncé par un libellé fort (P2-188).**
   `Ecluse.redact` masque quand même, à confiance 0,3, avec l'avertissement
   « identifiant à clé invalide masqué : à vérifier », un NIR précédé de
