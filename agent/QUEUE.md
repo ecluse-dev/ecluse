@@ -270,7 +270,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-200 | code | Tableau de bord : balayage des communes en capitales **sans** « CEDEX » et témoin de faux positifs « cinq chiffres + mot neutre + CEDEX », avant toute correction devant CEDEX | P2-196 | fusionnée |
 | P2-201 | code | Communes en capitales devant « CEDEX » : lever la règle du mot neutre, admettre parenthèse, tiret isolé et blancs multiples, numéro de CEDEX après un nom (classes 1 à 5 de `agent/specs/P2-196.md`) | P2-200 | à faire |
 | P2-202 | code | Export AIPD : moteurs dans l'ordre de première apparition, nombre de changements de moteur et mention d'honnêteté (recommandations de `agent/specs/P2-198.md`) | P2-198 | fusionnée |
-| P2-203 | mesure | Mesurer la confiance des masquages et l'avertissement « à vérifier » au tableau de bord (le banc ne lit pas la confiance aujourd'hui) | P2-194 | à faire |
+| P2-203 | mesure | Mesurer la confiance des masquages et l'avertissement « à vérifier » au tableau de bord (le banc ne lit pas la confiance aujourd'hui) | P2-194 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 

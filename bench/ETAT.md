@@ -344,9 +344,38 @@ chiffres suivi d'un mot (adresse), un IBAN dont la clé fausse redevient juste
 par la lettre d'OCR du corps. Le libellé fort n'ajoute donc aucun masquage
 sur ses faux amis.
 
-Non mesuré ici : l'avertissement « à vérifier » attaché aux masquages à
-confiance basse (le banc ne lit que les empans et types, pas la confiance) ;
-les libellés « sécurité sociale » seuls ou en minuscules accentuées variées ;
+**Confiance et avertissement « à vérifier » (P2-203, mesure seule, aucun
+détecteur modifié).** `run_redact_bench.dart --confiance` écrit pour chaque
+entité sa `confidence` et, par document, `a_verifier` (un avertissement de
+`Ecluse.redact` contient « à vérifier ») ; `score_libelle_fort.py` en tire les
+lignes ci-dessous (aucun texte ni valeur). Chemin : **`Ecluse.redact`**.
+`main` au commit `3b03ca1`, même témoin (3 000 documents, graine 42). Pour un
+positif, la confiance est la plus haute parmi les détections qui touchent
+l'identifiant.
+
+| Positifs, confiance du masquage | 0,3 | 0,55 | 0,6 | 0,9 | 0,95 | 1 | aucune |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| tous (1 800) | 1 250 | 1 | 50 | 50 | 50 | 200 | 199 |
+| `cle_juste` (300) | 0 | 0 | 0 | 50 | 50 | 200 | 0 |
+| `cle_fausse` (300) | 250 | 0 | 50 | 0 | 0 | 0 | 0 |
+| `ocr_zero`, `ligne_vide`, `ocr_et_ligne_vide` (900) | 750 | 0 | 0 | 0 | 0 | 0 | 150 |
+| `ocr_un` (300) | 250 | 1 | 0 | 0 | 0 | 0 | 49 |
+
+(« aucune » = en clair : les 200 ADELI OCR du point de départ ; le document de
+confiance 0,55 est une adresse qui chevauche un ADELI, voir P2-199.)
+
+- **Avertissement « à vérifier »** : 1 250 positifs sur 1 800 (250 sur 300 par
+  variante autre que `cle_juste`, 0 sur `cle_juste`) ; **0 négatif sur 1 200**.
+  Il coïncide avec les masquages à confiance 0,3 : 0 incohérence (aucun masquage
+  à 0,3 sans avertissement, aucun avertissement sans 0,3), positifs et négatifs.
+- **ADELI à clé fausse masqué à 0,6 : sans avertissement** (50 documents,
+  `AdeliDetector`, confiance 0,6 par `LIMITES.md` § 2) alors que NIR, IBAN et
+  RPPS à clé fausse (confiance 0,3) en portent un. Constat, non corrigé ici.
+- Les 8 négatifs masqués sont masqués par d'autres détecteurs, de confiance 0,5
+  (1), 0,55 (4), 0,9 (2) et 1 (1) : aucun à 0,3, donc aucun avertissement ; le
+  libellé fort n'y est pour rien.
+
+Non mesuré ici : les libellés « sécurité sociale » seuls ou en minuscules accentuées variées ;
 les identifiants dans un tableau ou un PDF. Corpus synthétique : aucun chiffre
 ne vaut fréquence réelle.
 
