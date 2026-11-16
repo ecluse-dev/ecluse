@@ -785,6 +785,30 @@ flous d'établissements, mises en page, balayage avec CEDEX, témoins de
 sur-masquage : identiques, donc aucun établissement du corpus perdu). Le
 corpus d'établissements est celui des corpus flous du tableau de bord
 (`bench/etat.sh`, sections « flou » et « mise en page »).
+## « SAINT M HERVE » : le « M » isolé n'est pas une civilité (P2-208)
+
+Avant : `main` au commit `8b516b7` (rejeu du 16 novembre). Après : branche
+`claude/P2-208-saint-m-civilite`. Graine 42. Chemin mesuré : **`Ecluse.redact`**
+(ce que reçoit le LLM). Modifiés : `AdresseDetector` (`_titres` : le « M »
+derrière SAINT, SAINTE, ST ou STE n'est plus refusé comme mot de commune) et
+`NameDetector` (le « M » isolé derrière un mot Saint n'est plus le nom qui
+précède le prénom connu « HERVE »). Les autres « M » restent des civilités
+(« M DUPONT » : nom masqué, civilité visible).
+
+| Mesure (`Ecluse.redact`) | Avant | Après |
+|---|---:|---:|
+| Balayage en capitales avec « CEDEX n » : adresses en partie en clair | 1 / 139 500 | **0** |
+| fuite au caractère | 0,0 % (1 / 3 117 758) | 0,0 % (0) |
+| Balayage en casse ordinaire avec « CEDEX n » (P2-178) | 8 | **7** |
+| dont écriture `postale` | 1 | 0 |
+| Balayage en capitales sans CEDEX | 338 | 338 (inchangé) |
+
+Le gain en casse ordinaire est le même cas (« Saint M Hervé CEDEX 3 »), pas un
+effet voulu à part. `bash bench/etat.sh` rejoué en entier sur `main` et sur la
+branche : seules ces lignes diffèrent (témoin de faux titres de P2-180 et
+sections de noms inclus : identiques). Non mesuré : « SAINT M HERVE » sans
+CEDEX (le balayage sans CEDEX le comptait déjà parmi ses 338, cause
+« autre »).
 
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
