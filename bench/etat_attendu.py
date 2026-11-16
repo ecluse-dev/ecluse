@@ -173,6 +173,8 @@ ATTENDU = [
          "avertissement par variante"),
         (r"^  incohérence confiance 0.3 / avertissement : positifs \d+, "
          r"négatifs \d+", 1, "cohérence confiance 0,3 et avertissement"),
+        (r"^  exception P2-204 \(ADELI clé fausse, confiance 0.6, avec "
+         r"avertissement\) : positifs \d+", 1, "exception ADELI clé fausse"),
     ]),
     ("## mise en page", [
         (r"^# \w+ largeur \d+ : \d+ refus$", 6, "3 corpus x 2 largeurs"),
