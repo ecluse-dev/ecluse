@@ -674,6 +674,91 @@ la même règle (« devant CEDEX seulement »), pas une régression ; aucun tém
 de faux positifs en casse ordinaire ne bouge (0 / 200 au témoin ci-dessus). Le
 mainteneur peut demander de la limiter aux capitales.
 
+## Communes en capitales sans « CEDEX » : formes et coût des règles candidates (P2-206)
+
+Mesure seulement, `main` au commit `8b516b7`, graine 42, **aucun `lib/`
+modifié**. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM) pour les
+prédictions de départ ; les deux règles candidates sont **simulées** par
+`bench/regles_candidates_communes.py` en ajoutant leur étendue aux détections
+de `Ecluse.redact` (union). Une implémentation réelle règle aussi les
+chevauchements avec les autres détecteurs (`resolveOverlaps`) : les chiffres
+ci-dessous sont un ordre de grandeur du gain et du coût, pas la mesure d'une
+implémentation. Reproduit par `bash bench/etat.sh`, section « formes et règles
+candidates ».
+
+**Ventilation des 338 adresses en défaut** (`classe_communes_capitales.py
+--sans`, une seule forme par adresse, dans l'ordre E, C, D, B, A) : le total et
+les cinq formes de `agent/specs/P2-205.md` sont retrouvés.
+
+| Forme | Adresses | Communes | Exemples du référentiel |
+|---|---:|---:|---|
+| A plus de quatre mots | 216 | 135 | FLAVIGNY LE GRAND ET BEAURAIN |
+| B mot neutre en tête (hors LE, LA, LES, L') | 57 | 15 | SON ; VERS ; SOUS PARSAT |
+| C parenthèse, tiret isolé, blancs multiples | 32 | 9 | SARROUX - SAINT JULIEN |
+| D déterminant puis mot neutre | 4 | 1 | LES PLACES |
+| E mot-clé d'établissement dans le nom | 29 | **14** | MAS CABARDES |
+| autre | 0 | 0 | |
+
+Un écart avec la spec : E compte **14** communes ici, la spec en annonçait 15
+(elle avait classé avec un script jetable). La forme E se lit sur les
+prédictions : une détection de type `etablissement` recouvre l'adresse
+annotée ; les autres formes se lisent sur le nom de la commune.
+
+**Gain des règles sur le balayage** (139 500 adresses ; formes A à D, 309
+adresses ; la forme E n'est pas simulable, c'est un autre détecteur) :
+
+| Règle simulée | Formes A à D en partie en clair |
+|---|---:|
+| aucune (`Ecluse.redact` seul) | 309 |
+| nom exact du référentiel (plus long préfixe de la fin de ligne) | **0** |
+| nom exact, ligne entière | **0** |
+| fin de ligne (mots à majuscule ou de liaison) | **61** (B 57, D 4) |
+
+Lecture : le **0** du nom exact est vrai **par construction** (le balayage est
+fait avec les noms du référentiel, la règle les reconnaît tous). Il ne dit rien
+de ce qui n'est pas au référentiel (abréviations « ST », « STE », fautes) : non
+mesuré. « Fin de ligne » ne lève pas la règle du mot neutre, donc B et D
+restent.
+
+**Coût sur le témoin « commune suivie »** (`generate_corpus_commune_suivie.py`,
+480 documents, 6 659 caractères de suite ordinaire ; caractères de suite
+masqués, hors blancs ; adresse en partie en clair : 0 partout) :
+
+| Règle simulée | Règle à toute ligne (comme P2-181) | Règle aux seuls textes en capitales¹ |
+|---|---:|---:|
+| `Ecluse.redact` seul | 3 739 (308 documents) | 5 379 (462 documents) |
+| nom exact (préfixe ou ligne entière) | 3 739 (**+0**) | 5 379 (**+0**) |
+| fin de ligne | 4 808 (**+1 069**, 363 documents) | 6 631 (**+1 252**, 476 documents) |
+
+¹ Le témoin passé en capitales par `variantes_casse.py`, la branche où la règle
+vivrait. Le sur-masquage de départ y est déjà de 462 documents sur 480 : le
+témoin en capitales ne distingue presque plus rien.
+
+La règle « fin de ligne » de P2-181 avait été rejouée à la main et n'était pas
+versionnée : la lecture écrite ici donne 4 808 là où P2-181 avait noté 4 858
+(écart de 50 caractères, non expliqué, la règle d'origine n'est pas
+retrouvable). Le nom exact ne masque **rien de plus** sur ce témoin : le nom
+exact est « VESOUL », que le motif à quatre mots masque déjà avec sa suite.
+
+**Coût sur des témoins sans adresse annotée** (toute adresse en plus est un
+masquage en trop, de la lisibilité perdue ; la règle ne vit que dans les
+capitales) :
+
+| Témoin | Capitales : adresses prédites, `Ecluse.redact` seul | + nom exact (préfixe) | + nom exact (ligne) | + fin de ligne |
+|---|---:|---:|---:|---:|
+| noms de communes de forme neutre (`generate_corpus_commune_neutre.py`, 200 en capitales) | 0 / 200 | **+200** | **+100** | +0 |
+| cinq chiffres (P2-167) | aucun texte en capitales : rien de mesuré | | | |
+| déterminant (P2-187, 200 en capitales) | 107 / 200 | +1 | +0 | +96 |
+
+Le témoin de formes neutres est **construit** : chaque phrase contient par
+construction un nom du référentiel après cinq chiffres (« 08061 SON »), il dit
+le pire cas du nom exact (le coût de lever la règle du mot neutre pour ces 15
+communes), pas une fréquence. Le +1 du témoin « déterminant » est « LA
+REUNION », commune du référentiel (« STOCK DE 59477 LA REUNION DE SERVICE ») :
+un cas réel de faux positif du nom exact, sur 200. **Non mesuré** : la
+fréquence de ces tournures dans du texte réel, la part des écritures hors
+référentiel, l'interaction avec les autres détecteurs.
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par

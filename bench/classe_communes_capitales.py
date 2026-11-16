@@ -24,8 +24,28 @@ forme du nom de commune ecrit dans le document :
 
 N'imprime que des comptes et des exemples du referentiel.
 
+**Axe `sans CEDEX` (P2-206, `--sans`)** : les 338 adresses du balayage en
+capitales sans « CEDEX » sont ventilees en cinq **formes** de commune
+(`agent/specs/P2-205.md`), une seule par adresse, dans cet ordre :
+
+- `E` mot-cle d'etablissement : une detection de type `etablissement` de
+  `Ecluse.redact` recouvre l'adresse annotee (autre detecteur, lu sur les
+  predictions, pas sur le nom) ;
+- `C` parenthese, tiret isole ou blancs multiples dans le nom ;
+- `D` determinant puis mot neutre (« LES PLACES ») ;
+- `B` mot neutre en tete, hors LE, LA, LES, L' (« SON », « VERS », « AUX ») ;
+- `A` plus de quatre mots (au moins cinq) ;
+- `autre` : rien de ce qui precede (doit rester a 0 ; sinon la ventilation
+  est incomplete et le dit).
+
+Le scoreur `score_cedex.py` classe par **cause** (longueur, autre,
+ponctuation, determinant initial) ; les formes se recoupent avec ces causes
+sans s'y superposer : une commune a parenthese de cinq mots est « longueur »
+au scoreur et « C » ici.
+
 Usage (depuis la racine, apres `bash bench/etat.sh`) :
-    python3 bench/classe_communes_capitales.py
+    python3 bench/classe_communes_capitales.py          # avec CEDEX (P2-196)
+    python3 bench/classe_communes_capitales.py --sans   # sans CEDEX (P2-206)
 """
 
 import collections
@@ -66,7 +86,76 @@ def classe(nom, neutres):
     return "autre"
 
 
+def forme_sans_cedex(nom, mots, etablissement, neutres):
+    """Forme A a E de la commune d'une adresse en defaut (voir l'en-tete).
+
+    `mots` est le nombre de mots du corpus, `etablissement` vrai si une
+    detection d'etablissement recouvre l'adresse."""
+    if etablissement:
+        return "E"
+    f = classe(nom, neutres)
+    if f in ("parenthèse", "tiret ou blancs entre deux noms"):
+        return "C"
+    if f == "déterminant puis mot neutre":
+        return "D"
+    premier = [m.lower() for m in re.split(r"['’\s-]+", nom.strip()) if m]
+    if f == "mot neutre en tête" and premier[0] not in DETERMINANTS:
+        return "B"
+    if mots >= 5:
+        return "A"
+    return "autre"
+
+
+FORMES = (
+    ("A", "plus de quatre mots"),
+    ("B", "mot neutre en tête"),
+    ("C", "parenthèse, tiret isolé ou blancs multiples"),
+    ("D", "déterminant puis mot neutre"),
+    ("E", "mot-clé d'établissement dans le nom"),
+    ("autre", "aucune des cinq formes"),
+)
+
+
+def main_sans():
+    corpus = lit(os.path.join(ICI, "flou",
+                              "corpus_cedex_balayage_sans_majuscules.jsonl"))
+    preds = {d["id"]: d for d in lit(os.path.join(
+        ICI, "flou", "pred_cedex_balayage_sans_majuscules.jsonl"))}
+    neutres = mots_neutres()
+    par_forme = collections.defaultdict(list)
+    for doc in corpus:
+        pred = preds[doc["id"]]
+        _, clair, _ = juge(doc, pred)
+        if not clair:
+            continue
+        e = doc["entities"][0]
+        etab = any(p["type"] == "etablissement" and p["start"] < e["end"]
+                   and p["end"] > e["start"] for p in pred["entities"])
+        a, b = doc["parties"]["commune"]
+        nom = doc["text"][a:b]
+        par_forme[forme_sans_cedex(nom, doc["mots"], etab, neutres)].append(
+            (doc, nom))
+    total = sum(len(v) for v in par_forme.values())
+    print(f"sans CEDEX : {total} adresses en partie en clair sur "
+          f"{len(corpus)}, par forme de commune (Ecluse.redact)")
+    for lettre, libelle in FORMES:
+        v = par_forme.get(lettre, [])
+        if not v and lettre == "autre":
+            print(f"  forme autre : 0 adresse(s), 0 commune(s) ({libelle})")
+            continue
+        communes = {d["com"] for d, _ in v}
+        vus = []
+        for _, nom in v:
+            if nom not in vus:
+                vus.append(nom)
+        print(f"  forme {lettre} : {len(v)} adresse(s), {len(communes)} "
+              f"commune(s) ({libelle}) ; exemples : " + " ; ".join(vus[:3]))
+
+
 def main():
+    if "--sans" in sys.argv[1:]:
+        main_sans()
+        return
     corpus = lit(os.path.join(ICI, "flou",
                               "corpus_cedex_balayage_majuscules.jsonl"))
     preds = {d["id"]: d for d in lit(os.path.join(
