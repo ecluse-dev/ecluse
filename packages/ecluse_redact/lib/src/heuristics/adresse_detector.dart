@@ -189,8 +189,14 @@ final class AdresseDetector implements EntityDetector {
 
   /// Civilités et titres qui ne sont jamais le dernier mot d'une commune :
   /// ils annoncent un nom de personne, détecté à part.
+  ///
+  /// Le « M » isolé derrière SAINT n'est pas une civilité : c'est la commune
+  /// « Saint-M'Hervé », dont l'apostrophe est perdue à la normalisation
+  /// (« 35184 SAINT M HERVE CEDEX 3 », P2-208). Un « M » après un autre mot
+  /// reste un titre.
   static const _titres =
-      '(?:Mme|Mlle|Mr|Madame|Monsieur|Mademoiselle|Dr|Docteur|Pr|Professeur|Me|Maître|M)';
+      '(?:Mme|Mlle|Mr|Madame|Monsieur|Mademoiselle|Dr|Docteur|Pr|Professeur|Me|Maître|'
+      'M(?<!(?:Saint|SAINT|Sainte|SAINTE|St|ST|Ste|STE)[ \\u00A0\\u202F-]+M))';
 
   /// Fin de mot après un titre (« M », « Pr »…), équivalent de `\b` mais qui
   /// tient compte des lettres accentuées : `\b` de Dart se fonde sur `\w`

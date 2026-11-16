@@ -166,6 +166,20 @@ final class NameDetector implements EntityDetector {
 
   /// Un toponyme « Saint-… » (« Saint-Denis », « Seine-Saint-Denis ») n'est pas un
   /// prénom.
+  /// « SAINT M HERVE » : le « M » isolé derrière un mot Saint est le début de
+  /// la commune « Saint-M'Hervé » (apostrophe perdue), pas un nom ni une
+  /// civilité devant le prénom connu qui suit (P2-208). Seul « M » est traité :
+  /// c'est la seule commune de cette forme dans le référentiel.
+  static final RegExp _saintDevantM = RegExp(
+    '(?:Saint|SAINT|Sainte|SAINTE|St|ST|Ste|STE)[ \\t\u00A0\u202F-]+\$',
+  );
+
+  static bool _mApresSaint(String text, _WordSpan mot) {
+    if (text.substring(mot.start, mot.end) != 'M') return false;
+    final debut = mot.start > 12 ? mot.start - 12 : 0;
+    return _saintDevantM.hasMatch(text.substring(debut, mot.start));
+  }
+
   static bool _estToponymeSaint(String mot) =>
       RegExp(r'^Sainte?s?-').hasMatch(mot) || mot.contains('-Saint-');
 
@@ -1004,8 +1018,9 @@ final class NameDetector implements EntityDetector {
       // comme dans l'autre (voir le commentaire de classe).
       final before = _matchPrevCapitalizedWord(text, match.start) ??
           _matchPrevVirgule(text, match.start, match.end);
-      final hasFreeLastNameBefore =
-          before != null && !claimed.overlaps(before.start, before.end);
+      final hasFreeLastNameBefore = before != null &&
+          !claimed.overlaps(before.start, before.end) &&
+          !_mApresSaint(text, before);
 
       final after = _matchNextCapitalizedWord(text, match.end);
       final hasFreeLastNameAfter =
