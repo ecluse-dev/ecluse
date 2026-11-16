@@ -564,6 +564,43 @@ ADMISSIONS. » devient « VOIR [ADRESSE_1]. ». Restent intacts : déterminant s
 (« 70000 LA »), second mot neutre (« 70000 LES DOSSIERS DU MOIS »), « 70000 LES
 3 PREMIERS ».
 
+## Communes en capitales sans « CEDEX », témoin mot neutre devant CEDEX (P2-200)
+
+Mesure de départ avant P2-201 (`main` au commit `3b03ca1`, graine 42, aucun
+détecteur modifié). Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM).
+
+**Balayage sans CEDEX** (`generate_corpus_cedex.py --balayage --cedex sans`) :
+mêmes 34 875 communes × 4 écritures, 139 500 adresses, tout en capitales
+(`variantes_casse.py`), sans mot « CEDEX ». 0 refus.
+
+| Balayage en capitales | Adresses en défaut | Fuite au caractère | Causes (`score_cedex.py`) |
+|---|---:|---:|---|
+| avec « CEDEX n » (P2-187) | 95 / 139 500 | 0,1 % (2 020 / 3 117 758) | autre 59, ponctuation 30, déterminant initial 4 |
+| **sans CEDEX** (P2-200) | **338 / 139 500** | **0,1 %** (3 061 / 2 280 758) | **longueur 216, autre 60, ponctuation 30, déterminant initial 16** |
+
+Par écriture, sans CEDEX : libellé 30, postale 168, libellé à espaces 110,
+capitales à tirets 30 ; 165 communes distinctes sur 34 875 touchées sous au
+moins une écriture. La cause « longueur » (216) est la commune de plus de
+quatre mots, que la suite devant « CEDEX » de P2-181 couvrait ; elle n'existe
+qu'ici. La cause « autre » (60) contient la classe « mot neutre en tête » de
+`agent/specs/P2-196.md` (non ventilée par le scoreur). Les 338 adresses sont
+de la fuite de nom de commune (lieu, pas une personne) ; aucun CEDEX en jeu.
+
+**Témoin de faux positifs devant CEDEX** (`generate_corpus_neutre_cedex.py`,
+400 phrases, graine 42, **aucune adresse annotée**), « cinq chiffres + mot
+neutre (+ parenthèse, tiret) + CEDEX n » (« VIREMENT DE 70000 EUROS CEDEX 3 »),
+en capitales et en casse ordinaire :
+
+| Phrases avec une adresse prédite | Avant correction |
+|---|---:|
+| en capitales (sur 200) | **0** |
+| en casse ordinaire (sur 200) | **0** |
+| par forme de suite : mot / parenthèse / tiret | 0 / 136, 0 / 132, 0 / 132 |
+
+Aujourd'hui la règle du mot neutre protège entièrement ce cas ; le chiffre à
+suivre pour P2-201 est donc **0 → ?** (coût de la levée devant CEDEX). Témoin
+construit : il dit le pire cas, pas une fréquence. Corpus synthétique.
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par

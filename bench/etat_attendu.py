@@ -113,6 +113,23 @@ ATTENDU = [
         (r"^  ecriture=(libelle|postale|libelle_espaces|capitales_tirets) : "
          r"\d+ / \d+ en défaut", 4, "par écriture"),
     ]),
+    ("## communes en capitales : nom en partie en clair après CEDEX", [
+        (r"^cedex commune longue : \d+ adresses, \d+ avec au moins un "
+         r"caractère en clair", 1, "balayage en capitales avec CEDEX (P2-185)"),
+        (r"^  cedex=CEDEX n : \d+ / \d+ en défaut", 1, "axe cedex=CEDEX n"),
+    ]),
+    ("## communes en capitales sans CEDEX", [
+        (r"^cedex commune longue : \d+ adresses, \d+ avec au moins un "
+         r"caractère en clair", 1, "balayage en capitales sans CEDEX (P2-200)"),
+        (r"^  cedex=sans : \d+ / \d+ en défaut", 1, "axe cedex=sans"),
+    ]),
+    ("## témoin mot neutre devant CEDEX", [
+        (r"^témoin cinq chiffres : \d+ phrases, \d+ prédiction", 1,
+         "adresses prédites à tort devant CEDEX (P2-200)"),
+        (r"^  casse=(capitales|ordinaire) : \d+ / \d+", 2, "par casse"),
+        (r"^  suffixe=(mot|parenthese|tiret) : \d+ / \d+", 3,
+         "par forme de suite"),
+    ]),
     ("## commune suivie de mots ordinaires", [
         (r"^commune suivie : \d+ documents, \d+ à la suite masquée en "
          r"partie, \d+ / \d+ caractères de suite masqués", 1,
