@@ -785,6 +785,47 @@ flous d'établissements, mises en page, balayage avec CEDEX, témoins de
 sur-masquage : identiques, donc aucun établissement du corpus perdu). Le
 corpus d'établissements est celui des corpus flous du tableau de bord
 (`bench/etat.sh`, sections « flou » et « mise en page »).
+## Communes en capitales sans « CEDEX » : règle « nom exact du référentiel » (P2-214)
+
+Avant : `main` au commit `bd7d24b` ; après : P2-214. Graine 42. Chemin mesuré :
+**`Ecluse.redact`** (ce que reçoit le LLM). La règle est dans `lib/`
+(`AdresseDetector`, texte tout en capitales) ; elle lit une table de 261 noms
+écrite dans le paquet (`communes_nom_exact.dart` : 251 noms de cinq mots ou
+plus, 9 à parenthèse ou tiret isolé, « LES PLACES »), générée depuis le
+référentiel versionné par `tools/build_communes_nom_exact.py`. Les 15 communes
+de forme B (mot neutre en tête) n'y sont pas, par décision du 16 novembre.
+
+| Mesure (`Ecluse.redact`) | Avant | Après | Simulation de P2-206 |
+|---|---:|---:|---:|
+| Balayage capitales sans CEDEX, adresses en partie en clair | 309 / 139 500 | **57 / 139 500** | 0 (forme B comprise) |
+| dont forme A (plus de quatre mots) | 216 | **0** | 0 |
+| dont forme B (mot neutre en tête), laissée de côté | 57 | 57 | 0 |
+| dont forme C (parenthèse, tiret isolé, blancs) | 32 | **0** | 0 |
+| dont forme D (« LES PLACES ») | 4 | **0** | 0 |
+| Fuite au caractère, même balayage | 2 886 / 2 280 758 | 921 / 2 280 758 | |
+| Balayage capitales avec « CEDEX n » | 0 / 139 500 | 0 / 139 500 | |
+| Témoin commune suivie (P2-181), caractères de suite masqués | 3 739 / 6 659 | 3 739 / 6 659 | +0 |
+| Témoin cinq chiffres (P2-167), phrases à adresse prédite | 74 / 400 | 74 / 400 | +0 |
+| Témoin déterminant (P2-187), capitales | 107 / 200 | 107 / 200 | +1 (« LA REUNION ») |
+| Témoin mot neutre devant CEDEX (P2-200), capitales | 113 / 200 | 113 / 200 | |
+| Témoin commune de forme neutre (P2-206), capitales | 0 / 200 | **8 / 200** | +200 |
+| Courriers en capitales (P2-210), lignes masquées en trop | 35 / 3 185 | 35 / 3 185 | |
+
+Deux écarts avec la simulation, tous deux dans le bon sens et expliqués par la
+table. **« LA REUNION »** : la simulation comparait à tout le référentiel ; la
+table ne contient que les noms que le motif ne lit pas seul, et ce nom de deux
+mots n'en est pas. **Témoin de forme neutre, 8 / 200** : ce sont les phrases
+du seul nom de forme D, « LES PLACES » (« VIREMENT DE 99307 LES PLACES EFFECTUE
+LUNDI », 8 de ses 14 phrases en capitales ; les 6 autres suivent une tournure
+de quantité) ; les 192 autres phrases portent un nom de forme B, hors de la
+règle. C'est du masquage en trop, pas une fuite.
+
+Le « 0 » des formes A, C et D est vrai par construction : le balayage écrit
+les noms du référentiel, et la règle les lit. Une écriture hors référentiel
+(« ST », faute) n'est pas mesurée ici (P2-215). Les lignes « règles simulées »
+de `etat.sh` (P2-206) repartent maintenant de 57 au lieu de 309. Reste du
+tableau de bord : identique à `main`, ligne pour ligne.
+
 ## « SAINT M HERVE » : le « M » isolé n'est pas une civilité (P2-208)
 
 Avant : `main` au commit `8b516b7` (rejeu du 16 novembre). Après : branche
