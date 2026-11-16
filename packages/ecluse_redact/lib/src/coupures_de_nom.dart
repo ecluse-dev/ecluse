@@ -101,6 +101,11 @@ const int _fenetre = 160;
 
 bool _blanc(int c) => c == 0x20 || c == 0x09;
 
+/// Début de mot : la lettre qui précède n'est ni un caractère de mot ni une
+/// lettre accentuée. `\\b` ne connaît pas les lettres accentuées : « CH » était
+/// trouvé au milieu de « BUËCH » (P2-207).
+const String _debutDeMot = '(?<![\\wÀ-ÿ])';
+
 final RegExp _finDeLigne = RegExp(r'[ \t]*\r?\n[ \t]*');
 
 bool _seRecollent(String avant, String apres) {
@@ -124,8 +129,34 @@ bool _seRecollent(String avant, String apres) {
   if (_etiquette.hasMatch(apres)) return false;
   final premier = mot.group(0)!;
   if (_articles.contains(premier)) return _articlePuisNomPropre.hasMatch(apres);
-  return !_ouvreUnePhrase.contains(premier);
+  // En capitales (« MERCI DE VOTRE RETOUR »), la liste des débuts de phrase,
+  // écrite en casse de titre, se lit aussi en casse de titre (P2-207) : sans
+  // quoi toute la ligne suivante passait pour la suite du nom. Les mots de
+  // liaison (« DE », « DES », « SUR ») restent la suite d'un nom, comme avant.
+  final titre = _casseDeTitre(premier);
+  if (titre != premier && _liaisonsEnCapitales.contains(premier)) return true;
+  return !(_ouvreUnePhrase.contains(premier) ||
+      _ouvreUnePhrase.contains(titre));
 }
+
+/// « MERCI » → « Merci » ; un mot qui n'est pas tout en capitales (ou d'une
+/// seule lettre) est rendu tel quel.
+String _casseDeTitre(String mot) => mot.length > 1 && mot == mot.toUpperCase()
+    ? mot[0] + mot.substring(1).toLowerCase()
+    : mot;
+
+/// Débuts de ligne en capitales qui prolongent un nom d'établissement, même si
+/// leur forme en casse de titre figure dans [_ouvreUnePhrase].
+const Set<String> _liaisonsEnCapitales = {
+  'DE',
+  'DU',
+  'DES',
+  'AU',
+  'AUX',
+  'EN',
+  'SUR',
+  'SOUS',
+};
 
 // --- Établissement ---------------------------------------------------------
 // Mêmes briques que `EtablissementDetector` (mot-clé, connecteur, mot en
@@ -145,12 +176,12 @@ final String _motsCles = _alternative(
 
 /// « … CH », « … Centre Hospitalier », « … Résidence Les » en fin de ligne.
 final RegExp _etablissementEnFinDeLigne =
-    RegExp('\\b(?:$_motsCles)(?:[ \\t]+$_segment)*\$');
+    RegExp('$_debutDeMot(?:$_motsCles)(?:[ \\t]+$_segment)*\$');
 
 /// « … CH de », « … IME La », « … MAS des » en fin de ligne : la ligne finit
 /// par un mot de liaison, en minuscules ou en article capitalisé.
 final RegExp _etablissementPuisLiaison = RegExp(
-    '\\b(?:$_motsCles)(?:[ \\t]+$_segment)*[ \\t]+(?:$_connecteur|Le|La|Les)\$');
+    '$_debutDeMot(?:$_motsCles)(?:[ \\t]+$_segment)*[ \\t]+(?:$_connecteur|Le|La|Les)\$');
 
 final RegExp _debutMot = RegExp('^$_mot');
 final RegExp _liaisonPuisMot = RegExp("^(?:$_connecteur[ \\t]+|[dl]['’])$_mot");
@@ -198,7 +229,7 @@ final List<(RegExp, RegExp)> _motsClesCoupes = [
     for (var k = motCle.indexOf(' '); k >= 0; k = motCle.indexOf(' ', k + 1))
       (
         RegExp(
-            '\\b${RegExp.escape(motCle.substring(0, k)).replaceAll(' ', '[ \\t]+')}\$'),
+            '$_debutDeMot${RegExp.escape(motCle.substring(0, k)).replaceAll(' ', '[ \\t]+')}\$'),
         RegExp(
             '^${RegExp.escape(motCle.substring(k + 1)).replaceAll(' ', '[ \\t]+')}'
             '[ \\t]+$_segment'),

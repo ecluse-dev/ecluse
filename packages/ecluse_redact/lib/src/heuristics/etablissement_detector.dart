@@ -50,17 +50,19 @@ final class EtablissementDetector implements EntityDetector {
   /// répétition dans [_pattern] s'arrête avant, sans l'absorber.
   static const String _segment = '(?:$_connector[ \\t]+)?$_word';
 
-  // `\b` : évite qu'un mot-clé court (« CH ») ne matche comme sous-chaîne
-  // d'un mot plus long (ex. « SANDWICH ») — les mots-clés plus longs
-  // étaient déjà protégés de fait par l'espace obligatoire qui suit, mais
-  // pas côté gauche.
+  // Frontière de mot à gauche : évite qu'un mot-clé court (« CH ») ne matche
+  // comme sous-chaîne d'un mot plus long (ex. « SANDWICH ») — les mots-clés
+  // plus longs étaient déjà protégés de fait par l'espace obligatoire qui
+  // suit, mais pas côté gauche. Écrite `(?<![\wÀ-ÿ])` et non `\b` : `\b` ne
+  // connaît pas les lettres accentuées, « CH » était trouvé au milieu de
+  // « BUËCH » et « VAL BUË » restait en clair (P2-207).
   //
   // `[ \t]` plutôt que `\s` entre le mot-clé et le nom, et entre chaque
   // segment du nom : un nom d'établissement ne traverse jamais un saut de
   // ligne dans un document réel — `\s` matcherait aussi le saut de ligne
   // et fusionnerait deux entités sans rapport (bug corrigé précédemment).
   static final RegExp _pattern = RegExp(
-    r'\b'
+    r'(?<![\wÀ-ÿ])'
     '(?:${[..._keywords, ...etablissementKeywordsMinuscules].join('|')})'
     // Nom entre guillemets (« Les Tilleuls », "Les Tilleuls") ou nu.
     '[ \\t]+(?:["«“][ \\t]?$_segment(?:[ \\t]+$_segment)*[ \\t]?["»”]'
