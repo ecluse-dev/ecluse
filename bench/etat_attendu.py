@@ -142,6 +142,7 @@ ATTENDU = [
          "témoins sans adresse : commune neutre, cinq chiffres, déterminant"),
         (r"^  casse=\w+ : \d+ / \d+ phrases à adresse prédite", 5,
          "par casse, trois témoins"),
+    ]),
     ("## courriers en capitales", [
         (r"^courriers : \d+ courriers, \d+ lignes, \d+ adresses annotées, "
          r"\d+ courrier\(s\) à adresse en partie en clair", 1,
