@@ -1,5 +1,4 @@
 import 'package:ecluse_core/ecluse_core.dart';
-import 'package:ecluse_core/src/luhn.dart';
 import 'package:test/test.dart';
 
 /// Valeurs fabriquées : 9 chiffres dont le dernier est une clé Luhn calculée
