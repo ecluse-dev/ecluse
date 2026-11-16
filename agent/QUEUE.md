@@ -277,7 +277,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-207 | code | `EtablissementDetector` : frontière de mot pour les mots-clés (« CH » dans « BUËCH ») et masquage limité au nom (ne pas déborder sur la ligne suivante) ; 29 des 338 adresses en défaut | P2-205 | fusionnée |
 | P2-208 | code | « SAINT M HERVE » : le « M » isolé après SAINT n'est pas une civilité ; seule adresse en défaut qui reste au balayage en capitales avec CEDEX | P2-201 | fusionnée |
 | P2-209 | code | Une seule implémentation de la clé Luhn : exporter celle de `ecluse_core` et retirer la copie de `ecluse.dart` (P2-204), sans changer de comportement | P2-204 | fusionnée |
-| P2-210 | mesure | Fréquence réaliste de « cinq chiffres + mot neutre + CEDEX » en capitales sur des courriers synthétiques, pour trancher le coût de P2-201 (113 / 200 au témoin pire cas) | P2-201 | à faire |
+| P2-210 | mesure | Fréquence réaliste de « cinq chiffres + mot neutre + CEDEX » en capitales sur des courriers synthétiques, pour trancher le coût de P2-201 (113 / 200 au témoin pire cas) | P2-201 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 

@@ -142,6 +142,16 @@ ATTENDU = [
          "témoins sans adresse : commune neutre, cinq chiffres, déterminant"),
         (r"^  casse=\w+ : \d+ / \d+ phrases à adresse prédite", 5,
          "par casse, trois témoins"),
+    ("## courriers en capitales", [
+        (r"^courriers : \d+ courriers, \d+ lignes, \d+ adresses annotées, "
+         r"\d+ courrier\(s\) à adresse en partie en clair", 1,
+         "courriers synthétiques (P2-210)"),
+        (r"^  masquage en trop : \d+ courriers / \d+, \d+ lignes / \d+", 1,
+         "masquage en trop"),
+        (r"^  famille=(reference|montant|quantite|texte|adresse|"
+         r"montant_adresse) : \d+ / \d+ lignes masquées en trop", 6,
+         "six familles de lignes"),
+        (r"^  types en trop : ", 1, "types de détection en trop"),
     ]),
     ("## témoin mot neutre devant CEDEX", [
         (r"^témoin cinq chiffres : \d+ phrases, \d+ prédiction", 1,
