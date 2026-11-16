@@ -796,6 +796,34 @@ devant « CEDEX » sont aussi admis en casse ordinaire (le motif est partagé) ;
 balayage en casse ordinaire avec « CEDEX n » : 41 → 8 adresses en partie en
 clair, aucun autre chiffre du tableau de bord ne change.
 
+**Commune dont le nom contient un mot de voie (P2-213).** 52 communes du
+référentiel ont un type de voie dans leur nom (« Graffigny-Chemin », « La
+Chaussée-Tirancourt », « Cours-la-Ville », « Rue »). Suivies d'une ligne « code
+postal + mot » (une liste d'adresses, une ligne de quantité), elles étaient lues
+à partir du mot de voie, la ligne suivante devenant le code postal de cette
+« voie » : « 52417 GRAFFIGNY [ADRESSE_1] », le vrai code postal et le début du
+nom en clair ; pour la commune de Rue, le premier chiffre du code postal seul
+(« 8[ADRESSE_1] »). Balayage `bench/generate_corpus_commune_voie.py`
+(`Ecluse.redact`, 3 744 documents, capitales et casse ordinaire, avec et sans
+CEDEX) : documents à adresse en partie en clair **641 → 26**, dont code postal
+ou début du nom en clair **615 → 0**. **Ce qui reste (26 documents, 4 communes,
+tous sans CEDEX)** n'a pas le mot de voie pour cause : c'est la fin d'un nom de
+plus de quatre mots (« SAINT JEAN DE LA RUELLE » derrière une vraie voie,
+« VILLERS CHEMIN ET MONT LES ETRELLES ») ou lié par « au », « et »
+(« Villeneuve au Chemin »), la limite des communes longues sans CEDEX décrite
+dans ce document (P2-181, P2-205) ; ces 26 documents étaient déjà en défaut avant, à l'identique.
+**Jetons fusionnés.** Quand les deux lignes sont chacune un « code postal +
+commune » reconnu, elles gardent un jeton chacune. Sinon l'adresse est étendue
+jusqu'au vrai code postal et **les deux lignes partagent un seul jeton** : c'est
+le cas en capitales quand la commune commence par un déterminant (« 80691 LA
+CHAUSSEE TIRANCOURT » puis « 80000 AMIENS »), ou quand le code postal suit une
+tournure de référence (« Lot 52417 GRAFFIGNY CHEMIN CEDEX 7 » : le nombre, qui
+seul resterait en clair, est masqué avec l'adresse). Rien ne fuit, la
+restauration est exacte, mais le LLM voit une adresse là où il y en a deux. La
+ligne « code postal + mot » qui suit reste masquée en trop (1 248 / 1 248 au
+balayage, 1 246 avant) : ce n'est pas l'objet de cette correction. Le balayage
+ne couvre ni un texte tout en minuscules, ni une commune hors référentiel.
+
 **Lettres hors du jeu français usuel dans un nom (P2-33).** La majuscule initiale d'un mot de
 nom ne couvrait que A-Z et quelques lettres françaises : un nom commençant par Á, Ó, Ñ, Œ,
 Ł, Ş, Ž… ou contenant des lettres vietnamiennes n'était masqué qu'en partie (« François Œil »
