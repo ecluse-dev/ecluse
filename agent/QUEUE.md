@@ -273,7 +273,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-203 | mesure | Mesurer la confiance des masquages et l'avertissement « à vérifier » au tableau de bord (le banc ne lit pas la confiance aujourd'hui) | P2-194 | fusionnée |
 | P2-204 | code | ADELI à clé fausse derrière son libellé : masqué à confiance 0,6 sans avertissement « à vérifier », alors que NIR, IBAN et RPPS à clé fausse en portent un | P2-199 | fusionnée |
 | P2-205 | spec | Communes en capitales sans « CEDEX » : 338 adresses sur 139 500 en partie en clair, dont 216 par la longueur (commune de plus de quatre mots) ; options et risque de faux positifs avant toute correction | P2-200 | fusionnée |
-| P2-206 | mesure | Communes en capitales sans « CEDEX » : rendre la ventilation en cinq formes reproductible et chiffrer le coût des options « nom exact du référentiel » et « fin de ligne » (aucun `lib/` modifié) | P2-205 | à faire |
+| P2-206 | mesure | Communes en capitales sans « CEDEX » : rendre la ventilation en cinq formes reproductible et chiffrer le coût des options « nom exact du référentiel » et « fin de ligne » (aucun `lib/` modifié) | P2-205 | fusionnée |
 | P2-207 | code | `EtablissementDetector` : frontière de mot pour les mots-clés (« CH » dans « BUËCH ») et masquage limité au nom (ne pas déborder sur la ligne suivante) ; 29 des 338 adresses en défaut | P2-205 | à faire |
 | P2-208 | code | « SAINT M HERVE » : le « M » isolé après SAINT n'est pas une civilité ; seule adresse en défaut qui reste au balayage en capitales avec CEDEX | P2-201 | à faire |
 | P2-209 | code | Une seule implémentation de la clé Luhn : exporter celle de `ecluse_core` et retirer la copie de `ecluse.dart` (P2-204), sans changer de comportement | P2-204 | à faire |

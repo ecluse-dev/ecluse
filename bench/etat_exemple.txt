@@ -319,6 +319,38 @@ témoin cinq chiffres : 400 phrases, 0 prédiction(s) d'adresse par Ecluse.redac
   suffixe=mot : 0 / 136 phrases avec une adresse
   suffixe=parenthese : 0 / 132 phrases avec une adresse
   suffixe=tiret : 0 / 132 phrases avec une adresse
+## communes en capitales sans CEDEX : formes et règles candidates (P2-206) : Ecluse.redact (chemin du produit), règles simulées hors lib/
+sans CEDEX : 338 adresses en partie en clair sur 139500, par forme de commune (Ecluse.redact)
+  forme A : 216 adresse(s), 135 commune(s) (plus de quatre mots) ; exemples : FLAVIGNY LE GRAND ET BEAURAIN ; DHUYS ET MORIN EN BRIE ; MONCEAU LE NEUF ET FAUCOUZY
+  forme B : 57 adresse(s), 15 commune(s) (mot neutre en tête) ; exemples : SON ; VERS ; SOUS PARSAT
+  forme C : 32 adresse(s), 9 commune(s) (parenthèse, tiret isolé ou blancs multiples) ; exemples : SARROUX - SAINT JULIEN ; CHATEAU CHINON (VILLE) ; CHÂTEAU-CHINON (VILLE)
+  forme D : 4 adresse(s), 1 commune(s) (déterminant puis mot neutre) ; exemples : LES PLACES
+  forme E : 29 adresse(s), 14 commune(s) (mot-clé d'établissement dans le nom) ; exemples : LE MAS ; MAS CABARDES ; MAS CABARDÈS
+  forme autre : 0 adresse(s), 0 commune(s) (aucune des cinq formes)
+balayage sans CEDEX : 338 adresses en partie en clair sur 139500 avec Ecluse.redact seul (règles simulées, hors lib/)
+  règle=exact_prefixe : 309 → 0 en partie en clair (formes A à D) ; par forme : A 216 → 0, B 57 → 0, C 32 → 0, D 4 → 0
+  règle=exact_ligne : 309 → 0 en partie en clair (formes A à D) ; par forme : A 216 → 0, B 57 → 0, C 32 → 0, D 4 → 0
+  règle=fin_de_ligne : 309 → 61 en partie en clair (formes A à D) ; par forme : A 216 → 0, B 57 → 57, C 32 → 0, D 4 → 4
+  forme E : 29 adresses, non simulable (autre détecteur, EtablissementDetector) ; la même pour toute règle
+# coût sur le témoin commune suivie (P2-181) : règle appliquée à toute ligne, puis aux seuls textes en capitales
+commune suivie, règles candidates (toute ligne, sans condition de casse) : 480 documents, 3739 / 6659 caractères de suite masqués avec Ecluse.redact seul (308 documents), 0 adresse(s) en partie en clair
+  règle=exact_prefixe : 3739 / 6659 caractères de suite masqués (+0), 308 documents (+0), 0 adresse(s) en partie en clair
+  règle=exact_ligne : 3739 / 6659 caractères de suite masqués (+0), 308 documents (+0), 0 adresse(s) en partie en clair
+  règle=fin_de_ligne : 4808 / 6659 caractères de suite masqués (+1069), 363 documents (+55), 0 adresse(s) en partie en clair
+commune suivie, règles candidates (texte sans aucune minuscule seulement) : 480 documents, 5379 / 6659 caractères de suite masqués avec Ecluse.redact seul (462 documents), 0 adresse(s) en partie en clair
+  règle=exact_prefixe : 5379 / 6659 caractères de suite masqués (+0), 462 documents (+0), 0 adresse(s) en partie en clair
+  règle=exact_ligne : 5379 / 6659 caractères de suite masqués (+0), 462 documents (+0), 0 adresse(s) en partie en clair
+  règle=fin_de_ligne : 6631 / 6659 caractères de suite masqués (+1252), 476 documents (+14), 0 adresse(s) en partie en clair
+# coût sur les témoins sans adresse annotée : noms de communes de forme neutre (P2-206), puis témoins P2-167 et P2-187
+témoin sans adresse annotée, règles candidates : 400 phrases, 102 avec une adresse prédite par Ecluse.redact, aucune adresse annotée
+  casse=capitales : 0 / 200 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +200 ; exact_ligne +100 ; fin_de_ligne +0
+  casse=ordinaire : 102 / 200 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +0 ; exact_ligne +0 ; fin_de_ligne +0
+témoin sans adresse annotée, règles candidates : 400 phrases, 74 avec une adresse prédite par Ecluse.redact, aucune adresse annotée
+  casse=ordinaire : 49 / 244 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +0 ; exact_ligne +0 ; fin_de_ligne +0
+  casse=phrase : 25 / 156 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +0 ; exact_ligne +0 ; fin_de_ligne +0
+témoin sans adresse annotée, règles candidates : 400 phrases, 220 avec une adresse prédite par Ecluse.redact, aucune adresse annotée
+  casse=capitales : 107 / 200 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +1 ; exact_ligne +0 ; fin_de_ligne +96
+  casse=ordinaire : 113 / 200 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +0 ; exact_ligne +0 ; fin_de_ligne +0
 ## identifiant suivi d'un nombre (P2-174) : Ecluse.redact (chemin du produit)
 identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) faux, 2 suite(s) avalée(s), 2 document(s) en défaut
   type_id=finess : 1 / 1200 en défaut, 1 non couvert(s)
