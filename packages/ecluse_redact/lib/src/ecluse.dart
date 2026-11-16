@@ -476,16 +476,7 @@ abstract final class Ecluse {
     if (e.type != EntityType.adeli || e.confidence != 0.6) return false;
     final chiffres = e.value.replaceAll(RegExp(r'[\s\u00A0\u202F.\-]'), '');
     if (!RegExp(r'^[0-9]{9}$').hasMatch(chiffres)) return false;
-    var somme = 0;
-    for (var i = 0; i < 9; i++) {
-      var d = chiffres.codeUnitAt(8 - i) - 48;
-      if (i.isOdd) {
-        d *= 2;
-        if (d > 9) d -= 9;
-      }
-      somme += d;
-    }
-    return somme % 10 != 0;
+    return !isLuhnValid(chiffres);
   }
 
   /// Avertissement d'un texte sans aucune majuscule (P2-118). Mesure P2-117 :
