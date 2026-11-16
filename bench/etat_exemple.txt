@@ -1,4 +1,4 @@
-## commit 2beaf30
+## commit 3b03ca1
 ## v3 (identifiants structurels)
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
@@ -111,12 +111,12 @@ GLOBAL            1082  1034  82.4%  78.7%  80.5%   97.7%     8.1%
 ## quasi-identifiants (ecluse_reid)
 # realiste
 age               241      241  100.0%  100.0%  100.0%    100.0%          0.0%
-lieu              320      363   88.2%  100.0%   93.7%     93.7%          0.0%
+lieu              320      320  100.0%  100.0%  100.0%    100.0%          0.0%
 profession        170      170  100.0%  100.0%  100.0%    100.0%          0.0%
 # adversarial
 age               330      330  100.0%  100.0%  100.0%    100.0%          0.0%
-lieu              396      429   92.3%  100.0%   96.0%     96.0%          0.0%
-profession        183      176  100.0%   96.2%   98.1%     98.1%          2.0%
+lieu              396      396  100.0%  100.0%  100.0%    100.0%          0.0%
+profession        183      183  100.0%  100.0%  100.0%    100.0%          0.0%
 # temoin
   Extractions totales      : 0
 # temoin_durees
@@ -139,12 +139,12 @@ QI par Ecluse.redact : bench/qi/corpus_qi_adversarial.jsonl
   bande à la fin : faible=170
   arrêt : plus de suggestion=170
 # adversarial
-  documents avec suggestion : 111 (27.8 %)
+  documents avec suggestion : 118 (29.5 %)
   refus ou exception à l'application : 0
-  F médian : avant 5.0, après 1er tour 2320.0, à la fin 7784.5
-  bande après 1er tour : eleve=1, faible=103, moyen=7
-  bande à la fin : faible=104, moyen=7
-  arrêt : plus de suggestion=111
+  F médian : avant 7.0, après 1er tour 2320.0, à la fin 9042.3
+  bande après 1er tour : eleve=1, faible=110, moyen=7
+  bande à la fin : faible=111, moyen=7
+  arrêt : plus de suggestion=118
 # temoin
   documents avec suggestion : 0 (0.0 %)
   refus ou exception à l'application : 0
@@ -282,11 +282,11 @@ règle candidate « nom suivi d'un mot en minuscules » (simulée dans le banc, 
     position=debut_texte : 36 / 144 perdue(s)
     suite=minuscule : 108 / 108 perdue(s)
 ## communes : nom en partie en clair après CEDEX (P2-178, P2-180) : Ecluse.redact (chemin du produit)
-cedex commune longue : 139500 adresses, 811 avec au moins un caractère en clair, 0 refus (Ecluse.redact)
-  ecriture=libelle : 26 / 34875 en défaut, fuite au caractère 0.1 % (462 / 792263) ; commune 26, mot CEDEX 25, numéro 26
-  ecriture=postale : 145 / 34875 en défaut, fuite au caractère 0.2 % (1750 / 766136) ; commune 138, mot CEDEX 138, numéro 145
-  ecriture=libelle_espaces : 626 / 34875 en défaut, fuite au caractère 1.2 % (9461 / 767096) ; commune 622, mot CEDEX 609, numéro 626
-  ecriture=capitales_tirets : 14 / 34875 en défaut, fuite au caractère 0.0 % (245 / 792263) ; commune 14, mot CEDEX 13, numéro 14
+cedex commune longue : 139500 adresses, 41 avec au moins un caractère en clair, 0 refus (Ecluse.redact)
+  ecriture=libelle : 10 / 34875 en défaut, fuite au caractère 0.0 % (201 / 792263) ; commune 10, mot CEDEX 9, numéro 10
+  ecriture=postale : 7 / 34875 en défaut, fuite au caractère 0.0 % (139 / 766136) ; commune 6, mot CEDEX 6, numéro 7
+  ecriture=libelle_espaces : 15 / 34875 en défaut, fuite au caractère 0.0 % (253 / 767096) ; commune 14, mot CEDEX 13, numéro 15
+  ecriture=capitales_tirets : 9 / 34875 en défaut, fuite au caractère 0.0 % (182 / 792263) ; commune 9, mot CEDEX 8, numéro 9
 ## commune suivie de mots ordinaires (P2-181) : Ecluse.redact (chemin du produit), suite à ne pas masquer
 commune suivie : 480 documents, 308 à la suite masquée en partie, 3739 / 6659 caractères de suite masqués (56.1 %), 0 adresse(s) en partie en clair, 0 refus (Ecluse.redact)
   famille=capitales : 152 / 160 documents à la suite masquée, 1797 / 2497 caractères ; 0 adresse(s) en clair
@@ -294,6 +294,31 @@ commune suivie : 480 documents, 308 à la suite masquée en partie, 3739 / 6659 
   famille=majuscule : 145 / 160 documents à la suite masquée, 1898 / 2354 caractères ; 0 adresse(s) en clair
   ecriture=libelle : 165 / 240 documents à la suite masquée, 2142 / 3294 caractères ; 0 adresse(s) en clair
   ecriture=postale : 143 / 240 documents à la suite masquée, 1597 / 3365 caractères ; 0 adresse(s) en clair
+## communes en capitales : nom en partie en clair après CEDEX (P2-183, P2-185) : Ecluse.redact (chemin du produit)
+cedex commune longue : 139500 adresses, 95 avec au moins un caractère en clair, 0 refus (Ecluse.redact)
+  cedex=CEDEX n : 95 / 139500 en défaut, fuite au caractère 0.1 % (2020 / 3117758) ; commune 93, mot CEDEX 91, numéro 95
+  cause=autre : 59 adresse(s) au nom de commune en partie en clair
+  cause=ponctuation : 30 adresse(s) au nom de commune en partie en clair
+  cause=déterminant initial : 4 adresse(s) au nom de commune en partie en clair
+## communes en capitales sans CEDEX : nom en partie en clair (P2-200) : Ecluse.redact (chemin du produit)
+cedex commune longue : 139500 adresses, 338 avec au moins un caractère en clair, 0 refus (Ecluse.redact)
+  cedex=sans : 338 / 139500 en défaut, fuite au caractère 0.1 % (3061 / 2280758) ; commune 322, mot CEDEX 0, numéro 0
+  cause=longueur : 216 adresse(s) au nom de commune en partie en clair
+  cause=autre : 60 adresse(s) au nom de commune en partie en clair
+  cause=ponctuation : 30 adresse(s) au nom de commune en partie en clair
+  cause=déterminant initial : 16 adresse(s) au nom de commune en partie en clair
+## témoin mot neutre devant CEDEX (P2-200) : Ecluse.redact (chemin du produit), aucune adresse annotée
+témoin cinq chiffres : 400 phrases, 0 prédiction(s) d'adresse par Ecluse.redact (chemin du produit)
+  voie : détecteur seul 0, texte d'ombre 0, les deux 0 (phrases avec prédiction)
+  casse=capitales : 0 / 200 phrases avec une adresse
+  casse=ordinaire : 0 / 200 phrases avec une adresse
+  famille=quantite : 0 / 204 phrases avec une adresse
+  famille=reference : 0 / 196 phrases avec une adresse
+  position=debut : 0 / 200 phrases avec une adresse
+  position=milieu : 0 / 200 phrases avec une adresse
+  suffixe=mot : 0 / 136 phrases avec une adresse
+  suffixe=parenthese : 0 / 132 phrases avec une adresse
+  suffixe=tiret : 0 / 132 phrases avec une adresse
 ## identifiant suivi d'un nombre (P2-174) : Ecluse.redact (chemin du produit)
 identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) faux, 2 suite(s) avalée(s), 2 document(s) en défaut
   type_id=finess : 1 / 1200 en défaut, 1 non couvert(s)
@@ -366,11 +391,11 @@ libellé fort : 1800 identifiants positifs, 0 en clair, 0 au type faux ; 1200 do
   témoin négatif, libellé=RPPS : 2 / 200 masqués à tort
   témoin négatif, libellé=ADELI : 1 / 200 masqués à tort
 ## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90
-# realiste largeur 60 : 2 refus
-adresse            157   157  91.7%  91.7%  91.7%  100.0%     1.3%
-etablissement      398   398  78.1%  78.1%  78.1%  100.0%     0.5%
-nom                477   477  16.4%  16.4%  16.4%  100.0%    27.6%
-GLOBAL            1667  1650  69.8%  69.0%  69.4%   99.5%     8.6%
+# realiste largeur 60 : 3 refus
+adresse            156   156 100.0% 100.0% 100.0%  100.0%     0.0%
+etablissement      397   397  79.1%  79.1%  79.1%  100.0%     0.0%
+nom                476   476  16.4%  16.4%  16.4%  100.0%    27.6%
+GLOBAL            1662  1646  70.8%  70.1%  70.4%   99.5%     8.2%
   entités coupées par une fin de ligne : adresse 95 coupées (95 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 4 coupées (4 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
 # adversarial largeur 60 : 0 refus
 adresse            155   155 100.0% 100.0% 100.0%  100.0%     0.0%
@@ -392,9 +417,9 @@ finess 129/129  iban 156/214  nir 247/269  rpps 150/166  TOTAL 682/778 (87.7 %)
 finess 129/129  iban 214/214  nir 269/269  rpps 166/166  TOTAL 778/778 (100.0 %)
 # realiste largeur 90 : 0 refus
 adresse            159   159 100.0% 100.0% 100.0%  100.0%     0.0%
-etablissement      400   363  75.2%  68.2%  71.6%   95.2%     9.2%
+etablissement      400   400  79.2%  79.2%  79.2%  100.0%     0.0%
 nom                479   479  16.3%  16.3%  16.3%  100.0%    27.7%
-GLOBAL            1677  1640  70.1%  68.5%  69.3%   98.9%     9.3%
+GLOBAL            1677  1677  71.1%  71.1%  71.1%  100.0%     7.5%
   entités coupées par une fin de ligne : adresse 83 coupées (83 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 44 coupées (44 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
 # adversarial largeur 90 : 0 refus
 adresse            155   155 100.0% 100.0% 100.0%  100.0%     0.0%
@@ -406,10 +431,10 @@ GLOBAL            1082  1048  85.3%  82.6%  83.9%   98.4%     6.7%
   entites predites 0
 # structurel largeur 90, moteur seul (ecluse_core)
 Ecluse     nir     100.0%  100.0%  100.0%   269     0     0
-Ecluse     rpps     98.8%  100.0%   99.4%   166     2     0
+Ecluse     rpps     98.2%  100.0%   99.1%   166     3     0
 Ecluse     iban    100.0%   87.4%   93.3%   187     0    27
 Ecluse     finess   75.4%  100.0%   86.0%   129    42     0
-Ecluse     TOTAL    94.5%   96.5%   95.5%   751    44    27
+Ecluse     TOTAL    94.3%   96.5%   95.4%   751    45    27
 # structurel largeur 90, détecteur isolé (appel direct des quatre détecteurs)
 finess 129/129  iban 187/214  nir 269/269  rpps 166/166  TOTAL 751/778 (96.5 %)
 # structurel largeur 90, Ecluse.redact (chemin du produit)
@@ -431,4 +456,3 @@ colonne de 2 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversa
 colonne de 10 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
 colonne de 2 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
 colonne de 10 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
-AVERTISSEMENT : types d'entité absents de la table de run_redact_bench.dart, comptés tels quels : identifiant
