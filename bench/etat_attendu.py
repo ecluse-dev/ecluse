@@ -154,6 +154,19 @@ ATTENDU = [
          "six familles de lignes"),
         (r"^  types en trop : ", 1, "types de détection en trop"),
     ]),
+    ("## mots neutres, un mot à la fois", [
+        (r"^mots neutres : \d+ mots, \d+ phrases, \d+ nombre\(s\) "
+         r"masqué\(s\) en adresse, \d+ sous un autre type, \d+ mot\(s\) "
+         r"touché\(s\)", 1, "témoin des mots neutres (P2-211)"),
+        (r"^  casse=(capitales|ordinaire) : \d+ / \d+", 2, "par casse"),
+        (r"^  forme=(accentuee|sans_accent) : \d+ / \d+", 2, "par forme"),
+        (r"^  suite=(rien|neutre|nom) : \d+ / \d+", 3, "par suite"),
+        (r"^  mot=\S+ : capitales \d+ / \d+, ordinaire \d+ / \d+", 70,
+         "une ligne par mot de mots_neutres.dart (78 au 16 novembre)"),
+        (r"^  mot=\S+ : .* ; sans accent : capitales \d+ / \d+, "
+         r"ordinaire \d+ / \d+", 1, "au moins un mot accentué, forme sans accent"),
+        (r"^  types sur le nombre : ", 1, "types de détection sur le nombre"),
+    ]),
     ("## témoin mot neutre devant CEDEX", [
         (r"^témoin cinq chiffres : \d+ phrases, \d+ prédiction", 1,
          "adresses prédites à tort devant CEDEX (P2-200)"),
