@@ -743,6 +743,34 @@ Décision du mainteneur (15 novembre, `DECISIONS.md`) : un masquage en trop
 coûte de la lisibilité, une commune en clair est une fuite. Le coût sur du
 texte réel en capitales n'est pas mesuré.
 
+**Texte en capitales sans « CEDEX » : nom exact du référentiel (P2-214).**
+Décision du 16 novembre. En texte tout en capitales, la commune qui suit un
+code postal est portée jusqu'à la fin de son nom quand ce nom, écrit en entier,
+est l'un des 261 noms du référentiel que le motif ne lit pas seul : 251 de
+cinq mots ou plus (« DHUYS ET MORIN EN BRIE »), 9 à parenthèse, tiret isolé ou
+blancs multiples (« CHATEAU CHINON (VILLE) », « SARROUX - SAINT JULIEN ») et
+« LES PLACES » (déterminant puis mot neutre). La table est écrite dans le
+paquet (`communes_nom_exact.dart`, générée par
+`tools/build_communes_nom_exact.py`) : le détecteur reste pur, rien n'est
+chargé. Balayage en capitales sans CEDEX (`Ecluse.redact`, 139 500 adresses) :
+**309 → 57** adresses en partie en clair. **Ce qui reste, par décision : la
+forme B**, 57 adresses de 15 communes dont le premier mot est un mot neutre
+(« SON », « VERS », « SOUS PARSAT », « AUX MARAIS », « JOURS LES BAIGNEUX ») :
+sans « CEDEX », ni le nom ni le code postal ne sont masqués, parce que les
+reconnaître ferait une adresse de « 08061 SON » ou « 70000 VERS » dans une
+phrase (200 phrases sur 200 au témoin construit). **Ce que la règle ne
+couvre pas** : une écriture hors du référentiel (« ST » pour « SAINT », une
+faute, une ancienne commune) garde la limite d'avant, fin du nom en clair
+(mesure prévue : P2-215) ; un texte en casse ordinaire n'est pas concerné par
+la règle. **Coût mesuré** : « LES PLACES » est le seul nom de la table qui se
+lit aussi comme du texte ; « VIREMENT DE 99307 LES PLACES EFFECTUE LUNDI », en
+capitales, est masqué jusqu'à « PLACES » (8 phrases sur 200 au témoin des noms
+de forme neutre, 0 avant ; les autres témoins sans adresse sont inchangés).
+« LA REUNION », que la simulation de P2-206 donnait comme faux positif (1
+phrase sur 200 au témoin déterminant), **n'en est pas un ici** : la table ne
+contient que les noms que le motif ne sait pas lire, et « LA REUNION » n'en
+fait pas partie ; ce témoin reste à 107 / 200.
+
 **Texte en capitales : communes devant « CEDEX » (P2-201).** Cinq formes de
 nom laissaient une commune en partie en clair quand « CEDEX » la suit sur la
 même ligne : un mot neutre en tête (« 46090 VERS CEDEX 2 »), un déterminant
