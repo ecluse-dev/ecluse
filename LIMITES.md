@@ -209,6 +209,13 @@ une coupure au milieu d'un groupe ne l'est pas.
   masqué que si c'est un NIR à clé valide.
 - Les identifiants professionnels autres que RPPS et FINESS, et les
   identifiants d'établissement autres que FINESS.
+- **ADELI à clé fausse derrière son libellé : avertissement (P2-204).** Un
+  ADELI de neuf chiffres à clé Luhn fausse, masqué à confiance 0,6 (inchangée,
+  voir ADELI plus haut), porte désormais l'avertissement « identifiant à clé
+  invalide masqué : à vérifier », comme NIR, IBAN et RPPS. Le message ne
+  contient jamais la valeur. Un numéro corse (« 2A… ») n'a pas de règle de clé
+  établie : il n'est pas jugé faux et n'avertit pas. Chemin `Ecluse.redact` :
+  ADELI × clé fausse 0 → 50 / 300 avec avertissement, négatifs 0 / 1 200.
 - **NIR, IBAN FR ou RPPS à clé fausse, annoncé par un libellé fort (P2-188).**
   `Ecluse.redact` masque quand même, à confiance 0,3, avec l'avertissement
   « identifiant à clé invalide masqué : à vérifier », un NIR précédé de
@@ -736,6 +743,31 @@ Décision du mainteneur (15 novembre, `DECISIONS.md`) : un masquage en trop
 coûte de la lisibilité, une commune en clair est une fuite. Le coût sur du
 texte réel en capitales n'est pas mesuré.
 
+**Texte en capitales : communes devant « CEDEX » (P2-201).** Cinq formes de
+nom laissaient une commune en partie en clair quand « CEDEX » la suit sur la
+même ligne : un mot neutre en tête (« 46090 VERS CEDEX 2 »), un déterminant
+puis un mot neutre (« LES PLACES »), un complément entre parenthèses
+(« CHATEAU CHINON (VILLE) »), un tiret entouré de blancs et deux ou trois
+blancs de suite (« SARROUX - SAINT JULIEN »). Elles sont levées **devant
+« CEDEX » seulement**. Balayage des communes en capitales avec « CEDEX n »,
+chemin `Ecluse.redact` : 95 adresses sur 139 500 en partie en clair → 1 (« SAINT
+M HERVE » : le « M » isolé est lu comme une civilité, `_titres`, et le numéro
+de CEDEX reste). Balayage **sans** « CEDEX » : inchangé (338), la règle du mot
+neutre y reste entière. **Coût, dit franchement : un masquage en trop.** Un
+nombre à cinq chiffres, un mot neutre et « CEDEX » à la suite (« VIREMENT DE
+70000 EUROS CEDEX 3 ») est masqué comme une adresse. Témoin du pire cas
+(`bench/generate_corpus_neutre_cedex.py`, 400 phrases construites, aucune
+adresse annotée) : phrases masquées en capitales 0 / 200 → 113 / 200, en casse
+ordinaire 0 / 200 (inchangé). Les tournures de quantité (« total de », « lot »,
+« réf. ») protègent toujours le nombre quand il suit un autre mot : 13 phrases
+sur 200 au milieu d'une phrase contre 100 sur 200 en tête de phrase. Le témoin
+dit le pire cas, pas une fréquence ; « nombre + mot neutre + CEDEX » est rare
+dans un vrai texte, mais le coût n'est pas mesuré sur du texte réel.
+Conséquence non demandée : les parenthèses, tirets isolés et blancs multiples
+devant « CEDEX » sont aussi admis en casse ordinaire (le motif est partagé) ;
+balayage en casse ordinaire avec « CEDEX n » : 41 → 8 adresses en partie en
+clair, aucun autre chiffre du tableau de bord ne change.
+
 **Lettres hors du jeu français usuel dans un nom (P2-33).** La majuscule initiale d'un mot de
 nom ne couvrait que A-Z et quelques lettres françaises : un nom commençant par Á, Ó, Ñ, Œ,
 Ł, Ş, Ž… ou contenant des lettres vietnamiennes n'était masqué qu'en partie (« François Œil »
@@ -836,8 +868,8 @@ il partage ces deux causes avec sa cause dominante, les mots de liaison absents 
 
 **Reste en clair, non corrigé** : sans « CEDEX », la fin d'une commune de cinq mots ou plus en écriture postale et un
 mot de liaison absent de la liste courte quand le nom est écrit sans tirets (« Moliets et Maa », « Pont à Mousson »,
-« au », « près », « devant »…) ; avec ou sans « CEDEX », une parenthèse dans le nom (« Bors (Canton de …) ») et un mot
-en minuscules hors liste (« et ses environs »). Mesuré en casse ordinaire ; un texte tout en capitales ou sans
+« au », « près », « devant »…) ; **sans** « CEDEX », une parenthèse dans le nom (« Bors (Canton de …) » ; devant
+« CEDEX », levée par P2-201) et, avec ou sans « CEDEX », un mot en minuscules hors liste (« et ses environs »). Mesuré en casse ordinaire ; un texte tout en capitales ou sans
 majuscule passe par d'autres détecteurs (mesure P2-183).
 
 **Nombre à cinq chiffres hors adresse (P2-167, 13 novembre).** Par `Ecluse.redact`, « Commande de 70000 unités,

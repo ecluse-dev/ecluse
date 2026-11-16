@@ -286,7 +286,7 @@ fi
 echo "## identifiant derrière un libellé fort (P2-194) : Ecluse.redact (chemin du produit)"
 if produit "libellé fort, générateur" "$B/flou/corpus_libelle_fort.jsonl" dans_B python3 generate_corpus_libelle_fort.py --n 50 --seed 42 --out flou/corpus_libelle_fort.jsonl; then
   if produit "libellé fort, Ecluse.redact" "$B/flou/pred_libelle_fort.jsonl" redact run_redact_bench.dart --confiance ../../bench/flou/corpus_libelle_fort.jsonl ../../bench/flou/pred_libelle_fort.jsonl; then
-    montre "libellé fort, score" -E "^libellé fort|^  (variante|libellé)=|^  .+ x [a-z_]+ :|^  témoin négatif|^confiance des masquages|^  confiance |^  avertissement à vérifier|^  à vérifier variante=|^  incohérence confiance" 0 non dans_B python3 score_libelle_fort.py --corpus flou/corpus_libelle_fort.jsonl --pred flou/pred_libelle_fort.jsonl || true
+    montre "libellé fort, score" -E "^libellé fort|^  (variante|libellé)=|^  .+ x [a-z_]+ :|^  témoin négatif|^confiance des masquages|^  confiance |^  avertissement à vérifier|^  à vérifier variante=|^  incohérence confiance|^  exception P2-204" 0 non dans_B python3 score_libelle_fort.py --corpus flou/corpus_libelle_fort.jsonl --pred flou/pred_libelle_fort.jsonl || true
   fi
 fi
 

@@ -370,7 +370,17 @@ confiance 0,55 est une adresse qui chevauche un ADELI, voir P2-199.)
   à 0,3 sans avertissement, aucun avertissement sans 0,3), positifs et négatifs.
 - **ADELI à clé fausse masqué à 0,6 : sans avertissement** (50 documents,
   `AdeliDetector`, confiance 0,6 par `LIMITES.md` § 2) alors que NIR, IBAN et
-  RPPS à clé fausse (confiance 0,3) en portent un. Constat, non corrigé ici.
+  RPPS à clé fausse (confiance 0,3) en portent un. Constat de P2-203 ;
+  **corrigé par P2-204** (ci-dessous).
+- **Après P2-204** (chemin `Ecluse.redact`, graine 42, même témoin) :
+  avertissement « à vérifier » **1 450 → 1 500** positifs sur 1 800 au
+  tableau de bord actuel (les ADELI OCR de P2-199 en portaient déjà un) ;
+  `cle_fausse` 250 → **300 / 300**, soit ADELI × `cle_fausse` **0 → 50 / 300** ;
+  négatifs inchangés (0 / 1 200) ; confiance 0,6 inchangée. L'invariant
+  « avertissement ⇔ confiance 0,3 » ne tient plus pour ce seul cas : le
+  scoreur le compte à part (`exception P2-204 … positifs 50`) au lieu de
+  l'afficher comme incohérence (`incohérence … positifs 0` reste le garde-fou
+  pour tout autre cas).
 - Les 8 négatifs masqués sont masqués par d'autres détecteurs, de confiance 0,5
   (1), 0,55 (4), 0,9 (2) et 1 (1) : aucun à 0,3, donc aucun avertissement ; le
   libellé fort n'y est pour rien.
@@ -629,6 +639,40 @@ en capitales et en casse ordinaire :
 Aujourd'hui la règle du mot neutre protège entièrement ce cas ; le chiffre à
 suivre pour P2-201 est donc **0 → ?** (coût de la levée devant CEDEX). Témoin
 construit : il dit le pire cas, pas une fréquence. Corpus synthétique.
+
+## Communes en capitales devant « CEDEX » (P2-201)
+
+Avant : `main` au commit `1cb1e9b` (rejoué le 16 novembre, identique à P2-200).
+Après : branche `claude/P2-201-commune-capitales-cedex`. Graine 42. Chemin
+mesuré : **`Ecluse.redact`** (ce que reçoit le LLM). Détecteur modifié :
+`AdresseDetector` (règle du mot neutre levée quand le texte reconnu finit par
+« CEDEX » ; parenthèse, tiret entouré de blancs et deux ou trois blancs admis
+dans la suite devant « CEDEX »). Rien d'autre dans `lib/`.
+
+| Mesure | Avant | Après |
+|---|---:|---:|
+| Balayage en capitales avec « CEDEX n » : adresses en partie en clair | 95 / 139 500 | **1** / 139 500 |
+| fuite au caractère | 0,1 % (2 020 / 3 117 758) | **0,0 %** (1 / 3 117 758) |
+| Balayage en capitales **sans** « CEDEX » | 338 / 139 500 | 338 (inchangé) |
+| Témoin « nombre + mot neutre + CEDEX », capitales (sur 200) | 0 | **113** |
+| Témoin « nombre + mot neutre + CEDEX », casse ordinaire (sur 200) | 0 | 0 |
+
+Le reste d'une adresse en défaut après P2-201 : « SAINT M HERVE » en écriture
+postale (le « M » isolé est lu comme une civilité, le numéro de CEDEX reste).
+Témoin par forme de suite (mot / parenthèse / tiret) : 38 / 136, 37 / 132,
+38 / 132 ; par position : 100 / 200 en tête de phrase, 13 / 200 après des mots
+(les tournures de quantité « total de », « lot », « réf. » protègent le nombre) ;
+par famille : quantité 64 / 204, référence 49 / 196. Témoin construit : il dit
+le pire cas (une phrase par forme, toutes avec « CEDEX »), pas une fréquence.
+
+**Changement que la fiche ne prévoyait pas** : le motif de la suite devant
+« CEDEX » est partagé avec la casse ordinaire, donc le balayage **en casse
+ordinaire** avec « CEDEX n » (section P2-178 ci-dessus) passe de 41 à **8**
+adresses en partie en clair (`libelle` 10 → 1, `postale` 7 → 1,
+`libelle_espaces` 15 → 6, `capitales_tirets` 9 → 0). C'est une amélioration de
+la même règle (« devant CEDEX seulement »), pas une régression ; aucun témoin
+de faux positifs en casse ordinaire ne bouge (0 / 200 au témoin ci-dessus). Le
+mainteneur peut demander de la limiter aux capitales.
 
 ## Mise en page : textes recoupés aux espaces (P2-153)
 

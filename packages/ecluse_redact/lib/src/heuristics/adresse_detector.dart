@@ -111,10 +111,32 @@ final class AdresseDetector implements EntityDetector {
   /// huit) sont pris **seulement si « CEDEX » les suit immédiatement** ; sans
   /// lui, le motif est celui d'avant, au caractère près. Une civilité arrête
   /// toujours le nom, comme plus haut.
+  ///
+  /// Trois formes de nom que le motif d'avant coupait, toutes **devant
+  /// « CEDEX » seulement** (P2-201, classes 2 et 3 de `agent/specs/P2-196.md`) :
+  /// un complément entre parenthèses du nom officiel (« CHATEAU CHINON
+  /// (VILLE) »), un tiret entouré de blancs (« SARROUX - SAINT JULIEN ») et
+  /// deux ou trois blancs de suite, ce que devient ce tiret quand l'écriture
+  /// le retire (« SAINT PATERNE   LE CHEVAIN »). Sans « CEDEX » derrière, un
+  /// tiret isolé ou une parenthèse sépare deux idées d'un texte ordinaire
+  /// (« 70000 VESOUL - SERVICE DES ADMISSIONS », « 70000 VESOUL (VOIR PAGE 3) ») :
+  /// le motif reste celui d'avant, au caractère près.
   static const _suiteDevantCedex =
-      '(?:(?:[ \\u00A0\\u202F-]$_connecteursDevantCedex*'
-      '(?!$_titres$_finDeTitre)$_motCommune){1,5}'
+      '(?:(?:$_separateurDevantCedex$_connecteursDevantCedex*'
+      '(?!$_titres$_finDeTitre)$_motCommune|$_h*$_parentheseDevantCedex){1,5}'
       '(?=,?$_h*$_cedex))?';
+
+  /// Séparateur de deux mots de la suite devant « CEDEX » : un blanc ou un
+  /// tiret (comme avant), un tiret entouré de un à trois blancs, ou deux à trois
+  /// blancs de suite. Jamais un saut de ligne ([_h] n'en contient pas).
+  static const _separateurDevantCedex =
+      '(?:$_h{1,3}-$_h{1,3}|$_h{2,3}|[ \\u00A0\\u202F-])';
+
+  /// Complément du nom de commune entre parenthèses, sur la même ligne : des
+  /// mots à majuscule initiale (ou nombre) et des liaisons, 41 caractères au
+  /// plus. Pris seulement devant « CEDEX » ([_suiteDevantCedex]).
+  static const _parentheseDevantCedex =
+      "\\([A-ZÀ-ÖØ-ÞŒ][\\wÀ-ÖØ-Þà-öø-ÿœŒ'’ \\u00A0\\u202F-]{0,40}\\)";
 
   /// « CEDEX » et son numéro de distribution (P2-164). Le mot « CEDEX » en
   /// capitales ou « Cedex » était déjà pris comme dernier mot de la commune ;
@@ -288,9 +310,27 @@ final class AdresseDetector implements EntityDetector {
   static bool _sansMinuscule(String text) =>
       !_minuscule.hasMatch(text) && _majuscule.hasMatch(text);
 
+  /// Le texte reconnu **finit** par « CEDEX » (et son numéro) : le mot est sur
+  /// la même ligne, juste derrière la commune ([_suffixeCedex] est la dernière
+  /// pièce du motif).
+  static final RegExp _finitParCedex = RegExp(
+    '(?<![A-Za-zÀ-ÿ0-9])$_cedex'
+    '(?:$_h+\\d{1,2})?\$',
+    caseSensitive: false,
+  );
+
+  /// Vrai quand le premier mot de la commune est un mot neutre (P2-122) : en
+  /// texte tout en capitales, « 70000 EUROS HORS TAXES » ne doit pas être une
+  /// adresse. **Sauf devant « CEDEX »** (P2-201, décision du 15 novembre) :
+  /// « 46090 VERS CEDEX 2 », « 09230 SOUS PARSAT CEDEX 1 » sont des communes
+  /// (15 sur 34 875 du référentiel ont un mot neutre en tête, 61 adresses du
+  /// balayage). Le coût est un nombre à cinq chiffres, un mot neutre et
+  /// « CEDEX » à la suite (« VIREMENT DE 70000 EUROS CEDEX 3 »), masqué en trop :
+  /// `LIMITES.md`. Sans « CEDEX », la règle reste entière.
   static bool _communeNeutre(RegExpMatch match) {
     final commune = match.namedGroup('commune');
     if (commune == null) return false;
+    if (_finitParCedex.hasMatch(match.group(0)!)) return false;
     final premier = RegExp(r"^[^ \t\u00A0\u202F'’-]+").stringMatch(commune);
     if (premier == null || !motsNeutres.contains(premier.toLowerCase())) {
       return false;
