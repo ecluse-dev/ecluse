@@ -268,11 +268,16 @@ tâches copiées ici sont prises par l'agent.
 | P2-198 | spec | Journal d'audit : que faire quand la version du moteur change (0.2.0) entre deux entrées d'un même journal | P2-193 | fusionnée |
 | P2-199 | code | ADELI derrière son libellé, lu par OCR (O pour 0, l ou I pour 1) ou coupé par une ligne vide : 200 identifiants sur 300 en clair au témoin P2-194 | P2-194 | fusionnée |
 | P2-200 | code | Tableau de bord : balayage des communes en capitales **sans** « CEDEX » et témoin de faux positifs « cinq chiffres + mot neutre + CEDEX », avant toute correction devant CEDEX | P2-196 | fusionnée |
-| P2-201 | code | Communes en capitales devant « CEDEX » : lever la règle du mot neutre, admettre parenthèse, tiret isolé et blancs multiples, numéro de CEDEX après un nom (classes 1 à 5 de `agent/specs/P2-196.md`) | P2-200 | PR ouverte |
+| P2-201 | code | Communes en capitales devant « CEDEX » : lever la règle du mot neutre, admettre parenthèse, tiret isolé et blancs multiples, numéro de CEDEX après un nom (classes 1 à 5 de `agent/specs/P2-196.md`) | P2-200 | fusionnée |
 | P2-202 | code | Export AIPD : moteurs dans l'ordre de première apparition, nombre de changements de moteur et mention d'honnêteté (recommandations de `agent/specs/P2-198.md`) | P2-198 | fusionnée |
 | P2-203 | mesure | Mesurer la confiance des masquages et l'avertissement « à vérifier » au tableau de bord (le banc ne lit pas la confiance aujourd'hui) | P2-194 | fusionnée |
-| P2-204 | code | ADELI à clé fausse derrière son libellé : masqué à confiance 0,6 sans avertissement « à vérifier », alors que NIR, IBAN et RPPS à clé fausse en portent un | P2-199 | PR ouverte |
-| P2-205 | spec | Communes en capitales sans « CEDEX » : 338 adresses sur 139 500 en partie en clair, dont 216 par la longueur (commune de plus de quatre mots) ; options et risque de faux positifs avant toute correction | P2-200 | PR ouverte |
+| P2-204 | code | ADELI à clé fausse derrière son libellé : masqué à confiance 0,6 sans avertissement « à vérifier », alors que NIR, IBAN et RPPS à clé fausse en portent un | P2-199 | fusionnée |
+| P2-205 | spec | Communes en capitales sans « CEDEX » : 338 adresses sur 139 500 en partie en clair, dont 216 par la longueur (commune de plus de quatre mots) ; options et risque de faux positifs avant toute correction | P2-200 | fusionnée |
+| P2-206 | mesure | Communes en capitales sans « CEDEX » : rendre la ventilation en cinq formes reproductible et chiffrer le coût des options « nom exact du référentiel » et « fin de ligne » (aucun `lib/` modifié) | P2-205 | à faire |
+| P2-207 | code | `EtablissementDetector` : frontière de mot pour les mots-clés (« CH » dans « BUËCH ») et masquage limité au nom (ne pas déborder sur la ligne suivante) ; 29 des 338 adresses en défaut | P2-205 | à faire |
+| P2-208 | code | « SAINT M HERVE » : le « M » isolé après SAINT n'est pas une civilité ; seule adresse en défaut qui reste au balayage en capitales avec CEDEX | P2-201 | à faire |
+| P2-209 | code | Une seule implémentation de la clé Luhn : exporter celle de `ecluse_core` et retirer la copie de `ecluse.dart` (P2-204), sans changer de comportement | P2-204 | à faire |
+| P2-210 | mesure | Fréquence réaliste de « cinq chiffres + mot neutre + CEDEX » en capitales sur des courriers synthétiques, pour trancher le coût de P2-201 (113 / 200 au témoin pire cas) | P2-201 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1040,3 +1045,39 @@ ne reprennent que ce qui manque pour la prendre.
   options avec avantages et risques de faux positifs (sans CEDEX, un texte
   ordinaire peut ressembler à une commune longue), une mesure à faire avant la
   correction, et une recommandation ; les décisions restent au mainteneur.
+- **P2-206** : mesure seulement, aucun `lib/` modifié. `agent/specs/P2-205.md`
+  classe 338 adresses en cinq formes avec un script jetable non versionné.
+  **Fini quand** : la ventilation (axe `cedex=sans`) est reproductible par
+  `etat.sh` et donne les cinq formes ; le témoin `generate_corpus_commune_suivie.py`
+  est rejoué avec une règle candidate « nom exact du référentiel » écrite
+  **hors** de `lib/` (script de mesure), puis avec « fin de ligne », avec le
+  coût en caractères masqués en trop pour chacune, plus un témoin « 08061 SON »
+  (code postal suivi d'un mot qui est aussi un début de commune) ; chiffres
+  de départ dans `bench/ETAT.md`.
+- **P2-207** : `EtablissementDetector`, chemin `Ecluse.redact`. Constat de
+  `agent/specs/P2-205.md` § E : 29 adresses en défaut viennent de ce
+  détecteur (« MAS », « CH » trouvé au milieu de « BUËCH », étendue masquée
+  qui dépasse le nom). Test d'abord : « VAL BUËCH MÉOUGE » et un « MAS
+  GRENIER » suivi d'une ligne, rouges sur `main`. **Fini quand** : mot-clé
+  seulement à une frontière de mot (accents compris), étendue limitée au nom ;
+  mesure avant/après du corpus établissements et du balayage en capitales sans
+  CEDEX ; aucun établissement réel du corpus perdu ; reste du tableau de bord
+  inchangé.
+- **P2-208** : détecteur de civilité (`name_detector.dart`). Après P2-201, la
+  seule adresse du balayage en capitales avec CEDEX encore en défaut est
+  « SAINT M HERVE » (le « M » est lu comme une civilité). **Fini quand** :
+  balayage en capitales avec CEDEX à 0 ; témoin de faux titres (P2-180)
+  inchangé ; vrais « M » civilité (« M DUPONT ») toujours masqués.
+- **P2-209** : refactor sans changement de comportement. `ecluse.dart` (P2-204)
+  porte une copie locale de Luhn parce que celle de `ecluse_core` n'est pas
+  exportée. Exporter la fonction d'`ecluse_core` si cela ne change pas
+  l'interface publique de façon incompatible ; sinon s'arrêter et poser la
+  question dans la PR (changement d'API). **Fini quand** : une seule
+  implémentation de Luhn dans le dépôt ; tous les tests et le tableau de bord
+  inchangés.
+- **P2-210** : mesure seulement. Le témoin de P2-200 est un pire cas construit
+  (113 / 200 phrases masquées en trop depuis P2-201). **Fini quand** : un
+  générateur versionné, graine 42, de courriers synthétiques en capitales
+  (en-têtes, références, montants) dont le motif de construction est écrit ;
+  `etat.sh` donne le nombre de phrases masquées en trop sur ce corpus ; chiffre
+  de départ dans `bench/ETAT.md` ; aucune correction.
