@@ -304,6 +304,19 @@ for t in cinq_chiffres determinant; do
     echec "règles candidates, témoin $t : corpus ou prédictions absents"
   fi
 done
+# Courriers synthétiques en capitales (P2-210) : la fréquence de « cinq chiffres
+# + mot neutre + CEDEX » dans des courriers entiers (titres, références,
+# montants, nombres de dossiers, adresses de retour), que le témoin de P2-200
+# (pire cas, une phrase par forme) ne dit pas. Le motif de construction et ses
+# poids (une hypothèse, pas une observation) sont dans le générateur. Chemin
+# mesuré : Ecluse.redact. Un masquage en trop est de la lisibilité perdue ; une
+# adresse annotée en partie en clair est une fuite.
+echo "## courriers en capitales (P2-210) : Ecluse.redact (chemin du produit), masquage en trop et adresses annotées"
+if produit "courriers capitales, générateur" "$B/flou/corpus_courriers.jsonl" python3 "$B/generate_corpus_courriers.py" --n 400 --seed 42 --communes "$R/packages/ecluse_reference/assets/geo_communes.csv.gz" --out "$B/flou/corpus_courriers.jsonl"; then
+  if produit "courriers capitales, Ecluse.redact" "$B/flou/pred_courriers.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_courriers.jsonl ../../bench/flou/pred_courriers.jsonl; then
+    montre "courriers capitales, score" -E "^courriers :|^  masquage en trop|^  famille=|^  mot après un nombre=|^  types en trop" 0 non dans_B python3 score_courriers.py --corpus flou/corpus_courriers.jsonl --pred flou/pred_courriers.jsonl || true
+  fi
+fi
 
 # Identifiant suivi d'une date, d'un âge ou d'un nombre (P2-174) : 4 types x
 # 4 familles x 3 séparateurs x 100 documents. Un identifiant non couvert est

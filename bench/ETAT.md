@@ -809,6 +809,48 @@ branche : seules ces lignes diffèrent (témoin de faux titres de P2-180 et
 sections de noms inclus : identiques). Non mesuré : « SAINT M HERVE » sans
 CEDEX (le balayage sans CEDEX le comptait déjà parmi ses 338, cause
 « autre »).
+## Courriers synthétiques en capitales : fréquence de « cinq chiffres + mot neutre + CEDEX » (P2-210)
+
+Mesure de départ, `main` au commit `8b516b7`, graine 42, **aucun `lib/`
+modifié**. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM).
+Générateur `bench/generate_corpus_courriers.py` (400 courriers tout en
+capitales, 3 185 lignes, 970 adresses annotées « code postal commune CEDEX n »),
+scoreur `bench/score_courriers.py`. **Motif de construction** (écrit dans le
+générateur, une hypothèse et non une observation) : un titre, une référence,
+puis 5 à 9 lignes tirées à ces poids : référence 20, montant 22, quantité 18,
+texte 20, adresse de retour avec CEDEX 15, et **5** pour la seule famille où un
+nombre suivi d'un mot neutre et un CEDEX sont sur la même ligne
+(« TOTAL 70000 EUROS HT, RETOUR A 25000 BESANCON CEDEX 2 », virgule une fois
+sur deux). Chaque courrier a au moins une adresse. Un masquage en trop est de la
+lisibilité perdue ; une adresse annotée en partie en clair est une fuite.
+
+| Mesure (`Ecluse.redact`) | Résultat |
+|---|---:|
+| Courriers avec au moins une ligne masquée en trop | **32 / 400** (8 %) |
+| Lignes masquées en trop | **35 / 3 185** |
+| dont famille « nombre + mot neutre + CEDEX sur la même ligne » | **0 / 133** |
+| dont famille « quantité » (« 39314 NUMEROS EN ATTENTE ») | 35 / 469 |
+| Adresses annotées en partie en clair | **0 courrier** sur 400 |
+
+Deux lectures. **Le coût de P2-201 est nul sur ce motif** : aucune des 133
+lignes qui portent à la fois un nombre suivi d'un mot neutre et un CEDEX n'est
+masquée en trop (le témoin pire cas de P2-200 en masque 113 / 200 parce que son
+« CEDEX n » suit directement le mot neutre, sans nombre ni mot entre les
+deux). Ce zéro vaut pour ce motif, pas pour du texte réel. **Le masquage en
+trop mesuré ici n'a rien à voir avec CEDEX** : les 35 lignes sont toutes de la
+forme « nombre à cinq chiffres + NUMEROS » ; `mots_neutres.dart` ne connaît que
+« numéros » avec accent, et une écriture en capitales sans accent n'est pas
+reconnue comme mot neutre (même cause possible pour « SALARIES », « RESIDENTS »,
+non mesurés ici).
+
+**Une fuite observée à la main** (tirage intermédiaire du même générateur, non
+retenue dans le corpus final : 0 courrier à adresse en partie en clair sur les
+400) : « A RETOURNER A : 52417 GRAFFIGNY CHEMIN CEDEX 7⏎39314 NUMEROS EN
+ATTENTE » donne « 52417 GRAFFIGNY [ADRESSE_1] ». Le mot « CHEMIN » du nom de
+commune est lu comme une voie et la ligne suivante comme code postal et commune ;
+le code postal et « GRAFFIGNY » restent en clair. Avec « DOSSIERS » à la place de
+« NUMEROS » : masqué en entier. Cas construit à la main, une commune du
+référentiel public ; fréquence non mesurée.
 
 ## Mise en page : textes recoupés aux espaces (P2-153)
 

@@ -351,6 +351,17 @@ témoin sans adresse annotée, règles candidates : 400 phrases, 74 avec une adr
 témoin sans adresse annotée, règles candidates : 400 phrases, 220 avec une adresse prédite par Ecluse.redact, aucune adresse annotée
   casse=capitales : 107 / 200 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +1 ; exact_ligne +0 ; fin_de_ligne +96
   casse=ordinaire : 113 / 200 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +0 ; exact_ligne +0 ; fin_de_ligne +0
+## courriers en capitales (P2-210) : Ecluse.redact (chemin du produit), masquage en trop et adresses annotées
+courriers : 400 courriers, 3185 lignes, 970 adresses annotées, 0 courrier(s) à adresse en partie en clair (Ecluse.redact)
+  masquage en trop : 32 courriers / 400, 35 lignes / 3185
+  famille=reference : 0 / 543 lignes masquées en trop
+  famille=montant : 0 / 633 lignes masquées en trop
+  famille=quantite : 35 / 469 lignes masquées en trop
+  famille=texte : 0 / 570 lignes masquées en trop
+  famille=adresse : 0 / 837 lignes masquées en trop
+  famille=montant_adresse : 0 / 133 lignes masquées en trop
+  mot après un nombre=NUMEROS : 35 / 35 lignes masquées en trop
+  types en trop : adresse 35
 ## identifiant suivi d'un nombre (P2-174) : Ecluse.redact (chemin du produit)
 identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) faux, 2 suite(s) avalée(s), 2 document(s) en défaut
   type_id=finess : 1 / 1200 en défaut, 1 non couvert(s)
