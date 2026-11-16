@@ -306,19 +306,19 @@ identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) f
   défaut : finess lu « rpps », nombre, espace : 1
   défaut : rpps lu « nir », nombre, ligne : 1
 ## identifiant derrière un libellé fort (P2-194) : Ecluse.redact (chemin du produit)
-libellé fort : 1800 identifiants positifs, 200 en clair, 0 au type faux ; 1200 documents témoins, 8 masqués à tort (8 prédiction(s))
+libellé fort : 1800 identifiants positifs, 0 en clair, 0 au type faux ; 1200 documents témoins, 8 masqués à tort (8 prédiction(s))
   variante=cle_juste : 0 / 300 en clair, 0 au type faux
   variante=cle_fausse : 0 / 300 en clair, 0 au type faux
-  variante=ocr_zero : 50 / 300 en clair, 0 au type faux
-  variante=ocr_un : 50 / 300 en clair, 0 au type faux
-  variante=ligne_vide : 50 / 300 en clair, 0 au type faux
-  variante=ocr_et_ligne_vide : 50 / 300 en clair, 0 au type faux
+  variante=ocr_zero : 0 / 300 en clair, 0 au type faux
+  variante=ocr_un : 0 / 300 en clair, 0 au type faux
+  variante=ligne_vide : 0 / 300 en clair, 0 au type faux
+  variante=ocr_et_ligne_vide : 0 / 300 en clair, 0 au type faux
   libellé=NIR : 0 / 300 en clair, 0 au type faux
   libellé=N° de sécurité sociale : 0 / 300 en clair, 0 au type faux
   libellé=numéro SS : 0 / 300 en clair, 0 au type faux
   libellé=IBAN : 0 / 300 en clair, 0 au type faux
   libellé=RPPS : 0 / 300 en clair, 0 au type faux
-  libellé=ADELI : 200 / 300 en clair, 0 au type faux
+  libellé=ADELI : 0 / 300 en clair, 0 au type faux
   NIR x cle_juste : 0 / 50 en clair, 0 au type faux
   NIR x cle_fausse : 0 / 50 en clair, 0 au type faux
   NIR x ocr_zero : 0 / 50 en clair, 0 au type faux
@@ -351,10 +351,10 @@ libellé fort : 1800 identifiants positifs, 200 en clair, 0 au type faux ; 1200 
   RPPS x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
   ADELI x cle_juste : 0 / 50 en clair, 0 au type faux
   ADELI x cle_fausse : 0 / 50 en clair, 0 au type faux
-  ADELI x ocr_zero : 50 / 50 en clair, 0 au type faux
-  ADELI x ocr_un : 50 / 50 en clair, 0 au type faux
-  ADELI x ligne_vide : 50 / 50 en clair, 0 au type faux
-  ADELI x ocr_et_ligne_vide : 50 / 50 en clair, 0 au type faux
+  ADELI x ocr_zero : 0 / 50 en clair, 0 au type faux
+  ADELI x ocr_un : 0 / 50 en clair, 0 au type faux
+  ADELI x ligne_vide : 0 / 50 en clair, 0 au type faux
+  ADELI x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
   témoin négatif=libelle_seul : 0 / 300 masqués à tort (0 prédiction(s))
   témoin négatif=non_communique : 0 / 300 masqués à tort (0 prédiction(s))
   témoin négatif=mot_ordinaire : 0 / 300 masqués à tort (0 prédiction(s))

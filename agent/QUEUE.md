@@ -266,7 +266,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-196 | mesure | Balayage des communes en capitales : décrire les 95 adresses encore en partie en clair (causes « autre » 59, « ponctuation » 30, longueur) | P2-187 | fusionnée |
 | P2-197 | code | Sas Claude Code (mod TypeScript) : lire le champ `nonRestaures` de `POST /v1/restore` et l'afficher en une ligne | P2-192 | fusionnée |
 | P2-198 | spec | Journal d'audit : que faire quand la version du moteur change (0.2.0) entre deux entrées d'un même journal | P2-193 | fusionnée |
-| P2-199 | code | ADELI derrière son libellé, lu par OCR (O pour 0, l ou I pour 1) ou coupé par une ligne vide : 200 identifiants sur 300 en clair au témoin P2-194 | P2-194 | à faire |
+| P2-199 | code | ADELI derrière son libellé, lu par OCR (O pour 0, l ou I pour 1) ou coupé par une ligne vide : 200 identifiants sur 300 en clair au témoin P2-194 | P2-194 | fusionnée |
 | P2-200 | code | Tableau de bord : balayage des communes en capitales **sans** « CEDEX » et témoin de faux positifs « cinq chiffres + mot neutre + CEDEX », avant toute correction devant CEDEX | P2-196 | à faire |
 | P2-201 | code | Communes en capitales devant « CEDEX » : lever la règle du mot neutre, admettre parenthèse, tiret isolé et blancs multiples, numéro de CEDEX après un nom (classes 1 à 5 de `agent/specs/P2-196.md`) | P2-200 | à faire |
 | P2-202 | code | Export AIPD : moteurs dans l'ordre de première apparition, nombre de changements de moteur et mention d'honnêteté (recommandations de `agent/specs/P2-198.md`) | P2-198 | à faire |

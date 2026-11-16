@@ -173,14 +173,10 @@ ATTENDU = [
 # positifs laissés en clair, par (libellé, variante). Absent = 0 : un
 # identifiant positif qui repasse en clair fait échouer `etat.sh`
 # (`verifie_etat.py`). Une case ne figure ici qu'avec le constat d'un défaut
-# déjà connu, chiffre de départ de P2-194 (sur 50 documents par case) ; le
-# plafond ne peut que baisser, et se retire quand la correction est livrée.
-PLAFOND_LIBELLE_FORT = {
-    ("ADELI", "ocr_zero"): 50,
-    ("ADELI", "ocr_un"): 50,
-    ("ADELI", "ligne_vide"): 50,
-    ("ADELI", "ocr_et_ligne_vide"): 50,
-}
+# déjà connu ; le plafond ne peut que baisser et se retire quand la
+# correction est livrée. Vide depuis P2-199 (ADELI : 50 sur chacune des quatre
+# cases OCR et ligne vide au départ, 0 depuis).
+PLAFOND_LIBELLE_FORT = {}
 
 # Une ligne qui commence ainsi est un échec en soi.
 LIGNES_ECHEC = ("ÉCHEC", "section vide")
