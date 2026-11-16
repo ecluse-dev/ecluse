@@ -370,7 +370,17 @@ confiance 0,55 est une adresse qui chevauche un ADELI, voir P2-199.)
   à 0,3 sans avertissement, aucun avertissement sans 0,3), positifs et négatifs.
 - **ADELI à clé fausse masqué à 0,6 : sans avertissement** (50 documents,
   `AdeliDetector`, confiance 0,6 par `LIMITES.md` § 2) alors que NIR, IBAN et
-  RPPS à clé fausse (confiance 0,3) en portent un. Constat, non corrigé ici.
+  RPPS à clé fausse (confiance 0,3) en portent un. Constat de P2-203 ;
+  **corrigé par P2-204** (ci-dessous).
+- **Après P2-204** (chemin `Ecluse.redact`, graine 42, même témoin) :
+  avertissement « à vérifier » **1 450 → 1 500** positifs sur 1 800 au
+  tableau de bord actuel (les ADELI OCR de P2-199 en portaient déjà un) ;
+  `cle_fausse` 250 → **300 / 300**, soit ADELI × `cle_fausse` **0 → 50 / 300** ;
+  négatifs inchangés (0 / 1 200) ; confiance 0,6 inchangée. L'invariant
+  « avertissement ⇔ confiance 0,3 » ne tient plus pour ce seul cas : le
+  scoreur le compte à part (`exception P2-204 … positifs 50`) au lieu de
+  l'afficher comme incohérence (`incohérence … positifs 0` reste le garde-fou
+  pour tout autre cas).
 - Les 8 négatifs masqués sont masqués par d'autres détecteurs, de confiance 0,5
   (1), 0,55 (4), 0,9 (2) et 1 (1) : aucun à 0,3, donc aucun avertissement ; le
   libellé fort n'y est pour rien.

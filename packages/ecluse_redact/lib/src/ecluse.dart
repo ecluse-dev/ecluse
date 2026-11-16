@@ -380,13 +380,17 @@ abstract final class Ecluse {
     // qui l'annonce (P2-188) : confiance 0.3, unique à
     // `IdentifiantCleInvalideDetector` parmi les types nir/iban/rpps.
     final cleInvalideCount = resolved
-        .where((e) =>
-            (e.type == EntityType.nir ||
-                e.type == EntityType.iban ||
-                e.type == EntityType.rpps ||
-                e.type == EntityType.adeli) &&
-            e.confidence == 0.3)
-        .length;
+            .where((e) =>
+                (e.type == EntityType.nir ||
+                    e.type == EntityType.iban ||
+                    e.type == EntityType.rpps ||
+                    e.type == EntityType.adeli) &&
+                e.confidence == 0.3)
+            .length +
+        // ADELI à clé fausse derrière son libellé (P2-204) : masqué par
+        // `AdeliDetector` à confiance 0,6 (inchangée, `LIMITES.md` § 2), donc
+        // hors du compte ci-dessus. Le message ne porte jamais la valeur.
+        resolved.where(_adeliCleFausse).length;
 
     // Jetons déjà attribués dans le dossier qui figurent en clair dans ce
     // texte : ils seront remplacés à la restauration (relevé avant tout
@@ -463,6 +467,25 @@ abstract final class Ecluse {
           ? null
           : evaluerRisque(riskReference, maskedText),
     );
+  }
+
+  /// Vrai pour un ADELI de neuf chiffres dont la clé Luhn est fausse, masqué à
+  /// confiance 0,6 (P2-204). Un numéro corse (lettre dans la valeur) n'a pas de
+  /// règle de clé établie : il n'est pas jugé faux et ne déclenche rien.
+  static bool _adeliCleFausse(DetectedEntity e) {
+    if (e.type != EntityType.adeli || e.confidence != 0.6) return false;
+    final chiffres = e.value.replaceAll(RegExp(r'[\s\u00A0\u202F.\-]'), '');
+    if (!RegExp(r'^[0-9]{9}$').hasMatch(chiffres)) return false;
+    var somme = 0;
+    for (var i = 0; i < 9; i++) {
+      var d = chiffres.codeUnitAt(8 - i) - 48;
+      if (i.isOdd) {
+        d *= 2;
+        if (d > 9) d -= 9;
+      }
+      somme += d;
+    }
+    return somme % 10 != 0;
   }
 
   /// Avertissement d'un texte sans aucune majuscule (P2-118). Mesure P2-117 :

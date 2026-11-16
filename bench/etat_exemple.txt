@@ -407,6 +407,7 @@ confiance des masquages (chemin : Ecluse.redact) :
   à vérifier variante=ligne_vide : 250 / 300
   à vérifier variante=ocr_et_ligne_vide : 250 / 300
   incohérence confiance 0.3 / avertissement : positifs 0, négatifs 0
+  exception P2-204 (ADELI clé fausse, confiance 0.6, avec avertissement) : positifs 0
 ## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90
 # realiste largeur 60 : 3 refus
 adresse            156   156 100.0% 100.0% 100.0%  100.0%     0.0%

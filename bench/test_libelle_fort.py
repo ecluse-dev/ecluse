@@ -237,6 +237,23 @@ class Confiance(unittest.TestCase):
         _, _, _, incoherent = confiance(self.corpus(), pred)
         self.assertEqual(incoherent["positifs"], 2)
 
+    def test_exception_adeli_cle_fausse_comptee_a_part(self):
+        # P2-204 : ADELI à clé fausse, confiance 0,6 avec avertissement : ni
+        # incohérence ni oubli, une ligne à part.
+        corpus = self.corpus()
+        corpus[1]["entities"][0]["type"] = "adeli"
+        pred = self.pred(([self.ent(1.0)], False), ([self.ent(0.6)], True),
+                         ([self.ent(0.6)], False), ([], False), ([], False))
+        _, _, _, incoherent = confiance(corpus, pred)
+        self.assertEqual(incoherent["exception_adeli"], 1)
+        self.assertEqual(incoherent["positifs"], 0)
+        # Le même 0,6 avec avertissement sur un NIR reste une incohérence.
+        pred = self.pred(([self.ent(1.0)], False), ([self.ent(0.6)], True),
+                         ([], False), ([], False), ([], False))
+        _, _, _, incoherent = confiance(self.corpus(), pred)
+        self.assertEqual(incoherent["positifs"], 1)
+        self.assertEqual(incoherent["exception_adeli"], 0)
+
     def test_affichage_sans_texte_ni_valeur(self):
         import contextlib
         import io

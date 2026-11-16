@@ -151,7 +151,16 @@ def confiance(corpus, pred):
                 pos[groupe][cle] += 1
                 verif[groupe]["documents"] += 1
                 verif[groupe]["a_verifier"] += a_verifier
-            incoherent["positifs"] += a_verifier != a_basse
+            # P2-204 : un ADELI à clé fausse est masqué à confiance 0,6
+            # (inchangée, LIMITES § 2) mais porte l'avertissement. Exception
+            # connue, comptée à part au lieu de gonfler l'incohérence.
+            exception = (e0["type"] == "adeli" and a_verifier
+                         and not a_basse and cle == "0.6"
+                         and doc["variante"] == "cle_fausse")
+            if exception:
+                incoherent["exception_adeli"] += 1
+            else:
+                incoherent["positifs"] += a_verifier != a_basse
         else:
             for x in ents:
                 neg[f"{x['confidence']:g}"] += 1
@@ -181,6 +190,8 @@ def affiche_confiance(corpus, resultat):
               f"{c['documents']}")
     print(f"  incohérence confiance 0.3 / avertissement : positifs "
           f"{incoherent['positifs']}, négatifs {incoherent['negatifs']}")
+    print(f"  exception P2-204 (ADELI clé fausse, confiance 0.6, avec "
+          f"avertissement) : positifs {incoherent['exception_adeli']}")
 
 
 def charge(chemin):
