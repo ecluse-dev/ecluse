@@ -160,6 +160,19 @@ ATTENDU = [
         (r"^  témoin négatif=(libelle_seul|non_communique|mot_ordinaire|"
          r"nombre_sans_libelle) : \d+ / \d+ masqués à tort", 4,
          "4 formes de témoin négatif"),
+        (r"^confiance des masquages", 1, "en-tête de la mesure P2-203"),
+        (r"^  confiance positifs : ", 1, "confiances des positifs"),
+        (r"^  confiance variante=(cle_juste|cle_fausse|ocr_zero|ocr_un|"
+         r"ligne_vide|ocr_et_ligne_vide) : ", 6, "confiances par variante"),
+        (r"^  confiance détections des négatifs : ", 1,
+         "confiances des négatifs masqués"),
+        (r"^  avertissement à vérifier : positifs \d+ / \d+, négatifs \d+ / "
+         r"\d+", 1, "documents avec l'avertissement"),
+        (r"^  à vérifier variante=(cle_juste|cle_fausse|ocr_zero|ocr_un|"
+         r"ligne_vide|ocr_et_ligne_vide) : \d+ / \d+", 6,
+         "avertissement par variante"),
+        (r"^  incohérence confiance 0.3 / avertissement : positifs \d+, "
+         r"négatifs \d+", 1, "cohérence confiance 0,3 et avertissement"),
     ]),
     ("## mise en page", [
         (r"^# \w+ largeur \d+ : \d+ refus$", 6, "3 corpus x 2 largeurs"),

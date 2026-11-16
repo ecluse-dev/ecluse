@@ -10,7 +10,8 @@ import verifie_etat
 from generate_corpus import luhn_digit, nir_key
 from generate_corpus_libelle_fort import (LIBELLES, NEGATIFS, VARIANTES,
                                           construit)
-from score_libelle_fort import juge_positif, mesure
+from score_libelle_fort import (affiche_confiance, confiance, format_confiance,
+                                juge_positif, mesure)
 
 
 class Generateur(unittest.TestCase):
@@ -184,6 +185,77 @@ class Plafond(unittest.TestCase):
             "  NIR x cle_fausse : 2 / 50 en clair")
         self.assertTrue(any("NIR x cle_fausse" in p
                             for p in verifie_etat.verifie(texte)))
+
+
+class Confiance(unittest.TestCase):
+    """P2-203 : répartition des confiances et de l'avertissement."""
+
+    def corpus(self):
+        pos = lambda i, v: {"id": i, "text": "NIR : 0123456789abcde x",
+                            "entities": [{"type": "nir", "start": 6,
+                                          "end": 21}],
+                            "libelle": "NIR", "variante": v}
+        neg = lambda i: {"id": i, "text": "NIR : voir", "entities": [],
+                         "libelle": "NIR", "temoin_negatif": "libelle_seul"}
+        return [pos(0, "cle_juste"), pos(1, "cle_fausse"),
+                pos(2, "cle_fausse"), neg(3), neg(4)]
+
+    def pred(self, *lignes):
+        return [{"id": i, "entities": e, "a_verifier": av}
+                for i, (e, av) in enumerate(lignes)]
+
+    def ent(self, conf, debut=6, fin=21):
+        return {"type": "nir", "start": debut, "end": fin,
+                "confidence": conf}
+
+    def test_sans_champs_de_confiance_rien_n_est_rendu(self):
+        pred = [{"id": i, "entities": []} for i in range(5)]
+        self.assertIsNone(confiance(self.corpus(), pred))
+
+    def test_repartition_et_avertissement(self):
+        pred = self.pred(
+            ([self.ent(1.0)], False),   # clé juste, confiance 1, sans alerte
+            ([self.ent(0.3)], True),    # clé fausse, 0,3, alerte
+            ([], False),                # clé fausse, rien
+            ([], False),
+            ([self.ent(0.3, 0, 3)], True))  # négatif masqué à 0,3
+        pos, neg, verif, incoherent = confiance(self.corpus(), pred)
+        self.assertEqual(dict(pos["total"]), {"1": 1, "0.3": 1, "aucune": 1})
+        self.assertEqual(dict(pos["cle_fausse"]), {"0.3": 1, "aucune": 1})
+        self.assertEqual(dict(neg), {"0.3": 1})
+        self.assertEqual(verif["total"]["a_verifier"], 1)
+        self.assertEqual(verif["total"]["documents"], 3)
+        self.assertEqual(verif["negatifs"]["a_verifier"], 1)
+        self.assertEqual(verif["negatifs"]["documents"], 2)
+        self.assertEqual(incoherent["positifs"], 0)
+        self.assertEqual(incoherent["negatifs"], 0)
+
+    def test_incoherence_detectee(self):
+        # masquage à 0,3 sans avertissement, et avertissement sans 0,3.
+        pred = self.pred(([self.ent(0.3)], False), ([self.ent(1.0)], True),
+                         ([], False), ([], False), ([], False))
+        _, _, _, incoherent = confiance(self.corpus(), pred)
+        self.assertEqual(incoherent["positifs"], 2)
+
+    def test_affichage_sans_texte_ni_valeur(self):
+        import contextlib
+        import io
+        pred = self.pred(([self.ent(1.0)], False), ([self.ent(0.3)], True),
+                         ([], False), ([], False), ([], False))
+        tampon = io.StringIO()
+        with contextlib.redirect_stdout(tampon):
+            affiche_confiance(self.corpus(),
+                              confiance(self.corpus(), pred))
+        sortie = tampon.getvalue()
+        self.assertIn("avertissement à vérifier : positifs 1 / 3, négatifs "
+                      "0 / 2", sortie)
+        self.assertIn("confiance variante=cle_fausse", sortie)
+        self.assertNotIn("0123456789", sortie)
+        self.assertNotIn("voir", sortie)
+
+    def test_format(self):
+        self.assertEqual(format_confiance({"1": 2, "0.3": 5, "aucune": 1}),
+                         "0.3=5, 1=2, aucune=1")
 
 
 if __name__ == "__main__":

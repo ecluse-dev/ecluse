@@ -110,6 +110,79 @@ def affiche(corpus, resultats):
               f"{c['documents']} masqués à tort")
 
 
+def format_confiance(compteur):
+    """« 0.3=12, 1.0=288 » : valeurs triées, « aucune » en dernier."""
+    clefs = sorted(k for k in compteur if k != "aucune")
+    morceaux = [f"{k}={compteur[k]}" for k in clefs]
+    if compteur.get("aucune"):
+        morceaux.append(f"aucune={compteur['aucune']}")
+    return ", ".join(morceaux) if morceaux else "(rien)"
+
+
+def confiance(corpus, pred):
+    """P2-203 : répartition des confiances et de l'avertissement « à vérifier ».
+
+    N'a de sens que si les prédictions portent `confidence` et `a_verifier`
+    (`run_redact_bench.dart --confiance`) ; sinon rend None. Pour un positif,
+    la confiance retenue est la plus haute parmi les détections qui touchent
+    l'identifiant annoté (« aucune » si rien ne le touche). Pour un négatif, la
+    confiance de chaque détection prédite à tort. Aucun texte ni valeur.
+    """
+    preds = {d["id"]: d for d in pred}
+    if not any("a_verifier" in p for p in preds.values()):
+        return None
+    pos = collections.defaultdict(collections.Counter)
+    neg = collections.Counter()
+    verif = collections.defaultdict(collections.Counter)
+    incoherent = collections.Counter()
+    for doc in corpus:
+        p = preds[doc["id"]]
+        ents = p.get("entities", [])
+        a_verifier = bool(p.get("a_verifier"))
+        a_basse = any(abs(e.get("confidence", 1.0) - 0.3) < 1e-9
+                      for e in ents)
+        if doc["entities"]:
+            e0 = doc["entities"][0]
+            touche = [x for x in ents
+                      if x["start"] < e0["end"] and e0["start"] < x["end"]]
+            cle = (f"{max(x['confidence'] for x in touche):g}"
+                   if touche else "aucune")
+            for groupe in (doc["variante"], "total"):
+                pos[groupe][cle] += 1
+                verif[groupe]["documents"] += 1
+                verif[groupe]["a_verifier"] += a_verifier
+            incoherent["positifs"] += a_verifier != a_basse
+        else:
+            for x in ents:
+                neg[f"{x['confidence']:g}"] += 1
+            verif["negatifs"]["documents"] += 1
+            verif["negatifs"]["a_verifier"] += a_verifier
+            incoherent["negatifs"] += a_verifier != a_basse
+    return pos, neg, verif, incoherent
+
+
+def affiche_confiance(corpus, resultat):
+    pos, neg, verif, incoherent = resultat
+    print("confiance des masquages (chemin : Ecluse.redact) :")
+    variantes = []
+    for d in corpus:
+        if d["entities"] and d["variante"] not in variantes:
+            variantes.append(d["variante"])
+    print(f"  confiance positifs : {format_confiance(pos['total'])}")
+    for v in variantes:
+        print(f"  confiance variante={v} : {format_confiance(pos[v])}")
+    print(f"  confiance détections des négatifs : {format_confiance(neg)}")
+    t, n = verif["total"], verif["negatifs"]
+    print(f"  avertissement à vérifier : positifs {t['a_verifier']} / "
+          f"{t['documents']}, négatifs {n['a_verifier']} / {n['documents']}")
+    for v in variantes:
+        c = verif[v]
+        print(f"  à vérifier variante={v} : {c['a_verifier']} / "
+              f"{c['documents']}")
+    print(f"  incohérence confiance 0.3 / avertissement : positifs "
+          f"{incoherent['positifs']}, négatifs {incoherent['negatifs']}")
+
+
 def charge(chemin):
     with open(chemin, encoding="utf-8") as f:
         return [json.loads(l) for l in f if l.strip()]
@@ -121,7 +194,11 @@ def main():
     ap.add_argument("--pred", required=True)
     args = ap.parse_args()
     corpus = charge(args.corpus)
-    affiche(corpus, mesure(corpus, charge(args.pred)))
+    pred = charge(args.pred)
+    affiche(corpus, mesure(corpus, pred))
+    c = confiance(corpus, pred)
+    if c is not None:
+        affiche_confiance(corpus, c)
 
 
 if __name__ == "__main__":
