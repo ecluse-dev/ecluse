@@ -143,6 +143,24 @@ ATTENDU = [
         (r"^  casse=\w+ : \d+ / \d+ phrases à adresse prédite", 5,
          "par casse, trois témoins"),
     ]),
+    ("## commune à mot de voie", [
+        (r"^commune à mot de voie : \d+ documents, \d+ communes, \d+ "
+         r"document\(s\) à adresse en partie en clair", 1,
+         "balayage des communes à mot de voie (P2-213)"),
+        (r"^  casse=(ordinaire|capitales) : \d+ / \d+ en défaut", 2,
+         "par casse"),
+        (r"^  cedex=(avec|sans) : \d+ / \d+ en défaut", 2, "par CEDEX"),
+        (r"^  suite=(sans|mot|adresse) : \d+ / \d+ en défaut", 3,
+         "par ligne suivante"),
+        (r"^  voie=(sans|avec) : \d+ / \d+ en défaut", 2,
+         "derrière ou non une vraie voie"),
+        (r"^  mot de voie=\S+ : \d+ / \d+ en défaut", 5, "par mot de voie"),
+        (r"^  en clair : vraie voie \d+, code postal \d+, commune \d+, "
+         r"seconde adresse \d+", 1, "ce qui reste en clair"),
+        (r"^  début en clair .* : \d+ document\(s\) ; fin du nom seule en "
+         r"clair : \d+", 1, "signature du défaut"),
+        (r"^  ligne « code postal \+ mot » masquée", 1, "masquage en trop"),
+    ]),
     ("## courriers en capitales", [
         (r"^courriers : \d+ courriers, \d+ lignes, \d+ adresses annotées, "
          r"\d+ courrier\(s\) à adresse en partie en clair", 1,

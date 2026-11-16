@@ -304,6 +304,22 @@ for t in cinq_chiffres determinant; do
     echec "règles candidates, témoin $t : corpus ou prédictions absents"
   fi
 done
+# Commune dont le nom contient un mot de voie (P2-213) : les 52 communes du
+# référentiel dont la forme postale porte un type de voie du détecteur
+# (« GRAFFIGNY CHEMIN », « LA CHAUSSEE TIRANCOURT », « RUE »), lus dans
+# `adresse_detector.dart`. Six cases écriture x casse, avec et sans CEDEX,
+# suivies ou non d'une ligne « code postal + mot » ou d'une seconde adresse,
+# derrière ou non une vraie voie (contrôle). Chemin mesuré : Ecluse.redact. Une
+# adresse en partie en clair est une fuite ; « début en clair » (code postal
+# ou premier mot du nom) est la signature du défaut de P2-213, « fin du nom
+# seule » celle des communes de plus de quatre mots sans CEDEX (P2-205).
+echo "## commune à mot de voie (P2-213) : Ecluse.redact (chemin du produit), adresses en partie en clair"
+if produit "commune à mot de voie, générateur" "$B/flou/corpus_commune_voie.jsonl" python3 "$B/generate_corpus_commune_voie.py" --seed 42 --communes "$R/packages/ecluse_reference/assets/geo_communes.csv.gz" --detecteur "$R/packages/ecluse_redact/lib/src/heuristics/adresse_detector.dart" --out "$B/flou/corpus_commune_voie.jsonl"; then
+  if produit "commune à mot de voie, Ecluse.redact" "$B/flou/pred_commune_voie.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_commune_voie.jsonl ../../bench/flou/pred_commune_voie.jsonl; then
+    montre "commune à mot de voie, score" -E "^commune à mot de voie :|^  (casse|ecriture|cedex|suite|voie|mot de voie)=|^  en clair :|^  début en clair|^  ligne « code postal" 0 non dans_B python3 score_commune_voie.py --corpus flou/corpus_commune_voie.jsonl --pred flou/pred_commune_voie.jsonl || true
+  fi
+fi
+
 # Courriers synthétiques en capitales (P2-210) : la fréquence de « cinq chiffres
 # + mot neutre + CEDEX » dans des courriers entiers (titres, références,
 # montants, nombres de dossiers, adresses de retour), que le témoin de P2-200

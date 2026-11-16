@@ -809,6 +809,50 @@ branche : seules ces lignes diffèrent (témoin de faux titres de P2-180 et
 sections de noms inclus : identiques). Non mesuré : « SAINT M HERVE » sans
 CEDEX (le balayage sans CEDEX le comptait déjà parmi ses 338, cause
 « autre »).
+## Commune dont le nom contient un mot de voie (P2-213)
+
+Avant : `main` au commit `bd7d24b` ; après : P2-213. Graine 42. Chemin mesuré :
+**`Ecluse.redact`** (ce que reçoit le LLM). Générateur
+`bench/generate_corpus_commune_voie.py`, scoreur `bench/score_commune_voie.py`.
+Le balayage prend **toutes** les communes du référentiel dont la forme postale
+contient un type de voie du détecteur (liste `_voies` lue dans
+`adresse_detector.dart`) : 52 communes (CHAUSSEE 15, COURS 11, CHEMIN 7, RUE 7,
+CLOS 3, PLACE 3, RUELLE 2, PASSAGE 2, HAMEAU 1, AVE 1). Chacune sous 72 formes :
+six cases écriture × casse (quatre écritures en casse ordinaire, deux tout en
+capitales), avec ou sans « CEDEX n », suivie d'une phrase, d'une ligne « code
+postal + mot » (« 39314 Colis en attente ») ou d'une seconde adresse, derrière
+ou non une vraie voie (« 12 chemin des Vignes », le contrôle). 3 744 documents.
+Une adresse annotée en partie en clair est une fuite.
+
+| Mesure (`Ecluse.redact`) | Avant | Après |
+|---|---:|---:|
+| Documents à adresse en partie en clair | **641 / 3 744** (52 communes) | **26 / 3 744** (4 communes) |
+| dont code postal ou premier mot du nom en clair | **615** | **0** |
+| dont fin du nom seule en clair | 26 | 26 |
+| Code postal en clair | 615 | 0 |
+| Seconde adresse en clair | 5 | 0 |
+| Vraie voie en clair (contrôle) | 0 | 0 |
+| Casse ordinaire / capitales | 426 / 2 496 ; 215 / 1 248 | 22 / 2 496 ; 4 / 1 248 |
+| Avec CEDEX / sans CEDEX | 523 / 1 872 ; 118 / 1 872 | 0 / 1 872 ; 26 / 1 872 |
+| Suite : phrase / « code postal + mot » / adresse | 10 ; 320 ; 311 (sur 1 248) | 10 ; 9 ; 7 |
+| Derrière une vraie voie : sans / avec | 616 ; 25 (sur 1 872) | 8 ; 18 |
+| Ligne « code postal + mot » masquée (en trop) | 1 246 / 1 248 | 1 248 / 1 248 |
+
+Lecture. Le défaut visé (la voie lue à partir du mot de voie du nom, le vrai
+code postal en clair) est à **0**. Le « Fini quand » de la fiche demandait 0
+adresse en partie en clair sur le balayage : il en reste **26, d'une autre
+cause**, identiques avant et après. Ce sont 4 communes sans CEDEX dont seule la
+fin du nom reste en clair : nom de plus de quatre mots (« SAINT JEAN DE LA
+RUELLE » et « SAINT CLEMENT DE LA PLACE » derrière une vraie voie ou une ligne
+« code postal + mot », « VILLERS CHEMIN ET MONT LES ETRELLES ») ou lié par
+« au », « et » (« Villeneuve au Chemin »). C'est la limite des communes longues
+sans CEDEX (P2-205, formes A ; règle « nom exact » de P2-214 pour les
+capitales), pas le mot de voie. Les 5 secondes adresses en clair du départ
+venaient, dans les cas regardés, d'un nom de personne lu sur « SAINT-…-AUX-CLOS CEDEX », qui écartait
+l'adresse fautive sans rien mettre à la place.
+
+Reste du tableau de bord : identique à `main`, ligne pour ligne.
+
 ## Courriers synthétiques en capitales : fréquence de « cinq chiffres + mot neutre + CEDEX » (P2-210)
 
 Mesure de départ, `main` au commit `8b516b7`, graine 42, **aucun `lib/`
