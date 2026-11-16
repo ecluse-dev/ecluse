@@ -272,7 +272,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-202 | code | Export AIPD : moteurs dans l'ordre de première apparition, nombre de changements de moteur et mention d'honnêteté (recommandations de `agent/specs/P2-198.md`) | P2-198 | fusionnée |
 | P2-203 | mesure | Mesurer la confiance des masquages et l'avertissement « à vérifier » au tableau de bord (le banc ne lit pas la confiance aujourd'hui) | P2-194 | fusionnée |
 | P2-204 | code | ADELI à clé fausse derrière son libellé : masqué à confiance 0,6 sans avertissement « à vérifier », alors que NIR, IBAN et RPPS à clé fausse en portent un | P2-199 | à faire |
-| P2-205 | spec | Communes en capitales sans « CEDEX » : 338 adresses sur 139 500 en partie en clair, dont 216 par la longueur (commune de plus de quatre mots) ; options et risque de faux positifs avant toute correction | P2-200 | à faire |
+| P2-205 | spec | Communes en capitales sans « CEDEX » : 338 adresses sur 139 500 en partie en clair, dont 216 par la longueur (commune de plus de quatre mots) ; options et risque de faux positifs avant toute correction | P2-200 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
