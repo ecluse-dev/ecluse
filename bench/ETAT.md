@@ -758,6 +758,33 @@ REUNION », commune du référentiel (« STOCK DE 59477 LA REUNION DE SERVICE »
 un cas réel de faux positif du nom exact, sur 200. **Non mesuré** : la
 fréquence de ces tournures dans du texte réel, la part des écritures hors
 référentiel, l'interaction avec les autres détecteurs.
+## `EtablissementDetector` : frontière de mot et étendue limitée au nom (P2-207)
+
+Avant : `main` au commit `8b516b7` (rejeu du 16 novembre). Après : branche
+`claude/P2-207-etablissement-frontiere-mot`. Graine 42. Chemin mesuré :
+**`Ecluse.redact`** (ce que reçoit le LLM). Modifié : `EtablissementDetector`
+(frontière de mot à gauche écrite `(?<![\wÀ-ÿ])`, `\b` ne connaissant pas les
+lettres accentuées : « CH » trouvé dans « BUËCH ») et le recollage de fin de
+ligne de `coupures_de_nom.dart` (même frontière ; les débuts de phrase de la
+liste fermée se lisent aussi en capitales : « MERCI » n'est plus la suite du
+nom, « DE », « DES », « SUR » le restent). L'étendue masquée ne déborde plus
+sur la ligne suivante (« MAS GRENIER⏎MERCI DE VOTRE RETOUR »).
+
+| Mesure (balayage en capitales sans CEDEX, 139 500 adresses) | Avant | Après |
+|---|---:|---:|
+| Adresses en partie en clair | 338 | **309** |
+| Fuite au caractère | 0,1 % (3 061 / 2 280 758) | 0,1 % (2 886) |
+| Cause « déterminant initial » | 16 | **4** |
+| Cause « autre » | 60 | 59 |
+
+Les 29 adresses de la forme E (`agent/specs/P2-205.md` § E) sont corrigées ; les
+309 restantes sont les formes A (216), B (57), C (32) et D (4), non touchées.
+**Reste du tableau de bord inchangé** : `bash bench/etat.sh` rejoué en entier
+sur `main` et sur la branche, seules ces quatre lignes diffèrent (corpus
+flous d'établissements, mises en page, balayage avec CEDEX, témoins de
+sur-masquage : identiques, donc aucun établissement du corpus perdu). Le
+corpus d'établissements est celui des corpus flous du tableau de bord
+(`bench/etat.sh`, sections « flou » et « mise en page »).
 
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
