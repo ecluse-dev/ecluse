@@ -9,6 +9,97 @@ absence de protection connue.
 
 ---
 
+## Résumé : ce qu'Écluse ne fait pas
+
+Deux pages au plus, pour un DPO, un client ou un agent. Chaque ligne renvoie au
+paragraphe détaillé plus bas. Le détail fait foi ; ce résumé ne le remplace pas.
+En une phrase : **Écluse réduit le risque, il ne l'annule pas.**
+
+### Ce qu'Écluse ne lit pas (formats)
+
+- **Images, scans, PDF-image, manuscrit** : refusés avec un motif, jamais lus
+  à moitié. Voir [§ 4](#4-fichiers-pris-en-charge-ecluse_ingest).
+- **PDF abîmé** : une page perdue peut passer sans avertissement (6 cas sur
+  1 500 copies abîmées, mesure P2-28) ; un octet altéré dans le texte d'une
+  page n'est pas détecté. Voir [PDF abîmés](#pdf-abîmés--pages-perdues-p2-28) et
+  [archives](#intégrité-des-archives-docx-et-odt-p2-27).
+- **En-têtes, pieds de page, notes et commentaires** de `.docx` et `.odt` :
+  non lus, signalés par `ignored_parts`. Voir [§ 1](#1-deux-familles-de-détecteurs-deux-niveaux-de-confiance) et
+  [§ 4](#4-fichiers-pris-en-charge-ecluse_ingest).
+- **Dictée vocale** : absente. Voir [§ 6](#6-hors-périmètre-v0).
+
+### Ce qu'Écluse ne détecte pas (limites de détection)
+
+- **Noms et adresses** : des heuristiques, pas des preuves. Un modèle local
+  a été mesuré et écarté. Voir [§ 1](#1-deux-familles-de-détecteurs-deux-niveaux-de-confiance).
+- **Nom de famille seul, sans civilité** : peut rester en clair à sa première
+  mention. Voir [5.2.2](#522-noms-sans-civilité-et-titres) et [§ 5.4](#54-portée-du-rattrapage-des-mentions-partielles).
+- **Identifiants hors liste** : BIC, IBAN non français, secrets sans préfixe
+  connu, autres identifiants professionnels, numéro INS lui-même. Voir
+  [§ 2](#2-identifiants-non-couverts).
+- **Lieux isolés, professions, pathologies fréquentes** : en clair ; seules
+  les maladies rares d'un catalogue fourni sont masquées. Voir
+  [§ 3](#3-lieux-et-quasi-identifiants).
+- **Textes en minuscules ou en capitales** : fiabilité moindre. Voir
+  [5.2.4](#524-casse--minuscules-capitales-casse-de-phrase).
+- **Numéros étrangers, adresses sans code postal, courriels obfusqués** :
+  couverture partielle. Voir [5.2.7](#527-téléphones-noms-de-naissance-titres-et-particules), [5.2.9](#529-adresses-sans-code-postal-identifiants-étiquetés-iban-téléphones-étrangers) et
+  [§ 1](#1-deux-familles-de-détecteurs-deux-niveaux-de-confiance).
+- **Valeur coupée par la mise en forme** (fin de ligne, tableau) : couverte
+  seulement dans les cas listés. Voir [5.2.1](#521-coupures-de-ligne--adresses-et-établissements) et
+  [5.2.6](#526-identifiants-coupés-dates-et-étiquettes-de-champ).
+- **Sur-masquage** : en cas de doute, Écluse masque. C'est un choix. Voir
+  [§ 5.1](#51-faux-positifs-assumés).
+
+### Fuites résiduelles
+
+- **Pas de garantie d'anonymat.** L'estimation de ré-identification est un
+  rapport ; son rappel est limité ; « aucun quasi-identifiant détecté » n'est
+  pas « risque faible ». Voir [§ 7](#7-estimation-de-ré-identification-ecluse_reid-ecluse_reference).
+- **Refuser une détection dans l'aperçu envoie la valeur en clair.** Voir
+  [§ 6](#6-hors-périmètre-v0).
+- **Un secret déjà envoyé ailleurs** n'est pas rendu inoffensif : il faut le
+  révoquer. Voir [§ 2](#2-identifiants-non-couverts).
+- **Ce qui sort à côté du texte** (`toString`, erreurs, trace d'audit) :
+  neutralisé pour les objets listés. Voir [§ 7](#ce-qui-sort-à-côté-du-texte--tostring-messages-derreur-et-trace-daudit-p2-169-p2-170-p2-172).
+- **Généralisation** : jamais automatique, irréversible quand l'application
+  l'applique. Voir [§ 7](#généralisation-appliquée-p2-91-p2-92).
+- **Journal d'audit** : pas une signature ; une troncature en fin de journal
+  n'est pas détectée. Voir [§ 8](#8-journal-daudit-ecluse_audit-v0).
+
+### Restauration
+
+- **Une graphie par jeton** : une re-mention partielle est restaurée sous la
+  forme la plus complète. Voir [§ 5.3](#53-cohérence-des-pseudonymes-et-fidélité-de-la-restauration).
+- **Deux personnes de même patronyme** : peuvent partager un jeton. Voir
+  [§ 5.3](#53-cohérence-des-pseudonymes-et-fidélité-de-la-restauration).
+- **Jeton déformé par le LLM** : seules certaines déformations sont restaurées.
+  Voir [§ 5.3](#53-cohérence-des-pseudonymes-et-fidélité-de-la-restauration).
+- **Table de correspondance** : en mémoire, non chiffrée, non conservée. Voir
+  [§ 5.3](#53-cohérence-des-pseudonymes-et-fidélité-de-la-restauration).
+- **Dossier** : sans lui, les jetons changent d'un document à l'autre ; avec
+  lui, une mention partielle peut recevoir un nouveau jeton. Voir
+  [§ 5.3](#53-cohérence-des-pseudonymes-et-fidélité-de-la-restauration) et [§ 5.5](#55-coût-dun-dossier-volumineux).
+
+### Carte du § 5.2 (entités coupées ou mal formées)
+
+Chaque sous-section du détail est citée ici ; les paragraphes qu'elle
+contient sont couverts par ce renvoi.
+
+- [5.2.1](#521-coupures-de-ligne--adresses-et-établissements) coupures de ligne ; [5.2.2](#522-noms-sans-civilité-et-titres) noms sans civilité ;
+  [5.2.3](#523-caractères-invisibles-et-accents-décomposés) caractères invisibles ; [5.2.4](#524-casse--minuscules-capitales-casse-de-phrase) casse.
+- [5.2.5](#525-variantes-décriture--noms-dates-civilités-voies-cedex) variantes d'écriture ; [5.2.6](#526-identifiants-coupés-dates-et-étiquettes-de-champ) identifiants coupés ;
+  [5.2.7](#527-téléphones-noms-de-naissance-titres-et-particules) téléphones et titres ; [5.2.8](#528-types-de-voie-balisage-courriels-signatures-rôles) voies, signatures.
+- [5.2.9](#529-adresses-sans-code-postal-identifiants-étiquetés-iban-téléphones-étrangers) adresses sans code postal, IBAN ;
+  [5.2.10](#5210-tableaux-formats-structurés-et-coût-de-calcul) tableaux et coût ; [5.2.11](#5211-prénoms-civilités-au-pluriel-chemins-noms-coupés) prénoms et chemins ;
+  [5.2.12](#5212-relecture-indépendante--sur-masquages-coûts-et-fuites) relecture indépendante.
+- Les sections [5.1](#51-faux-positifs-assumés) à [5.5](#55-coût-dun-dossier-volumineux), [§ 6](#6-hors-périmètre-v0) à
+  [§ 8](#8-journal-daudit-ecluse_audit-v0) sont citées plus haut.
+- Les dix lignes qui suivent (« L'essentiel ») restent telles quelles : elles
+  font partie du détail.
+
+---
+
 ## L'essentiel en dix lignes
 
 1. **Deux niveaux de confiance.** Un `[NIR_1]` masqué est une quasi-certitude
@@ -468,6 +559,8 @@ nom d'un mot qui le suit relève du NER de la phase 2.
 
 ### 5.2 Entités coupées par la mise en forme
 
+#### 5.2.1 Coupures de ligne : adresses et établissements
+
 **Règle générale : un span ne traverse jamais un saut de ligne.** Ce choix
 évite qu'un span engloutisse par erreur le début d'une ligne sans rapport —
 c'était un bug réel, corrigé une première fois de façon absolue, puis affiné
@@ -556,6 +649,8 @@ lignes à tort » et « rater une entité coupée par la mise en forme », le
 second risque est jugé préférable — mais les deux méritent une vigilance
 humaine sur des documents à la mise en page inhabituelle.
 
+#### 5.2.2 Noms sans civilité et titres
+
 **Patronyme sans civilité : hors périmètre v0.** Le correctif qui absorbe le
 patronyme en casse de titre (« Nathalie Loyer », « Sophie Dupont-Martin »,
 « Jean de La Fontaine ») ne s'arme qu'après une civilité reconnue (`Madame`,
@@ -599,6 +694,8 @@ d'harmonisation des re-mentions (§ 5.3) sur des enchaînements absurdes (« Dr 
 Un sondage aléatoire n'est pas une preuve ; il n'a pas cherché les mises en forme
 propres aux vrais documents (§ 5.2).
 
+#### 5.2.3 Caractères invisibles et accents décomposés
+
 **Caractères invisibles et séparateurs typographiques dans un identifiant (P2-29).**
 Un copier-coller depuis le web ou un PDF glisse souvent un espace sans chasse (U+200B),
 un trait d'union conditionnel (U+00AD) ou un lien de mots (U+2060) dans un numéro ; un
@@ -637,6 +734,8 @@ script jetable, 371 donnaient autant de jetons qu'en forme composée ; après P2
 397. Les diacritiques combinants (U+0300 à U+036F, U+1DC0 à U+1DFF, U+20D0 à U+20FF,
 U+FE20 à U+FE2F) sont retirés de la vue des détecteurs et rattachés à leur lettre quand une
 entité est ramenée au texte d'origine.
+
+#### 5.2.4 Casse : minuscules, capitales, casse de phrase
 
 **Casse de phrase (P2-138).** Un texte dont les seules majuscules ouvrent
 les phrases (« Rdv avec m. julien chevrier ») est traité comme un texte sans
@@ -824,6 +923,8 @@ ligne « code postal + mot » qui suit reste masquée en trop (1 248 / 1 248 au
 balayage, 1 246 avant) : ce n'est pas l'objet de cette correction. Le balayage
 ne couvre ni un texte tout en minuscules, ni une commune hors référentiel.
 
+#### 5.2.5 Variantes d'écriture : noms, dates, civilités, voies, CEDEX
+
 **Lettres hors du jeu français usuel dans un nom (P2-33).** La majuscule initiale d'un mot de
 nom ne couvrait que A-Z et quelques lettres françaises : un nom commençant par Á, Ó, Ñ, Œ,
 Ł, Ş, Ž… ou contenant des lettres vietnamiennes n'était masqué qu'en partie (« François Œil »
@@ -960,6 +1061,8 @@ valide, et ferait perdre des adresses étrangères à cinq chiffres ; une liste 
 « boîtes ») reviendrait à ajuster le détecteur au témoin. Ce qui séparerait vraiment : reconnaître la commune
 (table des communes d'`ecluse_reference`), ce que ce détecteur ne fait pas.
 
+#### 5.2.6 Identifiants coupés, dates et étiquettes de champ
+
 **Identifiant coupé par une fin de ligne (P2-38).** Sonde de 14 formes : un téléphone, un NIR, un
 IBAN ou une date coupés entre deux groupes (« 01 99 00⏎12 34 », « FR76 3000 6000⏎0112 … ») n'étaient
 pas détectés, alors que l'extraction d'un PDF ou le retour automatique d'un traitement de texte les
@@ -1066,6 +1169,8 @@ Le contexte de naissance reste obligatoire : « Rendez-vous le mardi 12 mars 195
 **Restent non détectées** : « 12-mars-1950 », les mois en chiffres romains (« 12.III.1950 »), une date
 écrite en toutes lettres (« douze mars mille neuf cent cinquante »), et une année seule.
 
+#### 5.2.7 Téléphones, noms de naissance, titres et particules
+
 **Téléphone : préfixe entre parenthèses, outre-mer, numéros étrangers (P2-44).** Sonde de 22 numéros :
 « (+33) 6 12 34 56 78 » laissait « (+33) » et classait le reste en FINESS (masqué, mais sous un mauvais
 type), et les numéros d'outre-mer écrits avec leur indicatif (« +262 692 12 34 56 » à La Réunion et à
@@ -1126,6 +1231,8 @@ après, le banc est inchangé octet pour octet et tous les tests passent. **Limi
 caractères n'est plus reconnu en entier derrière un prénom ; un coût superlinéaire résiduel subsiste au-delà
 de ~10 000 mentions identiques d'un même texte (hors du détecteur de noms : la résolution des jetons), à
 traiter si un cas réel l'exige.
+
+#### 5.2.8 Types de voie, balisage, courriels, signatures, rôles
 
 **Types de voie et abréviations (P2-49).** Sonde de 26 adresses : « 25 R. de la Paix, 75002 Paris »,
 « 3 pl. de la Bastille, 75004 Paris » et « 14 sentier des Roses, 44000 Nantes » ne masquaient que « code postal
@@ -1226,6 +1333,8 @@ Quenelle ») n'est toujours pas détecté ; 100 000 étiquettes consécutives : 
 déjà documenté au-delà de ~50 000 mentions ; 2 s sans cette règle). Pour revenir en arrière : retirer
 `_etiquetteRole` de la boucle de `detect`.
 
+#### 5.2.9 Adresses sans code postal, identifiants étiquetés, IBAN, téléphones étrangers
+
 **Adresse sans code postal (P2-56).** Sonde de 18 formulations d'adresse : « 12 rue des Lilas », « 27 boulevard
 Haussmann », « Adresse : 12 cours Victor Hugo », « 8, Av. Jean Jaurès à Lyon » restaient **en clair** (ou, pour les
 deux dernières, le nom de la voie était pris pour un nom de personne et « 12 cours » fuyait), la détection exigeant un
@@ -1308,6 +1417,8 @@ SWIFT (ISO 13616) n'étant pas joignable depuis l'environnement d'exécution ; e
 longueur fausse entraînerait un IBAN **manqué**, jamais un faux positif (la clé reste exigée) : à confirmer par le
 mainteneur contre le registre. Luxembourg : 20 (trois sources) contre 19 dans une quatrième. **Non traité** : BIC/SWIFT,
 IBAN hors espace SEPA (Maroc, Algérie, Tunisie, Royaume-Uni hors SEPA…), IBAN coupé par un saut de ligne au milieu d'un groupe.
+
+#### 5.2.10 Tableaux, formats structurés et coût de calcul
 
 **Noms en clés de données explicites et tableaux CSV à en-tête (P2-61).** Arbitrage du 27 octobre (question 7).
 *Clés* : `nom_patient`, `nom_famille`, `nom_naissance`, `nom_usage`, `nom_de_naissance`, `lastname`, `family_name`,
@@ -1414,6 +1525,8 @@ détection. `IngestFormat` gagne cinq valeurs (`csv`, `tsv`, `json`, `html`, `xm
 d'abord (20 tests, dont le bout en bout par format et les refus) ; ingest 156 tests, redact 1042, demo 37. **Non traité** : `.xlsx`, `.rtf`,
 `.doc`, `.pptx` (refusés avec motif), `.yaml`/`.yml`, `.ini`, `.log`, les encodages autres qu'UTF-8. **Décision de périmètre, révocable** :
 retirer la ligne correspondante du `switch` de `ingest_file.dart` rétablit le refus.
+
+#### 5.2.11 Prénoms, civilités au pluriel, chemins, noms coupés
 
 **Diversité des prénoms du gazetteer (P2-68).** Sonde de 143 prénoms courants d'origines variées (« Il a vu {prénom} Zxqvlorn hier. », un
 nom de famille inconnu) : **82 n'étaient pas détectés** (61 sur 143 seulement). Étaient manqués, entre autres, des prénoms du Maghreb
@@ -1524,6 +1637,8 @@ suivi d'une virgule puis d'un prénom en fin de proposition (« Rappel, Odette. 
 avant cette tâche (règle bidirectionnelle). **Non traité** : « Nom, Prénom » dont le prénom n'est pas au gazetteer (« Marchetti, Zorglub »), la forme à
 initiales « O. Marchetti » (un nom après une initiale isolée est trop souvent une fin de phrase : « vitamine B. Le patient… »), « mme marchetti » tout en
 minuscules.
+
+#### 5.2.12 Relecture indépendante : sur-masquages, coûts et fuites
 
 **Initiales après une civilité, variantes de « date de naissance » (P2-75, P2-76).** Premier lot issu d'une **relecture adverse par un relecteur indépendant** (un
 « sage », 200 sondes synthétiques, 1ᵉʳ novembre 2026) ; chaque point est reproduit avant correction. *P2-75* : « Dr A. Faure a prescrit » donnait « [NOM_1]. Faure a
