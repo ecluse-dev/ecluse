@@ -78,7 +78,7 @@ Fuite au caractère (part des caractères annotés restés en clair).
 | Corpus | nom | adresse | établissement | **global** | FP témoin | Restaurations non identiques¹ |
 |---|---:|---:|---:|---:|---:|---:|
 | réaliste | 27,7 % | 0 % | 0 % | **7,5 %** | | 0 |
-| adversarial | 13,9 % (P2-147) | **0 %** (1,9 % avant P2-164) | 0 % | **6,7 %** | | 61 |
+| adversarial | **11,0 %** (13,9 % avant P2-220) | **0 %** (1,9 % avant P2-164) | 0 % | **5,3 %** (6,7 %) | | 62 (61) |
 | témoin | | | | | **0** | 0 |
 | réaliste en minuscules | 30,0 %⁴ | 0 % | 0 % | **8,1 %** | | 0 |
 | adversarial en minuscules | 14,1 %⁴ | 0 % | 0 % | **6,8 %** | | 61³ |
@@ -214,7 +214,7 @@ signaler au mainteneur comme écart de mesure ; une correction éventuelle de
 | Corpus | Collisions | Fausses fusions | Restaurations non identiques |
 |---|---:|---:|---:|
 | réaliste | 0 / 557 | 0 / 935 | 0 / 397 |
-| adversarial | 7 / 445 (1,6 %) | 7 / 596 (1,2 %) | 52 / 398 (13,1 %) |
+| adversarial | 7 / 455 (1,5 %) (445 avant P2-220) | 7 / 606 (1,2 %) (596) | 52 / 398 (13,1 %) |
 | témoin | 0 / 757 | 0 / 757 | 0 / 396 |
 
 Variantes de casse (P2-140, P2-144, P2-145 ; `variantes_casse.py`, `_mixte` =
@@ -226,7 +226,7 @@ une casse par document, en rotation dans le dossier) :
 | réaliste en capitales | 8 / 154 | 28 (104) | 0 / 397 |
 | réaliste à casse mixte | 18 / 161 | 0 (88) | 95 / 397⁵ |
 | adversarial en minuscules | 36 / 128 | 10 (47) | 52 / 398 |
-| adversarial à casse mixte | 24 / 128 | 12 (43) | 94 / 398⁵ |
+| adversarial à casse mixte | 24 / 128 | 8 (43) (12 avant P2-220) | 94 / 398⁵ |
 | témoins (toutes casses) | 0 / 129 | 0 | 0 / 396 |
 
 ⁵ Un jeton garde une seule graphie par dossier : 95 sur 95 (réaliste) et 40
@@ -1147,6 +1147,50 @@ en trop à ne pas dépasser. Ce que ce témoin ne dit pas : une fréquence réel
 document), les noms de personnes qui sont aussi des mots (« Marchand »,
 « Petit » : P2-221), les tournures hors de ces cinq.
 
+## Patronyme seul derrière une tournure de personne : seuils non tenus ensemble (P2-220)
+
+`main` au commit `e48ba49` pour l'état d'avant, graine 42, rejeu complet de
+`bench/etat.sh` des deux côtés. Chemin mesuré : **`Ecluse.redact`** (ce que
+reçoit le LLM), appelé document par document, sans dossier. Règle : un mot à
+majuscule initiale derrière « dossier de », « à la demande de », « entretien
+avec » (un ou deux mots) ou devant « a confirmé » (un mot) est un nom, sauf mot
+neutre, statut, sigle, mot d'établissement, pronom ou commune de 10 000
+habitants et plus (`communes_grandes.dart`) ; le mot qui suit une tournure doit
+commencer par une majuscule, et le sujet de « a confirmé » ne doit être précédé
+ni d'un article capitalisé ni d'un autre mot capitalisé.
+
+| Mesure | Avant | Après | Seuil de la fiche |
+|---|---:|---:|---|
+| Noms annotés manqués, patronyme seul (corpus de dossiers réaliste, 116 mentions) | **112** | **4** | au plus 28 : tenu |
+| Témoin de P2-218 : phrases sans nom masquées à tort (400 phrases) | **0** | **80** (20 %) | au plus 4 (1 %) : **non tenu** |
+
+Les 4 mentions encore manquées sont le même patronyme (« Gaillard ») dans les
+quatre tournures : c'est aussi une commune de plus de 10 000 habitants, donc
+écartée par la table. Les 80 masquages à tort sont tous des noms communs écrits
+avec une majuscule derrière la tournure (genre `commun_majuscule`, 80 sur 100) ;
+les genres `lieu`, `organisme` et `commun_minuscule` donnent 0 sur 100 (2
+organismes, « L'Inspection a confirmé », ont été corrigés en cours de tâche).
+Sans la table des communes, les 100 phrases `lieu` seraient masquées aussi. Par
+tournure : 20 sur 80 pour chacune des quatre tournures retenues, 0 sur 80 pour
+« adressé à » (non retenue : aucune mention dans le corpus de dossiers).
+
+Ce qui change ailleurs dans le tableau de bord (rejeu complet, tout le reste
+identique) : corpus flou adversarial, nom : précision 72,5 → 73,2 %, rappel
+68,4 → 71,4 %, fuite au caractère 13,9 → **11,0 %**, global 6,7 → **5,3 %**
+(identique aux largeurs 60 et 90) ; dossiers adversarial, jetons 445 → 455 et
+596 → 606 (collisions et fausses fusions : 7 et 7, inchangées) ; à casse mixte,
+noms non détectés 12 → 8. Une dégradation : restaurations non identiques du
+corpus flou adversarial, 61 → **62** (document 59 : deux personnes de même
+patronyme, « Reynaud », dont une est désormais détectée en entier ; avant, les
+deux étaient en clair ; c'est la limite de `LIMITES.md` § 5.3, pas une nouvelle
+fuite).
+
+Ce que ces chiffres ne disent pas : une fréquence réelle (corpus synthétiques,
+gabarits des générateurs) ; la fréquence d'un nom commun capitalisé derrière ces
+tournures dans de vrais textes (rare en prose, courante dans des titres et des
+intitulés de dossier) ; les noms de famille qui sont aussi des mots (« Marchand »,
+« Petit » : P2-221).
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par
@@ -1165,7 +1209,7 @@ clair), documents refusés exclus du calcul :
 | réaliste, sans recoupe | 0 | 27,7 % | 0 % | 0 % | **7,5 %** | 0 |
 | réaliste, largeur 90 | 84 | 27,7 % | 0 % | **0 %** (9,2 % avant P2-173) | **7,5 %** (9,3 %) | 0 |
 | réaliste, largeur 60 | 256 | 27,6 % | **0 %** (1,3 % avant P2-173) | **0 %** (0,5 %) | **8,2 %** (8,6 %) | 3 (2 avant P2-173) |
-| adversarial, 60 et 90 | 7 et 0 | 13,9 % | 0 % | 0 % | **6,7 %** (inchangé) | 0 |
+| adversarial, 60 et 90 | 7 et 0 | **11,0 %** (13,9 % avant P2-220) | 0 % | 0 % | **5,3 %** (6,7 %) | 0 |
 | témoin, 60 et 90 | 292 et 12 | | | | **0 prédiction** | 0 |
 
 Entités **coupées par une fin de ligne** (P2-173, `bench/entites_coupees.py`),
