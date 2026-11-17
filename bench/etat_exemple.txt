@@ -390,6 +390,22 @@ courriers : 400 courriers, 3185 lignes, 970 adresses annotées, 0 courrier(s) à
   famille=montant_adresse : 0 / 133 lignes masquées en trop
   mot après un nombre=NUMEROS : 35 / 35 lignes masquées en trop
   types en trop : adresse 35
+## SIREN masqués comme FINESS (P2-223) : Ecluse.redact (chemin du produit)
+SIREN masqués comme FINESS : corpus v3 entier 42 / 42 nombres à clé valide non annotés, témoin SIREN 383 / 400, SIREN voisins du pendant FINESS 100 / 100
+vrais FINESS en clair sans option : corpus v3 0 / 129, pendant FINESS 0 / 400
+  témoin libelle=sans_mot : 83 / 100 masqués comme FINESS
+  témoin libelle=siren_apres : 100 / 100 masqués comme FINESS
+  témoin libelle=siren_immediat : 100 / 100 masqués comme FINESS
+  témoin libelle=siren_phrase : 100 / 100 masqués comme FINESS
+  témoin ecriture=compact : 183 / 200 masqués comme FINESS
+  témoin ecriture=groupe : 200 / 200 masqués comme FINESS
+  option=libelle_immediat : SIREN masqués v3 42 / 42, témoin 283 / 400, voisins 24 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
+  option=libelle_40 : SIREN masqués v3 0 / 42, témoin 183 / 400, voisins 24 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 26 / 400
+  option=libelle_40_sans_mot_finess : SIREN masqués v3 0 / 42, témoin 183 / 400, voisins 50 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
+  option=contexte_exige : SIREN masqués v3 0 / 42, témoin 0 / 400, voisins 50 / 100 ; vrais FINESS perdus en plus (en clair) v3 43 / 129, pendant 124 / 400
+  option=prefixe : SIREN masqués v3 42 / 42, témoin 375 / 400, voisins 99 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
+  témoin : SIREN sous une détection de n'importe quel type 400 / 400 (le reste est lu comme FINESS ou comme un autre type, p. ex. une plaque après « immatriculation »)
+  option=luhn : SIREN du témoin valides à la clé du FINESS 400 / 400 : aucune distinction possible
 ## patronyme seul hors civilité (P2-218) : Ecluse.redact (chemin du produit)
 noms hors civilité, patronyme seul : 116 mentions, manquées document par document 112, en session 0
 noms hors civilité, plusieurs mots (civilité ou prénom) : 476 mentions, manquées document par document 0, en session 0
