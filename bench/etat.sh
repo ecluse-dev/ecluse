@@ -334,6 +334,20 @@ if produit "courriers capitales, générateur" "$B/flou/corpus_courriers.jsonl" 
   fi
 fi
 
+# SIREN pris pour un FINESS (P2-223) : même structure, même clé de Luhn. Corpus
+# v3 entier (nombres de neuf chiffres à clé valide non annotés), témoin de 400
+# documents à SIREN (avec et sans le mot « SIREN » à proximité) et son pendant
+# de 400 vrais FINESS ; options chiffrées HORS lib/ (filtres appliqués aux
+# prédictions), avec le nombre de vrais FINESS qu'elles feraient partir en
+# clair. Chemin mesuré : Ecluse.redact (ce que reçoit le LLM). Mesure seule.
+echo "## SIREN masqués comme FINESS (P2-223) : Ecluse.redact (chemin du produit)"
+if produit "SIREN, générateur" "$B/flou/corpus_siren.jsonl" python3 "$B/generate_corpus_siren.py" --n 400 --seed 42 --out-dir "$B/flou" \
+   && produit "SIREN, v3 Ecluse.redact" "$B/flou/pred_siren_v3.jsonl" redact run_redact_bench.dart --confiance ../../bench/corpus.jsonl ../../bench/flou/pred_siren_v3.jsonl \
+   && produit "SIREN, témoin Ecluse.redact" "$B/flou/pred_siren.jsonl" redact run_redact_bench.dart --confiance ../../bench/flou/corpus_siren.jsonl ../../bench/flou/pred_siren.jsonl \
+   && produit "SIREN, pendant FINESS Ecluse.redact" "$B/flou/pred_finess_pendant.jsonl" redact run_redact_bench.dart --confiance ../../bench/flou/corpus_finess_pendant.jsonl ../../bench/flou/pred_finess_pendant.jsonl; then
+  montre "SIREN, score" -E "^SIREN masqués comme FINESS|^vrais FINESS en clair|^  (témoin|option)" 0 non dans_B python3 score_siren_finess.py --v3 corpus.jsonl flou/pred_siren_v3.jsonl --siren flou/corpus_siren.jsonl flou/pred_siren.jsonl --finess flou/corpus_finess_pendant.jsonl flou/pred_finess_pendant.jsonl || true
+fi
+
 # Mots neutres, un mot à la fois (P2-211) : tous les mots de `mots_neutres.dart`
 # (lus dans le fichier Dart, aucune liste recopiée), 400 phrases « nombre à cinq
 # chiffres + mot » par mot, forme accentuée et forme sans accent quand elle

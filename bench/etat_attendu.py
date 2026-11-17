@@ -172,6 +172,23 @@ ATTENDU = [
          "six familles de lignes"),
         (r"^  types en trop : ", 1, "types de détection en trop"),
     ]),
+    ("## SIREN masqués comme FINESS", [
+        (r"^SIREN masqués comme FINESS : corpus v3 entier \d+ / \d+ nombres à "
+         r"clé valide non annotés, témoin SIREN \d+ / \d+, SIREN voisins du "
+         r"pendant FINESS \d+ / \d+$", 1, "SIREN masqués, trois jeux (P2-223)"),
+        (r"^vrais FINESS en clair sans option : corpus v3 \d+ / \d+, pendant "
+         r"FINESS \d+ / \d+$", 1, "vrais FINESS en clair sans option"),
+        (r"^  témoin (libelle|ecriture)=\S+ : \d+ / \d+ masqués comme FINESS$", 6,
+         "témoin par libellé et par écriture"),
+        (r"^  option=(libelle_immediat|libelle_40|libelle_40_sans_mot_finess|"
+         r"contexte_exige|prefixe) : SIREN masqués v3 \d+ / \d+, témoin "
+         r"\d+ / \d+, voisins \d+ / \d+ ; vrais FINESS perdus en plus "
+         r"\(en clair\) v3 \d+ / \d+, pendant \d+ / \d+$", 5, "cinq options"),
+        (r"^  témoin : SIREN sous une détection de n'importe quel type \d+ / "
+         r"\d+", 1, "SIREN sous n'importe quel type"),
+        (r"^  option=luhn : SIREN du témoin valides à la clé du FINESS \d+ / "
+         r"\d+ : aucune distinction possible$", 1, "contrôle de la clé de Luhn"),
+    ]),
     ("## mots neutres, un mot à la fois", [
         (r"^mots neutres : \d+ mots, \d+ phrases, \d+ nombre\(s\) "
          r"masqué\(s\) en adresse, \d+ sous un autre type, \d+ mot\(s\) "
