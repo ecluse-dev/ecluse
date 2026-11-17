@@ -283,7 +283,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-213 | code | Commune dont le nom contient un mot de voie (« 52417 GRAFFIGNY CHEMIN CEDEX 7 ») : code postal et nom restent en clair quand une ligne « code postal + mot » suit | P2-210 | fusionnée |
 | P2-214 | code | Communes en capitales sans « CEDEX » : règle « nom exact du référentiel » pour les formes A, C et D de P2-206 (309 adresses en partie en clair) | P2-206, P2-207 | fusionnée |
 | P2-215 | spec | Écritures de communes hors référentiel (« ST », « STE », fautes, apostrophe perdue) : ce que la règle « nom exact » ne couvre pas, options et recommandation | P2-206 | fusionnée |
-| P2-216 | code | Découper `ecluse.dart` (1 378 lignes, cohésion la plus faible du graphe du 15 novembre) en fichiers par responsabilité, sans changer le comportement ni l'API publique | P2-214 | à faire |
+| P2-216 | code | Découper `ecluse.dart` (1 378 lignes, cohésion la plus faible du graphe du 15 novembre) en fichiers par responsabilité, sans changer le comportement ni l'API publique | P2-214 | PR ouverte |
 | P2-217 | code | `LIMITES.md` : résumé de deux pages en tête, détail dessous (2 065 lignes dont plus de 1 000 pour les entités coupées), aucun contenu perdu | P2-212, P2-214 | à faire |
 | P2-218 | mesure | Patronyme seul sans civilité hors session de dossier (« le dossier de Maillard ») : corpus et témoin versionnés, chiffre de départ (16 noms manqués sur 83 à la sonde du 17 novembre) | — | à faire |
 | P2-219 | spec | Liste de personnes fournie par l'appelant (patients, salariés, planning) : ouvrir à l'API ce que la session de dossier fait déjà ; options, risques, recommandation | P2-218 | à faire |
