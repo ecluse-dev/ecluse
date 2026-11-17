@@ -293,6 +293,12 @@ tâches copiées ici sont prises par l'agent.
 | P2-223 | mesure | SIREN masqué comme FINESS : fréquence sur le corpus v3 entier et sur un témoin de SIREN, options chiffrées (3 sur 50 documents à la sonde du 17 novembre) | — | fusionnée |
 | P2-224 | mesure | Comparatif versionné avec d'autres outils (Presidio en français, spaCy français, règles d'EDS-Pseudo) sur une centaine de documents, plus une moitié adresses et dates de naissance | P2-218 | fusionnée |
 | P2-225 | humain | Mesurer GLiNER et le modèle complet d'EDS-Pseudo sur le poste du mainteneur (modèles inaccessibles en session cloud), avec le script de P2-224 | P2-224 | humain |
+| P2-226 | mesure | Témoin élargi des tournures de personne (P2-220) : mots de rôle et de parenté, organismes, noms communs à majuscule, patronymes qui sont aussi des communes ou des noms communs | P2-220 | à faire |
+| P2-227 | code | Tournures de personne : liste fermée des mots de rôle et de parenté (« Madame a confirmé », « entretien avec Famille ») jamais pris pour un patronyme | P2-226 | à faire |
+| P2-228 | code | Tournures de personne : n'écarter les communes qu'après « à la demande de » (fuite « Gaillard a confirmé ») | P2-227 | à faire |
+| P2-229 | code | Tournures de personne : liste fermée d'organismes nationaux (« le dossier de France Travail », « à la demande de Emmaüs ») | P2-228 | à faire |
+| P2-230 | spec | Aperçu : signaler « à vérifier » les noms établis par une seule tournure de personne, sans changer ce qui est masqué | P2-229 | à faire |
+| P2-231 | humain | Lire la licence du fichier des noms de famille de l'INSEE (P2-221) et d'un lexique libre du français, puis décider si le référentiel de patronymes adossé aux tournures est mis en file | P2-221 | humain |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -494,3 +500,68 @@ ne reprennent que ce qui manque pour la prendre.
   d'EDS-Pseudo ne sont pas téléchargeables en session cloud. À lancer sur le
   poste du mainteneur avec le script de P2-224, puis compléter
   `bench/COMPARATIF.md`.
+
+### P2-226 à P2-231 — Faux masquages des tournures de personne (après P2-220)
+
+Contexte : sonde à la main du 17 novembre (200 phrases, 50 mots, non
+versionnée), `Ecluse.redact` document par document, après P2-220 : mots de
+rôle et de parenté masqués comme nom dans 32 cas sur 40 (« Madame »,
+« Monsieur », « Médecin », « Famille », « Fils », « Tuteur », « Maman »,
+« Kiné » ; « Patient » et « Résident », statuts, épargnés) ; organismes 32 sur
+40 (« France Travail », « Emmaüs », « Doctolib », « Croix-Rouge ») ; patronymes
+qui sont aussi une commune de 10 000 habitants et plus encore en clair dans 16
+cas sur 20 (« Gaillard », « Laval », « Fontaine »). Avant P2-220 : 0 sur 40
+dans les deux premières familles. Le témoin de P2-218 (12 noms communs) ne
+voit rien de cela. Pistes écartées par la même analyse : repérer les
+intitulés (tous les faux masquages sont en pleine phrase) ; exiger un second
+indice dans le document (ces noms n'en ont pas, sinon ils étaient déjà
+rattrapés avant P2-220).
+
+- **P2-226** : mesure seulement. Générateur versionné dans `bench/`, graine
+  42, mêmes quatre tournures que P2-220 et mêmes gabarits que P2-218, cinq
+  familles d'au moins 20 mots chacune, choisis par l'agent, **sans reprendre
+  les 12 noms communs du témoin de P2-218** : mots de rôle et de parenté
+  (civilités seules, parenté, fonctions soignantes et sociales, style
+  télégraphique sans article) ; organismes et marques, d'un ou deux mots ;
+  noms communs à majuscule ; patronymes qui sont aussi une commune de 10 000
+  habitants et plus ; patronymes qui sont aussi un nom commun (« Berger »,
+  « Boulanger »). Les deux dernières familles sont des noms de personne
+  annotés (fuite si non masqués) ; les trois premières n'en contiennent pas.
+  Valeurs synthétiques uniquement (règle 1). Scoreur, test Python, ligne dans
+  `etat.sh`. **Fini quand** : `etat.sh` donne, par famille et par tournure, le
+  nombre de mots masqués (`Ecluse.redact`, document par document) ; chiffres
+  de départ dans `bench/ETAT.md` ; aucune correction.
+- **P2-227** : détecteur de noms (`ecluse_redact`), même règle que les
+  statuts déjà exclus. Liste fermée, écrite par le projet, justifiée par la
+  langue (civilités, parenté, fonctions), **pas** calée mot à mot sur le
+  témoin de P2-226 : le dire dans le commentaire de doc et vérifier qu'au
+  moins un mot de rôle du témoin est hors de la liste pour mesurer la
+  généralisation. Test d'abord. **Fini quand** : famille « rôles » de P2-226
+  divisée par quatre au moins ; patronymes seuls manqués de P2-218 toujours au
+  plus 4 sur 116 ; familles de patronymes de P2-226 et reste du tableau de bord
+  inchangés ou meilleurs ; `LIMITES.md` à jour.
+- **P2-228** : détecteur de noms. Derrière « l'entretien avec », « le
+  dossier de » et devant « a confirmé », ne plus écarter un mot parce qu'il est
+  une commune de 10 000 habitants et plus ; garder l'exclusion après « à la
+  demande de ». Test d'abord. Dire le coût (« Paris a confirmé » masqué).
+  **Fini quand** : famille « patronymes-communes » de P2-226 masquée en
+  entier derrière ces trois tournures ; famille « lieu » du témoin de P2-218 :
+  coût chiffré, chaque cas expliqué ; reste du tableau de bord inchangé ou
+  meilleur ; `LIMITES.md` à jour.
+- **P2-229** : détecteur de noms. Liste fermée d'organismes nationaux et de
+  services publics ou associatifs courants dans le soin et le social, écrite
+  par le projet (aucune donnée externe ajoutée). Même règle de
+  généralisation que P2-227. **Fini quand** : famille « organismes » de P2-226
+  divisée par quatre au moins ; patronymes de P2-218 et de P2-226 inchangés ;
+  reste du tableau de bord inchangé ou meilleur ; `LIMITES.md` à jour.
+- **P2-230** : spec seulement (`agent/specs/P2-230.md`), code lu
+  (`apercu.dart`, confiance des entités de `NameDetector`). Décrire comment
+  l'aperçu signalerait « à vérifier » un nom établi par une seule tournure,
+  sans rien démasquer par défaut ; effet sur l'API publique et sur
+  `descriptionMoteur` ; ce qui n'apparaît jamais (valeur du texte dans un
+  message ou un `toString`). **Fini quand** : au moins deux options comparées,
+  une recommandation, les décisions du mainteneur listées.
+- **P2-231** : `humain`. Lecture des licences (noms de famille de l'INSEE,
+  lexique libre du français) ; un lexique seul est écarté (9 patronymes sur 10
+  de la sonde sont aussi des noms communs et fuiraient), il n'a de sens
+  qu'avec le référentiel de patronymes.
