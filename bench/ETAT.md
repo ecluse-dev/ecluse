@@ -1007,6 +1007,60 @@ Ce que ce témoin ne dit pas : une fréquence (une phrase par forme, pire cas
 construit) ; le mot écrit avec une majuscule initiale en casse ordinaire
 (« 39314 Numeros ») ; les mots absents de la liste.
 
+## Patronyme seul hors civilité : chiffre de départ (P2-218)
+
+Mesure seule, **aucun `lib/` modifié**, `main` au commit `0c53e59`, graine 42.
+Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM), appelé soit
+document par document, soit avec une session de dossier (`--dossier`). Corpus
+de dossiers réaliste entier (397 documents), scoreur
+`bench/score_patronyme_seul.py` : un nom est « manqué hors civilité » quand un
+caractère non blanc d'un de ses mots, civilité exclue, n'est sous aucune
+détection. Un nom manqué part en clair dans le texte que reçoit le LLM (pas de
+filet derrière `Ecluse.redact` ici).
+
+| Noms annotés | Mentions | Manquées, document par document | Manquées, en session |
+|---|---:|---:|---:|
+| Patronyme seul (un mot) | 116 | **112** | **0** |
+| Plusieurs mots (civilité, prénom, ou les deux avec le nom) | 476 | 0 | 0 |
+
+Patronyme seul, par tournure (celle qui précède ou suit le nom, lue par
+expression régulière) :
+
+| Tournure | Mentions | Manquées, document par document | En session |
+|---|---:|---:|---:|
+| « le dossier de X » / « au dossier de X » | 49 | 48 | 0 |
+| « entretien avec X » | 26 | 24 | 0 |
+| « X a confirmé… » | 22 | 22 | 0 |
+| « à la demande de X » | 19 | 18 | 0 |
+| autre | 0 | 0 | 0 |
+
+Ce que montrent ces chiffres : hors session, le patronyme seul n'est quasi
+jamais masqué (112 / 116 ; les 4 masqués portent un patronyme qui est aussi un
+prénom du référentiel, « Gauthier », détecté pour cette raison et non par la
+tournure), quelle que soit la tournure ; en session, 0 manqué. La sonde non versionnée du 17 novembre (16 sur 83 sur 54 documents) est
+cohérente : 16 / 54 ≈ 112 / 397 par document.
+
+**Témoin** (`bench/generate_corpus_tournures_sans_nom.py`, 400 documents,
+aucune personne, aucune entité annotée) : les cinq tournures ci-dessus
+(« adressé à X » en plus, du corpus P2-14) remplies par un nom commun en
+minuscules (« le dossier de presse »), un mot commun à majuscule (« Succès a
+confirmé »), un nom de commune (« à la demande de Paris ») ou un organisme
+(« la Mairie »), 20 documents par case. Chaque masquage y serait un masquage en
+trop (lisibilité perdue), pas une fuite.
+
+| Témoin (`Ecluse.redact`) | Masqués à tort |
+|---|---:|
+| Toutes cases | **0 / 400** |
+| Par tournure (5 × 80) | 0 dans chacune |
+| Par genre (4 × 100) | 0 dans chacun |
+
+Un correctif qui masquerait le mot qui suit ces tournures (tâche suivante
+possible, P2-220) a donc un budget de départ : 112 noms à rattraper, 0 masquage
+en trop à ne pas dépasser. Ce que ce témoin ne dit pas : une fréquence réelle
+(phrases construites sur les mêmes gabarits que le corpus, une phrase par
+document), les noms de personnes qui sont aussi des mots (« Marchand »,
+« Petit » : P2-221), les tournures hors de ces cinq.
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par

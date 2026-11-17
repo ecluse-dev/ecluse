@@ -390,6 +390,24 @@ courriers : 400 courriers, 3185 lignes, 970 adresses annotées, 0 courrier(s) à
   famille=montant_adresse : 0 / 133 lignes masquées en trop
   mot après un nombre=NUMEROS : 35 / 35 lignes masquées en trop
   types en trop : adresse 35
+## patronyme seul hors civilité (P2-218) : Ecluse.redact (chemin du produit)
+noms hors civilité, patronyme seul : 116 mentions, manquées document par document 112, en session 0
+noms hors civilité, plusieurs mots (civilité ou prénom) : 476 mentions, manquées document par document 0, en session 0
+  tournure=dossier de : 48 / 49 manqués document par document, 0 / 49 en session
+  tournure=à la demande de : 18 / 19 manqués document par document, 0 / 19 en session
+  tournure=entretien avec : 24 / 26 manqués document par document, 0 / 26 en session
+  tournure=sujet : a confirmé : 22 / 22 manqués document par document, 0 / 22 en session
+tournures sans nom : 400 documents, 0 entité(s) annotée(s), 0 masqués à tort
+  tournure=adressé à : 0 / 80 masqués à tort
+  tournure=dossier de : 0 / 80 masqués à tort
+  tournure=à la demande de : 0 / 80 masqués à tort
+  tournure=entretien avec : 0 / 80 masqués à tort
+  tournure=sujet : a confirmé : 0 / 80 masqués à tort
+  genre=lieu : 0 / 100 masqués à tort
+  genre=organisme : 0 / 100 masqués à tort
+  genre=commun_majuscule : 0 / 100 masqués à tort
+  genre=commun_minuscule : 0 / 100 masqués à tort
+  types sur les masquages à tort : aucun
 ## mots neutres, un mot à la fois (P2-211) : Ecluse.redact (chemin du produit), nombres masqués en adresse
 mots neutres : 78 mots, 31200 phrases, 846 nombre(s) masqué(s) en adresse, 0 sous un autre type, 9 mot(s) touché(s) (Ecluse.redact)
   casse=capitales : 639 / 15600 nombres masqués en adresse

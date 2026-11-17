@@ -172,6 +172,22 @@ ATTENDU = [
          "six familles de lignes"),
         (r"^  types en trop : ", 1, "types de détection en trop"),
     ]),
+    ("## patronyme seul hors civilité", [
+        (r"^noms hors civilité, patronyme seul : \d+ mentions, manquées "
+         r"document par document \d+, en session \d+$", 1,
+         "patronyme seul, document par document et en session (P2-218)"),
+        (r"^noms hors civilité, plusieurs mots \(civilité ou prénom\) : \d+ "
+         r"mentions, manquées document par document \d+, en session \d+$", 1,
+         "noms à plusieurs mots, pour référence"),
+        (r"^  tournure=.+ : \d+ / \d+ manqués document par document, "
+         r"\d+ / \d+ en session$", 3, "ventilation par tournure"),
+        (r"^tournures sans nom : \d+ documents, \d+ entité\(s\) annotée\(s\), "
+         r"\d+ masqués à tort$", 1, "témoin sans nom de personne (P2-218)"),
+        (r"^  tournure=.+ : \d+ / \d+ masqués à tort$", 5,
+         "témoin, par tournure"),
+        (r"^  genre=.+ : \d+ / \d+ masqués à tort$", 4, "témoin, par genre"),
+        (r"^  types sur les masquages à tort : ", 1, "types détectés à tort"),
+    ]),
     ("## mots neutres, un mot à la fois", [
         (r"^mots neutres : \d+ mots, \d+ phrases, \d+ nombre\(s\) "
          r"masqué\(s\) en adresse, \d+ sous un autre type, \d+ mot\(s\) "

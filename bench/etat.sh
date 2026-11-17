@@ -180,6 +180,22 @@ for c in realiste adversarial temoin realiste_minuscules realiste_majuscules rea
   fi
 done
 
+# Patronyme seul hors civilité (P2-218) : sur le corpus de dossiers réaliste
+# entier, noms restés en clair (civilité exclue) en appel Ecluse.redact
+# document par document, puis en session de dossier (`--dossier`, déjà produite
+# plus haut), par tournure. Puis un témoin de 400 phrases sans nom de personne
+# sur les mêmes tournures : chaque masquage y est un masquage en trop (pas une
+# fuite). Chemin mesuré : Ecluse.redact (ce que reçoit le LLM). Mesure seule.
+echo "## patronyme seul hors civilité (P2-218) : Ecluse.redact (chemin du produit)"
+if produit "patronyme seul, document par document" "$B/dossiers/pred_realiste_document.jsonl" redact run_dossiers_bench.dart ../../bench/dossiers/corpus_dossiers_realiste.jsonl ../../bench/dossiers/pred_realiste_document.jsonl; then
+  montre "patronyme seul, score" -E "^noms hors civilité|^  tournure=" 0 non dans_B python3 score_patronyme_seul.py --corpus dossiers/corpus_dossiers_realiste.jsonl --pred-document dossiers/pred_realiste_document.jsonl --pred-session dossiers/pred_realiste.jsonl || true
+fi
+if produit "tournures sans nom, générateur" "$B/flou/corpus_tournures_sans_nom.jsonl" python3 "$B/generate_corpus_tournures_sans_nom.py" --n 400 --seed 42 --out "$B/flou/corpus_tournures_sans_nom.jsonl"; then
+  if produit "tournures sans nom, Ecluse.redact" "$B/flou/pred_tournures_sans_nom.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_tournures_sans_nom.jsonl ../../bench/flou/pred_tournures_sans_nom.jsonl; then
+    montre "tournures sans nom, score" -E "^tournures sans nom :|^  (tournure|genre)=|^  types sur" 0 non dans_B python3 score_tournures_sans_nom.py --corpus flou/corpus_tournures_sans_nom.jsonl --pred flou/pred_tournures_sans_nom.jsonl || true
+  fi
+fi
+
 echo "## pathologies"
 produit "générateur pathologies" "$B/patho/corpus_pathologies_indices.jsonl" python3 "$B/generate_corpus_pathologies.py" --n 300 --seed 42 --out-dir "$B/patho" || true
 patho_rattachees() { reid run_pathologies_bench.dart "../../bench/patho/corpus_pathologies_$1.jsonl" "../../bench/patho/corpus_pathologies_temoin.jsonl" | sed -n '/rattachées/,$p'; }
