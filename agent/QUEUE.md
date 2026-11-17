@@ -285,6 +285,14 @@ tâches copiées ici sont prises par l'agent.
 | P2-215 | spec | Écritures de communes hors référentiel (« ST », « STE », fautes, apostrophe perdue) : ce que la règle « nom exact » ne couvre pas, options et recommandation | P2-206 | fusionnée |
 | P2-216 | code | Découper `ecluse.dart` (1 378 lignes, cohésion la plus faible du graphe du 15 novembre) en fichiers par responsabilité, sans changer le comportement ni l'API publique | P2-214 | à faire |
 | P2-217 | code | `LIMITES.md` : résumé de deux pages en tête, détail dessous (2 065 lignes dont plus de 1 000 pour les entités coupées), aucun contenu perdu | P2-212, P2-214 | à faire |
+| P2-218 | mesure | Patronyme seul sans civilité hors session de dossier (« le dossier de Maillard ») : corpus et témoin versionnés, chiffre de départ (16 noms manqués sur 83 à la sonde du 17 novembre) | — | à faire |
+| P2-219 | spec | Liste de personnes fournie par l'appelant (patients, salariés, planning) : ouvrir à l'API ce que la session de dossier fait déjà ; options, risques, recommandation | P2-218 | à faire |
+| P2-220 | code | Patronyme seul derrière un contexte de personne (« le dossier de X », « l'entretien avec X », « X a confirmé ») : masquer, témoin sans nom tenu | P2-218 | à faire |
+| P2-221 | spec | Référentiel de patronymes en option (sur le modèle de `prenomsInsee`) : source, licence, faux positifs sur les noms qui sont aussi des mots (« Marchand », « Petit ») | P2-218 | à faire |
+| P2-222 | spec | Session de dossier dans `ecluse_demo` et dans le sas Claude Code : état des lieux, et proposition pour qu'elle serve dès que des textes se suivent | — | à faire |
+| P2-223 | mesure | SIREN masqué comme FINESS : fréquence sur le corpus v3 entier et sur un témoin de SIREN, options chiffrées (3 sur 50 documents à la sonde du 17 novembre) | — | à faire |
+| P2-224 | mesure | Comparatif versionné avec d'autres outils (Presidio en français, spaCy français, règles d'EDS-Pseudo) sur une centaine de documents, plus une moitié adresses et dates de naissance | P2-218 | à faire |
+| P2-225 | humain | Mesurer GLiNER et le modèle complet d'EDS-Pseudo sur le poste du mainteneur (modèles inaccessibles en session cloud), avec le script de P2-224 | P2-224 | humain |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -398,3 +406,91 @@ ne reprennent que ce qui manque pour la prendre.
   contrôle (script ou relecture, décrit dans la PR) montre que le texte du
   détail est identique à celui de `main` hors titres ; liens internes
   vérifiés ; `format`, `analyze`, `test` verts et tableau de bord inchangé.
+- **P2-218** : mesure seulement, rien dans `lib/`. Sonde non versionnée du
+  17 novembre : sur 54 documents du corpus de dossiers réaliste (11 dossiers
+  entiers, graine 42), `Ecluse.redact` appelé **document par document** laisse
+  en clair 16 noms sur 83, tous des patronymes seuls, sans civilité ni prénom,
+  dans une pièce où la personne n'a pas encore été nommée (« le dossier de
+  Maillard est transmis », « à la demande de Sabatier », « Rambaud a
+  confirmé ») ; avec la session de dossier, 83 sur 83 ; l'option
+  `prenomsInsee` n'y change rien. **Fini quand** : `etat.sh` donne, sur le
+  corpus de dossiers réaliste entier, le nombre de noms manqués hors civilité
+  en appel document par document et en session, ventilé par tournure qui
+  précède ou suit le nom ; un témoin versionné, graine 42, d'au moins 400
+  phrases sans nom de personne construites sur les mêmes tournures (« le
+  dossier de presse », « à la demande de Paris », « l'entretien avec
+  succès ») ; chiffres de départ dans `bench/ETAT.md` ; aucune correction.
+- **P2-219** : spec seulement (`agent/specs/P2-219.md`), aucun code de
+  production. Dans un dossier, les patronymes établis par les pièces
+  précédentes amorcent le détecteur de noms (`_detecteursAvecPatronymes`,
+  P2-14). Une application connaît souvent ces noms d'avance (liste de
+  patients, de salariés, planning). Décrire : la forme d'une option publique
+  qui reçoit cette liste ; ce qu'elle masque et ne masque pas (casse, noms
+  composés, noms qui sont aussi des mots courants, homonymes de communes) ;
+  ce que la liste devient (jamais journalisée, jamais dans un message
+  d'erreur ni un `toString`, même règle que la table de correspondance) ;
+  l'effet sur l'API publique et sur `descriptionMoteur` ; le coût en temps
+  pour 10 000 noms. **Fini quand** : au moins deux options comparées, une
+  recommandation, les décisions à prendre par le mainteneur listées, et le
+  protocole de mesure (corpus et témoin de P2-218) écrit.
+- **P2-220** : détecteur de noms (`ecluse_redact`), chemin `Ecluse.redact`.
+  Test d'abord : un cas rouge par tournure retenue de P2-218. Ne retenir une
+  tournure que si le témoin de P2-218 le permet ; le mot candidat doit
+  commencer par une majuscule hors début de phrase et ne pas être une commune
+  ni un mot de `mots_neutres.dart`. Dans le doute, masquer, mais dire le coût.
+  **Fini quand** : noms manqués de P2-218 (document par document) divisés par
+  quatre au moins ; témoin de P2-218 : au plus 1 % de phrases masquées à
+  tort, chaque cas restant expliqué ; témoins de noms existants et reste du
+  tableau de bord inchangés ou meilleurs ; `LIMITES.md` à jour. Si les deux
+  seuils ne tiennent pas ensemble, s'arrêter et donner les chiffres dans la
+  PR.
+- **P2-221** : spec seulement (`agent/specs/P2-221.md`). Sur le modèle de
+  l'option `prenomsInsee` (P2-149 à P2-151). Lire la licence de la source
+  envisagée (fichier des noms de famille de l'INSEE) ; si la page n'est pas
+  joignable, le dire et ne rien affirmer. Chiffrer sur le témoin de P2-218 et
+  sur les témoins existants ce que coûterait une table seule (noms qui sont
+  aussi des mots : « Marchand », « Petit », « Boulanger »), puis adossée à un
+  contexte de personne (P2-220). Aucune donnée ajoutée au dépôt à ce stade.
+  **Fini quand** : source, licence et taille écrites dans la spec (et le
+  projet de ligne pour `DATA_SOURCES.md`) ; coût simulé hors `lib/` ;
+  recommandation (faire, ne pas faire, à quelles conditions).
+- **P2-222** : spec seulement (`agent/specs/P2-222.md`). Dire, code lu, si
+  `ecluse_demo` (serveur du sas) et `integrations/claude-code/ecluse-sas`
+  utilisent une session de dossier quand plusieurs textes se suivent, et
+  sinon ce qu'il faudrait changer. Traiter : quand ouvrir et fermer un
+  dossier, ce qui reste en mémoire et combien de temps, le risque de mêler
+  deux personnes ou deux dossiers (collisions, fausses fusions de
+  `score_dossiers.py`), l'effet sur `restore`. **Fini quand** : état des lieux
+  avec fichiers et lignes ; une proposition et son plan de mesure ; les
+  décisions à prendre par le mainteneur listées.
+- **P2-223** : mesure seulement, rien dans `lib/`. P1-03 avait analysé la
+  collision FINESS / SIREN ; la sonde du 17 novembre trouve encore 3 SIREN
+  masqués comme FINESS sur 50 documents du corpus v3 (« Le SIREN de la société
+  est … »). **Fini quand** : `etat.sh` donne le nombre de SIREN masqués en
+  FINESS sur le corpus v3 entier et sur un témoin versionné de 400 phrases à
+  SIREN (avec et sans le mot « SIREN » à proximité) ; les options sont
+  chiffrées hors `lib/` (libellé « SIREN » ou « SIRET » avant le nombre, clé
+  de Luhn du SIREN) avec, pour chacune, le nombre de vrais FINESS perdus ;
+  chiffres de départ dans `bench/ETAT.md` ; aucune correction.
+- **P2-224** : mesure seulement. Rendre reproductible la sonde du
+  17 novembre : un script dans `bench/` tire, graine 42, 50 documents du
+  corpus v3, des dossiers entiers du corpus réaliste jusqu'à 50 documents, et
+  une moitié à adresses et dates de naissance annotées (corpus existants du
+  banc), puis note chaque outil sur le texte qu'il laisse passer : `Ecluse.redact`
+  document par document, en session de dossier, Presidio par défaut, Presidio
+  configuré en français, spaCy `fr_core_news_lg` seul, règles d'EDS-Pseudo
+  (`simple_rules`, `addresses`, `dates`). Dépendances autorisées pour cette
+  tâche, dans un fichier séparé `bench/requirements-comparatif.txt` (jamais
+  dans `requirements.txt`) : `edsnlp`, `eds-pseudo`, les modèles spaCy
+  `fr_core_news_lg` et `en_core_web_lg`. Règle de score : entité entièrement
+  couverte, quel que soit le type prédit ; civilité retirée des noms ;
+  masquages à tort comptés sur les documents sans entité. Le script ne tourne
+  pas dans `etat.sh`. **Fini quand** : tableau par outil et par type dans
+  `bench/COMPARATIF.md`, avec la commande exacte, les versions, et un
+  paragraphe « ce que ce comparatif ne dit pas » (corpus produits par le
+  projet, petit échantillon, outils non mesurés) ; aucun chiffre repris dans
+  le README ni dans l'article.
+- **P2-225** : `humain`. Les modèles GLiNER et le modèle entraîné
+  d'EDS-Pseudo ne sont pas téléchargeables en session cloud. À lancer sur le
+  poste du mainteneur avec le script de P2-224, puis compléter
+  `bench/COMPARATIF.md`.
