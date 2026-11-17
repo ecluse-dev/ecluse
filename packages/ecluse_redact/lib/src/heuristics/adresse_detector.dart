@@ -340,7 +340,7 @@ final class AdresseDetector implements EntityDetector {
     if (commune == null) return false;
     if (_finitParCedex.hasMatch(match.group(0)!)) return false;
     final premier = RegExp(r"^[^ \t\u00A0\u202F'’-]+").stringMatch(commune);
-    if (premier == null || !motsNeutres.contains(premier.toLowerCase())) {
+    if (premier == null || !estMotNeutre(premier.toLowerCase())) {
       return false;
     }
     return !_determinantDeCommune(match, premier);
@@ -372,7 +372,7 @@ final class AdresseDetector implements EntityDetector {
     for (final mot in reste) {
       if (mot.isEmpty) continue;
       final bas = mot.toLowerCase();
-      return !motsNeutres.contains(bas) && !RegExp(r'^cedex$').hasMatch(bas);
+      return !estMotNeutre(bas) && !RegExp(r'^cedex$').hasMatch(bas);
     }
     return false;
   }
@@ -564,9 +564,16 @@ final class AdresseDetector implements EntityDetector {
   static int? _finNomExact(String text, int codePostal) {
     final i = codePostal + 5;
     if (i >= text.length) return null;
-    var limite = text.indexOf('\n', i);
-    if (limite < 0) limite = text.length;
-    if (limite - i > _fenetreNomExact) limite = i + _fenetreNomExact;
+    // Fin de ligne cherchée dans la fenêtre seulement : `indexOf` parcourait
+    // tout le reste du texte quand il ne contient plus de saut de ligne (la
+    // vue de détection recolle « 9\n70000 » en une seule ligne), à chaque code
+    // postal : coût quadratique sur une liste d'adresses.
+    final borne =
+        text.length - i > _fenetreNomExact ? i + _fenetreNomExact : text.length;
+    var limite = i;
+    while (limite < borne && text.codeUnitAt(limite) != 0x0A) {
+      limite++;
+    }
     final ligne = text.substring(i, limite);
     final cle = StringBuffer();
     var mots = 0;
@@ -617,22 +624,6 @@ final class AdresseDetector implements EntityDetector {
     return dans < 0 ? null : _finNomExact(text, match.start + dans);
   }
 
-  static bool _chevauche(List<_Range> tries, int start, int end) {
-    var lo = 0;
-    var hi = tries.length;
-    while (lo < hi) {
-      final mid = (lo + hi) >> 1;
-      if (tries[mid].start < end) {
-        lo = mid + 1;
-      } else {
-        hi = mid;
-      }
-    }
-    // `lo` : premier intervalle commençant à `end` ou après ; les précédents
-    // sont disjoints et triés, seul le dernier peut déborder sur `start`.
-    return lo > 0 && tries[lo - 1].end > start;
-  }
-
   @override
   List<DetectedEntity> detect(String text) {
     // Texte sans aucune minuscule : la règle « la commune commence par une
@@ -641,7 +632,7 @@ final class AdresseDetector implements EntityDetector {
     // écarte une commune qui commence par un mot neutre (P2-122).
     final capitales = _sansMinuscule(text);
     final results = <DetectedEntity>[];
-    final claimed = <_Range>[];
+    final claimed = _Retenues();
 
     // « Code postal + commune » que le dernier passage retiendrait, calculés
     // seulement si un type de voie se révèle être un mot de commune (P2-213).
@@ -666,7 +657,7 @@ final class AdresseDetector implements EntityDetector {
       final morceaux =
           _couvertPar(text, codesPostauxRetenus(), debut, match.end);
       if (morceaux == null ||
-          morceaux.any((m) => claimed.any((r) => r.overlaps(m.start, m.end)))) {
+          morceaux.any((m) => claimed.chevauche(m.start, m.end))) {
         return debut;
       }
       for (final m in morceaux) {
@@ -707,6 +698,7 @@ final class AdresseDetector implements EntityDetector {
 
     // Voie sans numéro : après la forme numérotée (qui la contient), pour
     // ne pas produire deux entités sur la même adresse.
+    claimed.fige();
     for (final match in _patternSansNumero.allMatches(text)) {
       if (_looksLikeUnit(match)) continue;
       if (!_communeStartsWithUppercase(match)) continue;
@@ -716,7 +708,7 @@ final class AdresseDetector implements EntityDetector {
       final end = _finRetenue(match, exact, neutre);
       final start = debutReel(match, numerote: false);
       if (start == null) continue;
-      if (claimed.any((r) => r.overlaps(start, end))) continue;
+      if (claimed.chevauche(start, end)) continue;
       results.add(
         DetectedEntity(
           type: EntityType.adresse,
@@ -730,11 +722,10 @@ final class AdresseDetector implements EntityDetector {
     }
 
     // Adresse sans code postal (P2-56), en dernier : une adresse complète déjà
-    // reconnue la contient. Intervalles déjà retenus triés (disjoints par
-    // construction), recherche dichotomique plutôt que balayage.
-    final retenus = [...claimed]..sort((a, b) => a.start - b.start);
+    // reconnue la contient.
+    claimed.fige();
     for (final match in _patternSansCodePostal.allMatches(text)) {
-      if (_chevauche(retenus, match.start, match.end)) continue;
+      if (claimed.chevauche(match.start, match.end)) continue;
       results.add(
         DetectedEntity(
           type: EntityType.adresse,
@@ -747,6 +738,7 @@ final class AdresseDetector implements EntityDetector {
       claimed.add(_Range(match.start, match.end));
     }
 
+    claimed.fige();
     for (final match in _codePostalCommuneOnly.allMatches(text)) {
       if (_looksLikeUnit(match)) continue;
       if (!_communeStartsWithUppercase(match)) continue;
@@ -761,7 +753,7 @@ final class AdresseDetector implements EntityDetector {
       // Déjà couvert par une adresse complète (numéro + voie) ci-dessus :
       // ne pas ajouter un doublon pour le seul suffixe "code postal +
       // commune" de cette même adresse.
-      if (claimed.any((r) => r.overlaps(start, end))) continue;
+      if (claimed.chevauche(start, end)) continue;
       results.add(
         DetectedEntity(
           type: EntityType.adresse,
@@ -786,4 +778,74 @@ final class _Range {
 
   bool overlaps(int otherStart, int otherEnd) =>
       otherStart < end && start < otherEnd;
+}
+
+/// Intervalles déjà retenus par [AdresseDetector.detect], interrogés sans
+/// balayage.
+///
+/// Pourquoi : « un intervalle retenu chevauche-t-il celui-ci ? » se posait par
+/// un parcours de toute la liste, à chaque candidat. Sur une liste d'adresses
+/// (20 000 lignes « 70000 VESOUL CEDEX 9 »), chaque ligne est retenue puis
+/// comparée aux suivantes : coût quadratique. Avec la fin de ligne cherchée
+/// sans borne dans `_finNomExact`, `Ecluse.redact` prenait 6,2 s pour 20 000
+/// lignes et 24,4 s pour 40 000 ; le test de coût de `adresse_cedex_test.dart`
+/// dépassait sa borne sur le serveur d'intégration continue, `main` compris.
+/// Les deux corrigés : 2,0 s et 3,8 s (la borne seule : 3,4 s et 10,0 s).
+///
+/// La réponse est exacte, quels que soient les intervalles (disjoints ou non) :
+/// - les intervalles **figés** ([fige], appelé avant chaque passage) sont triés
+///   par début, avec la plus grande fin vue jusque-là : un chevauchement existe
+///   si, parmi ceux qui commencent avant la fin demandée (dichotomie), la plus
+///   grande fin dépasse le début demandé ;
+/// - les intervalles ajoutés **depuis** ne sont parcourus que si leur plus
+///   grande fin dépasse le début demandé. Un passage lit le texte de gauche à
+///   droite : c'est faux pour presque tous les candidats, et quand c'est vrai
+///   le chevauchement est en fin de liste, parcourue à rebours.
+final class _Retenues {
+  final List<_Range> _tous = [];
+  List<int> _debuts = const [];
+  List<int> _finMax = const [];
+  int _figes = 0;
+  int _finMaxRecents = -1;
+
+  void add(_Range r) {
+    _tous.add(r);
+    if (r.end > _finMaxRecents) _finMaxRecents = r.end;
+  }
+
+  /// Range tous les intervalles ajoutés jusqu'ici dans la partie triée.
+  void fige() {
+    final tries = [..._tous]..sort((a, b) => a.start - b.start);
+    final debuts = <int>[];
+    final finMax = <int>[];
+    var plusGrande = -1;
+    for (final r in tries) {
+      if (r.end > plusGrande) plusGrande = r.end;
+      debuts.add(r.start);
+      finMax.add(plusGrande);
+    }
+    _debuts = debuts;
+    _finMax = finMax;
+    _figes = _tous.length;
+    _finMaxRecents = -1;
+  }
+
+  bool chevauche(int start, int end) {
+    var lo = 0;
+    var hi = _debuts.length;
+    while (lo < hi) {
+      final mid = (lo + hi) >> 1;
+      if (_debuts[mid] < end) {
+        lo = mid + 1;
+      } else {
+        hi = mid;
+      }
+    }
+    if (lo > 0 && _finMax[lo - 1] > start) return true;
+    if (_finMaxRecents <= start) return false;
+    for (var i = _tous.length - 1; i >= _figes; i--) {
+      if (_tous[i].overlaps(start, end)) return true;
+    }
+    return false;
+  }
 }

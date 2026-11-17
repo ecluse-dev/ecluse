@@ -279,7 +279,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-209 | code | Une seule implémentation de la clé Luhn : exporter celle de `ecluse_core` et retirer la copie de `ecluse.dart` (P2-204), sans changer de comportement | P2-204 | fusionnée |
 | P2-210 | mesure | Fréquence réaliste de « cinq chiffres + mot neutre + CEDEX » en capitales sur des courriers synthétiques, pour trancher le coût de P2-201 (113 / 200 au témoin pire cas) | P2-201 | fusionnée |
 | P2-211 | mesure | Mots neutres de `mots_neutres.dart`, avec et sans accent, capitales et casse ordinaire : nombre de phrases où la liste ne protège pas le nombre (témoin de 400 phrases par mot) | P2-210 | fusionnée |
-| P2-212 | code | Mots neutres sans accent en capitales (« 39314 NUMEROS EN ATTENTE » masqué en adresse) : 35 lignes sur 3 185 au témoin des courriers | P2-211 | à faire |
+| P2-212 | code | Mots neutres sans accent en capitales (« 39314 NUMEROS EN ATTENTE » masqué en adresse) : 35 lignes sur 3 185 au témoin des courriers | P2-211 | fusionnée |
 | P2-213 | code | Commune dont le nom contient un mot de voie (« 52417 GRAFFIGNY CHEMIN CEDEX 7 ») : code postal et nom restent en clair quand une ligne « code postal + mot » suit | P2-210 | fusionnée |
 | P2-214 | code | Communes en capitales sans « CEDEX » : règle « nom exact du référentiel » pour les formes A, C et D de P2-206 (309 adresses en partie en clair) | P2-206, P2-207 | fusionnée |
 | P2-215 | spec | Écritures de communes hors référentiel (« ST », « STE », fautes, apostrophe perdue) : ce que la règle « nom exact » ne couvre pas, options et recommandation | P2-206 | fusionnée |
