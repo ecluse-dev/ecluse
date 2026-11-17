@@ -286,7 +286,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-216 | code | Découper `ecluse.dart` (1 378 lignes, cohésion la plus faible du graphe du 15 novembre) en fichiers par responsabilité, sans changer le comportement ni l'API publique | P2-214 | PR ouverte |
 | P2-217 | code | `LIMITES.md` : résumé de deux pages en tête, détail dessous (2 065 lignes dont plus de 1 000 pour les entités coupées), aucun contenu perdu | P2-212, P2-214 | fusionnée |
 | P2-218 | mesure | Patronyme seul sans civilité hors session de dossier (« le dossier de Maillard ») : corpus et témoin versionnés, chiffre de départ (16 noms manqués sur 83 à la sonde du 17 novembre) | — | PR ouverte |
-| P2-219 | spec | Liste de personnes fournie par l'appelant (patients, salariés, planning) : ouvrir à l'API ce que la session de dossier fait déjà ; options, risques, recommandation | P2-218 | à faire |
+| P2-219 | spec | Liste de personnes fournie par l'appelant (patients, salariés, planning) : ouvrir à l'API ce que la session de dossier fait déjà ; options, risques, recommandation | P2-218 | fusionnée |
 | P2-220 | code | Patronyme seul derrière un contexte de personne (« le dossier de X », « l'entretien avec X », « X a confirmé ») : masquer, témoin sans nom tenu | P2-218 | à faire |
 | P2-221 | spec | Référentiel de patronymes en option (sur le modèle de `prenomsInsee`) : source, licence, faux positifs sur les noms qui sont aussi des mots (« Marchand », « Petit ») | P2-218 | à faire |
 | P2-222 | spec | Session de dossier dans `ecluse_demo` et dans le sas Claude Code : état des lieux, et proposition pour qu'elle serve dès que des textes se suivent | — | PR ouverte |
