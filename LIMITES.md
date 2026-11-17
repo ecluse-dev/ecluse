@@ -33,7 +33,9 @@ En une phrase : **Écluse réduit le risque, il ne l'annule pas.**
 - **Noms et adresses** : des heuristiques, pas des preuves. Un modèle local
   a été mesuré et écarté. Voir [§ 1](#1-deux-familles-de-détecteurs-deux-niveaux-de-confiance).
 - **Nom de famille seul, sans civilité** : peut rester en clair à sa première
-  mention. Voir [5.2.2](#522-noms-sans-civilité-et-titres) et [§ 5.4](#54-portée-du-rattrapage-des-mentions-partielles).
+  mention, sauf derrière « le dossier de », « à la demande de », « l'entretien
+  avec » ou devant « a confirmé » (P2-220, au prix de noms communs capitalisés
+  masqués à tort). Voir [5.2.2](#522-noms-sans-civilité-et-titres) et [§ 5.4](#54-portée-du-rattrapage-des-mentions-partielles).
 - **Identifiants hors liste** : BIC, IBAN non français, secrets sans préfixe
   connu, autres identifiants professionnels, numéro INS lui-même. Voir
   [§ 2](#2-identifiants-non-couverts).
@@ -1876,6 +1878,25 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   liste ni NER testée, « tout mot capitalisé hors début de phrase est un nom »,
   touche 76 à 78 % des documents du témoin flou (budget : 1 %) : impossible
   sans NER ni liste.
+- *Derrière une tournure de personne (P2-220)* : « le dossier de X », « à la
+  demande de X », « l'entretien avec X » et « X a confirmé » masquent le mot
+  capitalisé, avec ou sans dossier (patronyme seul : 112 manqués sur 116 avant,
+  4 après, corpus de dossiers réaliste, `Ecluse.redact` document par document).
+  **Coût, mesuré sur le témoin de P2-218 (400 phrases sans nom de personne) :
+  80 phrases sur 400 (20 %) masquées à tort, alors que la fiche en tolérait 1 %.**
+  Toutes sont un nom commun écrit avec une majuscule derrière la tournure (« le
+  dossier de Presse », « Succès a confirmé ») : sans dictionnaire, rien ne le
+  distingue d'un patronyme. Minuscule (« dossier de presse »), organisme précédé
+  de son article (« de la Mairie », « La Mairie a confirmé »), commune de 10 000
+  habitants et plus (« à la demande de Paris », table `communes_grandes.dart`
+  générée du référentiel) et mots neutres ne sont pas masqués. Fuite connue :
+  un patronyme qui est aussi le nom d'une commune de 10 000 habitants et plus
+  (« Gaillard » : 4 des 4 mentions encore manquées de la mesure) reste en clair ;
+  un petit nom de commune (« Quingey ») est masqué, dans le doute. Un couple
+  « Prénom inconnu Nom a confirmé » reste en clair (le mot capitalisé devant le
+  sujet écarte la règle : « France Travail a confirmé » en est la raison) ; devant
+  « dossier de », le couple de deux mots est masqué. « Le Gall a confirmé » n'est
+  pas lu (article capitalisé en tête, comme « La Mairie »).
 - *Coût du rattrapage par le dossier* : un mot courant égal au patronyme établi
   est masqué (« Petit déjeuner » avec un patient nommé Petit : 100 % des 265 et 266
   documents de leurre des deux graines, par construction). Sur les corpus de

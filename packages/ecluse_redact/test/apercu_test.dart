@@ -137,7 +137,7 @@ void main() {
 
   group('ajouts manuels', () {
     test('un passage manqué est masqué et restauré à l\'identique', () async {
-      const t = 'Le dossier de Zanzibar est clos.';
+      const t = 'Le courrier de Zanzibar est clos.';
       final p = await Apercu.propose(t);
       expect(p.entites, isEmpty);
       final debut = t.indexOf('Zanzibar');
@@ -146,7 +146,7 @@ void main() {
           DecisionApercu(
               ajouts: [AjoutManuel(debut, debut + 8, EntityType.nom)]),
           texteAEnvoyer: t);
-      expect(r.maskedText, 'Le dossier de [NOM_1] est clos.');
+      expect(r.maskedText, 'Le courrier de [NOM_1] est clos.');
       expect(r.mapping.entrees, unorderedEquals([('[NOM_1]', 'Zanzibar')]));
       expect(Ecluse.restore(r.maskedText, r.mapping), t);
     });

@@ -41,9 +41,9 @@ void main() {
         () async {
       final d = Dossier();
       await Ecluse.redact('Mme Sophie Verdier arrive.', dossier: d);
-      final r = await Ecluse.redact('Verdier a confirmé.', dossier: d);
+      final r = await Ecluse.redact('Verdier a rappelé.', dossier: d);
       // N1 : une mention partielle d'un autre document reçoit un nouveau jeton.
-      expect(r.maskedText, '[NOM_2] a confirmé.');
+      expect(r.maskedText, '[NOM_2] a rappelé.');
       expect(r.mapping.entrees, unorderedEquals([('[NOM_2]', 'Verdier')]));
     });
 
@@ -81,17 +81,17 @@ void main() {
       final a = Dossier();
       final b = Dossier();
       await Ecluse.redact('Mme Sophie Verdier arrive.', dossier: a);
-      final r = await Ecluse.redact('Verdier a confirmé.', dossier: b);
-      expect(r.maskedText, 'Verdier a confirmé.');
+      final r = await Ecluse.redact('Verdier a rappelé.', dossier: b);
+      expect(r.maskedText, 'Verdier a rappelé.');
     });
 
     test('des détecteurs fournis par l\'appelant ne sont pas modifiés',
         () async {
       final d = Dossier();
       await Ecluse.redact('Mme Sophie Verdier arrive.', dossier: d);
-      final r = await Ecluse.redact('Verdier a confirmé.',
+      final r = await Ecluse.redact('Verdier a rappelé.',
           dossier: d, detectors: const <Detector>[]);
-      expect(r.maskedText, 'Verdier a confirmé.');
+      expect(r.maskedText, 'Verdier a rappelé.');
     });
 
     test('coût assumé : un mot courant égal au patronyme est masqué', () async {
@@ -105,7 +105,7 @@ void main() {
       final d = Dossier();
       await Ecluse.redact('Mme Sophie Verdier arrive.', dossier: d);
       d.fermer();
-      await expectLater(Ecluse.redact('Verdier a confirmé.', dossier: d),
+      await expectLater(Ecluse.redact('Verdier a rappelé.', dossier: d),
           throwsA(isA<DossierFermeException>()));
     });
   });
