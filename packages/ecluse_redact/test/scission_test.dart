@@ -51,8 +51,8 @@ void main() {
     test('aucun patronyme n\'est établi dans le dossier', () async {
       final d = Dossier();
       await Ecluse.detect('Mme Sophie Verdier arrive.', dossier: d);
-      final r = await Ecluse.redact('Verdier a confirmé.', dossier: d);
-      expect(r.maskedText, 'Verdier a confirmé.');
+      final r = await Ecluse.redact('Verdier a rappelé.', dossier: d);
+      expect(r.maskedText, 'Verdier a rappelé.');
     });
 
     test('la carte du dossier reste vide', () async {
@@ -74,7 +74,7 @@ void main() {
       final d = Dossier();
       // Non attendu : la détection voit l'état laissé par l'appel précédent.
       final premier = Ecluse.redact('Mme Sophie Verdier arrive.', dossier: d);
-      final entites = await Ecluse.detect('Verdier a confirmé.', dossier: d);
+      final entites = await Ecluse.detect('Verdier a rappelé.', dossier: d);
       await premier;
       expect(entites.map((e) => e.value), ['Verdier']);
     });

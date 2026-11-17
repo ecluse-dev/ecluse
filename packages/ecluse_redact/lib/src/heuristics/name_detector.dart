@@ -2,8 +2,10 @@ import 'dart:typed_data';
 
 import 'package:ecluse_core/ecluse_core.dart';
 
+import 'communes_grandes.dart';
 import 'etablissement_keywords.dart';
 import 'french_first_names.dart';
+import 'mots_neutres.dart';
 import 'tableau_csv.dart';
 
 /// Détecteur heuristique de noms de personnes — **v0 de démonstration**.
@@ -500,6 +502,95 @@ final class NameDetector implements EntityDetector {
     }
     return _prenomChamp.hasMatch(fenetre.substring(debut < 0 ? 0 : debut));
   }
+
+  /// Patronyme seul derrière une tournure qui désigne une personne (P2-220) :
+  /// « le dossier de X », « à la demande de X », « l'entretien avec X ». Sans
+  /// civilité ni prénom connu, ces noms restaient en clair tant qu'une pièce
+  /// précédente ne les avait pas établis (mesure P2-218 : 112 sur 116 manqués
+  /// document par document). La tournure est l'indice ; le mot doit commencer
+  /// par une majuscule (« dossier de presse », « de la Mairie » ne sont pas
+  /// lus) et passer [_motDeContexteEstUnNom]. Après la tournure, un couple de
+  /// deux mots capitalisés est un nom complet (« dossier de Zorglub Quenelle »).
+  static final RegExp _contexteAvant = RegExp(
+    '(?<![\\wÀ-ÿ-])'
+    '(?:[Dd]ossier$_h+de|[Àà]$_h+la$_h+demande$_h+de|[Ee]ntretien$_h+avec)$_h+'
+    '(?=[A-ZÀ-ÖØ-Þ])($_unite(?:$_h+$_unite)?)',
+  );
+
+  /// Patronyme seul sujet de « a confirmé » (P2-220). Un seul mot : devant un
+  /// verbe, un mot capitalisé précédé d'un autre mot capitalisé est trop souvent
+  /// une structure (« Service Qualité a confirmé »).
+  static final RegExp _contexteApres = RegExp(
+    "(?<![\\wÀ-ÿ'’-])($_unite)$_h+a$_h+confirm[ée](?![\\wÀ-ÿ])",
+  );
+
+  /// Mots que ces tournures n'introduisent jamais comme nom de personne :
+  /// pronoms, quantificateurs et débuts de phrase (P2-220).
+  static const Set<String> _motsDeContexteNonNoms = {
+    'tous', 'toutes', 'tout', 'toute', 'chacun', 'chacune', 'nous', 'vous',
+    'eux', 'lui', 'elle', 'elles', 'ils', 'il', 'on', 'je', 'tu', 'ceci',
+    'cela', 'ça', 'personne', 'quelqu', 'aucun', 'aucune', 'autre', 'autres',
+    'plusieurs', 'certains', 'certaines', //
+  };
+
+  /// Articles capitalisés : au sujet, « La Mairie a confirmé », « Le Service a
+  /// confirmé » sont bien plus fréquents que « Le Gall a confirmé ».
+  static const Set<String> _articlesCapitalises = {
+    'Le', 'La', 'Les', 'Un', 'Une', 'Ce', 'Cette', 'Ces', 'Mon', 'Ma', 'Son',
+    'Sa', 'Notre', 'Votre', 'Leur', //
+  };
+
+  /// Vrai si [unite] (un ou deux mots, particules comprises) peut être un nom
+  /// de personne introduit par une tournure de contexte : aucun de ses mots
+  /// n'est un mot neutre, un statut, un sigle exclu, un mot d'établissement ni
+  /// un des mots de [_motsDeContexteNonNoms]. Les particules en tête sont
+  /// ignorées (« de la Fontaine »).
+  static bool _motDeContexteEstUnNom(String unite) {
+    final mots = unite.split(_ecart);
+    var i = 0;
+    while (i < mots.length - 1 &&
+        RegExp('^(?:$_particules)\$').hasMatch('${mots[i]} ')) {
+      i++;
+    }
+    if (communesGrandes.contains(_cleCommune(unite)) ||
+        communesGrandes.contains(_cleCommune(mots.sublist(i).join(' ')))) {
+      return false;
+    }
+    for (final mot in mots.sublist(i)) {
+      final bas = mot.toLowerCase();
+      if (_isExcludedAcronym(mot) ||
+          _estStatut(mot) ||
+          estMotNeutre(bas) ||
+          _motsDeContexteNonNoms.contains(bas) ||
+          _motsVoisinsNeutres.contains(bas) ||
+          _estMotDEtablissement(mot)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// Vrai si un mot capitalisé précède [debut] sur la même ligne : le sujet de
+  /// « a confirmé » n'est alors pas lu comme un nom (P2-220).
+  static bool _precedeParMotCapitalise(String text, int debut) {
+    final avant = text.substring(debut > 40 ? debut - 40 : 0, debut);
+    final m = RegExp("([A-ZÀ-ÖØ-Þ][\\wÀ-ÿ'’-]*)$_h+\$").firstMatch(avant);
+    // Un mot capitalisé juste devant : « Service Qualité », « France Travail »,
+    // mais aussi « Zorglub Quenelle » (prénom inconnu). Rien n'est masqué : le
+    // cas était déjà en clair avant P2-220, et le sur-masquage d'un organisme
+    // est le plus fréquent (`LIMITES.md`).
+    return m != null;
+  }
+
+  /// Forme du référentiel des communes : sans accent, en capitales, ponctuation
+  /// remplacée par une espace (voir `tools/build_communes_grandes.py`).
+  static String _cleCommune(String mot) => _foldAccents(mot.toLowerCase())
+      .toUpperCase()
+      .replaceAll(RegExp('[^A-Z0-9]+'), ' ')
+      .trim();
+
+  static bool _estMotDEtablissement(String mot) =>
+      etablissementKeywords.any((k) => k.toLowerCase() == mot.toLowerCase());
 
   static final RegExp _capitalizedWord = RegExp(_cap);
 
@@ -1062,6 +1153,44 @@ final class NameDetector implements EntityDetector {
       claimed.add(start, end);
     }
 
+    // Patronyme seul derrière une tournure de personne (P2-220). Après les
+    // règles à indice fort et le gazetteer : une entité déjà posée garde la
+    // main (`claimed`). Le patronyme est ensuite recherché ailleurs dans le
+    // texte, comme pour une civilité.
+    final contexteEtablis = <String>{};
+    for (final (re, avant) in [
+      (_contexteAvant, true),
+      (_contexteApres, false)
+    ]) {
+      for (final match in re.allMatches(text)) {
+        final unite = match.group(1)!;
+        final start = match.start + match.group(0)!.indexOf(unite);
+        final end = start + unite.length;
+        if (claimed.overlaps(start, end)) continue;
+        if (!_motDeContexteEstUnNom(unite)) continue;
+        // Sujet : « La Mairie a confirmé » (article capitalisé en tête) et
+        // « Service Qualité a confirmé » (mot capitalisé devant) ne sont pas lus.
+        if (!avant &&
+            (_articlesCapitalises.contains(unite.split(_ecart).first) ||
+                RegExp("^[Ll]['’]").hasMatch(unite) ||
+                _precedeParMotCapitalise(text, start))) {
+          continue;
+        }
+        results.add(
+          DetectedEntity(
+            type: EntityType.nom,
+            start: start,
+            end: end,
+            value: unite,
+            confidence: 0.6,
+          ),
+        );
+        surnameSources.add(unite);
+        claimed.add(start, end);
+        contexteEtablis.add(unite.split(_ecart).last.toLowerCase());
+      }
+    }
+
     // --- Deuxième passe : rattrapage des mentions partielles via un
     // patronyme déjà établi par la première passe (voir le commentaire de
     // classe). Ne s'exécute que si au moins un patronyme fiable a été
@@ -1071,7 +1200,7 @@ final class NameDetector implements EntityDetector {
     // d'un titre professionnel, `value` inclut le titre (« Pr Nadia
     // Costa »), ce qui ferait échouer `_extractSurname` (borné à 1 ou 2
     // mots). `surnameSources[i]` reste le nom seul dans tous les cas.
-    final knownSurnames = <String>{...this.knownSurnames};
+    final knownSurnames = <String>{...this.knownSurnames, ...contexteEtablis};
     for (var i = 0; i < results.length; i++) {
       final surname = _extractSurname(results[i].confidence, surnameSources[i]);
       if (surname == null || _isExcludedAcronym(surname)) continue;
