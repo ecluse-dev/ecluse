@@ -53,6 +53,7 @@ bench/transcrit/
 bench/qi/
 bench/corpus_qi_*.jsonl
 bench/dossiers/
+bench/comparatif/
 bench/corpus_dossiers_*.jsonl
 bench/pred_dossiers_*.jsonl
 bench/patronymes/
