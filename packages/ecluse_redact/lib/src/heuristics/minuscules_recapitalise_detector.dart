@@ -13,7 +13,7 @@ import 'mots_neutres.dart';
 /// fuite pour les deux. Plutôt que d'écrire une seconde version de chaque
 /// motif, ce détecteur passe au détecteur [interne] un **texte d'ombre** où
 /// chaque mot reçoit une majuscule initiale (sauf les mots outils et les
-/// unités, voir [_neutres]), et les sigles d'établissement
+/// unités, voir [estMotNeutre]), et les sigles d'établissement
 /// connus (« ehpad », « ssiad ») sont remis en capitales. Le texte d'ombre a
 /// **la même longueur** que l'original : les positions rendues valent pour
 /// l'original, et la valeur est relue dans l'original.
@@ -70,12 +70,6 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
 
   static final RegExp _motEntier = RegExp(r'\p{L}+', unicode: true);
 
-  /// Mots laissés en minuscules dans le texte d'ombre : laissés tels quels,
-  /// les connecteurs des noms de commune (« port sur saone » → « Port sur
-  /// Saone ») restent corrects, et « 70000 euros » ne devient pas une
-  /// adresse. Voir [motsNeutres].
-  static const Set<String> _neutres = motsNeutres;
-
   /// Sigles d'établissement entièrement en capitales dans la liste partagée.
   /// « CEDEX » s'écrit en capitales dans une adresse ; « Cedex 9 » n'est
   /// pas reconnu jusqu'au numéro (mesure P2-122).
@@ -93,7 +87,7 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
 
   static String _recapitalise(String mot) {
     if (_sigles.contains(mot)) return mot.toUpperCase();
-    if (_neutres.contains(mot)) return mot;
+    if (estMotNeutre(mot)) return mot;
     final initiale = mot[0].toUpperCase();
     if (initiale.length != 1) return mot;
     return initiale + mot.substring(1);
@@ -119,7 +113,7 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
                 "'’".contains(commune.trimLeft()[1])
             ? mots[1]
             : (mots.isEmpty ? null : mots[0]);
-        if (premier == null || _neutres.contains(premier)) return m.group(0)!;
+        if (premier == null || estMotNeutre(premier)) return m.group(0)!;
         final debut =
             m.group(0)!.substring(0, m.group(0)!.length - commune.length);
         return debut +

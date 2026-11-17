@@ -734,6 +734,12 @@ masqués, hors blancs ; adresse en partie en clair : 0 partout) :
 vivrait. Le sur-masquage de départ y est déjà de 462 documents sur 480 : le
 témoin en capitales ne distingue presque plus rien.
 
+Depuis P2-212 (formes sans accent des mots neutres), la colonne « capitales »
+change de 3 caractères : `Ecluse.redact` seul 5 376 (au lieu de 5 379), nom exact
+5 376 (+0), fin de ligne 6 631 (**+1 255**), 462 et 476 documents inchangés ; la
+colonne « toute ligne » ne bouge pas. Moins de suite masquée en trop, 0 adresse
+en partie en clair.
+
 La règle « fin de ligne » de P2-181 avait été rejouée à la main et n'était pas
 versionnée : la lecture écrite ici donne 4 808 là où P2-181 avait noté 4 858
 (écart de 50 caractères, non expliqué, la règle d'origine n'est pas
@@ -1006,6 +1012,27 @@ Trois lectures.
 Ce que ce témoin ne dit pas : une fréquence (une phrase par forme, pire cas
 construit) ; le mot écrit avec une majuscule initiale en casse ordinaire
 (« 39314 Numeros ») ; les mots absents de la liste.
+
+### Après P2-212 : formes sans accent des mots neutres
+
+`estMotNeutre` (`mots_neutres.dart`) compare aussi la forme sans accent des
+cinq mots accentués de la liste (« a », « numero », « numeros », « salaries »,
+« residents »), calculée depuis la même liste. Aucun de ces mots n'est premier
+mot d'une commune du référentiel versionné. Même graine, même générateur,
+chemin **`Ecluse.redact`** (ce que reçoit le LLM) ; masquage en trop, pas une
+fuite :
+
+| Mesure | Avant (`main`) | Après |
+|---|---:|---:|
+| Mots neutres, toutes les phrases | 846 / 31 200 | **218 / 31 200** |
+| Forme sans accent (cinq mots) | 628 / 1 000 | **0 / 1 000** |
+| Capitales / casse ordinaire | 639 et 207 / 15 600 | 218 et **0** / 15 600 |
+| Mots touchés | 9 sur 78 | 4 sur 78 (« le », « la », « les », « l ») |
+| Courriers (P2-210), lignes masquées en trop | 35 / 3 185 (32 courriers) | **0 / 3 185** |
+| Commune suivie (P2-181), caractères de suite masqués | 5 379 / 6 659 | 5 376 / 6 659 (0 adresse en partie en clair, avant et après) |
+
+Les 218 restantes sont le coût assumé de P2-187 (déterminants suivis d'un nom
+commun, en capitales), inchangé. Le reste du tableau de bord est identique.
 
 ## SIREN masqués comme FINESS : chiffre de départ et options (P2-223)
 
