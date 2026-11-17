@@ -21,3 +21,28 @@ const Set<String> motsNeutres = {
   'ui', 'iu', 'mg', 'mcg', 'ng', 'pg', 'ml', 'cl', 'dl', 'kg', 'mol', //
   'mmol', 'meq', 'cm', 'mm', 'km', 'kcal', //
 };
+
+/// Formes sans accent des mots neutres (P2-212) : « a », « numero »,
+/// « numeros », « salaries », « residents ». Un courrier ou un export en
+/// capitales perd souvent l'accent (« 39314 NUMEROS EN ATTENTE ») ; P2-211
+/// mesurait 628 / 1 000 phrases masquées en trop à la forme sans accent, 0
+/// à la forme accentuée. Calculées depuis [motsNeutres] : une seule liste à
+/// tenir. Aucune n'est un premier mot de commune du référentiel versionné
+/// (vérifié le 17 novembre) ; `tools/build_communes_nom_exact.py` lit
+/// toujours [motsNeutres] seul.
+final Set<String> _motsNeutresSansAccent = {
+  for (final mot in motsNeutres)
+    if (_sansAccent(mot) != mot) _sansAccent(mot),
+};
+
+String _sansAccent(String mot) => mot
+    .replaceAll(RegExp('[àâä]'), 'a')
+    .replaceAll(RegExp('[éèêë]'), 'e')
+    .replaceAll(RegExp('[îï]'), 'i')
+    .replaceAll(RegExp('[ôö]'), 'o')
+    .replaceAll(RegExp('[ùûü]'), 'u')
+    .replaceAll('ç', 'c');
+
+/// Vrai si [bas] (déjà en minuscules) est un mot neutre, avec ou sans accent.
+bool estMotNeutre(String bas) =>
+    motsNeutres.contains(bas) || _motsNeutresSansAccent.contains(bas);

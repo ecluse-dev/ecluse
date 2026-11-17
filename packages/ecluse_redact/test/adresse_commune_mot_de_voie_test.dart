@@ -21,9 +21,21 @@ void main() {
 
   group('code postal et début du nom ne restent plus en clair', () {
     test('le constat de P2-210, en capitales', () async {
+      // Depuis P2-212 « NUMEROS » (sans accent) est un mot neutre : la
+      // deuxième ligne n'est plus masquée en adresse (masquage en trop
+      // supprimé). Le constat vaut pour la première : code postal et
+      // « GRAFFIGNY » masqués ensemble.
       await attend(
           'A RETOURNER A : 52417 GRAFFIGNY CHEMIN CEDEX 7\n'
               '39314 NUMEROS EN ATTENTE',
+          'A RETOURNER A : [ADRESSE_1]\n39314 NUMEROS EN ATTENTE');
+    });
+
+    test('le même constat, avec une vraie commune à la ligne suivante',
+        () async {
+      await attend(
+          'A RETOURNER A : 52417 GRAFFIGNY CHEMIN CEDEX 7\n'
+              '39100 LES MAILLYS',
           'A RETOURNER A : [ADRESSE_1]\n[ADRESSE_2]');
     });
 

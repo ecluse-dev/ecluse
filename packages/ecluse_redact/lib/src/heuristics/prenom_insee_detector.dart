@@ -146,7 +146,7 @@ final class PrenomInseeDetector implements EntityDetector {
   bool _patronymePlausible(String mot) {
     final bas = mot.toLowerCase();
     if (mot.length < 2) return false;
-    if (motsNeutres.contains(bas)) return false;
+    if (estMotNeutre(bas)) return false;
     if (_motsEtablissement.contains(bas)) return false;
     if (_qualificatif.hasMatch(bas)) return false;
     return true;
