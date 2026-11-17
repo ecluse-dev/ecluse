@@ -291,7 +291,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-221 | spec | Référentiel de patronymes en option (sur le modèle de `prenomsInsee`) : source, licence, faux positifs sur les noms qui sont aussi des mots (« Marchand », « Petit ») | P2-218 | fusionnée |
 | P2-222 | spec | Session de dossier dans `ecluse_demo` et dans le sas Claude Code : état des lieux, et proposition pour qu'elle serve dès que des textes se suivent | — | PR ouverte |
 | P2-223 | mesure | SIREN masqué comme FINESS : fréquence sur le corpus v3 entier et sur un témoin de SIREN, options chiffrées (3 sur 50 documents à la sonde du 17 novembre) | — | PR ouverte |
-| P2-224 | mesure | Comparatif versionné avec d'autres outils (Presidio en français, spaCy français, règles d'EDS-Pseudo) sur une centaine de documents, plus une moitié adresses et dates de naissance | P2-218 | à faire |
+| P2-224 | mesure | Comparatif versionné avec d'autres outils (Presidio en français, spaCy français, règles d'EDS-Pseudo) sur une centaine de documents, plus une moitié adresses et dates de naissance | P2-218 | fusionnée |
 | P2-225 | humain | Mesurer GLiNER et le modèle complet d'EDS-Pseudo sur le poste du mainteneur (modèles inaccessibles en session cloud), avec le script de P2-224 | P2-224 | humain |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.

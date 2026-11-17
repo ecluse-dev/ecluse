@@ -1,0 +1,11 @@
+# Dépendances du comparatif versionné (P2-224), séparées de requirements.txt :
+# elles ne servent qu'à `bench/comparatif.py`, jamais à etat.sh ni à la CI.
+# Versions relevées le 17 novembre 2026 (Python 3.13).
+-r requirements.txt
+edsnlp==0.24.0
+# `eds-pseudo` n'est pas publié sur PyPI : installation depuis son dépôt, au
+# commit mesuré.
+eds-pseudo @ git+https://github.com/aphp/eds-pseudo.git@844a6cbb3280c53d008559733e2fccc986d5e1f5
+# Modèles spaCy (publiés comme roues sur le dépôt GitHub d'Explosion).
+fr_core_news_lg @ https://github.com/explosion/spacy-models/releases/download/fr_core_news_lg-3.8.0/fr_core_news_lg-3.8.0-py3-none-any.whl
+en_core_web_lg @ https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl
