@@ -33,6 +33,11 @@ const Map<String, String> typeMap = {
   // raisonnement que les detecteurs structurels ci-dessus : conserve tel
   // quel plutot que signale comme inconnu a chaque execution (P2-179).
   'identifiant': 'identifiant',
+  // Plaque d'immatriculation (P2-59) : produite quand un nombre suit le mot
+  // « immatriculation » (un SIREN après « Extrait Kbis : immatriculation »,
+  // témoin de P2-223). Aucun corpus ne l'annote ; conserve tel quel plutot que
+  // signale comme inconnu a chaque execution (meme raisonnement que P2-179).
+  'vehicule': 'vehicule',
 };
 
 /// Execute `ecluse_redact` sur un corpus JSONL et ecrit les predictions

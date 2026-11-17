@@ -1007,6 +1007,65 @@ Ce que ce témoin ne dit pas : une fréquence (une phrase par forme, pire cas
 construit) ; le mot écrit avec une majuscule initiale en casse ordinaire
 (« 39314 Numeros ») ; les mots absents de la liste.
 
+## SIREN masqués comme FINESS : chiffre de départ et options (P2-223)
+
+Mesure seule, **aucun `lib/` modifié** (seule la table de types de
+`bin/run_redact_bench.dart`, un outil de banc, apprend `vehicule`), `main` au
+commit `0c53e59`, graine 42. Chemin mesuré : **`Ecluse.redact`** (ce que
+reçoit le LLM). Le FINESS et le SIREN ont la même structure (neuf chiffres,
+même clé de Luhn) : sans le mot « FINESS » à proximité, un SIREN est masqué à
+confiance 0,5 (`LIMITES.md` § 1) : un identifiant d'organisation masqué en
+trop, pas une fuite (l'entrepreneur individuel, dont le SIREN identifie une
+personne, n'est pas traité ici). Générateur `bench/generate_corpus_siren.py`,
+scoreur `bench/score_siren_finess.py`.
+
+| Jeu | SIREN masqués comme FINESS |
+|---|---:|
+| Corpus v3 entier (1 000 documents) : nombres de neuf chiffres à clé valide non annotés | **42 / 42** (tous derrière « Le SIREN de la société est », à confiance 0,5) |
+| Témoin de 400 documents à SIREN | **383 / 400** |
+| dont avec « SIREN » juste avant, plus loin dans la phrase, ou après | 100 / 100 dans chaque cas |
+| dont sans le mot SIREN (RCS, Kbis, numéro d'entreprise) | 83 / 100 |
+| écriture collée / groupée 3-3-3 | 183 / 200 et 200 / 200 |
+
+Les 17 autres du témoin ne sont pas lus comme FINESS mais masqués quand même :
+sous « Extrait Kbis : immatriculation » le nombre devient une plaque
+(`vehicule`) : 400 / 400 sont donc sous une détection. Aucun SIREN n'est en
+clair. Vrais FINESS en clair sans option : 0 / 129 (v3) et 0 / 400 (pendant
+FINESS : 400 vrais FINESS, dont ceux écrits sans le mot « FINESS » et ceux
+voisins d'un SIREN).
+
+**Options chiffrées hors `lib/`** : des filtres appliqués aux prédictions de
+`Ecluse.redact`, pour compter ce qu'une règle gagnerait (SIREN en moins) et ce
+qu'elle coûterait (vrais FINESS qui repartiraient **en clair**). Rien n'est
+implémenté.
+
+| Option | SIREN masqués, v3 | SIREN masqués, témoin | Vrais FINESS perdus, v3 | Vrais FINESS perdus, pendant |
+|---|---:|---:|---:|---:|
+| Aucune (départ) | 42 / 42 | 383 / 400 | 0 / 129 | 0 / 400 |
+| « SIREN » ou « SIRET » **juste avant** le nombre | 42 / 42 | 283 / 400 | 0 | 0 |
+| « SIREN » ou « SIRET » dans les 40 caractères avant | **0 / 42** | 183 / 400 | 0 | **26 / 400** |
+| Idem, **seulement sans le mot « FINESS »** à proximité | **0 / 42** | 183 / 400 | 0 | **0** |
+| Mot « FINESS » exigé (confiance haute seule) | 0 / 42 | **0 / 400** | **43 / 129** | **124 / 400** |
+| Préfixe département valide (01 à 95, 97, 98) | 42 / 42 | 375 / 400 | 0 | 0 |
+| Clé de Luhn | sans effet : 400 / 400 SIREN valides à la clé du FINESS | | | |
+
+Lectures. (1) La fenêtre de 40 caractères réservée aux détections **sans** le
+mot « FINESS » enlève les 42 SIREN du v3 et 200 du témoin sans perdre aucun
+FINESS annoncé par son mot (les 26 perdus par la version sans cette réserve sont
+les « SIREN S ; FINESS F »). (2) Exiger le mot « FINESS » supprime tous les
+SIREN mais fait repartir en clair 43 FINESS sur 129 du v3 (ceux écrits sans le
+mot) : à écarter. (3) La clé de Luhn ne sépare rien, par construction. (4) Le
+préfixe ne retire que 8 SIREN sur 383 : des SIREN **tirés au hasard** ici (les
+premiers chiffres d'un vrai SIREN ne sont pas uniformes, non mesuré faute de
+donnée réelle). (5) Les 183 restants du témoin sont les SIREN **sans** mot
+SIREN avant le nombre (« SIREN de l'entreprise gestionnaire » après lui, RCS,
+Kbis) : aucune option de cette liste ne les atteint.
+
+Ce que cette mesure ne dit pas : une fréquence réelle de SIREN dans des textes
+de santé (documents construits, un nombre par document) ; le coût d'une option
+sur un FINESS dont le texte voisin contient « SIREN » dans un autre sens ; les
+SIRET (14 chiffres : le détecteur ne lit pas neuf chiffres dans un SIRET).
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par
