@@ -205,6 +205,18 @@ ATTENDU = [
         (r"^  genre=.+ : \d+ / \d+ masqués à tort$", 4, "témoin, par genre"),
         (r"^  types sur les masquages à tort : ", 1, "types détectés à tort"),
     ]),
+    ("## tournures de personne, témoin élargi", [
+        (r"^tournures de personne : \d+ documents, 5 familles, \d+ noms "
+         r"annotés, \d+ détection\(s\) hors du mot$", 1,
+         "témoin élargi des tournures de personne (P2-226)"),
+        (r"^  famille=(roles|organismes|communs) : \d+ / \d+ masqués à tort$",
+         3, "familles sans personne"),
+        (r"^  famille=patronymes_(communes|noms_communs) : \d+ / \d+ masqués, "
+         r"\d+ en clair \(fuite\)$", 2, "familles de patronymes"),
+        (r"^    tournure=.+ : \d+ / \d+$", 20, "par famille et par tournure"),
+        (r"^  types sur les (masquages à tort|patronymes masqués) : ", 2,
+         "types détectés"),
+    ]),
     ("## mots neutres, un mot à la fois", [
         (r"^mots neutres : \d+ mots, \d+ phrases, \d+ nombre\(s\) "
          r"masqué\(s\) en adresse, \d+ sous un autre type, \d+ mot\(s\) "
