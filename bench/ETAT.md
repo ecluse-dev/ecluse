@@ -1191,6 +1191,52 @@ tournures dans de vrais textes (rare en prose, courante dans des titres et des
 intitulés de dossier) ; les noms de famille qui sont aussi des mots (« Marchand »,
 « Petit » : P2-221).
 
+## Tournures de personne : témoin élargi, chiffres de départ (P2-226)
+
+Mesure seule, **aucun `lib/` modifié**, `main` au commit `6dcf041`, graine 42
+(elle ne sert qu'à mélanger l'ordre des documents). Chemin mesuré :
+**`Ecluse.redact`** (ce que reçoit le LLM), un appel par document, sans
+dossier. Générateur `bench/generate_corpus_tournures_personne.py`, scoreur
+`bench/score_tournures_personne.py`. Mêmes quatre tournures que P2-220 et mêmes
+gabarits que le témoin de P2-218 ; cinq familles de 24 mots, chaque mot une fois
+dans chaque tournure (96 phrases par famille, 480 en tout), aucun des douze noms
+communs de P2-218 repris. Un mot de famille sans personne est « masqué à tort »
+dès qu'un de ses caractères est sous une détection ; un patronyme est
+« masqué » seulement s'il est couvert en entier, sinon c'est une **fuite**.
+
+| Famille | Contenu | Masqués | Par tournure (dossier de / à la demande de / entretien avec / a confirmé) |
+|---|---|---:|---|
+| `roles` | civilités seules, parenté, fonctions soignantes et sociales | **96 / 96 à tort** | 24 / 24 / 24 / 24 |
+| `organismes` | organismes publics ou associatifs, marques, un ou deux mots | **83 / 96 à tort** | 22 / 22 / 22 / 17 |
+| `communs` | noms communs à majuscule | **96 / 96 à tort** | 24 / 24 / 24 / 24 |
+| `patronymes_communes` | patronymes qui sont aussi une commune de 10 000 habitants et plus | **0 / 96 (96 fuites)** | 0 / 0 / 0 / 0 |
+| `patronymes_noms_communs` | patronymes qui sont aussi un nom commun | 96 / 96 (0 fuite) | 24 / 24 / 24 / 24 |
+
+Toutes les détections sont de type `nom`, et toutes portent sur le mot de la
+tournure (0 détection ailleurs dans les phrases).
+
+Lectures. (1) Les familles `roles` et `communs` sont masquées en entier :
+P2-220 lit tout mot à majuscule derrière la tournure comme un nom, et ni les
+civilités seules (« entretien avec Madame »), ni la parenté, ni les fonctions,
+ni les noms communs hors `mots_neutres.dart` ne sont exclus. C'est le même
+défaut que les 80 phrases `commun_majuscule` du témoin de P2-218, sur des mots
+que ce témoin ne contenait pas. (2) Les 13 organismes en clair ont trois
+causes : un sigle déjà exclu (« MDPH », 4 phrases) ; une marque qui est aussi
+une commune de la table (4 phrases) ; et devant « a confirmé », un nom de deux
+mots, dont le second est soit précédé d'un mot capitalisé (règle de P2-220),
+soit en minuscules (5 phrases). Pour un organisme de deux mots derrière les
+trois autres tournures, seul un des deux mots est parfois masqué : il compte
+quand même comme masqué à tort. (3) Les 96 patronymes-communes restent
+**tous en clair** : la table `communes_grandes.dart` qui protège les phrases
+`lieu` du témoin de P2-218 les écarte aussi (P2-228). (4) Les patronymes qui
+sont aussi un nom commun sont tous masqués, au prix du point (1) : la règle ne
+les distingue pas d'un nom commun.
+
+Ce que ces chiffres ne disent pas : une fréquence réelle (pires cas construits,
+un mot par phrase, gabarits fixes) ; les mêmes mots en minuscules ou en tête de
+phrase hors tournure ; le corpus de dossiers (inchangé : 4 patronymes seuls
+manqués sur 116, section de P2-218).
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par
