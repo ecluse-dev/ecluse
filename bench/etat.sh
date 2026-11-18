@@ -196,6 +196,19 @@ if produit "tournures sans nom, générateur" "$B/flou/corpus_tournures_sans_nom
   fi
 fi
 
+# Témoin élargi des tournures de personne (P2-226) : cinq familles de mots
+# (rôles et parenté, organismes et marques, noms communs à majuscule, puis deux
+# familles de patronymes annotés) dans les quatre tournures de P2-220, chaque
+# mot une fois par tournure. Chemin mesuré : Ecluse.redact, document par
+# document. Familles sans personne : masquage en trop ; patronymes : en clair,
+# une fuite. Mesure seule.
+echo "## tournures de personne, témoin élargi (P2-226) : Ecluse.redact (chemin du produit)"
+if produit "tournures de personne, générateur" "$B/flou/corpus_tournures_personne.jsonl" python3 "$B/generate_corpus_tournures_personne.py" --seed 42 --out "$B/flou/corpus_tournures_personne.jsonl"; then
+  if produit "tournures de personne, Ecluse.redact" "$B/flou/pred_tournures_personne.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_tournures_personne.jsonl ../../bench/flou/pred_tournures_personne.jsonl; then
+    montre "tournures de personne, score" -E "^tournures de personne :|^  famille=|^    tournure=|^  types sur" 0 non dans_B python3 score_tournures_personne.py --corpus flou/corpus_tournures_personne.jsonl --pred flou/pred_tournures_personne.jsonl || true
+  fi
+fi
+
 echo "## pathologies"
 produit "générateur pathologies" "$B/patho/corpus_pathologies_indices.jsonl" python3 "$B/generate_corpus_pathologies.py" --n 300 --seed 42 --out-dir "$B/patho" || true
 patho_rattachees() { reid run_pathologies_bench.dart "../../bench/patho/corpus_pathologies_$1.jsonl" "../../bench/patho/corpus_pathologies_temoin.jsonl" | sed -n '/rattachées/,$p'; }
