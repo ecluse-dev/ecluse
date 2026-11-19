@@ -1886,7 +1886,17 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   **Coût, mesuré sur le témoin de P2-218 (400 phrases sans nom de personne) :
   80 phrases sur 400 (20 %) masquées à tort, alors que la fiche en tolérait 1 %.**
   Toutes sont un nom commun écrit avec une majuscule derrière la tournure (« le
-  dossier de Presse », « Succès a confirmé ») : sans dictionnaire, rien ne le
+  dossier de Presse », « Succès a confirmé »). Les mots de rôle et de parenté
+  (« Madame a confirmé », « l'entretien avec Mère », « le dossier de Tuteur »)
+  sont, depuis P2-227, en clair (96 sur 96 masqués à tort au témoin de P2-226
+  avant, 0 après) : liste fermée de civilités, de parenté et de fonctions
+  soignantes et sociales, plus les terminaisons de métier (« -thérapeute »,
+  « -logue », « -iatre », « -phoniste », « -pédiste »). Un rôle hors des deux
+  (« Aidant », « Veuve », « Concierge ») reste masqué ; un mot de rôle suivi
+  d'un nom (« Tante Quenelle ») laisse le rôle en clair et masque le nom ; un
+  patronyme identique à un mot de la liste n'est plus rattrapé par la tournure
+  seule (« Parent », « Cousin » et « Neveu » en sont exclus pour cette raison).
+  Pour les autres mots : sans dictionnaire, rien ne le
   distingue d'un patronyme. Minuscule (« dossier de presse »), organisme précédé
   de son article (« de la Mairie », « La Mairie a confirmé ») et mots neutres ne
   sont pas masqués. Une commune de 10 000 habitants et plus (table

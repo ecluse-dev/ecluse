@@ -1273,6 +1273,44 @@ Tout le reste du tableau de bord est identique, en particulier les corpus
 flous (réaliste, adversarial, témoins, variantes de casse) et les corpus de
 dossiers.
 
+## Tournures de personne : mots de rôle et de parenté en clair (P2-227)
+
+`main` au commit `79b2044` pour l'état d'avant (tableau de bord de P2-228),
+graine 42, rejeu complet de `bench/etat.sh` des deux côtés, comparé ligne à
+ligne. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM), document par
+document, sans dossier. Règle changée dans `NameDetector` : un mot de rôle ou de
+parenté (liste fermée écrite d'après la langue, plus les terminaisons de métier
+« -thérapeute », « -logue », « -iatre », « -phoniste », « -pédiste ») derrière
+une tournure de personne n'est plus lu comme un patronyme ; s'il est suivi d'un
+nom, seul le nom est candidat.
+
+| Mesure | Avant | Après |
+|---|---:|---:|
+| Témoin P2-226, `roles` masqués à tort | 96 / 96 | **0 / 96** |
+| dont par tournure (dossier de / à la demande de / entretien avec / a confirmé) | 24 / 24 / 24 / 24 | 0 / 0 / 0 / 0 |
+| Témoin P2-226, total des masquages à tort (type `nom`) | 278 | 182 |
+| Témoin P2-226, `patronymes_communes` et `patronymes_noms_communs` | inchangés | inchangés |
+| Corpus de dossiers réaliste : patronymes seuls manqués | 1 / 116 | 1 / 116 |
+
+Tout le reste du tableau de bord est identique (diff ligne à ligne : seules
+changent la ligne du commit, les cinq lignes `roles` et le total des
+masquages à tort).
+
+Généralisation, dite sans détour. Sur les 24 mots du témoin, 22 sont dans la
+liste ; « Psychologue » et « Ergothérapeute » n'y sont pas mais sont reconnus
+par les terminaisons. **Aucun mot du témoin n'échappe à la fois à la liste et
+aux terminaisons** : le témoin ne mesure donc pas ce qui se passe pour un rôle
+hors des deux (« Aidant », « Veuve », « Concierge » : masqués, comme avant).
+Les cas de `tournure_mots_de_role_test.dart` ajoutent des formes que le témoin
+ne contient pas (« Famille », « Maman », « Kiné », « Orthophoniste »,
+« Psychiatre », « Soeur », « MERE »), qui sont une vérification, pas une
+fréquence.
+
+Ce que ces chiffres ne disent pas : une fréquence réelle (pires cas construits) ;
+un patronyme identique à un mot de la liste (« Maître », « Cadre », « Chef »,
+« Mari » existent comme noms de famille) n'est plus rattrapé par la tournure
+seule : fuite possible, non mesurée, que le témoin de P2-226 ne contient pas.
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par

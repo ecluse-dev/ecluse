@@ -1,4 +1,4 @@
-## commit 79b2044
+## commit a761fb3
 ## v3 (identifiants structurels)
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
@@ -239,11 +239,11 @@ tournures sans nom : 400 documents, 0 entité(s) annotée(s), 140 masqués à to
   types sur les masquages à tort : nom 140
 ## tournures de personne, témoin élargi (P2-226) : Ecluse.redact (chemin du produit)
 tournures de personne : 480 documents, 5 familles, 192 noms annotés, 0 détection(s) hors du mot
-  famille=roles : 96 / 96 masqués à tort
-    tournure=dossier de : 24 / 24
-    tournure=à la demande de : 24 / 24
-    tournure=entretien avec : 24 / 24
-    tournure=sujet : a confirmé : 24 / 24
+  famille=roles : 0 / 96 masqués à tort
+    tournure=dossier de : 0 / 24
+    tournure=à la demande de : 0 / 24
+    tournure=entretien avec : 0 / 24
+    tournure=sujet : a confirmé : 0 / 24
   famille=organismes : 86 / 96 masqués à tort
     tournure=dossier de : 23 / 24
     tournure=à la demande de : 22 / 24
@@ -264,7 +264,7 @@ tournures de personne : 480 documents, 5 familles, 192 noms annotés, 0 détecti
     tournure=à la demande de : 24 / 24
     tournure=entretien avec : 24 / 24
     tournure=sujet : a confirmé : 24 / 24
-  types sur les masquages à tort : nom 278
+  types sur les masquages à tort : nom 182
   types sur les patronymes masqués : nom 168
 ## pathologies
 # indices
