@@ -299,6 +299,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-229 | code | Tournures de personne : liste fermée d'organismes nationaux (« le dossier de France Travail », « à la demande de Emmaüs ») | P2-228 | fusionnée |
 | P2-230 | spec | Aperçu : signaler « à vérifier » les noms établis par une seule tournure de personne, sans changer ce qui est masqué | P2-229 | fusionnée |
 | P2-231 | humain | Lire la licence du fichier des noms de famille de l'INSEE (P2-221) et d'un lexique libre du français, puis décider si le référentiel de patronymes adossé aux tournures est mis en file | P2-221 | humain |
+| P2-232 | code | Aperçu : signal « à vérifier » sur les noms dont la seule preuve est une tournure de personne (option A de P2-230), sans changer ce qui est masqué | P2-230 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -565,3 +566,24 @@ rattrapés avant P2-220).
   lexique libre du français) ; un lexique seul est écarté (9 patronymes sur 10
   de la sonde sont aussi des noms communs et fuiraient), il n'a de sens
   qu'avec le référentiel de patronymes.
+
+### P2-232 — Signal « à vérifier » dans l'aperçu (décisions du 19 novembre)
+
+- **P2-232** : `ecluse_core` (champ de provenance) et `ecluse_redact`
+  (`NameDetector`, `apercu.dart`), selon `agent/specs/P2-230.md` et les
+  décisions de `DECISIONS.md` du 19 novembre : option A, sens strict (§ 4 de la
+  spec), libellé « à vérifier », aucun compte dans le journal, version du
+  moteur inchangée. Le champ est une énumération fermée, jamais une chaîne
+  libre ; il est propagé par les copies d'entité du moteur et de `ecluse.dart`
+  (spec § 5), avec un test qui échoue s'il est perdu. Test d'abord : une entité
+  de tournure seule (`aVerifier` vrai), puis le même mot avec une civilité
+  ailleurs dans le texte (faux), puis établi dans un document précédent du
+  `Dossier` (faux). **Fini quand** : `aVerifier` exact sur les 4 cas de § 4 de
+  la spec ; `maskedText` et `mapping` de `Ecluse.redact` identiques octet pour
+  octet sur tous les corpus du tableau de bord ; `descriptionMoteur` et
+  `versionMoteur` identiques ; aucun `toString`, message ou sortie console avec
+  une valeur du texte (un test par voie, spec § 7) ; `LIMITES.md` § 6 à jour
+  (« l'aperçu est un confort, pas une garantie ») ; décompte rejoué, chemin
+  `Apercu.propose` : corpus de P2-226 (307 signalés au plus, vrais patronymes et
+  autres mots rapportés séparément) et corpus v3 (nombre signalé sur les noms
+  proposés).
