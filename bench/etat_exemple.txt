@@ -1,4 +1,4 @@
-## commit 6dcf041
+## commit 79b2044
 ## v3 (identifiants structurels)
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
 Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
@@ -220,23 +220,23 @@ QI par Ecluse.redact : bench/qi/corpus_qi_adversarial.jsonl
   Restaurations non identiques : 0 / 396 documents    0.0 %
   Mentions annotées non détectées (exclues) : aucune
 ## patronyme seul hors civilité (P2-218) : Ecluse.redact (chemin du produit)
-noms hors civilité, patronyme seul : 116 mentions, manquées document par document 4, en session 0
+noms hors civilité, patronyme seul : 116 mentions, manquées document par document 1, en session 0
 noms hors civilité, plusieurs mots (civilité ou prénom) : 476 mentions, manquées document par document 0, en session 0
-  tournure=dossier de : 1 / 49 manqués document par document, 0 / 49 en session
+  tournure=dossier de : 0 / 49 manqués document par document, 0 / 49 en session
   tournure=à la demande de : 1 / 19 manqués document par document, 0 / 19 en session
-  tournure=entretien avec : 1 / 26 manqués document par document, 0 / 26 en session
-  tournure=sujet : a confirmé : 1 / 22 manqués document par document, 0 / 22 en session
-tournures sans nom : 400 documents, 0 entité(s) annotée(s), 80 masqués à tort
+  tournure=entretien avec : 0 / 26 manqués document par document, 0 / 26 en session
+  tournure=sujet : a confirmé : 0 / 22 manqués document par document, 0 / 22 en session
+tournures sans nom : 400 documents, 0 entité(s) annotée(s), 140 masqués à tort
   tournure=adressé à : 0 / 80 masqués à tort
-  tournure=dossier de : 20 / 80 masqués à tort
+  tournure=dossier de : 40 / 80 masqués à tort
   tournure=à la demande de : 20 / 80 masqués à tort
-  tournure=entretien avec : 20 / 80 masqués à tort
-  tournure=sujet : a confirmé : 20 / 80 masqués à tort
-  genre=lieu : 0 / 100 masqués à tort
+  tournure=entretien avec : 40 / 80 masqués à tort
+  tournure=sujet : a confirmé : 40 / 80 masqués à tort
+  genre=lieu : 60 / 100 masqués à tort
   genre=organisme : 0 / 100 masqués à tort
   genre=commun_majuscule : 80 / 100 masqués à tort
   genre=commun_minuscule : 0 / 100 masqués à tort
-  types sur les masquages à tort : nom 80
+  types sur les masquages à tort : nom 140
 ## tournures de personne, témoin élargi (P2-226) : Ecluse.redact (chemin du produit)
 tournures de personne : 480 documents, 5 familles, 192 noms annotés, 0 détection(s) hors du mot
   famille=roles : 96 / 96 masqués à tort
@@ -244,28 +244,28 @@ tournures de personne : 480 documents, 5 familles, 192 noms annotés, 0 détecti
     tournure=à la demande de : 24 / 24
     tournure=entretien avec : 24 / 24
     tournure=sujet : a confirmé : 24 / 24
-  famille=organismes : 83 / 96 masqués à tort
-    tournure=dossier de : 22 / 24
+  famille=organismes : 86 / 96 masqués à tort
+    tournure=dossier de : 23 / 24
     tournure=à la demande de : 22 / 24
-    tournure=entretien avec : 22 / 24
-    tournure=sujet : a confirmé : 17 / 24
+    tournure=entretien avec : 23 / 24
+    tournure=sujet : a confirmé : 18 / 24
   famille=communs : 96 / 96 masqués à tort
     tournure=dossier de : 24 / 24
     tournure=à la demande de : 24 / 24
     tournure=entretien avec : 24 / 24
     tournure=sujet : a confirmé : 24 / 24
-  famille=patronymes_communes : 0 / 96 masqués, 96 en clair (fuite)
-    tournure=dossier de : 0 / 24
+  famille=patronymes_communes : 72 / 96 masqués, 24 en clair (fuite)
+    tournure=dossier de : 24 / 24
     tournure=à la demande de : 0 / 24
-    tournure=entretien avec : 0 / 24
-    tournure=sujet : a confirmé : 0 / 24
+    tournure=entretien avec : 24 / 24
+    tournure=sujet : a confirmé : 24 / 24
   famille=patronymes_noms_communs : 96 / 96 masqués, 0 en clair (fuite)
     tournure=dossier de : 24 / 24
     tournure=à la demande de : 24 / 24
     tournure=entretien avec : 24 / 24
     tournure=sujet : a confirmé : 24 / 24
-  types sur les masquages à tort : nom 275
-  types sur les patronymes masqués : nom 96
+  types sur les masquages à tort : nom 278
+  types sur les patronymes masqués : nom 168
 ## pathologies
 # indices
   indices : TP 397, FP 0, FN 0 ; précision 100.0 %, rappel 100.0 % ; catégorie juste 96.7 %
