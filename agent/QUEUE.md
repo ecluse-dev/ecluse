@@ -300,6 +300,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-230 | spec | Aperçu : signaler « à vérifier » les noms établis par une seule tournure de personne, sans changer ce qui est masqué | P2-229 | fusionnée |
 | P2-231 | humain | Lire la licence du fichier des noms de famille de l'INSEE (P2-221) et d'un lexique libre du français, puis décider si le référentiel de patronymes adossé aux tournures est mis en file | P2-221 | humain |
 | P2-232 | code | Aperçu : signal « à vérifier » sur les noms dont la seule preuve est une tournure de personne (option A de P2-230), sans changer ce qui est masqué | P2-230 | à faire |
+| P2-233 | mesure | Patronymes qui sont aussi une commune derrière « à la demande de » : 24 sur 96 en clair (P2-228) ; options pour les départager des lieux, chiffrées hors `lib/` | P2-228 | à faire |
+| P2-234 | code | Tournures de personne : organismes encore masqués à tort (43 sur 96 au témoin de P2-226, après P2-229) | P2-229 | à faire |
+| P2-235 | mesure | Bornes d'un nom « prénom + verbe » (« Sophie rappelle. » proposé en entier, confiance 0,5) : fréquence et cause | P2-230 | à faire |
+| P2-236 | code | Test de coût linéaire de `adresse_cedex_test.dart` : remplacer le plafond fixe de 15 s par un rapport de croissance | — | à faire |
+| P2-237 | mesure | Expliquer l'écart de 3 caractères du témoin « commune suivie » (5 379 → 5 376, depuis P2-212) | P2-212 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -587,3 +592,48 @@ rattrapés avant P2-220).
   `Apercu.propose` : corpus de P2-226 (307 signalés au plus, vrais patronymes et
   autres mots rapportés séparément) et corpus v3 (nombre signalé sur les noms
   proposés).
+
+### P2-233 à P2-237 — Suites des tournures de personne et dette (19 novembre)
+
+- **P2-233** : mesure seulement. Après P2-228, derrière « à la demande de », les
+  grandes communes sont encore écartées : 24 patronymes-communes sur 96 du
+  témoin de P2-226 restent en clair (fuites), alors que l'exclusion protège les
+  phrases `lieu` du témoin de P2-218 (« à la demande de Paris »). Chiffrer hors
+  `lib/`, sur ces deux témoins et le corpus de dossiers, au moins trois options
+  (par exemple : seuil d'habitants plus haut ; communes chefs-lieux seulement ;
+  indice voisin de lieu ou de personne dans la phrase ; ne plus rien écarter),
+  avec pour chacune les fuites restantes et les lieux masqués à tort.
+  **Fini quand** : tableau des options dans `bench/ETAT.md`, une recommandation,
+  aucune correction ; chemin `Ecluse.redact` document par document.
+- **P2-234** : détecteur de noms. Les 43 organismes masqués à tort du témoin de
+  P2-226 (11 / 10 / 11 / 11 par tournure) : classer d'abord les causes (mot
+  absent de la liste de P2-229, organisme de deux mots dont un seul mot est
+  reconnu, marque) dans la PR, puis corriger celles qui relèvent d'une règle,
+  **sans** ajouter mot à mot les organismes du témoin (même règle de
+  généralisation que P2-227 et P2-229 : au moins un organisme du témoin reste
+  hors liste). Test d'abord. **Fini quand** : famille `organismes` divisée par
+  deux au moins, chaque cas restant expliqué ; familles de patronymes, témoin de
+  P2-218 et corpus de dossiers (1 manqué sur 116) inchangés ou meilleurs ; reste
+  du tableau de bord inchangé ; `LIMITES.md` à jour.
+- **P2-235** : mesure seulement. La spec P2-230 (§ 11) a vu « Sophie
+  rappelle. » proposé comme un seul nom de 0 à 15 (confiance 0,5). Trouver la
+  règle qui le produit, compter sur les corpus existants combien d'entités `nom`
+  débordent sur un verbe ou un mot courant (chemin `Ecluse.redact`), et dire si
+  c'est voulu (commentaire de doc, décision) ou un défaut. **Fini quand** :
+  règle citée, compte dans `bench/ETAT.md`, verdict argumenté ; aucune
+  correction.
+- **P2-236** : test seulement (`packages/ecluse_redact/test/adresse_cedex_test.dart`,
+  test « coût linéaire »). Le plafond fixe `lessThan(15000)` dépend de la
+  machine. Le remplacer par un rapport : temps pour 2 N lignes au plus k fois le
+  temps pour N lignes (k justifié dans le commentaire, médiane de plusieurs
+  répétitions), sur le modèle d'un test de croissance déjà présent s'il en
+  existe un ; chercher les autres plafonds fixes du même genre et les lister
+  dans la PR. **Fini quand** : le test échoue sur une version quadratique
+  simulée (à montrer dans la PR, sans la committer) et passe sur `main` ; aucun
+  fichier de `lib/` modifié ; durée du test au plus égale à l'actuelle.
+- **P2-237** : mesure seulement. Depuis P2-212 (#436), le témoin « commune
+  suivie » (P2-181) donne 5 376 caractères masqués au lieu de 5 379, sans
+  adresse en partie en clair. Trouver le ou les documents concernés et la règle
+  responsable, dire si l'écart est une fuite, un masquage plus juste ou neutre.
+  **Fini quand** : documents et règle cités dans `bench/ETAT.md`, verdict ;
+  aucune correction.
