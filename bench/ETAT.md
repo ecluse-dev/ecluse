@@ -1237,6 +1237,42 @@ un mot par phrase, gabarits fixes) ; les mêmes mots en minuscules ou en tête d
 phrase hors tournure ; le corpus de dossiers (inchangé : 4 patronymes seuls
 manqués sur 116, section de P2-218).
 
+## Tournures de personne : grandes communes écartées après « à la demande de » seulement (P2-228)
+
+`main` au commit `79b2044` pour l'état d'avant, graine 42, rejeu complet de
+`bench/etat.sh` des deux côtés, comparé ligne à ligne. Chemin mesuré :
+**`Ecluse.redact`** (ce que reçoit le LLM), document par document, sans
+dossier. Règle changée dans `NameDetector` : une commune de 10 000 habitants et
+plus (`communes_grandes.dart`) n'est plus écartée derrière « le dossier de »,
+« l'entretien avec » et devant « a confirmé » ; elle l'est toujours après « à
+la demande de ». Fait avant P2-227, sur décision du mainteneur du 19 novembre :
+les fuites passent avant le sur-masquage.
+
+| Mesure | Avant | Après |
+|---|---:|---:|
+| Témoin P2-226, `patronymes_communes` : masqués (fuites) | 0 / 96 (96) | **72 / 96 (24)** |
+| dont « dossier de », « entretien avec », « a confirmé » | 0 / 72 | **72 / 72** |
+| dont « à la demande de » (exclusion gardée) | 0 / 24 | 0 / 24 |
+| Corpus de dossiers réaliste : patronymes seuls manqués | 4 / 116 | **1 / 116** |
+| Témoin P2-218 : phrases sans nom masquées à tort | 80 / 400 | **140 / 400** |
+| dont genre `lieu` | 0 / 100 | **60 / 100** |
+| Témoin P2-226, `organismes` masqués à tort | 83 / 96 | 86 / 96 |
+
+Coût, cas par cas. (1) Les 60 phrases `lieu` du témoin de P2-218 : ce sont
+**toutes** les phrases de ce genre derrière les trois tournures concernées (20
+par tournure, douze grandes villes) ; derrière « à la demande de », 0 sur 20 ;
+« adressé à » n'est pas une tournure de P2-220. Une ville désignée ainsi
+(« le dossier de Besançon », « Paris a confirmé ») est désormais masquée comme
+un nom : de la lisibilité perdue, pas une fuite. (2) Les 3 organismes de plus
+sont la même marque, aussi nom de commune (« Orange »), derrière les trois
+tournures. (3) Le patronyme encore manqué du corpus de dossiers est « Gaillard »
+après « à la demande de » : la fuite connue qui reste (24 sur 24 au témoin de
+P2-226 pour cette tournure).
+
+Tout le reste du tableau de bord est identique, en particulier les corpus
+flous (réaliste, adversarial, témoins, variantes de casse) et les corpus de
+dossiers.
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par

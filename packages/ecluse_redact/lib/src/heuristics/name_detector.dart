@@ -517,6 +517,9 @@ final class NameDetector implements EntityDetector {
     '(?=[A-ZÀ-ÖØ-Þ])($_unite(?:$_h+$_unite)?)',
   );
 
+  /// Début de « à la demande de », pour [_motDeContexteEstUnNom] (P2-228).
+  static final RegExp _demandeDe = RegExp('^[Àà]$_h+la$_h+demande$_h+de');
+
   /// Patronyme seul sujet de « a confirmé » (P2-220). Un seul mot : devant un
   /// verbe, un mot capitalisé précédé d'un autre mot capitalisé est trop souvent
   /// une structure (« Service Qualité a confirmé »).
@@ -545,15 +548,28 @@ final class NameDetector implements EntityDetector {
   /// n'est un mot neutre, un statut, un sigle exclu, un mot d'établissement ni
   /// un des mots de [_motsDeContexteNonNoms]. Les particules en tête sont
   /// ignorées (« de la Fontaine »).
-  static bool _motDeContexteEstUnNom(String unite) {
+  ///
+  /// [exclureCommunes] : une commune de 10 000 habitants et plus n'est écartée
+  /// qu'après « à la demande de » (P2-228). Derrière « le dossier de »,
+  /// « l'entretien avec » et devant « a confirmé », l'exclusion laissait en
+  /// clair tout patronyme qui est aussi une telle commune (« Laval »,
+  /// « Thiers », « Gaillard » : 96 mentions sur 96 au témoin de P2-226, 4 sur
+  /// 4 des patronymes seuls encore manqués du corpus de dossiers). Ces trois
+  /// tournures désignent bien plus souvent une personne qu'une ville ; « à la
+  /// demande de » introduit couramment une collectivité (« à la demande de
+  /// Paris »). Coût assumé, dans le doute on masque : « le dossier de
+  /// Besançon », « Paris a confirmé » sont masqués (`LIMITES.md`).
+  static bool _motDeContexteEstUnNom(String unite,
+      {required bool exclureCommunes}) {
     final mots = unite.split(_ecart);
     var i = 0;
     while (i < mots.length - 1 &&
         RegExp('^(?:$_particules)\$').hasMatch('${mots[i]} ')) {
       i++;
     }
-    if (communesGrandes.contains(_cleCommune(unite)) ||
-        communesGrandes.contains(_cleCommune(mots.sublist(i).join(' ')))) {
+    if (exclureCommunes &&
+        (communesGrandes.contains(_cleCommune(unite)) ||
+            communesGrandes.contains(_cleCommune(mots.sublist(i).join(' '))))) {
       return false;
     }
     for (final mot in mots.sublist(i)) {
@@ -1167,7 +1183,10 @@ final class NameDetector implements EntityDetector {
         final start = match.start + match.group(0)!.indexOf(unite);
         final end = start + unite.length;
         if (claimed.overlaps(start, end)) continue;
-        if (!_motDeContexteEstUnNom(unite)) continue;
+        // Seule la tournure « à la demande de » écarte une grande commune
+        // (P2-228) : le texte reconnu commence par la tournure.
+        final demande = avant && _demandeDe.hasMatch(match.group(0)!);
+        if (!_motDeContexteEstUnNom(unite, exclureCommunes: demande)) continue;
         // Sujet : « La Mairie a confirmé » (article capitalisé en tête) et
         // « Service Qualité a confirmé » (mot capitalisé devant) ne sont pas lus.
         if (!avant &&
