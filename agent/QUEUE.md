@@ -252,7 +252,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-182 | spec | Table des communes dans la détection d'adresses : gain (« 58699 Alpha » contre « 70000 Vesoul », noms longs), perte (faute d'orthographe, lieu-dit), dépendance `ecluse_reference` → `ecluse_redact` | P2-178 | fusionnée |
 | P2-183 | mesure | Communes du balayage de P2-178 en texte tout en capitales et sans majuscule (autres détecteurs) ; mesurer, ne rien corriger | P2-178 | fusionnée |
 | P2-184 | code | Nombre à cinq chiffres hors adresse : vérification en table des communes, en option explicite de `Ecluse.redact` (piste A et C de P2-182) | P2-182 | abandonnée (DECISIONS.md, 15 novembre) |
-| P2-185 | code | Texte tout en capitales : commune composée qui commence par « LA », « LE », « LES », « L' » (« 01097 LA BOISSE ») écartée à tort comme mot neutre (tâche A de P2-183) ; balayage en capitales au tableau de bord | P2-183 | bloquée (#394 : mesure livrée ; suite P2-187) |
+| P2-185 | code | Texte tout en capitales : commune composée qui commence par « LA », « LE », « LES », « L' » (« 01097 LA BOISSE ») écartée à tort comme mot neutre (tâche A de P2-183) ; balayage en capitales au tableau de bord | P2-183 | regroupée (P2-187) |
 | P2-186 | code | Restauration fausse : dans un tableau relu sans séparateurs, le nom avale la fonction en capitales qui suit (« LEFÈVRE Olivier AS ») et deux homonymes reçoivent le même jeton ; `Ecluse.restore` réécrit l'autre ligne | — | fusionnée |
 | P2-187 | code | Texte tout en capitales : livrer la correction d'essai de P2-185 (commune composée en « LA », « LE », « LES », « L' » masquée en entier), avec d'abord un témoin « cinq chiffres + LE/LA/LES » en capitales et en casse ordinaire | — | fusionnée |
 | P2-188 | code | Identifiant à clé fausse annoncé par son libellé (« NIR », « sécurité sociale », « IBAN », « RPPS ») : aujourd'hui en clair ; le masquer quand même et avertir (témoin d'abord) | — | fusionnée |
@@ -295,7 +295,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-225 | humain | Mesurer GLiNER et le modèle complet d'EDS-Pseudo sur le poste du mainteneur (modèles inaccessibles en session cloud), avec le script de P2-224 | P2-224 | humain |
 | P2-226 | mesure | Témoin élargi des tournures de personne (P2-220) : mots de rôle et de parenté, organismes, noms communs à majuscule, patronymes qui sont aussi des communes ou des noms communs | P2-220 | fusionnée |
 | P2-227 | code | Tournures de personne : liste fermée des mots de rôle et de parenté (« Madame a confirmé », « entretien avec Famille ») jamais pris pour un patronyme | P2-226 | à faire |
-| P2-228 | code | Tournures de personne : n'écarter les communes qu'après « à la demande de » (fuite « Gaillard a confirmé ») | P2-227 | PR ouverte |
+| P2-228 | code | Tournures de personne : n'écarter les communes qu'après « à la demande de » (fuite « Gaillard a confirmé ») | P2-227 | fusionnée |
 | P2-229 | code | Tournures de personne : liste fermée d'organismes nationaux (« le dossier de France Travail », « à la demande de Emmaüs ») | P2-228 | à faire |
 | P2-230 | spec | Aperçu : signaler « à vérifier » les noms établis par une seule tournure de personne, sans changer ce qui est masqué | P2-229 | à faire |
 | P2-231 | humain | Lire la licence du fichier des noms de famille de l'INSEE (P2-221) et d'un lexique libre du français, puis décider si le référentiel de patronymes adossé aux tournures est mis en file | P2-221 | humain |
