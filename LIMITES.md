@@ -1896,6 +1896,13 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   d'un nom (« Tante Quenelle ») laisse le rôle en clair et masque le nom ; un
   patronyme identique à un mot de la liste n'est plus rattrapé par la tournure
   seule (« Parent », « Cousin » et « Neveu » en sont exclus pour cette raison).
+  Les organismes de la liste
+  fermée de P2-229 (« France Travail », « Emmaüs », « Assurance Maladie », les
+  sigles CAF, CPAM, URSSAF, MSA…) sont en clair derrière ces tournures (86 sur
+  96 masqués à tort au témoin de P2-226 avant, 43 après) ; les **marques
+  commerciales** (« Doctolib », « SNCF », « Amazon »…) et tout organisme hors
+  liste restent masqués, dans le doute. Un organisme suivi d'un nom (« Emmaüs
+  Quenelle ») masque le nom.
   Pour les autres mots : sans dictionnaire, rien ne le
   distingue d'un patronyme. Minuscule (« dossier de presse »), organisme précédé
   de son article (« de la Mairie », « La Mairie a confirmé ») et mots neutres ne
