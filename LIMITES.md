@@ -2003,6 +2003,25 @@ contient un. `Apercu.risque`, qui copie l'état du dossier, coûte environ 3 ms 
   isolée dans le texte envoyé, non encodable. Les détecteurs n'ont produit
   aucune coupure de ce genre sur 7 entités d'un échantillon d'émojis et de
   lettres mathématiques : sondage étroit, pas une garantie.
+- Signal « à vérifier » de l'aperçu (P2-232) : `EntiteProposee.aVerifier`
+  (et `Proposition.aVerifier`, la liste des identifiants) est vrai quand la
+  **seule** preuve d'un nom est une tournure de personne (« le dossier de X »,
+  « X a confirmé »), ou une autre occurrence du même mot : ni civilité, ni
+  couple prénom + nom, ni champ étiqueté, ni patronyme établi ailleurs, y
+  compris dans un document précédent du dossier. **C'est une information, pas
+  un jugement** : « à vérifier » ne veut pas dire « probablement faux ». Sur le
+  témoin des tournures (P2-226, 480 documents, une phrase par mot, chemin
+  `Apercu.propose`), 307 noms sont proposés et les 307 sont signalés : 168 sont
+  de vrais patronymes, 139 sont des mots qui ne sont pas des personnes. Le
+  signal ne sépare donc pas le vrai du faux ; il dit seulement qu'un seul indice
+  soutient le nom. Sur le corpus v3 (1 000 documents), 415 noms sont proposés,
+  aucun n'est signalé (aucune tournure dans ce corpus). **Tout reste masqué par
+  défaut** ; le signal ne démasque rien, et refuser à tort un nom signalé le
+  laisse en clair chez le tiers. L'aperçu reste un confort, pas une garantie :
+  aucun utilisateur n'a vu ce signal, et rien ne mesure qu'il aide à trier. Il
+  n'entre ni dans le journal d'audit (aucun compte « à vérifier »), ni dans
+  `descriptionMoteur`, ni dans la version du moteur ; `Ecluse.redact` ne change
+  pas d'un octet.
 
 Voir `ROADMAP.md` pour le calendrier de ces briques.
 

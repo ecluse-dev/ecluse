@@ -1023,6 +1023,7 @@ final class NameDetector implements EntityDetector {
             value: text.substring(e.start, e.end),
             confidence: e.confidence,
             tier: e.tier,
+            provenance: e.provenance,
           ),
         );
       }
@@ -1324,6 +1325,19 @@ final class NameDetector implements EntityDetector {
     // main (`claimed`). Le patronyme est ensuite recherché ailleurs dans le
     // texte, comme pour une civilité.
     final contexteEtablis = <String>{};
+    // Mots (minuscules) dont la seule preuve est une tournure (P2-232, spec
+    // P2-230 § 4) : ni civilité, ni couple prénom + nom, ni champ étiqueté ni
+    // patronyme établi ailleurs, y compris dans un document précédent du
+    // dossier. Sert au seul signal « à vérifier » de l'aperçu : le texte masqué
+    // n'en dépend pas. `autres` est calculé AVANT la passe des tournures, donc
+    // sans leurs propres entités.
+    final autres = <String>{...this.knownSurnames};
+    for (var i = 0; i < results.length; i++) {
+      final surname = _extractSurname(results[i].confidence, surnameSources[i]);
+      if (surname == null || _isExcludedAcronym(surname)) continue;
+      autres.add(surname.toLowerCase());
+    }
+    final tournureSeule = <String>{};
     for (final (re, avant) in [
       (_contexteAvant, true),
       (_contexteApres, false)
@@ -1354,6 +1368,13 @@ final class NameDetector implements EntityDetector {
                 _precedeParMotCapitalise(text, start))) {
           continue;
         }
+        final dernier = unite.split(_ecart).last.toLowerCase();
+        // Un prénom connu dans l'unité (« dossier de Jean Verdier ») est une
+        // preuve de plus que la tournure : pas de signal.
+        final seule = !autres.contains(dernier) &&
+            (!unite.contains(_ecart) ||
+                !unite.split(_ecart).any(_looksLikeKnownFirstName));
+        if (seule) tournureSeule.add(dernier);
         results.add(
           DetectedEntity(
             type: EntityType.nom,
@@ -1361,11 +1382,12 @@ final class NameDetector implements EntityDetector {
             end: end,
             value: unite,
             confidence: 0.6,
+            provenance: seule ? Provenance.tournure : null,
           ),
         );
         surnameSources.add(unite);
         claimed.add(start, end);
-        contexteEtablis.add(unite.split(_ecart).last.toLowerCase());
+        contexteEtablis.add(dernier);
       }
     }
 
@@ -1420,6 +1442,9 @@ final class NameDetector implements EntityDetector {
             end: end,
             value: text.substring(start, end),
             confidence: 0.6,
+            provenance: tournureSeule.contains(word.toLowerCase())
+                ? Provenance.tournure
+                : null,
           ),
         );
         claimed.add(start, end);

@@ -283,6 +283,7 @@ abstract final class Ecluse {
                   value: text.substring(debut, fin),
                   confidence: e.confidence,
                   tier: e.tier,
+                  provenance: e.provenance,
                 );
               }()
           ];
