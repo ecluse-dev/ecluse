@@ -160,6 +160,7 @@ final class MinusculesRecapitaliseDetector implements EntityDetector {
           value: text.substring(e.start, e.end),
           confidence: e.confidence,
           tier: e.tier,
+          provenance: e.provenance,
         ),
     ];
   }

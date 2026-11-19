@@ -11,6 +11,7 @@ final class EntiteProposee {
     required this.valeur,
     required this.confiance,
     required this.tier,
+    this.aVerifier = false,
   });
 
   final int id;
@@ -23,6 +24,23 @@ final class EntiteProposee {
   /// Origine de la détection : une entité `structural` (clé de contrôle
   /// validée) ne se refuse qu'avec une option explicite.
   final DetectorTier? tier;
+
+  /// Vrai quand la **seule** preuve de ce nom est une tournure de personne
+  /// (« le dossier de », « à la demande de »…), sans civilité, couple prénom +
+  /// nom, champ étiqueté ni patronyme établi dans le document ou le dossier
+  /// (P2-232, `agent/specs/P2-230.md` § 4).
+  ///
+  /// C'est une information, pas un jugement : « à vérifier » ne veut **pas** dire
+  /// « probablement faux » (sur le témoin des tournures, plus de la moitié des
+  /// noms signalés sont de vrais patronymes). Rien n'est démasqué par défaut, et
+  /// refuser un nom à vérifier le laisse en clair chez le tiers. N'affecte ni le
+  /// jeton, ni le texte masqué, ni le rapport de risque, ni le journal.
+  final bool aVerifier;
+
+  /// Sans la valeur du texte : l'objet la porte, jamais son impression.
+  @override
+  String toString() =>
+      'EntiteProposee($id, ${type.name}, [$start, $end), aVerifier: $aVerifier)';
 }
 
 /// Résultat de [Apercu.propose] : ce qu'Écluse masquerait, sans rien avoir
@@ -40,6 +58,8 @@ final class Proposition {
               valeur: _brutes[i].value,
               confiance: _brutes[i].confidence,
               tier: _brutes[i].tier,
+              aVerifier:
+                  _brutes[i].provenance == ProvenanceEntite.tournureSeule,
             )
         ]);
 
@@ -59,6 +79,12 @@ final class Proposition {
   /// proposition est périmée (P2-19).
   final Dossier? _dossier;
   final int _documents;
+
+  /// Identifiants des entités à vérifier ([EntiteProposee.aVerifier]).
+  List<int> get aVerifier => List.unmodifiable([
+        for (final e in entites)
+          if (e.aVerifier) e.id
+      ]);
 
   /// Nombre d'entités proposées par type.
   Map<EntityType, int> get resume {

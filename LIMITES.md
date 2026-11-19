@@ -1988,6 +1988,23 @@ contient un. `Apercu.risque`, qui copie l'état du dossier, coûte environ 3 ms 
   aléatoires (graine 42, hors entités structurelles et secrets) n'ajoutent
   aucune restauration non identique à celles que `redact` produit déjà (60
   documents sur 3 391 : harmonisation des re-mentions, point 5 de l'essentiel).
+- Signal « à vérifier » de l'aperçu (P2-232, `agent/specs/P2-230.md`) :
+  `EntiteProposee.aVerifier` est vrai quand la **seule** preuve d'un nom est une
+  tournure de personne (« le dossier de », « à la demande de », « a confirmé »),
+  sans civilité, couple prénom + nom, champ étiqueté ni patronyme établi dans le
+  document ou dans le dossier. **L'aperçu est un confort, pas une garantie, et ce
+  signal n'est pas un jugement** : « à vérifier » ne veut pas dire « probablement
+  faux ». Sur le témoin des tournures (480 phrases, une seule preuve par nom),
+  307 noms sont signalés, dont 168 recouvrent un vrai patronyme annoté et 139
+  sont des mots qui ne sont pas des personnes (96 noms communs à majuscule, 43
+  organismes) ; refuser à tort un nom signalé le laisse en clair chez le tiers.
+  Rien n'est démasqué par défaut, le texte masqué, la table, le rapport de
+  risque et le journal sont inchangés. Le signal ne repère que ce cas : un nom
+  établi par une autre règle ne l'est pas, même s'il est faux. Chemin mesuré :
+  `Apercu.propose` (mêmes détections que `Ecluse.redact`), corpus synthétiques,
+  graine 42 ; sur le corpus v3 (1 000 documents, 415 noms proposés) aucun nom
+  n'est signalé, ce corpus ne contenant pas de tournure. Utilité pour trier :
+  **non mesurée**, aucun utilisateur n'a vu ce signal.
   En dossier (530 dossiers, 2 382 documents, règles N1 et N2, 26 octobre 2026),
   la séquence propose puis applique « tout accepté » reste identique à la
   séquence d'`Ecluse.redact` : 0 différence de texte masqué, de carte ou

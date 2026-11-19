@@ -1023,6 +1023,7 @@ final class NameDetector implements EntityDetector {
             value: text.substring(e.start, e.end),
             confidence: e.confidence,
             tier: e.tier,
+            provenance: e.provenance,
           ),
         );
       }
@@ -1324,6 +1325,9 @@ final class NameDetector implements EntityDetector {
     // main (`claimed`). Le patronyme est ensuite recherché ailleurs dans le
     // texte, comme pour une civilité.
     final contexteEtablis = <String>{};
+    // Index (dans `results`) des entités posées par une tournure, pour le signal
+    // « à vérifier » de l'aperçu (P2-232).
+    final indexTournure = <int>[];
     for (final (re, avant) in [
       (_contexteAvant, true),
       (_contexteApres, false)
@@ -1354,6 +1358,7 @@ final class NameDetector implements EntityDetector {
                 _precedeParMotCapitalise(text, start))) {
           continue;
         }
+        indexTournure.add(results.length);
         results.add(
           DetectedEntity(
             type: EntityType.nom,
@@ -1378,6 +1383,49 @@ final class NameDetector implements EntityDetector {
     // d'un titre professionnel, `value` inclut le titre (« Pr Nadia
     // Costa »), ce qui ferait échouer `_extractSurname` (borné à 1 ou 2
     // mots). `surnameSources[i]` reste le nom seul dans tous les cas.
+    // Signal « à vérifier » (P2-232) : un nom n'est à vérifier que si la
+    // tournure est sa **seule** preuve. `ailleurs` rassemble les autres
+    // preuves du document et du dossier : patronymes déjà établis et tout mot
+    // d'une entité qui ne vient pas d'une tournure (civilité, couple prénom +
+    // nom, champ étiqueté…). Ne change aucune détection : seul le champ de
+    // provenance est posé.
+    final ailleurs = <String>{...this.knownSurnames};
+    final tournure = <String>{...contexteEtablis};
+    final deTournure = indexTournure.toSet();
+    for (var i = 0; i < results.length; i++) {
+      final mots = surnameSources[i].trim().split(_ecart);
+      if (deTournure.contains(i)) {
+        final patronyme =
+            _extractSurname(results[i].confidence, surnameSources[i]);
+        if (patronyme != null) tournure.add(patronyme.toLowerCase());
+      } else {
+        for (final m in mots) {
+          ailleurs.add(m.toLowerCase());
+        }
+      }
+    }
+    bool aVerifier(String mot) {
+      final bas = mot.toLowerCase();
+      return tournure.contains(bas) && !ailleurs.contains(bas);
+    }
+
+    for (final i in indexTournure) {
+      final e = results[i];
+      final mots = e.value.split(_ecart);
+      if (mots.any((m) => ailleurs.contains(m.toLowerCase())) ||
+          (mots.length > 1 && mots.any(_looksLikeKnownFirstName))) {
+        continue;
+      }
+      results[i] = DetectedEntity(
+        type: e.type,
+        start: e.start,
+        end: e.end,
+        value: e.value,
+        confidence: e.confidence,
+        provenance: ProvenanceEntite.tournureSeule,
+      );
+    }
+
     final knownSurnames = <String>{...this.knownSurnames, ...contexteEtablis};
     for (var i = 0; i < results.length; i++) {
       final surname = _extractSurname(results[i].confidence, surnameSources[i]);
@@ -1420,6 +1468,12 @@ final class NameDetector implements EntityDetector {
             end: end,
             value: text.substring(start, end),
             confidence: 0.6,
+            provenance: aVerifier(word) &&
+                    !(hasFreeWordAfter &&
+                        _looksLikeKnownFirstName(
+                            text.substring(after.start, after.end)))
+                ? ProvenanceEntite.tournureSeule
+                : null,
           ),
         );
         claimed.add(start, end);

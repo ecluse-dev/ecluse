@@ -74,6 +74,21 @@ enum EntityType {
   maladieRare,
 }
 
+/// Règle qui a produit une entité, quand une application doit pouvoir la
+/// distinguer des autres entités du même type (P2-232).
+///
+/// Énumération **fermée**, jamais une chaîne libre : un champ de texte pourrait
+/// un jour porter une valeur tirée du document et la faire entrer dans un
+/// message ou un journal. Une valeur n'a de sens que pour la règle qui la pose ;
+/// `null` veut dire « aucune information », pas « bien établi ».
+enum ProvenanceEntite {
+  /// Nom dont la seule preuve est une tournure de personne (« le dossier de »,
+  /// « à la demande de », « a confirmé »…) : ni civilité, ni couple prénom +
+  /// nom, ni champ étiqueté, ni patronyme établi ailleurs dans le document ou
+  /// dans le dossier. L'aperçu l'affiche « à vérifier ».
+  tournureSeule,
+}
+
 /// Une entité personnelle détectée dans un texte.
 ///
 /// [start] et [end] sont des index de code units dans la chaîne d'origine,
@@ -86,6 +101,7 @@ final class DetectedEntity {
     required this.value,
     required this.confidence,
     this.tier,
+    this.provenance,
   })  : assert(start >= 0, 'start doit être positif'),
         assert(end > start, 'end doit être strictement supérieur à start'),
         assert(
@@ -120,6 +136,15 @@ final class DetectedEntity {
   /// son identité (même entité, même position, que `tier` soit renseigné
   /// ou non).
   final DetectorTier? tier;
+
+  /// Règle qui a produit l'entité, si une application doit la distinguer
+  /// (P2-232).
+  ///
+  /// Comme [tier], n'entre pas dans `==`/`hashCode` et ne change ni le jeton, ni
+  /// le texte masqué, ni le départage de `resolveOverlaps` : c'est une
+  /// information pour l'aperçu, pas un critère de détection. Toute copie d'une
+  /// entité doit la conserver.
+  final ProvenanceEntite? provenance;
 
   @override
   bool operator ==(Object other) =>
