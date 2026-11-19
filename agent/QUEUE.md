@@ -297,7 +297,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-227 | code | Tournures de personne : liste fermée des mots de rôle et de parenté (« Madame a confirmé », « entretien avec Famille ») jamais pris pour un patronyme | P2-226 | fusionnée |
 | P2-228 | code | Tournures de personne : n'écarter les communes qu'après « à la demande de » (fuite « Gaillard a confirmé ») | P2-227 | fusionnée |
 | P2-229 | code | Tournures de personne : liste fermée d'organismes nationaux (« le dossier de France Travail », « à la demande de Emmaüs ») | P2-228 | fusionnée |
-| P2-230 | spec | Aperçu : signaler « à vérifier » les noms établis par une seule tournure de personne, sans changer ce qui est masqué | P2-229 | à faire |
+| P2-230 | spec | Aperçu : signaler « à vérifier » les noms établis par une seule tournure de personne, sans changer ce qui est masqué | P2-229 | fusionnée |
 | P2-231 | humain | Lire la licence du fichier des noms de famille de l'INSEE (P2-221) et d'un lexique libre du français, puis décider si le référentiel de patronymes adossé aux tournures est mis en file | P2-221 | humain |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
