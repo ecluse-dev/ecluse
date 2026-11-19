@@ -1273,10 +1273,48 @@ Tout le reste du tableau de bord est identique, en particulier les corpus
 flous (réaliste, adversarial, témoins, variantes de casse) et les corpus de
 dossiers.
 
+## Tournures de personne : mots de rôle et de parenté en clair (P2-227)
+
+`main` au commit `79b2044` pour l'état d'avant (tableau de bord de P2-228),
+graine 42, rejeu complet de `bench/etat.sh` des deux côtés, comparé ligne à
+ligne. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM), document par
+document, sans dossier. Règle changée dans `NameDetector` : un mot de rôle ou de
+parenté (liste fermée écrite d'après la langue, plus les terminaisons de métier
+« -thérapeute », « -logue », « -iatre », « -phoniste », « -pédiste ») derrière
+une tournure de personne n'est plus lu comme un patronyme ; s'il est suivi d'un
+nom, seul le nom est candidat.
+
+| Mesure | Avant | Après |
+|---|---:|---:|
+| Témoin P2-226, `roles` masqués à tort | 96 / 96 | **0 / 96** |
+| dont par tournure (dossier de / à la demande de / entretien avec / a confirmé) | 24 / 24 / 24 / 24 | 0 / 0 / 0 / 0 |
+| Témoin P2-226, total des masquages à tort (type `nom`) | 278 | 182 |
+| Témoin P2-226, `patronymes_communes` et `patronymes_noms_communs` | inchangés | inchangés |
+| Corpus de dossiers réaliste : patronymes seuls manqués | 1 / 116 | 1 / 116 |
+
+Tout le reste du tableau de bord est identique (diff ligne à ligne : seules
+changent la ligne du commit, les cinq lignes `roles` et le total des
+masquages à tort).
+
+Généralisation, dite sans détour. Sur les 24 mots du témoin, 22 sont dans la
+liste ; « Psychologue » et « Ergothérapeute » n'y sont pas mais sont reconnus
+par les terminaisons. **Aucun mot du témoin n'échappe à la fois à la liste et
+aux terminaisons** : le témoin ne mesure donc pas ce qui se passe pour un rôle
+hors des deux (« Aidant », « Veuve », « Concierge » : masqués, comme avant).
+Les cas de `tournure_mots_de_role_test.dart` ajoutent des formes que le témoin
+ne contient pas (« Famille », « Maman », « Kiné », « Orthophoniste »,
+« Psychiatre », « Soeur », « MERE »), qui sont une vérification, pas une
+fréquence.
+
+Ce que ces chiffres ne disent pas : une fréquence réelle (pires cas construits) ;
+un patronyme identique à un mot de la liste (« Maître », « Cadre », « Chef »,
+« Mari » existent comme noms de famille) n'est plus rattrapé par la tournure
+seule : fuite possible, non mesurée, que le témoin de P2-226 ne contient pas.
 ## Tournures de personne : organismes en clair (P2-229)
 
-`main` au commit `a761fb3` (état d'avant : tableau de bord de P2-228), graine 42,
-rejeu complet de `bench/etat.sh` des deux côtés, comparé ligne à ligne. Chemin
+État d'avant : `main` avec P2-227 fusionnée (commit `3c35cba`) ; les premières
+mesures ont été prises sur `a761fb3` (86 → 43, identiques : les deux familles
+sont indépendantes), puis rejouées après fusion. Graine 42, rejeu complet de `bench/etat.sh` des deux côtés, comparé ligne à ligne. Chemin
 mesuré : **`Ecluse.redact`** (ce que reçoit le LLM), document par document, sans
 dossier. Règle changée dans `NameDetector` : un organisme de la liste fermée
 (organismes nationaux et services publics ou associatifs du soin et du social,
@@ -1289,7 +1327,7 @@ sont pas dans la liste.**
 |---|---:|---:|
 | Témoin P2-226, `organismes` masqués à tort | 86 / 96 | **43 / 96** |
 | dont « dossier de » / « à la demande de » / « entretien avec » / « a confirmé » | 23 / 22 / 23 / 18 | 11 / 10 / 11 / 11 |
-| Témoin P2-226, total des masquages à tort (`nom`) | 278 | 235 |
+| Témoin P2-226, total des masquages à tort (`nom`) | 182 | 139 |
 | Familles de patronymes de P2-226, témoin de P2-218, corpus de dossiers | inchangés | inchangés |
 
 Tout le reste du tableau de bord est identique (diff ligne à ligne : la ligne
