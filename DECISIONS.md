@@ -733,3 +733,20 @@ construit. Les écritures hors référentiel font l'objet d'une spec (P2-215).
 Le coût de P2-201, mesuré à 0 / 133 sur des courriers synthétiques (P2-210),
 est accepté ; le chiffre de 113 / 200 reste écrit comme pire cas.
 
+
+## 2026-11 — P2-230 : signal « à vérifier » dans l'aperçu (19 novembre)
+
+Décisions du mainteneur sur `agent/specs/P2-230.md` (§ 10) :
+1. **Option A** : un champ de provenance optionnel sur `DetectedEntity`
+   (énumération fermée, hors `==` et `hashCode`), posé par `NameDetector` ;
+   l'aperçu en tire `EntiteProposee.aVerifier`.
+2. **Sens strict** (§ 4) : un nom est à vérifier seulement quand la tournure de
+   personne est sa seule preuve, dans le document et dans le `Dossier`.
+3. **Libellé** : « à vérifier », jamais « douteux » ni « probablement faux » ;
+   `LIMITES.md` § 6 dit que l'aperçu est un confort, pas une garantie (168 des
+   307 noms signalés de la sonde sont de vrais patronymes).
+4. **Journal d'audit** : aucun compte nouveau ; format inchangé.
+5. **Version du moteur** : inchangée (la sortie de masquage ne change pas).
+6. **Coder tout de suite** (P2-232), sans attendre une validation par un
+   utilisateur ; l'utilité du signal pour trier reste non mesurée et l'est
+   écrite comme telle.
