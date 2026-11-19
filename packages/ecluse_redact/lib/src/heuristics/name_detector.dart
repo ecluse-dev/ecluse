@@ -536,6 +536,67 @@ final class NameDetector implements EntityDetector {
     'plusieurs', 'certains', 'certaines', //
   };
 
+  /// Mots de rôle et de parenté (P2-227) : une tournure de personne les
+  /// introduit sans nommer personne (« Madame a confirmé », « l'entretien avec
+  /// Mère », « le dossier de Tuteur »). Depuis P2-220 ils étaient lus comme un
+  /// patronyme et masqués (témoin de P2-226 : 96 phrases sur 96).
+  ///
+  /// Liste fermée écrite par le projet d'après la langue, **pas** à partir du
+  /// témoin de P2-226 : civilités et leurs abréviations, parenté (y compris
+  /// les formes familières et par alliance), fonctions soignantes, sociales et
+  /// de protection juridique courantes dans le soin et le médico-social. Les
+  /// métiers à terminaison savante sont reconnus par [_suffixesDeMetier] plutôt
+  /// qu'énumérés : deux mots de rôle du témoin (« Psychologue »,
+  /// « Ergothérapeute ») ne sont pas dans la liste et mesurent cette
+  /// généralisation ; les 22 autres y sont. Aucun mot du témoin n'échappe à la
+  /// fois à la liste et aux terminaisons : un rôle hors des deux (« Aidant »,
+  /// « Veuve », « Concierge ») reste masqué, voir `LIMITES.md`. Formes sans accent et en minuscules ; la comparaison
+  /// ôte les accents (« Soeur », « MERE »).
+  ///
+  /// Un patronyme identique à un de ces mots n'est plus rattrapé par la
+  /// tournure seule (il l'est toujours avec une civilité, un prénom connu ou un
+  /// dossier). Pour cette raison, « Parent », « Cousin » et « Neveu », noms de
+  /// famille répandus et rarement employés seuls comme rôle, ne sont **pas**
+  /// dans la liste : dans le doute, on masque.
+  static const Set<String> _motsDeRole = {
+    // Civilités et abréviations.
+    'madame', 'monsieur', 'mademoiselle', 'mesdames', 'messieurs',
+    'mesdemoiselles', 'maitre', 'docteur', 'professeur', 'mme', 'mmes',
+    'mlle', 'mlles', 'mr', 'dr', 'pr', 'me', //
+    // Parenté et alliance.
+    'mere', 'pere', 'frere', 'soeur', 'fils', 'fille', 'filles', 'enfant',
+    'enfants', 'parents', 'famille', 'grand-mere', 'grand-pere',
+    'grands-parents', 'grand-parent', 'petit-fils', 'petite-fille',
+    'petits-enfants', 'oncle', 'tante', 'niece', 'cousine',
+    'epoux', 'epouse', 'conjoint', 'conjointe', 'mari', 'femme', 'compagnon',
+    'compagne', 'beau-pere', 'belle-mere', 'beau-frere', 'belle-soeur',
+    'beau-fils', 'belle-fille', 'gendre', 'maman', 'papa', 'mamie', 'mamy',
+    'papi', 'papy', 'proche', 'proches', //
+    // Fonctions soignantes, sociales et de protection juridique.
+    'medecin', 'medecins', 'infirmier', 'infirmiere', 'infirmiers',
+    'infirmieres', 'aide-soignant', 'aide-soignante', 'soignant', 'soignante',
+    'soignants', 'auxiliaire', 'kine', 'psychomotricien', 'psychomotricienne',
+    'dieteticien', 'dieteticienne', 'pharmacien', 'pharmacienne', 'interne',
+    'cadre', 'educateur', 'educatrice', 'educateurs', 'moniteur', 'monitrice',
+    'accompagnant', 'accompagnante', 'assistant', 'assistante', 'tuteur',
+    'tutrice', 'curateur', 'curatrice', 'mandataire', 'referent', 'referente',
+    'coordinateur', 'coordinatrice', 'directeur', 'directrice', 'secretaire',
+    'chef', 'cheffe', 'benevole', 'benevoles', 'animateur', 'animatrice',
+    'travailleur', 'travailleuse', //
+  };
+
+  /// Terminaisons de métiers du soin (« Kinésithérapeute », « Psychologue »,
+  /// « Psychiatre », « Orthophoniste », « Podologue », « Pédicure-podologue »)
+  /// : aucune n'est une terminaison de patronyme courante en français.
+  static final RegExp _suffixesDeMetier =
+      RegExp(r'(?:therapeute|logue|iatre|phoniste|pediste)$');
+
+  /// Vrai si [mot] est un mot de rôle ou de parenté (P2-227).
+  static bool _estMotDeRole(String mot) {
+    final cle = _foldAccents(mot.toLowerCase()).replaceAll('’', "'");
+    return _motsDeRole.contains(cle) || _suffixesDeMetier.hasMatch(cle);
+  }
+
   /// Articles capitalisés : au sujet, « La Mairie a confirmé », « Le Service a
   /// confirmé » sont bien plus fréquents que « Le Gall a confirmé ».
   static const Set<String> _articlesCapitalises = {
@@ -578,6 +639,7 @@ final class NameDetector implements EntityDetector {
           _estStatut(mot) ||
           estMotNeutre(bas) ||
           _motsDeContexteNonNoms.contains(bas) ||
+          _estMotDeRole(mot) ||
           _motsVoisinsNeutres.contains(bas) ||
           _estMotDEtablissement(mot)) {
         return false;
@@ -1179,8 +1241,16 @@ final class NameDetector implements EntityDetector {
       (_contexteApres, false)
     ]) {
       for (final match in re.allMatches(text)) {
-        final unite = match.group(1)!;
-        final start = match.start + match.group(0)!.indexOf(unite);
+        var unite = match.group(1)!;
+        var start = match.start + match.group(0)!.indexOf(unite);
+        // Mot de rôle suivi d'un nom (« l'entretien avec Tante Quenelle ») :
+        // seul le nom est candidat, le rôle reste lisible (P2-227).
+        final premier = _ecart.firstMatch(unite);
+        if (premier != null &&
+            _estMotDeRole(unite.substring(0, premier.start))) {
+          start += premier.end;
+          unite = unite.substring(premier.end);
+        }
         final end = start + unite.length;
         if (claimed.overlaps(start, end)) continue;
         // Seule la tournure « à la demande de » écarte une grande commune
