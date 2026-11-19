@@ -750,3 +750,20 @@ Décisions du mainteneur sur `agent/specs/P2-230.md` (§ 10) :
 6. **Coder tout de suite** (P2-232), sans attendre une validation par un
    utilisateur ; l'utilité du signal pour trier reste non mesurée et l'est
    écrite comme telle.
+
+## 2026-11 — Suites de P2-233, P2-234 et P2-235 (20 novembre)
+
+Décisions déléguées par le mainteneur (« prends ces décisions »).
+1. **Grandes communes après « à la demande de »** (P2-233, `bench/ETAT.md`) :
+   l'option D est retenue (n'écarter que les communes de 100 000 habitants et
+   plus : 24 fuites → 0, lieux masqués à tort 60 → 61 sur 100), **après** un
+   témoin `lieu` élargi aux communes de 10 000 à 100 000 habitants (P2-238),
+   puis code (P2-239). Si le témoin élargi montre un coût trop élevé, la
+   tâche de code s'arrête et rend les chiffres.
+2. **Marques derrière une tournure** (P2-234, option a) : laissées masquées,
+   aucune liste de marques. Masquer « SNCF » ou « Doctolib » coûte de la
+   lisibilité ; un patronyme laissé en clair est une fuite. Les 43 phrases du
+   témoin de P2-226 restent comptées « à tort » et écrites comme coût assumé.
+3. **« Prénom + verbe »** (P2-235) : défaut à corriger (P2-240), sans fuite
+   mais avec un effet en chaîne (le verbe retenu comme patronyme est masqué
+   ailleurs, et dans les documents suivants d'un dossier).
