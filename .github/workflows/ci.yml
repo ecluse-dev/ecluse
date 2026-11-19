@@ -40,5 +40,11 @@ jobs:
       - name: Générer le corpus de benchmark (déterministe)
         run: python bench/generate_corpus.py --n 1000 --seed 42 --out bench/corpus.jsonl
 
+      - name: Tests Python du benchmark et des outils
+        run: |
+          python -m py_compile bench/*.py tools/*.py
+          python -m unittest discover -s bench
+          python -m unittest discover -s tools
+
       - name: Tests
         run: melos run test
