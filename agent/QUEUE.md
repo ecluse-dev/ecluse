@@ -305,6 +305,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-235 | mesure | Bornes d'un nom « prénom + verbe » (« Sophie rappelle. » proposé en entier, confiance 0,5) : fréquence et cause | P2-230 | fusionnée |
 | P2-236 | code | Test de coût linéaire de `adresse_cedex_test.dart` : remplacer le plafond fixe de 15 s par un rapport de croissance | — | fusionnée |
 | P2-237 | mesure | Expliquer l'écart de 3 caractères du témoin « commune suivie » (5 379 → 5 376, depuis P2-212) | P2-212 | à faire |
+| P2-238 | mesure | Témoin `lieu` élargi : communes de 10 000 à 100 000 habitants derrière les tournures de personne, avant le seuil de 100 000 (décision du 20 novembre) | P2-233 | à faire |
+| P2-239 | code | Tournures de personne : n'écarter après « à la demande de » que les communes de 100 000 habitants et plus (option D de P2-233) | P2-238 | à faire |
+| P2-240 | code | « Prénom + verbe » : ne plus étendre un nom sur un verbe conjugué (« Sophie rappelle. »), ni retenir ce verbe comme patronyme | P2-235 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -637,3 +640,34 @@ rattrapés avant P2-220).
   responsable, dire si l'écart est une fuite, un masquage plus juste ou neutre.
   **Fini quand** : documents et règle cités dans `bench/ETAT.md`, verdict ;
   aucune correction.
+
+### P2-238 à P2-240 — Suites de P2-233 et P2-235 (décisions du 20 novembre)
+
+- **P2-238** : mesure seulement. Ajouter au témoin des tournures (même
+  générateur que P2-218 ou P2-226, graine 42) une famille de lieux tirés du
+  référentiel versionné, communes de 10 000 à 100 000 habitants, au moins 40
+  noms répartis par tranche (10–30 000, 30–50 000, 50–100 000), derrière « à la
+  demande de » et les trois autres tournures. Chiffrer hors `lib/` les seuils
+  10 000 (`main`) et 100 000. **Fini quand** : par tranche et par seuil, lieux
+  masqués à tort dans `bench/ETAT.md`, chemin `Ecluse.redact` document par
+  document ; aucune correction.
+- **P2-239** : détecteur de noms. Après « à la demande de », n'écarter que les
+  communes de 100 000 habitants et plus (table dérivée du référentiel versionné,
+  par le même script que `communes_grandes.dart`, test de parité). Test
+  d'abord. **Fini quand** : famille `patronymes_communes` de P2-226 sans fuite
+  derrière « à la demande de » ; lieux masqués à tort sur le témoin élargi de
+  P2-238 rapportés par tranche et égaux à la simulation de P2-238 ; corpus de
+  dossiers et reste du tableau de bord inchangés ou meilleurs ; `LIMITES.md` à
+  jour. Si la tranche 50–100 000 du témoin élargi dépasse 50 % de lieux masqués
+  à tort, s'arrêter et rendre les chiffres.
+- **P2-240** : `NomMinusculesDetector`, branche « prénom connu suivi d'un mot »
+  (P2-119, P2-124), et `patronymeEtabli`. Test d'abord, avec la sonde de P2-235
+  rendue reproductible dans `bench/` (400 phrases « Prénom verbe. », graine
+  42) et l'effet en chaîne (« Sophie rappelle. Elle rappelle demain. », et en
+  dossier). Écarter un mot suivant qui est un verbe conjugué, par une règle de
+  forme justifiée (terminaisons, liste fermée de verbes courants écrite par le
+  projet), sans rendre en clair un patronyme qui ressemble à un verbe : le
+  mesurer sur les témoins de noms existants. **Fini quand** : sonde 340 → 40 au
+  plus ; le verbe n'est plus masqué ailleurs ni dans le document suivant d'un
+  dossier ; témoins de noms, familles de patronymes de P2-226 et corpus de
+  dossiers inchangés ou meilleurs (aucune fuite ajoutée) ; `LIMITES.md` à jour.
