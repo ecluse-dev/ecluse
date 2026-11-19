@@ -1440,6 +1440,68 @@ Tâche de code à ouvrir ensuite : changer `SEUIL` de
 « à la demande de » **après** avoir élargi le témoin `lieu` à des communes de
 10 000 à 100 000 habitants, pour chiffrer le coût réel ; si ce coût est
 jugé trop haut, F est la variante sûre (aucune fuite, tous les lieux masqués).
+## Noms « prénom + verbe » : « Sophie rappelle. » proposé en entier (P2-235)
+
+Mesure seule, aucune correction, aucun fichier de `lib/` modifié. `main` au commit
+`63e4d68`, graine 42, chemin **`Ecluse.redact`** (entités rendues, document par
+document, sans dossier sauf indication), script jetable hors dépôt qui n'imprime
+que des comptes.
+
+**Règle citée.** `NomMinusculesDetector` (`nom_minuscules_detector.dart`, branche
+« un **prénom connu** suivi d'un mot → confiance 0.5 », annoncée dans le
+commentaire de classe, point 2, et dans `LIMITES.md` § 5 « Texte sans
+majuscules », P2-119 et P2-124). Elle ne s'active que pour un texte sans
+majuscule hors début de phrase (casse de phrase, minuscules : `casse.dart`,
+P2-138), donc pour un message court comme « Sophie rappelle. » ; `NameDetector`
+ne propose que « Sophie » (0 à 6, confiance 0,5), et `resolveOverlaps` garde la
+plus longue (0 à 15). Le mot qui suit est écarté seulement s'il est un mot outil
+(`_motsOutils`) ou un qualificatif (adjectif, participe) : un verbe conjugué n'est
+dans aucune des deux listes.
+
+**Comptes sur les corpus existants** (80 fichiers de `bench/`, 53 167 documents
+lus dont les variantes de casse d'un même corpus, 20 641 entités `nom` rendues) :
+- **0** entité de confiance 0,5 (règle « prénom + mot ») qui déborde d'un nom
+  annoté : les corpus n'exercent pas le cas « prénom + verbe » ;
+- 164 entités `nom` débordent d'un nom annoté sur un mot en minuscules, **d'une
+  autre branche** du même détecteur (civilité + prénom + patronyme : jusqu'à
+  « deux mots » après le prénom, confiance 0,7) ; le mot est toujours « présente »
+  (« monsieur marc loyer présente une grille… ») : 65 dans le flou adversarial en
+  minuscules, 65 en casse de phrase, 34 en mixte ; 0 dans le réaliste, le témoin,
+  les dossiers, les QI et les transcrits. Les autres débordements (1 349) sont des
+  mots en capitales dans les corpus en MAJUSCULES et en mixte : sans casse, un
+  verbe ne se distingue pas d'un nom, non classé ici.
+
+**Sonde de la règle** (400 phrases « Prénom verbe. » : 10 prénoms courants × 40
+verbes conjugués courants, texte d'une phrase) : **340 sur 400** (85 %) donnent un
+nom de deux mots (le verbe est masqué avec le prénom), 60 le prénom seul, aucune ne
+donne rien. Les six verbes jamais pris sont ceux que les listes écartent déjà
+(arrive, vient, veut, doit, peut, entre). Phrases fabriquées pour la sonde : elles
+disent ce que fait la règle, **pas la fréquence** dans de vrais textes.
+
+**Effet en chaîne, non annoncé dans `LIMITES.md`** : `patronymeEtabli` (couple de
+deux mots à 0,5 dont un seul est un prénom) retient le verbe comme patronyme
+établi. Sondé : « Sophie rappelle. Elle rappelle demain et il rappelle lundi. » →
+les trois « rappelle » sont masqués en `[NOM_1]` ; dans un dossier, « Le médecin
+rappelle lundi. » du document suivant l'est aussi (`[NOM_2]`). Le défaut ne fait
+pas fuiter une donnée (tout ce qui est masqué en trop l'est), il retire du sens au
+texte envoyé : un verbe devient un nom dans toute la suite d'un dossier.
+
+**Verdict.** Le débordement d'un prénom sur le mot suivant est **voulu** quand
+ce mot peut être le patronyme (sans casse, rien ne le distingue : « marc loyer »),
+et le commentaire de classe l'assume pour les adjectifs. Sur un **verbe** conjugué,
+c'est un **défaut non décidé** : ni le commentaire, ni `DECISIONS.md`, ni
+`LIMITES.md` ne parlent du verbe, et l'établissement du verbe comme patronyme en
+dossier n'est écrit nulle part. Sur-masquage seulement, pas de fuite ; fréquence
+réelle inconnue (aucun corpus ne contient « prénom + verbe », et aucun texte réel
+n'a été lu). La branche civilité a le même défaut avec « présente » (164
+occurrences des corpus adversariaux).
+
+Tâche de code à ouvrir si le mainteneur le juge utile : écarter les formes
+verbales courantes du mot qui suit un prénom (liste fermée de verbes d'usage,
+`_qualificatif` étendu), puis ne pas établir de patronyme à partir d'un mot de
+cette liste ; **test d'abord** (« Sophie rappelle. » → « Sophie » seul ; « marc
+loyer présente » → « marc loyer »), témoin de faux amis et corpus en minuscules
+inchangés, fuite des noms du flou adversarial en minuscules (27 %) non dégradée.
 
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
