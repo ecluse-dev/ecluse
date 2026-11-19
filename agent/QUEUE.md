@@ -303,7 +303,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-233 | mesure | Patronymes qui sont aussi une commune derrière « à la demande de » : 24 sur 96 en clair (P2-228) ; options pour les départager des lieux, chiffrées hors `lib/` | P2-228 | à faire |
 | P2-234 | code | Tournures de personne : organismes encore masqués à tort (43 sur 96 au témoin de P2-226, après P2-229) | P2-229 | à faire |
 | P2-235 | mesure | Bornes d'un nom « prénom + verbe » (« Sophie rappelle. » proposé en entier, confiance 0,5) : fréquence et cause | P2-230 | à faire |
-| P2-236 | code | Test de coût linéaire de `adresse_cedex_test.dart` : remplacer le plafond fixe de 15 s par un rapport de croissance | — | à faire |
+| P2-236 | code | Test de coût linéaire de `adresse_cedex_test.dart` : remplacer le plafond fixe de 15 s par un rapport de croissance | — | fusionnée |
 | P2-237 | mesure | Expliquer l'écart de 3 caractères du témoin « commune suivie » (5 379 → 5 376, depuis P2-212) | P2-212 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.

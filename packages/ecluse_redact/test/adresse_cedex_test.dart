@@ -1,6 +1,8 @@
 import 'package:ecluse_redact/ecluse_redact.dart';
 import 'package:test/test.dart';
 
+import 'support/cout.dart';
+
 /// Numéro de CEDEX (P2-164). Mesure P2-157 : « 70000 VESOUL CEDEX 9 » était
 /// masqué jusqu'au mot « CEDEX » compris, et le numéro de distribution qui
 /// suit restait en clair (« [ADRESSE_1] 9 ») : 53 adresses sur 155 du corpus
@@ -61,9 +63,13 @@ void main() {
   }
 
   test('coût linéaire : « 70000 VESOUL CEDEX » répété', () async {
-    final texte = List.filled(20000, '70000 VESOUL CEDEX 9').join('\n');
-    final chrono = Stopwatch()..start();
-    await Ecluse.redact(texte);
-    expect(chrono.elapsedMilliseconds, lessThan(15000));
+    // Rapport de tailles (méthode de P2-100, `support/cout.dart`) au lieu d'un
+    // plafond fixe de 15 s, qui dépendait de la machine : 1 250 lignes puis
+    // 5 000, meilleur de trois essais, seuil 8 (≈ 4 si linéaire, ≈ 16 si
+    // quadratique). Le défaut visé est une croissance quadratique du
+    // rattachement du numéro de CEDEX.
+    await expectCroissanceLineaire((k) async {
+      await Ecluse.redact(List.filled(k, '70000 VESOUL CEDEX 9').join('\n'));
+    }, n: 1250, raison: 'CEDEX répété');
   });
 }
