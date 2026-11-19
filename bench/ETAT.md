@@ -1359,6 +1359,88 @@ construits) ; un organisme de deux mots suivi d'un nom (« France Travail
 Brisemotte ») garde le comportement d'avant (le nom, au-delà de deux mots,
 n'est pas lu).
 
+## Tournures de personne : que faire des grandes communes après « à la demande de » (P2-233)
+
+Mesure seule, aucune correction. `main` au commit `63e4d68`, graine 42. Chemin
+mesuré : **`Ecluse.redact`** (ce que reçoit le LLM), document par document, sans
+dossier (`run_redact_bench.dart`, `run_dossiers_bench.dart`), puis les scores
+du tableau de bord (`score_tournures_personne.py`, `score_tournures_sans_nom.py`,
+`score_patronyme_seul.py`). Les variantes ont été jouées sur une **copie
+jetable** de `NameDetector` (liste de communes écartées lue d'une variable
+d'environnement, jamais commitée) : aucun fichier de `lib/` n'est modifié par
+cette PR. Seule la règle d'exclusion change entre variantes : une commune de
+la liste est écartée **derrière « à la demande de » seulement** (P2-228) ; les
+trois autres tournures n'écartent déjà aucune commune.
+
+**Contrôle de la méthode** : la variante « seuil 10 000 » relue depuis
+`geo_communes.csv.gz` (colonne `PMUN`, communes sans population retenues, comme
+`tools/build_communes_grandes.py`) donne exactement les chiffres de `main`
+(24 fuites sur 96, 60 lieux masqués sur 100, 1 manqué sur 19) : elle reproduit
+la liste écrite en dur.
+
+Témoins : P2-226 (famille `patronymes_communes`, 24 mots × 4 tournures,
+fuite = patronyme resté en clair), P2-218 « tournures sans nom » (100 phrases
+`lieu`, un lieu masqué est un masquage en trop), corpus de dossiers réaliste
+(116 patronymes seuls, dont 19 derrière « à la demande de »).
+
+| Option | Fuites, « à la demande de » (sur 24) | Fuites, 4 tournures (sur 96) | Lieux masqués à tort, « à la demande de » (sur 20) | Lieux masqués à tort, total (sur 100) | Dossiers, « à la demande de » manqués (sur 19) |
+|---|---:|---:|---:|---:|---:|
+| A. `main` : communes de 10 000 habitants et plus | 24 | 24 | 0 | 60 | 1 |
+| B. seuil 30 000 | 13 | 13 | 0 | 60 | 0 |
+| C. seuil 50 000 | 4 | 4 | 0 | 60 | 0 |
+| D. seuil 100 000 (39 communes + 20 sans population dans le fichier) | 0 | 0 | 1 | 61 | 0 |
+| E. seulement Paris, Lyon, Marseille et Mayotte (sans population) | 0 | 0 | 16 | 76 | 0 |
+| F. ne plus rien écarter | 0 | 0 | 20 | 80 | 0 |
+
+(Les 60 lieux de la ligne A viennent des trois autres tournures, inchangés
+dans toutes les variantes ; la fuite des trois autres tournures est déjà nulle
+depuis P2-228.)
+
+Pourquoi le seuil sépare ici : les 24 patronymes-communes du témoin ont entre
+11 423 (Gaillard) et 67 571 habitants (Calais) ; les 10 communes des phrases
+`lieu` de « à la demande de » en ont entre 89 916 (Poitiers) et plus de
+500 000 (Toulouse), Paris et Lyon n'ayant pas de population dans le fichier.
+Aucun seuil entre environ 68 000 et 89 000 ne coûte quoi que ce soit sur ces
+deux témoins, mais **ce n'est pas une raison de le choisir** : ce serait régler
+la règle sur le témoin.
+
+**Ce que la mesure ne dit pas.**
+- Le témoin `lieu` ne contient que de grandes villes (10 communes, toutes
+  au-dessus de 89 000 habitants). Le coût réel d'un seuil de 30 000 à 100 000
+  sur « à la demande de Dole » ou « à la demande de Vesoul » (communes de
+  10 000 à 100 000 habitants employées comme lieu) n'est **pas mesuré** : une
+  telle phrase serait masquée en trop, pas fuitée. La France compte 751
+  communes de 10 000 à 30 000 habitants, 154 de 30 000 à 50 000, 91 de 50 000 à
+  100 000, 39 de plus de 100 000 et 20 sans population dans le fichier.
+- L'option « indice voisin de lieu ou de personne dans la phrase » n'est **pas
+  mesurable sur ces témoins** : les phrases `lieu` et `patronymes_communes` de
+  « à la demande de » ont le même gabarit (« Rendez-vous reporté à la demande de
+  X ; une nouvelle date sera proposée »). Aucun indice voisin ne les sépare ; en
+  chiffrer un reviendrait à inventer des phrases. Il faudrait d'abord un témoin
+  à gabarits variés.
+- L'option « chefs-lieux seulement » n'est **pas mesurable** : le dépôt n'a pas
+  de référentiel des chefs-lieux (`geo_communes.csv.gz` n'a que `COM`, `DEP`,
+  `REG`, `PMUN`, `NORM`, `LIBELLE`) ; en ajouter un est une nouvelle donnée à
+  documenter dans `DATA_SOURCES.md`.
+- Le témoin des dossiers n'a que 19 patronymes derrière « à la demande de » et
+  1 manqué à l'état actuel (non identifié nommément ; c'est une commune de 10 000 à 30 000
+  habitants, puisqu'il disparaît dès le seuil à 30 000) ; corpus synthétique.
+- Aucune mesure sur des textes réels : la fréquence réelle de « à la demande de
+  <commune> » face à « à la demande de <patronyme-commune> » n'est pas connue.
+
+**Recommandation** (au mainteneur de trancher) : l'option **D, seuil à
+100 000 habitants**. Elle supprime les 24 fuites du témoin (24 → 0) pour un lieu
+masqué en trop sur 100 (Poitiers), suit la règle « dans le doute on masque »
+(une fuite d'un patronyme coûte plus qu'un lieu masqué) et se justifie sans
+regarder le témoin (seuil rond, 39 communes). Les options B et C laissent des
+fuites (13 et 4) ; E et F masquent 16 et 20 des 20 lieux de la tournure, soit
+le défaut même que P2-228 corrigeait pour « à la demande de Paris ».
+Tâche de code à ouvrir ensuite : changer `SEUIL` de
+`tools/build_communes_grandes.py` (10 000 → 100 000) pour la seule liste de
+« à la demande de » **après** avoir élargi le témoin `lieu` à des communes de
+10 000 à 100 000 habitants, pour chiffrer le coût réel ; si ce coût est
+jugé trop haut, F est la variante sûre (aucune fuite, tous les lieux masqués).
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par
