@@ -38,6 +38,26 @@ void main() {
     });
   }
 
+  // P2-228 : derrière « le dossier de », « l'entretien avec » et devant « a
+  // confirmé », un patronyme qui est aussi une commune de 10 000 habitants et
+  // plus n'est plus écarté (mesure P2-226 : 96 sur 96 en clair). « Laval »,
+  // « Thiers », « Gaillard » sont des communes de la table et des patronymes.
+  const communesMasquees = <String, String>{
+    'Note de service : le dossier de Laval est transmis à l\'équipe.': 'Laval',
+    'Suite à l\'entretien avec Thiers, le suivi est maintenu.': 'Thiers',
+    'Compte rendu : Gaillard a confirmé la réception des pièces.': 'Gaillard',
+    // Coût assumé : une vraie commune derrière ces tournures est masquée.
+    'Le dossier de Besançon est transmis.': 'Besançon',
+    'Compte rendu : Paris a confirmé la réception.': 'Paris',
+  };
+  for (final MapEntry(key: texte, value: reste) in communesMasquees.entries) {
+    test('commune masquée derrière la tournure (P2-228) : $texte', () async {
+      final r = await Ecluse.redact(texte);
+      expect(r.maskedText, isNot(contains(reste)), reason: r.maskedText);
+      expect(Ecluse.restore(r.maskedText, r.mapping), texte);
+    });
+  }
+
   test('un nom établi par la tournure est masqué aussi ailleurs dans le texte',
       () async {
     const texte = 'Le dossier de Quenelle est transmis.\n'
@@ -52,8 +72,10 @@ void main() {
     'Note de service : le dossier de presse est transmis.': 'presse',
     'Suite à l\'entretien avec succès, le suivi est maintenu.': 'succès',
     // Nom de commune.
+    // Après « à la demande de » seulement (P2-228) : une collectivité ou une
+    // ville y est la demandeuse la plus fréquente.
     'Rendez-vous reporté à la demande de Paris ; date à proposer.': 'Paris',
-    'Le dossier de Besançon est transmis.': 'Besançon',
+    'Rendez-vous reporté à la demande de Laval ; date à proposer.': 'Laval',
     // Organisme précédé de son article : le mot qui suit « de » est minuscule.
     'Le dossier de la Mairie est transmis.': 'Mairie',
     'Suite à l\'entretien avec le Département, le suivi est maintenu.':
