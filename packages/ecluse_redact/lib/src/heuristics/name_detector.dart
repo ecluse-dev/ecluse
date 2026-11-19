@@ -517,6 +517,94 @@ final class NameDetector implements EntityDetector {
     '(?=[A-ZÀ-ÖØ-Þ])($_unite(?:$_h+$_unite)?)',
   );
 
+  /// Organismes nationaux et services publics ou associatifs courants dans le
+  /// soin et le social (P2-229) : « le dossier de France Travail », « à la
+  /// demande de Emmaüs », « Assurance Maladie a confirmé » désignent une
+  /// structure, pas une personne. Depuis P2-220 ils étaient lus comme un
+  /// patronyme (témoin de P2-226 : 83 phrases sur 96).
+  ///
+  /// Liste fermée écrite par le projet d'après le secteur, **pas** à partir du
+  /// témoin de P2-226, sans donnée externe. Les marques commerciales (énergie,
+  /// transport, numérique) n'en font pas partie : certaines sont aussi des
+  /// noms de commune ou de famille, et dans le doute on masque. Aucun mot
+  /// d'une entrée n'est un patronyme courant seul. Les sigles d'organismes sont
+  /// dans [_siglesOrganismes], comparés en capitales seulement.
+  static const List<String> _organismes = [
+    'France Travail',
+    'Pôle emploi',
+    'Assurance Maladie',
+    'Sécurité sociale',
+    'Croix-Rouge',
+    'Emmaüs',
+    'Secours populaire',
+    'Secours catholique',
+    'Mutualité française',
+    'Restos du Cœur',
+    'Banque alimentaire',
+    'Protection judiciaire de la jeunesse',
+    'Aide sociale à l\'enfance',
+    'Protection maternelle et infantile',
+    'Maison départementale',
+    'Conseil départemental',
+    'Agence régionale de santé',
+    'Éducation nationale',
+    'Médecine du travail',
+    'Mission locale',
+    'Cap emploi',
+    'Samu social',
+    'Petits Frères des Pauvres',
+    'Fondation Abbé Pierre',
+    'Armée du Salut',
+    'Ordre des médecins',
+    'Haute Autorité de santé',
+    'Défenseur des droits',
+    'Ameli',
+    'Service de santé au travail',
+    'Pôle santé',
+    'Centre communal d\'action sociale',
+  ];
+
+  /// Sigles d'organismes sociaux et sanitaires, en capitales seulement
+  /// (« Ars » ou « Caf » restent des mots ordinaires). Ceux déjà couverts par
+  /// [_isExcludedAcronym] (« MDPH », « CCAS », « UDAF »…) n'y figurent pas.
+  static const Set<String> _siglesOrganismes = {
+    'CAF',
+    'CPAM',
+    'CNAM',
+    'CNAV',
+    'CRAM',
+    'MSA',
+    'URSSAF',
+    'ARS',
+    'DDETS',
+    'DREETS',
+    'DDCS',
+    'OFII',
+    'ASE',
+    'PJJ',
+    'PMI',
+    'CMP',
+    'CMPP',
+    'CAMSP',
+  };
+
+  /// [_organismes] en un motif : mots séparés par des espaces horizontales,
+  /// casse ignorée, borné par un caractère non lettre.
+  static final RegExp _organismesRe = RegExp(
+    '(?:${_organismes.map((o) => RegExp.escape(o).replaceAll(' ', '$_h+')).join('|')})'
+    '(?![\\wÀ-ÿ])',
+    caseSensitive: false,
+  );
+
+  /// Vrai si un organisme de la liste commence en [debut] et couvre au moins
+  /// jusqu'à [fin] : « Sécurité sociale » (candidat « Sécurité ») est écarté,
+  /// « Emmaüs Quenelle » ne l'est pas, le nom qui suit doit rester masqué.
+  static bool _estOrganisme(String text, int debut, int fin) {
+    if (_siglesOrganismes.contains(text.substring(debut, fin))) return true;
+    final m = _organismesRe.matchAsPrefix(text, debut);
+    return m != null && m.end >= fin;
+  }
+
   /// Début de « à la demande de », pour [_motDeContexteEstUnNom] (P2-228).
   static final RegExp _demandeDe = RegExp('^[Àà]$_h+la$_h+demande$_h+de');
 
@@ -1183,6 +1271,7 @@ final class NameDetector implements EntityDetector {
         final start = match.start + match.group(0)!.indexOf(unite);
         final end = start + unite.length;
         if (claimed.overlaps(start, end)) continue;
+        if (_estOrganisme(text, start, end)) continue;
         // Seule la tournure « à la demande de » écarte une grande commune
         // (P2-228) : le texte reconnu commence par la tournure.
         final demande = avant && _demandeDe.hasMatch(match.group(0)!);

@@ -1886,7 +1886,13 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   **Coût, mesuré sur le témoin de P2-218 (400 phrases sans nom de personne) :
   80 phrases sur 400 (20 %) masquées à tort, alors que la fiche en tolérait 1 %.**
   Toutes sont un nom commun écrit avec une majuscule derrière la tournure (« le
-  dossier de Presse », « Succès a confirmé ») : sans dictionnaire, rien ne le
+  dossier de Presse », « Succès a confirmé »). Les organismes de la liste
+  fermée de P2-229 (« France Travail », « Emmaüs », « Assurance Maladie », les
+  sigles CAF, CPAM, URSSAF, MSA…) sont en clair derrière ces tournures (86 sur
+  96 masqués à tort au témoin de P2-226 avant, 43 après) ; les **marques
+  commerciales** (« Doctolib », « SNCF », « Amazon »…) et tout organisme hors
+  liste restent masqués, dans le doute. Un organisme suivi d'un nom (« Emmaüs
+  Quenelle ») masque le nom. Sans dictionnaire, rien ne le
   distingue d'un patronyme. Minuscule (« dossier de presse »), organisme précédé
   de son article (« de la Mairie », « La Mairie a confirmé ») et mots neutres ne
   sont pas masqués. Une commune de 10 000 habitants et plus (table

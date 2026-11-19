@@ -1273,6 +1273,54 @@ Tout le reste du tableau de bord est identique, en particulier les corpus
 flous (réaliste, adversarial, témoins, variantes de casse) et les corpus de
 dossiers.
 
+## Tournures de personne : organismes en clair (P2-229)
+
+`main` au commit `a761fb3` (état d'avant : tableau de bord de P2-228), graine 42,
+rejeu complet de `bench/etat.sh` des deux côtés, comparé ligne à ligne. Chemin
+mesuré : **`Ecluse.redact`** (ce que reçoit le LLM), document par document, sans
+dossier. Règle changée dans `NameDetector` : un organisme de la liste fermée
+(organismes nationaux et services publics ou associatifs du soin et du social,
+écrite d'après le secteur, plus des sigles en capitales : CAF, CPAM, URSSAF,
+MSA…) qui couvre le mot candidat n'est plus lu comme un patronyme ; suivi d'un
+nom (« Emmaüs Quenelle »), le nom reste masqué. **Les marques commerciales ne
+sont pas dans la liste.**
+
+| Mesure | Avant | Après |
+|---|---:|---:|
+| Témoin P2-226, `organismes` masqués à tort | 86 / 96 | **43 / 96** |
+| dont « dossier de » / « à la demande de » / « entretien avec » / « a confirmé » | 23 / 22 / 23 / 18 | 11 / 10 / 11 / 11 |
+| Témoin P2-226, total des masquages à tort (`nom`) | 278 | 235 |
+| Familles de patronymes de P2-226, témoin de P2-218, corpus de dossiers | inchangés | inchangés |
+
+Tout le reste du tableau de bord est identique (diff ligne à ligne : la ligne
+du commit, les cinq lignes `organismes`, le total).
+
+**« Fini quand » non atteint** : la fiche demandait la famille divisée par
+quatre au moins (≤ 21 sur 96) ; elle est divisée par deux. Les 43 restants
+sont les 11 marques commerciales du témoin (Doctolib, SNCF, EDF, Engie, Orange,
+Bouygues, Leboncoin, Amazon, Google, Microsoft, Decathlon) devant les quatre
+tournures : 44 phrases, dont une déjà en clair (43 masquées). Une marque n'est pas un
+organisme national ou associatif du soin et du social, et plusieurs sont aussi
+un nom de commune (« Orange ») ou de famille : les ajouter à la liste sort de
+la fiche. Décision du mainteneur : (a) les laisser masquées (dans le doute) ;
+(b) une liste de marques courantes, avec le risque de fuite pour celles qui
+sont aussi des patronymes.
+
+Généralisation. Sur les 12 organismes non-marques du témoin, 8 sont dans la
+liste par leur nom (France Travail, Assurance Maladie, Sécurité sociale,
+Croix-Rouge, Emmaüs, Secours populaire, Mutualité française, Ameli) et 4 par
+les sigles (CAF, CPAM, URSSAF, MSA) ; MDPH l'était déjà (P2-211). **Aucun mot
+non-marque du témoin n'est hors liste** : la généralisation à un organisme
+absent de la liste n'est donc pas mesurée (elle reste masquée). Les cas de
+`tournure_organismes_test.dart` ajoutent des formes que le témoin ne contient
+pas (« Pôle emploi », « Secours catholique », « Restos du Cœur », « Banque
+alimentaire », « Protection judiciaire de la jeunesse »).
+
+Ce que ces chiffres ne disent pas : une fréquence réelle (pires cas
+construits) ; un organisme de deux mots suivi d'un nom (« France Travail
+Brisemotte ») garde le comportement d'avant (le nom, au-delà de deux mots,
+n'est pas lu).
+
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
 Les corpus flous (graine 42) et structurel (v3, 1 000 documents) recoupés par
