@@ -35,7 +35,8 @@ En une phrase : **Écluse réduit le risque, il ne l'annule pas.**
 - **Nom de famille seul, sans civilité** : peut rester en clair à sa première
   mention, sauf derrière « le dossier de », « à la demande de », « l'entretien
   avec » ou devant « a confirmé » (P2-220, au prix de noms communs capitalisés
-  masqués à tort). Voir [5.2.2](#522-noms-sans-civilité-et-titres) et [§ 5.4](#54-portée-du-rattrapage-des-mentions-partielles).
+  et, sauf après « à la demande de », de noms de grandes villes masqués à tort,
+  P2-228). Voir [5.2.2](#522-noms-sans-civilité-et-titres) et [§ 5.4](#54-portée-du-rattrapage-des-mentions-partielles).
 - **Identifiants hors liste** : BIC, IBAN non français, secrets sans préfixe
   connu, autres identifiants professionnels, numéro INS lui-même. Voir
   [§ 2](#2-identifiants-non-couverts).
@@ -1887,12 +1888,20 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   Toutes sont un nom commun écrit avec une majuscule derrière la tournure (« le
   dossier de Presse », « Succès a confirmé ») : sans dictionnaire, rien ne le
   distingue d'un patronyme. Minuscule (« dossier de presse »), organisme précédé
-  de son article (« de la Mairie », « La Mairie a confirmé »), commune de 10 000
-  habitants et plus (« à la demande de Paris », table `communes_grandes.dart`
-  générée du référentiel) et mots neutres ne sont pas masqués. Fuite connue :
-  un patronyme qui est aussi le nom d'une commune de 10 000 habitants et plus
-  (« Gaillard » : 4 des 4 mentions encore manquées de la mesure) reste en clair ;
-  un petit nom de commune (« Quingey ») est masqué, dans le doute. Un couple
+  de son article (« de la Mairie », « La Mairie a confirmé ») et mots neutres ne
+  sont pas masqués. Une commune de 10 000 habitants et plus (table
+  `communes_grandes.dart` générée du référentiel) n'est écartée qu'après « à la
+  demande de » (« à la demande de Paris » reste en clair, P2-228). Derrière les
+  trois autres tournures, elle est masquée comme un nom, dans le doute : **coût
+  mesuré, 60 phrases `lieu` sur 100 du témoin de P2-218 masquées à tort** (toutes
+  celles de ces trois tournures : « le dossier de Besançon », « Paris a
+  confirmé »), plus une marque qui est aussi une commune (« Orange »). Fuite
+  connue : un patronyme qui est aussi le nom d'une grande commune, après « à la
+  demande de » (« à la demande de Gaillard » : 1 patronyme seul manqué sur 116
+  du corpus de dossiers, 24 sur 24 au témoin de P2-226 pour cette tournure),
+  reste en clair. Derrière les trois autres tournures, ces patronymes sont
+  masqués (72 sur 72 ; 0 avant P2-228). Un petit nom de commune (« Quingey »)
+  est masqué, dans le doute. Un couple
   « Prénom inconnu Nom a confirmé » reste en clair (le mot capitalisé devant le
   sujet écarte la règle : « France Travail a confirmé » en est la raison) ; devant
   « dossier de », le couple de deux mots est masqué. « Le Gall a confirmé » n'est
