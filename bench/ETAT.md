@@ -1502,6 +1502,45 @@ verbales courantes du mot qui suit un prénom (liste fermée de verbes d'usage,
 cette liste ; **test d'abord** (« Sophie rappelle. » → « Sophie » seul ; « marc
 loyer présente » → « marc loyer »), témoin de faux amis et corpus en minuscules
 inchangés, fuite des noms du flou adversarial en minuscules (27 %) non dégradée.
+## Tournures de personne : les 43 « organismes » restants sont tous des marques (P2-234, bloquée)
+
+Classement des causes demandé par la fiche, sur `main` (commit `63e4d68`), graine 42,
+chemin **`Ecluse.redact`** document par document, témoin P2-226, famille
+`organismes`. **Aucune correction** : la tâche est bloquée (voir plus bas).
+
+| Cause prévue par la fiche | Phrases masquées à tort |
+|---|---:|
+| mot absent de la liste de P2-229 | 0 |
+| organisme de deux mots dont un seul mot est reconnu | 0 |
+| marque ou entreprise commerciale | **43 / 43** |
+
+Les 43 phrases masquées portent 11 mots, chacun devant les quatre tournures
+(Orange : 3 sur 4, une déjà en clair) : EDF, SNCF, Engie, Bouygues, Orange,
+Google, Amazon, Microsoft, Leboncoin, Decathlon, Doctolib. Aucun organisme de la
+liste de P2-229 n'est masqué à tort : le « Fini quand » de la fiche (famille
+divisée par deux, soit 21 au plus) ne peut donc pas passer par une règle de
+détecteur, et les causes « liste incomplète » et « deux mots » ne se présentent
+pas sur ce témoin.
+
+Pourquoi aucune règle n'est livrable sans décision :
+- **Sigle en capitales** (EDF, SNCF, 8 phrases sur 43) : indiscernable par la forme
+  d'un patronyme écrit en capitales, convention courante des courriers
+  administratifs. Sondé sur `main` : « Le dossier de DUPONT est transmis. »,
+  « Le dossier de MARTIN a été clos. » et « Le dossier de SNCF est transmis. »
+  donnent le même masquage ; une règle « mot tout en capitales de 2 à 5 lettres
+  n'est pas un nom » ferait fuiter le patronyme. Le corpus de dossiers ne peut pas
+  chiffrer ce risque : ses noms annotés derrière une tournure ne sont jamais en
+  capitales dans les textes à casse ordinaire (0 sur 116 mots seuls au corpus
+  réaliste, 0 sur 70 à l'adversarial).
+- **Mots de marque** (Google, Amazon, Orange, Engie…) : seule une liste, que la
+  décision de P2-229 laisse au mainteneur (« dans le doute on masque » ou liste
+  de marques avec risque de fuite pour celles qui sont aussi des patronymes ou des
+  communes : Orange). La fiche interdit l'ajout mot à mot.
+
+Décision attendue (reprend celle de P2-229) : (a) laisser ces marques masquées,
+clore P2-234 sans code ; (b) une liste de marques courantes, avec le risque de
+fuite pour celles qui sont aussi des patronymes ; (c) des tournures qui les
+écartent par le contexte (non mesurable sur ce témoin : même gabarit de phrase).
 
 ## Mise en page : textes recoupés aux espaces (P2-153)
 
