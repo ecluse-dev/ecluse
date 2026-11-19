@@ -29,6 +29,7 @@ class EcluseEngine {
             value: e.value,
             confidence: e.confidence,
             tier: detector.tier,
+            provenance: e.provenance,
           ),
         ),
       );

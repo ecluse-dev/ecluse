@@ -74,6 +74,20 @@ enum EntityType {
   maladieRare,
 }
 
+/// Ce qui a établi une entité, quand ce n'est pas une preuve forte (P2-232).
+///
+/// Énumération **fermée**, jamais une chaîne libre : une chaîne pourrait un
+/// jour porter une valeur tirée du texte, et ce champ s'imprime dans
+/// `toString`. Sert à l'aperçu pour signaler « à vérifier » ; ne change rien à
+/// ce qui est masqué.
+enum Provenance {
+  /// Nom dont la seule preuve est une tournure de personne (« le dossier
+  /// de X », « X a confirmé »), ou une autre occurrence d'un mot lu derrière
+  /// une telle tournure, sans civilité, couple prénom + nom, champ étiqueté ni
+  /// patronyme établi ailleurs (autre document du dossier).
+  tournure,
+}
+
 /// Une entité personnelle détectée dans un texte.
 ///
 /// [start] et [end] sont des index de code units dans la chaîne d'origine,
@@ -86,6 +100,7 @@ final class DetectedEntity {
     required this.value,
     required this.confidence,
     this.tier,
+    this.provenance,
   })  : assert(start >= 0, 'start doit être positif'),
         assert(end > start, 'end doit être strictement supérieur à start'),
         assert(
@@ -121,6 +136,13 @@ final class DetectedEntity {
   /// ou non).
   final DetectorTier? tier;
 
+  /// Preuve faible qui a établi l'entité, ou `null` (P2-232).
+  ///
+  /// N'entre pas dans `==`/`hashCode`, comme [tier] : métadonnée de
+  /// provenance, pas identité. Toute copie d'entité doit la recopier, sinon
+  /// elle se perd sans bruit (test de propagation dans `ecluse_redact`).
+  final Provenance? provenance;
+
   @override
   bool operator ==(Object other) =>
       other is DetectedEntity &&
@@ -135,5 +157,6 @@ final class DetectedEntity {
 
   @override
   String toString() => 'DetectedEntity(${type.name}, [$start, $end), '
-      'confidence: $confidence, tier: ${tier?.name})';
+      'confidence: $confidence, tier: ${tier?.name}, '
+      'provenance: ${provenance?.name})';
 }

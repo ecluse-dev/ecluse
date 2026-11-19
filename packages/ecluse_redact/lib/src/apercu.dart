@@ -11,6 +11,7 @@ final class EntiteProposee {
     required this.valeur,
     required this.confiance,
     required this.tier,
+    this.aVerifier = false,
   });
 
   final int id;
@@ -23,6 +24,18 @@ final class EntiteProposee {
   /// Origine de la détection : une entité `structural` (clé de contrôle
   /// validée) ne se refuse qu'avec une option explicite.
   final DetectorTier? tier;
+
+  /// Vrai quand la **seule** preuve de ce nom est une tournure de personne
+  /// (« le dossier de X ») : aucune civilité, aucun couple prénom + nom, aucun
+  /// champ étiqueté, aucun patronyme établi ailleurs ni dans un document
+  /// précédent du dossier (P2-232, `agent/specs/P2-230.md` § 4).
+  ///
+  /// Une information, pas un jugement : « à vérifier » ne veut pas dire
+  /// « probablement faux » (sur le témoin de P2-226, plus de la moitié des
+  /// noms signalés sont de vrais patronymes). Ne change ni le jeton ni le
+  /// texte masqué : tout reste masqué par défaut. Refuser à tort un nom signalé
+  /// le laisse en clair chez le tiers.
+  final bool aVerifier;
 }
 
 /// Résultat de [Apercu.propose] : ce qu'Écluse masquerait, sans rien avoir
@@ -40,12 +53,19 @@ final class Proposition {
               valeur: _brutes[i].value,
               confiance: _brutes[i].confidence,
               tier: _brutes[i].tier,
+              aVerifier: _brutes[i].provenance == Provenance.tournure,
             )
         ]);
 
   /// Texte analysé : seul texte que [Apercu.applique] accepte.
   final String texte;
   final List<EntiteProposee> entites;
+
+  /// Identifiants des entités [EntiteProposee.aVerifier], dans l'ordre.
+  List<int> get aVerifier => List.unmodifiable([
+        for (final e in entites)
+          if (e.aVerifier) e.id
+      ]);
 
   /// Rapport de risque du texte tel qu'il serait masqué **si tout était
   /// accepté**, seulement si l'appelant a fourni `riskReference` à
