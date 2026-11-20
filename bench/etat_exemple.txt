@@ -449,6 +449,27 @@ vrais FINESS en clair sans option : corpus v3 0 / 129, pendant FINESS 0 / 400
   option=prefixe : SIREN masqués v3 42 / 42, témoin 375 / 400, voisins 99 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
   témoin : SIREN sous une détection de n'importe quel type 400 / 400 (le reste est lu comme FINESS ou comme un autre type, p. ex. une plaque après « immatriculation »)
   option=luhn : SIREN du témoin valides à la clé du FINESS 400 / 400 : aucune distinction possible
+## communes moyennes derrière les tournures de personne (P2-238) : Ecluse.redact (chemin du produit)
+communes moyennes : 240 documents, 0 entité(s) annotée(s), 176 lieux masqués à tort
+  tranche=10-30k : 59 / 80 lieux masqués à tort
+  tranche=30-50k : 60 / 80 lieux masqués à tort
+  tranche=50-100k : 57 / 80 lieux masqués à tort
+  tournure=dossier de : 60 / 60 lieux masqués à tort
+  tournure=à la demande de : 1 / 60 lieux masqués à tort
+  tournure=entretien avec : 60 / 60 lieux masqués à tort
+  tournure=sujet : a confirmé : 55 / 60 lieux masqués à tort
+  tranche_tournure=10-30k / dossier de : 20 / 20 lieux masqués à tort
+  tranche_tournure=10-30k / à la demande de : 1 / 20 lieux masqués à tort
+  tranche_tournure=10-30k / entretien avec : 20 / 20 lieux masqués à tort
+  tranche_tournure=10-30k / sujet : a confirmé : 18 / 20 lieux masqués à tort
+  tranche_tournure=30-50k / dossier de : 20 / 20 lieux masqués à tort
+  tranche_tournure=30-50k / à la demande de : 0 / 20 lieux masqués à tort
+  tranche_tournure=30-50k / entretien avec : 20 / 20 lieux masqués à tort
+  tranche_tournure=30-50k / sujet : a confirmé : 20 / 20 lieux masqués à tort
+  tranche_tournure=50-100k / dossier de : 20 / 20 lieux masqués à tort
+  tranche_tournure=50-100k / à la demande de : 0 / 20 lieux masqués à tort
+  tranche_tournure=50-100k / entretien avec : 20 / 20 lieux masqués à tort
+  tranche_tournure=50-100k / sujet : a confirmé : 17 / 20 lieux masqués à tort
 ## mots neutres, un mot à la fois (P2-211) : Ecluse.redact (chemin du produit), nombres masqués en adresse
 mots neutres : 78 mots, 31200 phrases, 218 nombre(s) masqué(s) en adresse, 0 sous un autre type, 4 mot(s) touché(s) (Ecluse.redact)
   casse=capitales : 218 / 15600 nombres masqués en adresse

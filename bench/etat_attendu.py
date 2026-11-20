@@ -217,6 +217,17 @@ ATTENDU = [
         (r"^  types sur les (masquages à tort|patronymes masqués) : ", 2,
          "types détectés"),
     ]),
+    ("## communes moyennes derrière les tournures de personne", [
+        (r"^communes moyennes : \d+ documents, 0 entité\(s\) annotée\(s\), "
+         r"\d+ lieux masqués à tort$", 1,
+         "témoin des communes de 10 000 à 100 000 habitants (P2-238)"),
+        (r"^  tranche=(10-30k|30-50k|50-100k) : \d+ / \d+ lieux masqués à "
+         r"tort$", 3, "par tranche de population"),
+        (r"^  tournure=.+ : \d+ / \d+ lieux masqués à tort$", 4,
+         "par tournure"),
+        (r"^  tranche_tournure=.+ : \d+ / \d+ lieux masqués à tort$", 12,
+         "par tranche et par tournure"),
+    ]),
     ("## mots neutres, un mot à la fois", [
         (r"^mots neutres : \d+ mots, \d+ phrases, \d+ nombre\(s\) "
          r"masqué\(s\) en adresse, \d+ sous un autre type, \d+ mot\(s\) "
