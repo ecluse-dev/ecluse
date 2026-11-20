@@ -1852,3 +1852,40 @@ session » = `Dossier`. Test écrit d'abord (4 cas « masqué » en échec sur
 - La seule autre ligne du témoin de P2-226 qui bouge est `organismes` (+1 :
   « Orange »), soit la marque qui est aussi une commune de plus de 10 000
   habitants, déjà signalée par `LIMITES.md`.
+## « Prénom + mot » en minuscule : mesure préalable de P2-241 (arrêt, aucun code livré)
+
+Mesure préalable exigée par la fiche (« combien de noms annotés `Prénom nom-en-minuscule`
+dans un texte à casse normale passeraient en clair ? »), faite par un **essai jetable**
+de la règle décidée (dans `NomMinusculesDetector`, branche « prénom connu suivi d'un
+mot » : si le texte contient au moins une majuscule et que le mot suivant est en
+minuscule, seul le prénom est masqué), **retiré ensuite**. Aucun fichier de `lib/` n'est
+modifié par cette PR. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM),
+document par document, `main` au commit `1f553f5`, graine 42. Un nom « passe en
+clair » ici = au moins une lettre de son intervalle annoté n'est couverte par aucune
+détection ; le chiffre est donné en **écart** avant → après (la mesure brute compte
+aussi les civilités annotées dans l'intervalle, d'où des valeurs de base élevées sur
+le corpus réaliste, inchangées).
+
+| Corpus (`flou`, 594 noms) | Noms en partie en clair, avant → après | en entier en clair |
+|---|---:|---:|
+| adversarial, casse de phrase | 121 → **275** (**+154, 25,9 %**) | 44 → 47 |
+| adversarial, mixte | 117 → **157** (**+40, 6,7 %**) | 36 → 38 |
+| adversarial, minuscules / majuscules / ordinaire | inchangé | inchangé |
+| réaliste (479 noms), toutes casses | inchangé | inchangé |
+
+Tableau de bord complet rejoué avec l'essai : sonde `prénom + verbe`, famille
+`reserve` **200 → 0 sur 200** (objectif atteint), famille `courants` 0 ; en
+revanche, au score strict, rappel `nom` du corpus adversarial en casse de phrase
+**61,3 % → 17,3 %** (F1 63,9 → 16,6). Les corpus de dossiers : cohérence des noms
+un peu meilleure (18 → 16 sur 161 ; 24 → 22 sur 128), sans mesure de fuite propre.
+
+**Verdict.** Le seuil d'arrêt de la fiche (plus de 1 % des noms d'un corpus existant
+rendus en clair) est dépassé d'un facteur 7 à 26 sur deux corpus : la tâche
+s'arrête, conformément à la fiche et à `CLAUDE.md`. Cause : en casse de phrase, ces
+corpus écrivent *tous* les patronymes en minuscule (« julien chevrier ») ; la règle
+ne peut pas distinguer ce patronyme d'un verbe (« sophie rappelle »), car la forme
+(minuscule après un prénom) est la même. L'objectif « aucun verbe masqué » et
+« aucune fuite ajoutée » ne sont pas tenables ensemble par une règle de forme seule.
+Pistes à décider par le mainteneur : liste fermée plus large (P2-240) complétée par
+des terminaisons verbales, ou règle de forme **limitée** (texte à casse de phrase *et*
+mot absent d'une liste de patronymes, P2-231), ou accepter le coût chiffré ici.
