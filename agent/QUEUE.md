@@ -307,7 +307,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-237 | mesure | Expliquer l'écart de 3 caractères du témoin « commune suivie » (5 379 → 5 376, depuis P2-212) | P2-212 | fusionnée |
 | P2-238 | mesure | Témoin `lieu` élargi : communes de 10 000 à 100 000 habitants derrière les tournures de personne, avant le seuil de 100 000 (décision du 20 novembre) | P2-233 | fusionnée |
 | P2-239 | code | Tournures de personne : n'écarter après « à la demande de » que les communes de 100 000 habitants et plus (option D de P2-233) | P2-238 | à faire |
-| P2-240 | code | « Prénom + verbe » : ne plus étendre un nom sur un verbe conjugué (« Sophie rappelle. »), ni retenir ce verbe comme patronyme | P2-235 | à faire |
+| P2-240 | code | « Prénom + verbe » : ne plus étendre un nom sur un verbe conjugué (« Sophie rappelle. »), ni retenir ce verbe comme patronyme | P2-235 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 

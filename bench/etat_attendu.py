@@ -228,6 +228,12 @@ ATTENDU = [
         (r"^  tranche_tournure=.+ : \d+ / \d+ lieux masqués à tort$", 12,
          "par tranche et par tournure"),
     ]),
+    ("## prénom + verbe conjugué", [
+        (r"^prénom \+ verbe : \d+ phrases, \d+ verbes masqués, \d+ prénoms en "
+         r"clair \(fuite\)$", 1, "sonde prénom + verbe (P2-240)"),
+        (r"^  famille=(courants|reserve) : \d+ / \d+ verbes masqués, \d+ "
+         r"prénoms en clair$", 2, "par famille"),
+    ]),
     ("## mots neutres, un mot à la fois", [
         (r"^mots neutres : \d+ mots, \d+ phrases, \d+ nombre\(s\) "
          r"masqué\(s\) en adresse, \d+ sous un autre type, \d+ mot\(s\) "

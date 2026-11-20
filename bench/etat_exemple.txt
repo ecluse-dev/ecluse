@@ -470,6 +470,10 @@ communes moyennes : 240 documents, 0 entité(s) annotée(s), 176 lieux masqués 
   tranche_tournure=50-100k / à la demande de : 0 / 20 lieux masqués à tort
   tranche_tournure=50-100k / entretien avec : 20 / 20 lieux masqués à tort
   tranche_tournure=50-100k / sujet : a confirmé : 17 / 20 lieux masqués à tort
+## prénom + verbe conjugué (P2-240) : Ecluse.redact (chemin du produit)
+prénom + verbe : 600 phrases, 200 verbes masqués, 0 prénoms en clair (fuite)
+  famille=courants : 0 / 400 verbes masqués, 0 prénoms en clair
+  famille=reserve : 200 / 200 verbes masqués, 0 prénoms en clair
 ## mots neutres, un mot à la fois (P2-211) : Ecluse.redact (chemin du produit), nombres masqués en adresse
 mots neutres : 78 mots, 31200 phrases, 218 nombre(s) masqué(s) en adresse, 0 sous un autre type, 4 mot(s) touché(s) (Ecluse.redact)
   casse=capitales : 218 / 15600 nombres masqués en adresse
