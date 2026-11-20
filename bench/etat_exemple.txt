@@ -220,23 +220,23 @@ QI par Ecluse.redact : bench/qi/corpus_qi_adversarial.jsonl
   Restaurations non identiques : 0 / 396 documents    0.0 %
   Mentions annotées non détectées (exclues) : aucune
 ## patronyme seul hors civilité (P2-218) : Ecluse.redact (chemin du produit)
-noms hors civilité, patronyme seul : 116 mentions, manquées document par document 1, en session 0
+noms hors civilité, patronyme seul : 116 mentions, manquées document par document 0, en session 0
 noms hors civilité, plusieurs mots (civilité ou prénom) : 476 mentions, manquées document par document 0, en session 0
   tournure=dossier de : 0 / 49 manqués document par document, 0 / 49 en session
-  tournure=à la demande de : 1 / 19 manqués document par document, 0 / 19 en session
+  tournure=à la demande de : 0 / 19 manqués document par document, 0 / 19 en session
   tournure=entretien avec : 0 / 26 manqués document par document, 0 / 26 en session
   tournure=sujet : a confirmé : 0 / 22 manqués document par document, 0 / 22 en session
-tournures sans nom : 400 documents, 0 entité(s) annotée(s), 140 masqués à tort
+tournures sans nom : 400 documents, 0 entité(s) annotée(s), 141 masqués à tort
   tournure=adressé à : 0 / 80 masqués à tort
   tournure=dossier de : 40 / 80 masqués à tort
-  tournure=à la demande de : 20 / 80 masqués à tort
+  tournure=à la demande de : 21 / 80 masqués à tort
   tournure=entretien avec : 40 / 80 masqués à tort
   tournure=sujet : a confirmé : 40 / 80 masqués à tort
-  genre=lieu : 60 / 100 masqués à tort
+  genre=lieu : 61 / 100 masqués à tort
   genre=organisme : 0 / 100 masqués à tort
   genre=commun_majuscule : 80 / 100 masqués à tort
   genre=commun_minuscule : 0 / 100 masqués à tort
-  types sur les masquages à tort : nom 140
+  types sur les masquages à tort : nom 141
 ## tournures de personne, témoin élargi (P2-226) : Ecluse.redact (chemin du produit)
 tournures de personne : 480 documents, 5 familles, 192 noms annotés, 0 détection(s) hors du mot
   famille=roles : 0 / 96 masqués à tort
@@ -244,9 +244,9 @@ tournures de personne : 480 documents, 5 familles, 192 noms annotés, 0 détecti
     tournure=à la demande de : 0 / 24
     tournure=entretien avec : 0 / 24
     tournure=sujet : a confirmé : 0 / 24
-  famille=organismes : 43 / 96 masqués à tort
+  famille=organismes : 44 / 96 masqués à tort
     tournure=dossier de : 11 / 24
-    tournure=à la demande de : 10 / 24
+    tournure=à la demande de : 11 / 24
     tournure=entretien avec : 11 / 24
     tournure=sujet : a confirmé : 11 / 24
   famille=communs : 96 / 96 masqués à tort
@@ -254,9 +254,9 @@ tournures de personne : 480 documents, 5 familles, 192 noms annotés, 0 détecti
     tournure=à la demande de : 24 / 24
     tournure=entretien avec : 24 / 24
     tournure=sujet : a confirmé : 24 / 24
-  famille=patronymes_communes : 72 / 96 masqués, 24 en clair (fuite)
+  famille=patronymes_communes : 96 / 96 masqués, 0 en clair (fuite)
     tournure=dossier de : 24 / 24
-    tournure=à la demande de : 0 / 24
+    tournure=à la demande de : 24 / 24
     tournure=entretien avec : 24 / 24
     tournure=sujet : a confirmé : 24 / 24
   famille=patronymes_noms_communs : 96 / 96 masqués, 0 en clair (fuite)
@@ -264,8 +264,8 @@ tournures de personne : 480 documents, 5 familles, 192 noms annotés, 0 détecti
     tournure=à la demande de : 24 / 24
     tournure=entretien avec : 24 / 24
     tournure=sujet : a confirmé : 24 / 24
-  types sur les masquages à tort : nom 139
-  types sur les patronymes masqués : nom 168
+  types sur les masquages à tort : nom 140
+  types sur les patronymes masqués : nom 192
 ## pathologies
 # indices
   indices : TP 397, FP 0, FN 0 ; précision 100.0 %, rappel 100.0 % ; catégorie juste 96.7 %
@@ -450,24 +450,24 @@ vrais FINESS en clair sans option : corpus v3 0 / 129, pendant FINESS 0 / 400
   témoin : SIREN sous une détection de n'importe quel type 400 / 400 (le reste est lu comme FINESS ou comme un autre type, p. ex. une plaque après « immatriculation »)
   option=luhn : SIREN du témoin valides à la clé du FINESS 400 / 400 : aucune distinction possible
 ## communes moyennes derrière les tournures de personne (P2-238) : Ecluse.redact (chemin du produit)
-communes moyennes : 240 documents, 0 entité(s) annotée(s), 176 lieux masqués à tort
-  tranche=10-30k : 59 / 80 lieux masqués à tort
-  tranche=30-50k : 60 / 80 lieux masqués à tort
-  tranche=50-100k : 57 / 80 lieux masqués à tort
+communes moyennes : 240 documents, 0 entité(s) annotée(s), 235 lieux masqués à tort
+  tranche=10-30k : 78 / 80 lieux masqués à tort
+  tranche=30-50k : 80 / 80 lieux masqués à tort
+  tranche=50-100k : 77 / 80 lieux masqués à tort
   tournure=dossier de : 60 / 60 lieux masqués à tort
-  tournure=à la demande de : 1 / 60 lieux masqués à tort
+  tournure=à la demande de : 60 / 60 lieux masqués à tort
   tournure=entretien avec : 60 / 60 lieux masqués à tort
   tournure=sujet : a confirmé : 55 / 60 lieux masqués à tort
   tranche_tournure=10-30k / dossier de : 20 / 20 lieux masqués à tort
-  tranche_tournure=10-30k / à la demande de : 1 / 20 lieux masqués à tort
+  tranche_tournure=10-30k / à la demande de : 20 / 20 lieux masqués à tort
   tranche_tournure=10-30k / entretien avec : 20 / 20 lieux masqués à tort
   tranche_tournure=10-30k / sujet : a confirmé : 18 / 20 lieux masqués à tort
   tranche_tournure=30-50k / dossier de : 20 / 20 lieux masqués à tort
-  tranche_tournure=30-50k / à la demande de : 0 / 20 lieux masqués à tort
+  tranche_tournure=30-50k / à la demande de : 20 / 20 lieux masqués à tort
   tranche_tournure=30-50k / entretien avec : 20 / 20 lieux masqués à tort
   tranche_tournure=30-50k / sujet : a confirmé : 20 / 20 lieux masqués à tort
   tranche_tournure=50-100k / dossier de : 20 / 20 lieux masqués à tort
-  tranche_tournure=50-100k / à la demande de : 0 / 20 lieux masqués à tort
+  tranche_tournure=50-100k / à la demande de : 20 / 20 lieux masqués à tort
   tranche_tournure=50-100k / entretien avec : 20 / 20 lieux masqués à tort
   tranche_tournure=50-100k / sujet : a confirmé : 17 / 20 lieux masqués à tort
 ## prénom + verbe conjugué (P2-240) : Ecluse.redact (chemin du produit)
