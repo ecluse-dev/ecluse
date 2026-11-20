@@ -1,4 +1,4 @@
-"""Tests de `build_communes_grandes.py` (P2-220).
+"""Tests de `build_communes_grandes.py` (P2-220, seuil releve a 100 000 par P2-239).
 
     python3 -m unittest tools/test_build_communes_grandes.py
 """
@@ -22,8 +22,12 @@ LIGNES = [
 
 class Selection(unittest.TestCase):
     def test_seuil_et_population_absente(self):
-        self.assertEqual(b.selectionne(LIGNES),
-                         {"BESANCON", "VESOUL", "PARIS", "SAINT DENIS"})
+        self.assertEqual(b.selectionne(LIGNES), {"BESANCON", "PARIS"})
+
+    def test_bornes_du_seuil(self):
+        self.assertEqual(b.SEUIL, 100000)
+        lignes = ["1;1;1;100000;PILE;Pile\n", "2;1;1;99999;JUSTE;Juste\n"]
+        self.assertEqual(b.selectionne(lignes), {"PILE"})
 
     def test_cle_sans_ponctuation(self):
         self.assertEqual(b.cle("SAINT-DENIS (VILLE)"), "SAINT DENIS VILLE")

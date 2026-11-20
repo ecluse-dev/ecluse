@@ -5,8 +5,11 @@ referentiel des communes deja versionne (P2-220).
 Pourquoi : « a la demande de Paris », « le dossier de Besancon » ne designent
 pas une personne. `NameDetector`, detecteur pur et synchrone, ne peut pas
 charger le referentiel ; sa regle « patronyme seul derriere une tournure de
-personne » ecarte donc les communes de 10 000 habitants et plus (population
-municipale, colonne `PMUN`), ecrites en dur ici. Les communes sans population
+personne » ecarte donc les communes de 100 000 habitants et plus (population
+municipale, colonne `PMUN`), ecrites en dur ici (P2-239 : le seuil etait de
+10 000 habitants ; il est releve car, derriere « a la demande de », un
+patronyme qui est aussi une commune de 10 000 a 100 000 habitants restait en
+clair, 24 fuites sur 96 au temoin de P2-226). Les communes sans population
 dans le fichier (Paris, Lyon, Marseille, decoupees en arrondissements, et 17
 communes de Mayotte) sont retenues. Les communes plus petites ne sont **pas** ecartees : dans le doute,
 le mot est masque (un patronyme pris pour une commune serait une fuite).
@@ -34,7 +37,7 @@ COMMUNES = os.path.join(RACINE, "packages", "ecluse_reference", "assets",
                         "geo_communes.csv.gz")
 SORTIE = os.path.join(RACINE, "packages", "ecluse_redact", "lib", "src",
                       "heuristics", "communes_grandes.dart")
-SEUIL = 10000
+SEUIL = 100000
 
 
 def cle(norm):
@@ -62,7 +65,7 @@ def rend_dart(noms):
         "// modifier a la main. Regenerer apres tout changement du referentiel",
         "// des communes ; un test Python en verifie la parite.",
         "",
-        "/// Noms des communes de 10 000 habitants et plus (population",
+        "/// Noms des communes de 100 000 habitants et plus (population",
         f"/// municipale >= {SEUIL}, ou non renseignee : Paris, Lyon, Marseille, Mayotte),",
         "/// que `NameDetector` ne prend pas pour un patronyme derriere une",
         "/// tournure de personne (P2-220). Forme du referentiel public (INSEE,",

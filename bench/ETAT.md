@@ -1806,3 +1806,49 @@ fuite.
 - Hors périmètre, **non traité** : la branche « civilité + prénom + mot » a le même
   défaut avec « présente » (164 occurrences dans les corpus adversariaux, P2-235) ;
   la corriger changerait des chiffres du flou adversarial.
+
+## Après « à la demande de » : seules les communes de 100 000 habitants et plus sont écartées (P2-239)
+
+Correction de `NameDetector` : la table `communes_grandes.dart` (générée par
+`tools/build_communes_grandes.py`, test de parité Python) passe du seuil de
+10 000 habitants à **100 000** (58 noms, les communes sans population
+renseignée comprises), conformément à la décision du 20 novembre. Elle ne sert
+toujours qu'après « à la demande de ». Chemin mesuré : **`Ecluse.redact`** (ce
+que reçoit le LLM), document par document (`run_redact_bench.dart`) ; « en
+session » = `Dossier`. Test écrit d'abord (4 cas « masqué » en échec sur
+`main`, `tournure_communes_seuil_test.dart`). Tableau de bord complet
+(`bench/etat.sh`) rejoué avant (`1f553f5`) et après, graine 42.
+
+| Mesure (`Ecluse.redact`, graine 42) | Avant (`main`) | Après |
+|---|---:|---:|
+| P2-226, `patronymes_communes` (annotés `nom`), « à la demande de » : en clair (fuite) | 24 / 24 | **0 / 24** |
+| P2-226, `patronymes_communes`, les 4 tournures : en clair (fuite) | 24 / 96 | **0 / 96** |
+| P2-218, patronyme seul, « à la demande de » : manqués document par document | 1 / 19 | **0 / 19** |
+| P2-218, patronyme seul, 116 mentions : manquées document par document / en session | 1 / 0 | **0 / 0** |
+| P2-218, témoin sans nom, `lieu` : masqués à tort | 60 / 100 | 61 / 100 |
+| P2-226, `organismes` (« Orange », commune de plus de 10 000) : masqués à tort | 43 / 96 | 44 / 96 |
+| P2-238, communes de 10 000 à 100 000, « à la demande de » : masquées à tort | 1 / 60 | **60 / 60** |
+| P2-238, idem par tranche (10–30 000, 30–50 000, 50–100 000) | 1, 0, 0 sur 20 | 20, 20, 20 sur 20 |
+| P2-238, toutes tournures : lieux masqués à tort | 176 / 240 | 235 / 240 |
+
+- **Égal à la simulation de P2-238** : 60 / 60 derrière « à la demande de »
+  (20 par tranche), 235 sur 240 au total ; les trois autres tournures
+  (175 / 180) ne changent pas.
+- **Ce que ça coûte** (assumé, décision du 20 novembre, écrit dans
+  `LIMITES.md`) : toute ville de 10 000 à 100 000 habitants est masquée après
+  « à la demande de » ; le témoin n'a aucune personne, c'est de la lisibilité
+  perdue, pas une fuite. Le plafond de 50 % de la fiche est levé par la
+  décision.
+- **Ce que ça rapporte** : 24 fuites sur 96 → 0 au témoin de P2-226 et le dernier
+  patronyme seul manqué du corpus de dossiers (« à la demande de Gaillard »).
+- **Contre-effet non mesuré sur des cas réels** : un patronyme qui est aussi une
+  commune de **100 000 habitants et plus** (« Rouen », « Brest ») reste lu
+  comme un lieu derrière « à la demande de » ; aucun mot du témoin de P2-226 n'en
+  est un, donc ce témoin ne le voit pas.
+- **Inchangés** (tableau de bord rejoué en entier, diff ligne à ligne avec la
+  sortie d'avant) : tous les autres chiffres, dont corpus de dossiers (hors le
+  patronyme seul ci-dessus), flou adversarial, QI, adresses, identifiants,
+  pathologies, prénom + verbe (P2-240), mise en page.
+- La seule autre ligne du témoin de P2-226 qui bouge est `organismes` (+1 :
+  « Orange »), soit la marque qui est aussi une commune de plus de 10 000
+  habitants, déjà signalée par `LIMITES.md`.

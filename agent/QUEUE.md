@@ -306,7 +306,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-236 | code | Test de coût linéaire de `adresse_cedex_test.dart` : remplacer le plafond fixe de 15 s par un rapport de croissance | — | fusionnée |
 | P2-237 | mesure | Expliquer l'écart de 3 caractères du témoin « commune suivie » (5 379 → 5 376, depuis P2-212) | P2-212 | fusionnée |
 | P2-238 | mesure | Témoin `lieu` élargi : communes de 10 000 à 100 000 habitants derrière les tournures de personne, avant le seuil de 100 000 (décision du 20 novembre) | P2-233 | fusionnée |
-| P2-239 | code | Tournures de personne : n'écarter après « à la demande de » que les communes de 100 000 habitants et plus (option D de P2-233) | P2-238 | à faire |
+| P2-239 | code | Tournures de personne : n'écarter après « à la demande de » que les communes de 100 000 habitants et plus (option D de P2-233) | P2-238 | fusionnée |
 | P2-240 | code | « Prénom + verbe » : ne plus étendre un nom sur un verbe conjugué (« Sophie rappelle. »), ni retenir ce verbe comme patronyme | P2-235 | fusionnée |
 | P2-241 | code | « Prénom + mot » : dans un texte à casse normale, ne jamais étendre un prénom sur un mot en minuscule (aucun verbe masqué, hors liste comprise), coût mesuré d'abord | P2-240 | à faire |
 

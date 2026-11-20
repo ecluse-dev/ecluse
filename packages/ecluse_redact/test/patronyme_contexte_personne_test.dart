@@ -71,11 +71,11 @@ void main() {
     // Mot commun en minuscules.
     'Note de service : le dossier de presse est transmis.': 'presse',
     'Suite à l\'entretien avec succès, le suivi est maintenu.': 'succès',
-    // Nom de commune.
+    // Nom de commune de 100 000 habitants et plus.
     // Après « à la demande de » seulement (P2-228) : une collectivité ou une
-    // ville y est la demandeuse la plus fréquente.
+    // ville y est la demandeuse la plus fréquente. Seuil : P2-239
+    // (`tournure_communes_seuil_test.dart`), « Laval » (49 400) est masqué.
     'Rendez-vous reporté à la demande de Paris ; date à proposer.': 'Paris',
-    'Rendez-vous reporté à la demande de Laval ; date à proposer.': 'Laval',
     // Organisme précédé de son article : le mot qui suit « de » est minuscule.
     'Le dossier de la Mairie est transmis.': 'Mairie',
     'Suite à l\'entretien avec le Département, le suivi est maintenu.':
