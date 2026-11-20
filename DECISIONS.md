@@ -783,3 +783,11 @@ Décisions déléguées par le mainteneur (« prends ces décisions »).
    à casse normale, un prénom n'est jamais étendu sur un mot en minuscule. La
    liste fermée de P2-240 ne couvrait que 177 formes. Coût à mesurer avant le
    code : un patronyme écrit en minuscule derrière un prénom passerait en clair.
+
+## 2026-11 — P2-241 bloquée : liste étendue d'abord (21 novembre)
+
+La règle de forme de P2-241 rend des noms en clair (+154 en partie, 25,9 %,
+corpus adversarial en casse de phrase). Décision : pas de fuite ajoutée pour
+démasquer des verbes. Étendre la liste fermée de P2-240 (P2-242) ; la règle de
+forme reviendra limitée aux mots absents d'un référentiel de patronymes, après
+la lecture des licences (P2-231).
