@@ -50,19 +50,35 @@ class Generateur(unittest.TestCase):
             else:
                 self.assertEqual(d["entities"], [])
 
-    def test_patronymes_communes_dans_la_table(self):
-        chemin = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
-                              "packages", "ecluse_redact", "lib", "src",
+    def test_patronymes_communes_hors_de_la_table(self):
+        """Chaque patronyme-commune a de 10 000 à moins de 100 000 habitants :
+        la table `communes_grandes.dart` (seuil de 100 000, P2-239) n'en
+        contient aucun, donc aucun n'est écarté derrière « à la demande de »."""
+        import gzip
+        import unicodedata
+        racine = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+        chemin = os.path.join(racine, "packages", "ecluse_redact", "lib", "src",
                               "heuristics", "communes_grandes.dart")
         with open(chemin, encoding="utf-8") as f:
             table = set(re.findall(r"^  '([^']+)',$", f.read(), re.M))
-        import unicodedata
 
         def cle(w):
             w = unicodedata.normalize("NFKD", w).encode("ascii", "ignore")
             return re.sub(r"[^A-Z0-9]+", " ", w.decode().upper()).strip()
+        pop = {}
+        with gzip.open(os.path.join(racine, "packages", "ecluse_reference",
+                                    "assets", "geo_communes.csv.gz"),
+                       "rt", encoding="utf-8") as f:
+            next(f)
+            for ligne in f:
+                c = ligne.rstrip("\n").split(";")
+                if len(c) >= 6 and c[3].strip().isdigit():
+                    pop.setdefault(re.sub(r"[^A-Z0-9]+", " ", c[4]).strip(),
+                                   []).append(int(c[3]))
         for m in gp.FAMILLES["patronymes_communes"]:
-            self.assertIn(cle(m), table, m)
+            self.assertNotIn(cle(m), table, m)
+            self.assertTrue(any(10000 <= n < 100000 for n in pop.get(cle(m), [])),
+                            m)
         for m in gp.FAMILLES["patronymes_noms_communs"]:
             self.assertNotIn(cle(m), table, m)
 

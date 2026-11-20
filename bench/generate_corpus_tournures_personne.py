@@ -25,7 +25,9 @@ noms communs de P2-218 repris) :
 - `communs` : noms communs à majuscule initiale (intitulés, débuts de
   phrase) ; pas une personne ;
 - `patronymes_communes` : patronymes qui sont aussi une commune de 10 000
-  habitants et plus (table `communes_grandes.dart`, que P2-220 écarte) ;
+  habitants et plus (P2-220 écartait toutes ces communes derrière « à la
+  demande de » ; depuis P2-239, `communes_grandes.dart` ne retient que celles de
+  100 000 habitants et plus, aucun de ces 24 noms n'en est) ;
   **annotés `nom`** : en clair, c'est une fuite ;
 - `patronymes_noms_communs` : patronymes qui sont aussi un nom commun
   (« Berger », « Boulanger ») ; **annotés `nom`**.

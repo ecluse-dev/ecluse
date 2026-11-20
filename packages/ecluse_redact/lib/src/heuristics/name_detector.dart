@@ -698,16 +698,22 @@ final class NameDetector implements EntityDetector {
   /// un des mots de [_motsDeContexteNonNoms]. Les particules en tête sont
   /// ignorées (« de la Fontaine »).
   ///
-  /// [exclureCommunes] : une commune de 10 000 habitants et plus n'est écartée
-  /// qu'après « à la demande de » (P2-228). Derrière « le dossier de »,
-  /// « l'entretien avec » et devant « a confirmé », l'exclusion laissait en
-  /// clair tout patronyme qui est aussi une telle commune (« Laval »,
-  /// « Thiers », « Gaillard » : 96 mentions sur 96 au témoin de P2-226, 4 sur
-  /// 4 des patronymes seuls encore manqués du corpus de dossiers). Ces trois
-  /// tournures désignent bien plus souvent une personne qu'une ville ; « à la
-  /// demande de » introduit couramment une collectivité (« à la demande de
-  /// Paris »). Coût assumé, dans le doute on masque : « le dossier de
-  /// Besançon », « Paris a confirmé » sont masqués (`LIMITES.md`).
+  /// [exclureCommunes] : une commune de 100 000 habitants et plus n'est écartée
+  /// qu'après « à la demande de » (P2-228, seuil relevé par P2-239). Derrière
+  /// « le dossier de », « l'entretien avec » et devant « a confirmé »,
+  /// l'exclusion laissait en clair tout patronyme qui est aussi une telle
+  /// commune (« Laval », « Thiers », « Gaillard » : 96 mentions sur 96 au témoin
+  /// de P2-226, 4 sur 4 des patronymes seuls encore manqués du corpus de
+  /// dossiers). Ces trois tournures désignent bien plus souvent une personne
+  /// qu'une ville ; « à la demande de » introduit couramment une collectivité
+  /// (« à la demande de Paris »).
+  ///
+  /// Le seuil était de 10 000 habitants : 24 patronymes-communes sur 96 restaient
+  /// en clair derrière « à la demande de » (P2-233). À 100 000 habitants la fuite
+  /// tombe à 0 ; le prix est qu'une ville de 10 000 à 100 000 habitants y est
+  /// masquée comme un nom (« à la demande de Vesoul » : 60 sur 60 au témoin de
+  /// P2-238). Coût de lisibilité assumé par le mainteneur (20 novembre) : dans le
+  /// doute on masque, un patronyme laissé en clair est une fuite (`LIMITES.md`).
   static bool _motDeContexteEstUnNom(String unite,
       {required bool exclureCommunes}) {
     final mots = unite.split(_ecart);

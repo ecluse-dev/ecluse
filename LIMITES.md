@@ -36,7 +36,8 @@ En une phrase : **Écluse réduit le risque, il ne l'annule pas.**
   mention, sauf derrière « le dossier de », « à la demande de », « l'entretien
   avec » ou devant « a confirmé » (P2-220, au prix de noms communs capitalisés
   et, sauf après « à la demande de », de noms de grandes villes masqués à tort,
-  P2-228). Voir [5.2.2](#522-noms-sans-civilité-et-titres) et [§ 5.4](#54-portée-du-rattrapage-des-mentions-partielles).
+  P2-228 ; après « à la demande de », seules les communes de 100 000 habitants et
+  plus sont écartées, donc une ville plus petite y est masquée, P2-239). Voir [5.2.2](#522-noms-sans-civilité-et-titres) et [§ 5.4](#54-portée-du-rattrapage-des-mentions-partielles).
 - **Identifiants hors liste** : BIC, IBAN non français, secrets sans préfixe
   connu, autres identifiants professionnels, numéro INS lui-même. Voir
   [§ 2](#2-identifiants-non-couverts).
@@ -1926,18 +1927,26 @@ synthétiques de `bench/` (400 documents, graines 42 et 7) :
   Pour les autres mots : sans dictionnaire, rien ne le
   distingue d'un patronyme. Minuscule (« dossier de presse »), organisme précédé
   de son article (« de la Mairie », « La Mairie a confirmé ») et mots neutres ne
-  sont pas masqués. Une commune de 10 000 habitants et plus (table
-  `communes_grandes.dart` générée du référentiel) n'est écartée qu'après « à la
-  demande de » (« à la demande de Paris » reste en clair, P2-228). Derrière les
-  trois autres tournures, elle est masquée comme un nom, dans le doute : **coût
-  mesuré, 60 phrases `lieu` sur 100 du témoin de P2-218 masquées à tort** (toutes
-  celles de ces trois tournures : « le dossier de Besançon », « Paris a
-  confirmé »), plus une marque qui est aussi une commune (« Orange »). Fuite
-  connue : un patronyme qui est aussi le nom d'une grande commune, après « à la
-  demande de » (« à la demande de Gaillard » : 1 patronyme seul manqué sur 116
-  du corpus de dossiers, 24 sur 24 au témoin de P2-226 pour cette tournure),
-  reste en clair. Derrière les trois autres tournures, ces patronymes sont
-  masqués (72 sur 72 ; 0 avant P2-228). Un petit nom de commune (« Quingey »)
+  sont pas masqués. Une commune de **100 000 habitants et plus** (table
+  `communes_grandes.dart` générée du référentiel, 58 noms, les communes sans
+  population renseignée comprises : Paris, Lyon, Marseille, Mayotte) n'est
+  écartée qu'après « à la demande de » (« à la demande de Paris » reste en clair,
+  P2-228 ; le seuil était de 10 000 habitants, relevé par P2-239 sur décision du
+  mainteneur du 20 novembre). Derrière les trois autres tournures, elle est
+  masquée comme un nom, dans le doute : **coût mesuré, 60 phrases `lieu` sur 100
+  du témoin de P2-218 masquées à tort** (toutes celles de ces trois tournures :
+  « le dossier de Besançon », « Paris a confirmé »), plus une marque qui est aussi
+  une commune (« Orange »). **Coût assumé du seuil de 100 000** : une ville de
+  10 000 à 100 000 habitants est masquée derrière « à la demande de » (« à la
+  demande de Vesoul » : 60 sur 60 au témoin de P2-238, 20 par tranche de
+  population ; il ne contient aucune personne, c'est de la lisibilité perdue, pas
+  une fuite). En échange, un patronyme qui est aussi le nom d'une commune de
+  10 000 à 100 000 habitants (« à la demande de Gaillard ») est masqué : la
+  fuite connue de P2-228 (24 sur 24 au témoin de P2-226 pour cette tournure) est
+  supprimée. Reste en clair, et c'est alors le même défaut en sens inverse, le
+  patronyme qui est aussi une commune de **100 000 habitants et plus** (« à la
+  demande de Rouen » : lu comme un lieu) ; le témoin de P2-226 n'en contient pas.
+  Un petit nom de commune (« Quingey »)
   est masqué, dans le doute. Un couple
   « Prénom inconnu Nom a confirmé » reste en clair (le mot capitalisé devant le
   sujet écarte la règle : « France Travail a confirmé » en est la raison) ; devant
