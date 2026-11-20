@@ -209,6 +209,19 @@ if produit "tournures de personne, générateur" "$B/flou/corpus_tournures_perso
   fi
 fi
 
+# Communes de 10 000 à 100 000 habitants derrière les tournures de personne
+# (P2-238) : lieux tirés du référentiel versionné, 20 par tranche (10-30k,
+# 30-50k, 50-100k), chacun dans les quatre tournures de P2-220. Aucune
+# personne : un lieu masqué est un masquage en trop. Chemin mesuré :
+# Ecluse.redact, document par document. Mesure seule (seuil de `main` :
+# 10 000 habitants derrière « à la demande de »).
+echo "## communes moyennes derrière les tournures de personne (P2-238) : Ecluse.redact (chemin du produit)"
+if produit "communes moyennes, générateur" "$B/flou/corpus_tournures_communes_moyennes.jsonl" python3 "$B/generate_corpus_tournures_communes_moyennes.py" --seed 42 --out "$B/flou/corpus_tournures_communes_moyennes.jsonl"; then
+  if produit "communes moyennes, Ecluse.redact" "$B/flou/pred_tournures_communes_moyennes.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_tournures_communes_moyennes.jsonl ../../bench/flou/pred_tournures_communes_moyennes.jsonl; then
+    montre "communes moyennes, score" -E "^communes moyennes :|^  (tranche|tournure|tranche_tournure)=" 0 non dans_B python3 score_tournures_communes_moyennes.py --corpus flou/corpus_tournures_communes_moyennes.jsonl --pred flou/pred_tournures_communes_moyennes.jsonl || true
+  fi
+fi
+
 echo "## pathologies"
 produit "générateur pathologies" "$B/patho/corpus_pathologies_indices.jsonl" python3 "$B/generate_corpus_pathologies.py" --n 300 --seed 42 --out-dir "$B/patho" || true
 patho_rattachees() { reid run_pathologies_bench.dart "../../bench/patho/corpus_pathologies_$1.jsonl" "../../bench/patho/corpus_pathologies_temoin.jsonl" | sed -n '/rattachées/,$p'; }
