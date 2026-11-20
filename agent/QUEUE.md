@@ -309,6 +309,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-239 | code | Tournures de personne : n'écarter après « à la demande de » que les communes de 100 000 habitants et plus (option D de P2-233) | P2-238 | fusionnée |
 | P2-240 | code | « Prénom + verbe » : ne plus étendre un nom sur un verbe conjugué (« Sophie rappelle. »), ni retenir ce verbe comme patronyme | P2-235 | fusionnée |
 | P2-241 | code | « Prénom + mot » : dans un texte à casse normale, ne jamais étendre un prénom sur un mot en minuscule (aucun verbe masqué, hors liste comprise), coût mesuré d'abord | P2-240 | fusionnée |
+| P2-242 | code | « Prénom + verbe » : étendre la liste fermée de P2-240 (formes et terminaisons sûres) sans aucune fuite ajoutée | P2-241 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -695,3 +696,24 @@ rattrapés avant P2-220).
   minuscules inchangés ; reste du tableau de bord inchangé ou expliqué ligne
   à ligne. Si la mesure préalable montre plus de 1 % des noms d'un corpus
   existant rendus en clair, s'arrêter et rendre les chiffres.
+
+### P2-242 — Étendre la liste des verbes (décision du 21 novembre)
+
+- **P2-242** : `verbes_conjugues.dart` et `NomMinusculesDetector`. Suite de
+  P2-241 (règle de forme bloquée : +154 noms en partie en clair, 25,9 %, sur
+  le corpus adversarial en casse de phrase). Décision : étendre la liste fermée
+  de P2-240, **sans aucune fuite ajoutée** ; la règle de forme reviendra avec un
+  référentiel de patronymes (après P2-231). Étendre aux verbes courants de
+  l'écrit soignant et social (transmissions, comptes rendus) et à leurs formes
+  conjuguées usuelles (présent, passé composé avec participe, imparfait,
+  futur, 3e personne du singulier et du pluriel), plus les terminaisons qui ne
+  rendent en clair **aucun** nom annoté d'aucun corpus (le mesurer, une
+  terminaison à la fois). Généralisation : ne pas reprendre mot à mot les 20
+  verbes de la réserve de P2-240 ; ajouter à la sonde une seconde réserve d'au
+  moins 60 verbes, écrite avant la liste et contrôlée absente par un test.
+  Test d'abord. **Fini quand** : famille `courants` à 0 ; réserve de P2-240
+  au plus 100 sur 200 et seconde réserve mesurée, chiffres dans
+  `bench/ETAT.md` ; noms en clair (entier ou en partie) inchangés sur tous les
+  corpus flous et de dossiers, prénoms de la sonde à 0 ; reste du tableau de
+  bord inchangé ou expliqué ligne à ligne ; `LIMITES.md` à jour (la liste ne
+  couvre pas tout).
