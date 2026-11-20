@@ -1699,3 +1699,60 @@ désormais (`"refuse": true`) au lieu de s'arrêter ; sans cela le réaliste
    corrigé à 61.
 
 Tous les autres chiffres sont identiques à ceux des rapports cités.
+
+## Communes de 10 000 à 100 000 habitants derrière les tournures de personne (P2-238)
+
+Mesure seule, aucune correction, aucun fichier de `lib/` modifié. `main` au
+commit `3b30228`, graine 42. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit
+le LLM), document par document (`run_redact_bench.dart`), pas le moteur seul.
+
+**Témoin** (`generate_corpus_tournures_communes_moyennes.py`, scoreur
+`score_tournures_communes_moyennes.py`, rejoué par `bench/etat.sh`) : aucune
+personne, aucune entité annotée. 60 communes tirées du référentiel versionné
+(`geo_communes.csv.gz`, communes à population renseignée), **20 par tranche**
+(10–30 000, 30–50 000, 50–100 000 habitants), chacune placée une fois dans les
+quatre tournures de P2-220 (mêmes gabarits que P2-226) : 240 documents. Un lieu
+est « masqué à tort » si une détection recouvre la commune (lisibilité perdue,
+pas une fuite).
+
+**Seuil de 100 000** : chiffré sur une **copie jetable** (arbre de travail
+séparé, `communes_grandes.dart` régénéré avec `selectionne(lignes, 100000)` de
+`tools/build_communes_grandes.py`), jamais commitée. La liste obtenue compte 58
+noms (39 communes de 100 000 habitants et plus et 20 sans population, moins un
+doublon de clé : deux communes « Saint-Denis »), et non 59.
+
+| Tranche | Seuil 10 000 (`main`) : « à la demande de » | Seuil 100 000 : « à la demande de » | Trois autres tournures (les deux seuils) |
+|---|---:|---:|---:|
+| 10–30 000 | 1 / 20 | **20 / 20** | 58 / 60 |
+| 30–50 000 | 0 / 20 | **20 / 20** | 60 / 60 |
+| 50–100 000 | 0 / 20 | **20 / 20** | 57 / 60 |
+| **Total** | **1 / 60** | **60 / 60** | 175 / 180 |
+
+Tous les lieux masqués le sont sous le type `nom`. Les trois autres tournures
+(« dossier de » 60 / 60, « entretien avec » 60 / 60, « sujet : a confirmé »
+55 / 60) n'écartent aucune commune : leur chiffre ne dépend pas du seuil. Au
+total, 176 lieux masqués à tort sur 240 au seuil 10 000 (`main`), 235 sur 240
+au seuil 100 000.
+
+**Lecture.**
+- Au seuil de `main` (10 000), les communes de ce témoin sont à peu près toutes
+  épargnées derrière « à la demande de » : 1 masquée sur 60. L'exception est
+  « Roquebrune-Cap-Martin » (12 037 habitants, tranche 10–30 000), pourtant
+  présente dans `communes_grandes.dart` : cause **non explorée** ici.
+- Au seuil de 100 000, **les 60 communes** du témoin sont masquées derrière « à la
+  demande de », dans les trois tranches (20 / 20 chacune). Le coût passe de 1 à
+  60 lieux sur 60 : la tranche 50–100 000 est à **100 %**, au-dessus du
+  plafond de 50 % que la fiche de P2-239 fixe pour s'arrêter.
+- Ce chiffre est un coût de lisibilité sur un témoin **sans** personne : il dit
+  combien de lieux de 10 000 à 100 000 habitants seraient masqués, pas combien
+  de patronymes-communes seraient sauvés (24 fuites sur 96 à `main` d'après
+  P2-233, 0 au seuil de 100 000). Ce compromis est celui du mainteneur.
+
+**Ce que la mesure ne dit pas.** Les communes sont tirées au hasard (graine 42),
+pas pondérées par leur fréquence d'emploi réelle ; le gabarit de « à la demande
+de » est unique (« Rendez-vous reporté à la demande de X ; une nouvelle date sera
+proposée ») ; aucun texte réel. Les seuils intermédiaires (30 000, 50 000) ne
+sont pas chiffrés ici. La parité avec une liste réellement régénérée par le
+script de P2-239 (tâche de code) n'est pas démontrée : la copie jetable utilise
+la même fonction `selectionne`, donc la liste sera la même, mais le détecteur
+d'une PR de code peut différer.
