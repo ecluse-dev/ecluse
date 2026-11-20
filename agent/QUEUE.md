@@ -667,7 +667,10 @@ rattrapés avant P2-220).
   dossier). Écarter un mot suivant qui est un verbe conjugué, par une règle de
   forme justifiée (terminaisons, liste fermée de verbes courants écrite par le
   projet), sans rendre en clair un patronyme qui ressemble à un verbe : le
-  mesurer sur les témoins de noms existants. **Fini quand** : sonde 340 → 40 au
-  plus ; le verbe n'est plus masqué ailleurs ni dans le document suivant d'un
+  mesurer sur les témoins de noms existants. Exigence du mainteneur (20 novembre) : **aucun verbe ne
+  doit être masqué**, le LLM en a besoin pour travailler sur le texte. Un
+  patronyme qui a la forme d'un verbe conjugué (homographe) passe donc en clair
+  derrière un prénom : en dresser la liste mesurée dans la PR et l'écrire dans
+  `LIMITES.md` comme fuite connue. **Fini quand** : sonde 340 → **0** ; le verbe n'est plus masqué ailleurs ni dans le document suivant d'un
   dossier ; témoins de noms, familles de patronymes de P2-226 et corpus de
   dossiers inchangés ou meilleurs (aucune fuite ajoutée) ; `LIMITES.md` à jour.
