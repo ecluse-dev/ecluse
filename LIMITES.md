@@ -811,8 +811,28 @@ pas masquer « 3 chemin de fer » ou « 12 place disponible ». Les mots outils,
 (« 70000 euros », « 21000 dossiers ») ne sont pas recapitalisés ; un autre
 nom commun après un code postal peut être pris pour une commune
 (sur-masquage). Un patronyme seul sans civilité ni prénom connu n'est pas
-détecté, sauf s'il a été établi plus haut ou dans le dossier (P2-144). Un texte entièrement en MAJUSCULES n'est pas concerné ; relire
-avant envoi. Dates et
+détecté, sauf s'il a été établi plus haut ou dans le dossier (P2-144).
+**Prénom + verbe conjugué (P2-240).** « Sophie rappelle. » donnait un seul nom
+de deux mots, puis le verbe était retenu comme patronyme et masqué dans toute
+la suite d'un dossier (sonde reproductible `bench/generate_corpus_prenom_verbe.py` :
+320 verbes masqués sur 400 phrases avec un verbe courant). Exigence du
+mainteneur : aucun verbe n'est masqué, le LLM en a besoin. Une **liste fermée**
+de formes verbales courantes (`verbes_conjugues.dart`, écrite par le projet) et
+les terminaisons « -ait », « -aient », « -erait », « -eraient », « -eront »
+écartent le mot qui suit un prénom : seul le prénom est masqué (320 → 0). Deux
+limites assumées. **(1) Un verbe absent de la liste reste masqué avec son
+prénom** : 20 verbes écrits après la liste donnent 20 phrases sur 20 encore
+masquées (« Sophie sollicite. »), sur-masquage seulement. **(2) Fuite connue :
+un patronyme homographe d'un verbe de la liste passe en clair derrière un
+prénom** (« marc porte », « julien marche » : le nom n'est pas masqué ; un
+patronyme en « -ait » ou « -aient » aussi). Aucun mot de nom annoté des corpus
+du dépôt (234 mots) n'est dans la liste, et aucune forme de la liste n'est un
+prénom du gazetteer : la fuite n'est donc **pas mesurée** sur des patronymes
+réels (le dépôt n'a pas de référentiel de patronymes, voir P2-231) ; à lire
+comme un risque, pas comme un chiffre. Un texte entièrement en MAJUSCULES n'est
+pas concerné ; relire avant envoi. La branche « civilité + prénom + mot » garde
+son défaut équivalent (« monsieur marc loyer présente » : le verbe est masqué),
+non traité ici. Dates et
 téléphones ne sont pas touchés tant que les chiffres restent des chiffres.
 
 **Texte entièrement en MAJUSCULES (P2-121).** Fuite globale doublée par

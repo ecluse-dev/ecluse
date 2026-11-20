@@ -1756,3 +1756,53 @@ sont pas chiffrés ici. La parité avec une liste réellement régénérée par 
 script de P2-239 (tâche de code) n'est pas démontrée : la copie jetable utilise
 la même fonction `selectionne`, donc la liste sera la même, mais le détecteur
 d'une PR de code peut différer.
+
+## Prénom + verbe conjugué : le verbe n'est plus masqué (P2-240)
+
+Correction de `NomMinusculesDetector` (branche « prénom connu suivi d'un mot »)
+et de `patronymeEtabli`. Sonde reproductible : `bench/generate_corpus_prenom_verbe.py`
+(10 prénoms × 40 verbes courants = famille `courants`, 10 prénoms × 20 verbes
+écrits **après** la liste = famille `reserve`, graine 42), scoreur
+`score_prenom_verbe.py`, rejouée par `bench/etat.sh`. Chemin mesuré :
+**`Ecluse.redact`** (ce que reçoit le LLM), document par document. Un verbe
+masqué est une détection qui recouvre le verbe ; un prénom en clair serait une
+fuite.
+
+| | Avant (`main`) | Après |
+|---|---:|---:|
+| Famille `courants`, verbes masqués | 320 / 400 | **0 / 400** |
+| Famille `reserve` (verbes hors de la liste), verbes masqués | 200 / 200 | 200 / 200 |
+| Prénoms en clair (fuite), 600 phrases | 0 | 0 |
+
+- La sonde de P2-235 donnait 340 sur 400 ; ses 40 verbes n'étaient pas versionnés,
+  la nouvelle liste en donne 320 (écart de verbes, pas de code). Le « fini quand »
+  « 340 → 0 » devient **320 → 0** sur la sonde versionnée.
+- **Règle** : liste fermée de formes verbales courantes écrite par le projet
+  (`verbes_conjugues.dart`, 177 formes) plus les terminaisons « -ait »,
+  « -aient », « -erait », « -eraient », « -eront » ; un mot de la liste après un
+  prénom n'est plus joint au prénom (seul le prénom est masqué, même pour un
+  faux ami : « Rose rappelle. ») et n'est jamais retenu comme patronyme établi.
+  Une terminaison plus large (« -ent », « -e ») est écartée : Laurent, Vincent,
+  Clément ; trop de patronymes en « -e ».
+- **La réserve ne mesure pas le même objet.** Une première réserve, écrite avant
+  la liste, en avait reçu 15 verbes (0 / 200 : sans valeur) ; elle a été remplacée
+  par 20 verbes choisis après coup et contrôlés absents (un test le vérifie). Une
+  liste fermée ne couvre que ce qu'elle nomme : « Sophie sollicite. » reste masqué
+  en entier (200 / 200). **L'exigence « aucun verbe masqué » n'est donc tenue que
+  pour les verbes de la liste** ; l'étendre est possible, la couvrir en entier ne
+  l'est pas par une liste écrite à la main.
+- **Effet en chaîne** (test Dart) : « Sophie rappelle. Elle rappelle demain et il
+  rappelle lundi. » garde ses trois « rappelle » ; dans un dossier, « Le médecin
+  rappelle lundi. » du document suivant reste intact.
+- **Fuite connue (écrite dans `LIMITES.md`)** : un patronyme homographe d'un verbe
+  de la liste (« marc porte ») passe en clair derrière un prénom. **Non mesuré sur
+  des patronymes réels** : aucun des 234 mots de nom annotés des corpus du dépôt
+  n'est dans la liste, aucune des 177 formes n'est un prénom du gazetteer, et le
+  dépôt n'a pas de référentiel de patronymes (P2-231, tâche humaine).
+- **Inchangés** (tableau de bord rejoué en entier, hors cette section) : familles
+  de patronymes de P2-226, témoin de P2-218, corpus de dossiers (1 / 116 manqué),
+  fuite des noms du flou adversarial en minuscules, faux amis, QI, transcrits.
+  Aucune fuite ajoutée sur ces témoins.
+- Hors périmètre, **non traité** : la branche « civilité + prénom + mot » a le même
+  défaut avec « présente » (164 occurrences dans les corpus adversariaux, P2-235) ;
+  la corriger changerait des chiffres du flou adversarial.

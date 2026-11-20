@@ -2,6 +2,7 @@ import 'package:ecluse_core/ecluse_core.dart';
 
 import 'casse.dart';
 import 'french_first_names.dart';
+import 'verbes_conjugues.dart';
 
 /// Noms de personnes dans un texte **sans aucune majuscule** (P2-119), ou
 /// **sans aucune minuscule** (texte en capitales, P2-123).
@@ -63,6 +64,8 @@ final class NomMinusculesDetector implements EntityDetector {
     } else if (confidence == 0.5 && mots.length == 2) {
       final a = _prenom(mots[0]), b = _prenom(mots[1]);
       if (a != b) candidat = a ? mots[1] : mots[0];
+      // « prénom + verbe » : le verbe n'est pas un patronyme (P2-240).
+      if (a && !b && estVerbeConjugue(mots[1])) candidat = null;
     }
     if (candidat == null ||
         candidat.length < 3 ||
@@ -391,6 +394,14 @@ final class NomMinusculesDetector implements EntityDetector {
           !_outil(mots[i + 1].group(0)!) &&
           !_civilites.contains(mots[i + 1].group(0)!)) {
         final suivant = mots[i + 1].group(0)!;
+        // Verbe conjugué (« sophie rappelle ») : seul le prénom est masqué, le
+        // verbe reste lisible (P2-240). Pas de test de faux ami : le sujet
+        // d'un verbe est une personne (« rose pousse » : « rose » seul).
+        if (estVerbeConjugue(suivant)) {
+          ajoute(i, i, 0.5);
+          i += 2;
+          continue;
+        }
         if (!_qualificatif(suivant)) {
           ajoute(i, i + 1, 0.5);
           i += 2;
