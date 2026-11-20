@@ -740,6 +740,41 @@ change de 3 caractères : `Ecluse.redact` seul 5 376 (au lieu de 5 379), nom exa
 colonne « toute ligne » ne bouge pas. Moins de suite masquée en trop, 0 adresse
 en partie en clair.
 
+**Écart de 3 caractères expliqué (P2-237, mesure seulement).** Chemin mesuré :
+`Ecluse.redact` (`run_redact_bench.dart`), témoin « commune suivie » en
+capitales (`variantes_casse.py`, 480 documents, graine 42), rejoué sur le
+parent de P2-212 (`d88c8b0^`) et sur `main`, document par document ; caractères
+de suite masqués = caractères non blancs de la suite sous une détection.
+
+| | Avant P2-212 | Après P2-212 |
+|---|---:|---:|
+| Caractères de suite masqués, 480 documents | 5 379 | 5 376 |
+| Documents dont l'étendue masquée diffère | — | **3** (n° 78, 276, 312) |
+
+- **Documents.** Les trois ont la suite « RETOUR A L EXPEDITEUR » (11 documents
+  du témoin portent cette suite ; les huit autres ne changent pas, la commune y
+  est trop longue pour que « A » entre dans le même passage). Pour chacun,
+  l'étendue de l'adresse passe de « …commune RETOUR A » à « …commune RETOUR » :
+  **un seul caractère** de moins, la lettre « A » (7 → 6 caractères de suite
+  masqués), soit 3 caractères au total. Aucune autre différence de prédiction
+  sur les 480 documents.
+- **Règle responsable.** `MinusculesRecapitaliseDetector` (passage
+  `communesSeules` autour de `AdresseDetector`, `ecluse.dart`). Il passe au
+  détecteur d'adresse un texte d'ombre où chaque mot reçoit une majuscule
+  initiale, sauf les mots neutres. P2-212 (#436) a ajouté la forme sans accent
+  « a » aux mots neutres (`estMotNeutre`) : « A » (écriture sans accent de
+  « à ») reste en minuscule dans l'ombre, la commune s'arrête avant lui. Avant,
+  il était recapitalisé et avalé comme dernier mot de la commune. Sonde sur le
+  texte « 90046 LONS LE SAUNIER RETOUR A L EXPEDITEUR » : `AdresseDetector` seul
+  20–48 avant et après ; avec l'ombre, 20–50 avant, 20–48 après.
+- **Verdict : masquage plus juste, ni fuite ni perte.** « A » est une préposition
+  ordinaire, pas une partie de l'adresse. L'adresse annotée reste entièrement
+  couverte (0 adresse en partie en clair sur les 480 documents, avant et
+  après). Le mot « RETOUR » reste masqué dans les trois cas (sur-masquage connu
+  de la colonne « capitales », non traité ici). Aucune correction.
+- **Non mesuré.** Les prédictions de `Ecluse.redact` seul : la colonne « fin de
+  ligne » simulée (6 631) n'a pas été recalculée ici.
+
 La règle « fin de ligne » de P2-181 avait été rejouée à la main et n'était pas
 versionnée : la lecture écrite ici donne 4 808 là où P2-181 avait noté 4 858
 (écart de 50 caractères, non expliqué, la règle d'origine n'est pas
