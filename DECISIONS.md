@@ -772,3 +772,14 @@ Décisions déléguées par le mainteneur (« prends ces décisions »).
    travailler. Le coût assumé : un patronyme homographe d'un verbe conjugué
    reste en clair derrière un prénom ; il est mesuré et écrit dans
    `LIMITES.md`.
+
+## 2026-11 — P2-239 et P2-241 (20 novembre, après P2-238 et P2-240)
+
+1. **Seuil de 100 000 habitants maintenu** malgré P2-238 : derrière « à la
+   demande de », les villes de 10 000 à 100 000 habitants seront masquées
+   comme un nom (60 sur 60 au témoin). Coût assumé : aucune fuite plutôt que de
+   la lisibilité, comme pour les marques (P2-234).
+2. **« Aucun verbe masqué », par une règle de forme** (P2-241) : dans un texte
+   à casse normale, un prénom n'est jamais étendu sur un mot en minuscule. La
+   liste fermée de P2-240 ne couvrait que 177 formes. Coût à mesurer avant le
+   code : un patronyme écrit en minuscule derrière un prénom passerait en clair.

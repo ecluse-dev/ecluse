@@ -308,6 +308,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-238 | mesure | Témoin `lieu` élargi : communes de 10 000 à 100 000 habitants derrière les tournures de personne, avant le seuil de 100 000 (décision du 20 novembre) | P2-233 | fusionnée |
 | P2-239 | code | Tournures de personne : n'écarter après « à la demande de » que les communes de 100 000 habitants et plus (option D de P2-233) | P2-238 | à faire |
 | P2-240 | code | « Prénom + verbe » : ne plus étendre un nom sur un verbe conjugué (« Sophie rappelle. »), ni retenir ce verbe comme patronyme | P2-235 | fusionnée |
+| P2-241 | code | « Prénom + mot » : dans un texte à casse normale, ne jamais étendre un prénom sur un mot en minuscule (aucun verbe masqué, hors liste comprise), coût mesuré d'abord | P2-240 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -658,8 +659,10 @@ rattrapés avant P2-220).
   derrière « à la demande de » ; lieux masqués à tort sur le témoin élargi de
   P2-238 rapportés par tranche et égaux à la simulation de P2-238 ; corpus de
   dossiers et reste du tableau de bord inchangés ou meilleurs ; `LIMITES.md` à
-  jour. Si la tranche 50–100 000 du témoin élargi dépasse 50 % de lieux masqués
-  à tort, s'arrêter et rendre les chiffres.
+  jour. Le garde-fou de 50 % est **levé** (décision du 20 novembre, après
+  P2-238 : 60 sur 60 villes de 10 000 à 100 000 habitants masquées à tort
+  derrière « à la demande de » au seuil de 100 000) : ce coût est assumé et
+  écrit dans `LIMITES.md`.
 - **P2-240** : `NomMinusculesDetector`, branche « prénom connu suivi d'un mot »
   (P2-119, P2-124), et `patronymeEtabli`. Test d'abord, avec la sonde de P2-235
   rendue reproductible dans `bench/` (400 phrases « Prénom verbe. », graine
@@ -674,3 +677,21 @@ rattrapés avant P2-220).
   `LIMITES.md` comme fuite connue. **Fini quand** : sonde 340 → **0** ; le verbe n'est plus masqué ailleurs ni dans le document suivant d'un
   dossier ; témoins de noms, familles de patronymes de P2-226 et corpus de
   dossiers inchangés ou meilleurs (aucune fuite ajoutée) ; `LIMITES.md` à jour.
+
+### P2-241 — Aucun verbe masqué, règle de forme (décision du 20 novembre)
+
+- **P2-241** : `NomMinusculesDetector`, branche « prénom connu suivi d'un mot »,
+  et `patronymeEtabli`. P2-240 n'écarte que les 177 formes de sa liste
+  (réserve hors liste : 200 sur 200 verbes encore masqués). Règle décidée :
+  quand le texte est à casse normale (casse de phrase, `casse.dart`), un
+  prénom n'est **jamais** étendu sur le mot suivant s'il est en minuscule ; la
+  branche reste inchangée pour les textes entièrement en minuscules. **Mesure
+  d'abord** (dans la PR, avant le code) : sur tous les corpus du tableau de
+  bord, combien de noms annotés « Prénom nom-en-minuscule » dans un texte à
+  casse normale passeraient en clair (coût : fuite d'un patronyme écrit en
+  minuscule). Test d'abord. **Fini quand** : famille `reserve` de la sonde de
+  P2-240 à 0 sur 200, famille `courants` toujours à 0 ; fuites ajoutées
+  comptées et listées par corpus, écrites dans `LIMITES.md` ; textes tout en
+  minuscules inchangés ; reste du tableau de bord inchangé ou expliqué ligne
+  à ligne. Si la mesure préalable montre plus de 1 % des noms d'un corpus
+  existant rendus en clair, s'arrêter et rendre les chiffres.
