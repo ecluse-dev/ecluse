@@ -222,6 +222,18 @@ if produit "communes moyennes, générateur" "$B/flou/corpus_tournures_communes_
   fi
 fi
 
+# Sonde « prénom + verbe conjugué » (P2-235, P2-240) : 10 prénoms × 40 verbes
+# courants (famille courants) et 20 verbes hors de la liste fermée du
+# détecteur (famille reserve). Un verbe masqué est un masquage en trop ; un
+# prénom en clair serait une fuite. Chemin mesuré : Ecluse.redact, document par
+# document.
+echo "## prénom + verbe conjugué (P2-240) : Ecluse.redact (chemin du produit)"
+if produit "prénom + verbe, générateur" "$B/flou/corpus_prenom_verbe.jsonl" python3 "$B/generate_corpus_prenom_verbe.py" --seed 42 --out "$B/flou/corpus_prenom_verbe.jsonl"; then
+  if produit "prénom + verbe, Ecluse.redact" "$B/flou/pred_prenom_verbe.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_prenom_verbe.jsonl ../../bench/flou/pred_prenom_verbe.jsonl; then
+    montre "prénom + verbe, score" -E "^prénom \+ verbe :|^  famille=" 0 non dans_B python3 score_prenom_verbe.py --corpus flou/corpus_prenom_verbe.jsonl --pred flou/pred_prenom_verbe.jsonl || true
+  fi
+fi
+
 echo "## pathologies"
 produit "générateur pathologies" "$B/patho/corpus_pathologies_indices.jsonl" python3 "$B/generate_corpus_pathologies.py" --n 300 --seed 42 --out-dir "$B/patho" || true
 patho_rattachees() { reid run_pathologies_bench.dart "../../bench/patho/corpus_pathologies_$1.jsonl" "../../bench/patho/corpus_pathologies_temoin.jsonl" | sed -n '/rattachées/,$p'; }
