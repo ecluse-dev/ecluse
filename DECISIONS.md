@@ -767,3 +767,8 @@ Décisions déléguées par le mainteneur (« prends ces décisions »).
 3. **« Prénom + verbe »** (P2-235) : défaut à corriger (P2-240), sans fuite
    mais avec un effet en chaîne (le verbe retenu comme patronyme est masqué
    ailleurs, et dans les documents suivants d'un dossier).
+4. **Aucun verbe masqué** (précision du mainteneur, P2-240) : un verbe
+   conjugué après un prénom n'est jamais masqué, car le LLM en a besoin pour
+   travailler. Le coût assumé : un patronyme homographe d'un verbe conjugué
+   reste en clair derrière un prénom ; il est mesuré et écrit dans
+   `LIMITES.md`.
