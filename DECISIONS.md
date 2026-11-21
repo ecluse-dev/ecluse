@@ -814,3 +814,13 @@ Le mainteneur suit les recommandations présentées le 21 novembre.
 6. **lints 6.1** : adopté (#475, reprise de #343).
 7. **Prototypes OCR et LLM** (#10, #11) : fermés sans fusion, branches
    conservées ; à rouvrir quand un client les demandera.
+
+## 2026-11 — Masquages à tort : mesurer avant de corriger (21 novembre)
+
+Les 11 documents « masqués à tort » du comparatif sont surtout des données
+personnelles non annotées (3 noms, 1 numéro de dossier, 1 téléphone). Objectif
+du mainteneur : masquer aussi peu qu'EDS-Pseudo, **sans laisser passer de
+nom**. D'abord un témoin de documents sans donnée personnelle et une annotation
+corrigée (P2-246, P2-247) ; le SIREN reste masqué mais nommé (P2-248). Les
+leviers de fond restent le lexique de verbes (P2-245) et le référentiel de
+patronymes (P2-231).
