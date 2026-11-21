@@ -154,6 +154,65 @@ def score(docs, spans_par_doc):
     return par_type, faux
 
 
+# --- annotation complémentaire (P2-247) -------------------------------------
+#
+# Le corpus v3 n'annote que les identifiants structurels (NIR, RPPS, IBAN,
+# FINESS) : ses phrases contiennent aussi des noms, des téléphones et des
+# numéros de dossier que personne n'annote. Sans cela, un outil qui les masque
+# est compté « à tort ». Cette annotation est propre au comparatif : elle ne
+# modifie ni `generate_corpus.py` ni les corpus, elle ajoute des entités sur la
+# copie de l'échantillon. Règle, écrite pour être relue :
+#
+# - **nom** : une suite « Prénom Nom » où Prénom est dans `PRENOMS` et Nom dans
+#   `NOMS` de `generate_corpus.py` (les listes du générateur : ce sont les
+#   personnes qu'il a posées), civilité exclue ;
+# - **telephone** : un numéro français à dix chiffres (0X, ou +33 X) groupés par
+#   deux, séparés par espace, point ou espace insécable ;
+# - **dossier** : le nombre qui suit « dossier n° » ou « dossier numéro ».
+#
+# Un ajout qui recouvre une entité déjà annotée est ignoré. Les numéros que le
+# corpus pose comme pièges (SIREN, SIRET, IBAN à clé invalide, numéros de
+# praticien inconnus) ne sont **pas** annotés : ce ne sont pas des données
+# personnelles au sens de cette règle (le SIREN est traité par P2-248).
+
+RE_TEL = re.compile(r"(?<!\d)(?:0|\+33[ .\u00a0]?)[1-9](?:[ .\u00a0]?\d{2}){4}(?!\d)")
+RE_DOSSIER = re.compile(r"dossier\s+(?:n°|numéro)\s*(\d+)", re.IGNORECASE)
+
+
+def _regle_nom():
+    sys.path.insert(0, ICI)
+    from generate_corpus import NOMS, PRENOMS
+    pre = "|".join(re.escape(x) for x in sorted(PRENOMS, key=len, reverse=True))
+    nom = "|".join(re.escape(x) for x in sorted(NOMS, key=len, reverse=True))
+    return re.compile(rf"(?<!\w)(?:{pre}) (?:{nom})(?!\w)")
+
+
+def annote_complement(docs):
+    """Copie de `docs` avec les entités ajoutées par la règle ci-dessus
+    (champ `ajoute` = True sur chacune). Renvoie (copie, comptes) où comptes
+    = {(source, type): nombre d'entités ajoutées}."""
+    re_nom = _regle_nom()
+    comptes = {}
+    sortie = []
+    for d in docs:
+        texte = d["text"]
+        entites = list(d["entities"])
+        pris = [(e["start"], e["end"]) for e in entites]
+        candidats = [("nom", m.start(), m.end()) for m in re_nom.finditer(texte)]
+        candidats += [("telephone", m.start(), m.end())
+                      for m in RE_TEL.finditer(texte)]
+        candidats += [("dossier", m.start(1), m.end(1))
+                      for m in RE_DOSSIER.finditer(texte)]
+        for t, a, b in sorted(candidats, key=lambda c: c[1]):
+            if any(a < fin and debut < b for debut, fin in pris):
+                continue
+            entites.append({"type": t, "start": a, "end": b, "ajoute": True})
+            pris.append((a, b))
+            comptes[(d["source"], t)] = comptes.get((d["source"], t), 0) + 1
+        sortie.append(dict(d, entities=entites))
+    return sortie, comptes
+
+
 # --- outils ---------------------------------------------------------------
 
 CORPUS = os.path.join(SORTIE, "corpus_comparatif.jsonl")
@@ -379,6 +438,56 @@ def detail_ecluse(docs):
                 for s, c in sorted(par.items())) + ".")
 
 
+def section_annotation(resultats, resultats_a, docs_a, comptes):
+    """Ancienne et nouvelle lignes côte à côte (P2-247) : mêmes prédictions,
+    deux annotations."""
+    outils = [o for o in OUTILS if o in resultats]
+    sans = sum(1 for d in docs_a if not d["entities"])
+    lignes = [
+        "## Annotation complémentaire des données personnelles non annotées (P2-247)",
+        "",
+        "Mêmes prédictions que ci-dessus, **deux annotations** : celle du corpus, et celle du",
+        "corpus plus une annotation propre au comparatif (`annote_complement` dans",
+        "`bench/comparatif.py` ; ni `generate_corpus.py` ni les corpus ne sont touchés).",
+        "",
+        "**Règle d'annotation.** Noms : suite « Prénom Nom » dont le prénom et le nom",
+        "sont dans `PRENOMS` et `NOMS` de `generate_corpus.py`, civilité exclue.",
+        "Téléphones : numéro français à dix chiffres groupés par deux (`0X`, ou `+33 X`).",
+        "Numéros de dossier : le nombre qui suit « dossier n° ». Un ajout qui recouvre une",
+        "entité déjà annotée est ignoré. **Non annotés** : SIREN, SIRET, IBAN à clé",
+        "invalide et numéros de praticien inconnus (pièges du corpus, pas des données",
+        "personnelles au sens de cette règle ; le SIREN relève de P2-248).",
+        "",
+        "Entités ajoutées (source, type : nombre) : "
+        + ", ".join(f"{s} {t} : {n}" for (s, t), n in sorted(comptes.items()))
+        + f". Documents sans entité : {sum(1 for d in docs_a if not d['entities'])} "
+        "après annotation.",
+        "",
+        "Ancienne et nouvelle lignes, côte à côte :",
+        "",
+        "| | " + " | ".join(LIBELLES[o] for o in outils) + " |",
+        "|---|" + "---:|" * len(outils),
+    ]
+    def tot(r):
+        return [sum(v[0] for v in r[0].values()), sum(v[1] for v in r[0].values())]
+    lignes.append("| Couverture, annotation du corpus | " + " | ".join(
+        pct(*tot(resultats[o])) for o in outils) + " |")
+    lignes.append("| Couverture, avec annotation complémentaire | " + " | ".join(
+        pct(*tot(resultats_a[o])) for o in outils) + " |")
+    lignes.append("| Sans entité masqués à tort, annotation du corpus | " + " | ".join(
+        pct(*resultats[o][1]) for o in outils) + " |")
+    lignes.append("| Sans entité masqués à tort, avec annotation complémentaire | "
+                  + " | ".join(pct(*resultats_a[o][1]) for o in outils) + " |")
+    lignes += ["", "Détail par type avec annotation complémentaire :", "",
+               tableau(resultats_a, docs_a), "",
+               "Limites : la règle ne voit que les personnes posées par les listes du "
+               "générateur, les téléphones et dossiers de format régulier ; une donnée "
+               "personnelle d'une autre forme (dans les dossiers ou le flou) resterait "
+               "non annotée. Le chemin mesuré est inchangé : `Ecluse.redact` pour "
+               "Écluse, la détection propre de chaque outil pour les autres.", ""]
+    return "\n".join(lignes)
+
+
 def rapport(resultats, docs, commande):
     comptes = {}
     for d in docs:
@@ -462,15 +571,18 @@ def main():
     docs = echantillon(_lire(chemins["v3"]), _lire(chemins["dossiers"]),
                        _lire(chemins["flou"]))
     ecrit_corpus(docs)
-    resultats = {}
+    resultats, resultats_a = {}, {}
+    docs_a, comptes_a = annote_complement(docs)
     for outil in choisis:
         spans = lance(outil, docs)
         resultats[outil] = score(docs, spans)
+        resultats_a[outil] = score(docs_a, spans)
         print(f"{LIBELLES[outil]} : {sum(v[0] for v in resultats[outil][0].values())}"
               f" / {sum(v[1] for v in resultats[outil][0].values())} entités couvertes",
               file=sys.stderr)
     commande = "python3 bench/comparatif.py --md bench/COMPARATIF.md"
     texte = rapport(resultats, docs, commande)
+    texte += "\n" + section_annotation(resultats, resultats_a, docs_a, comptes_a)
     if a.md:
         with open(a.md, "w", encoding="utf-8") as f:
             f.write(texte)
