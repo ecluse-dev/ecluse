@@ -428,6 +428,20 @@ if produit "commune à mot de voie, générateur" "$B/flou/corpus_commune_voie.j
   fi
 fi
 
+# Écritures de communes hors référentiel (P2-244, mesure de `agent/specs/P2-215.md`) :
+# la règle « nom exact » lit « ST »/« STE » comme « SAINT »/« SAINTE » et compare
+# les noms collés. Une adresse par commune et par écriture (261 communes des
+# formes A, C et D), tout en capitales, sans CEDEX. Colonne `Ecluse.redact seul` :
+# adresses en partie en clair avec le code livré ; les colonnes de règles
+# (exact, normalise, distance1) sont des simulations hors lib/ (union des
+# détections et de l'étendue simulée, `resolveOverlaps` non rejoué).
+echo "## communes en capitales hors référentiel : « ST », séparateurs collés, fautes (P2-244) : Ecluse.redact (chemin du produit), règles simulées hors lib/"
+if produit "écritures hors référentiel, générateur" "$B/flou/corpus_ecritures_hors_referentiel.jsonl" python3 "$B/ecritures_hors_referentiel.py" genere --seed 42 --out "$B/flou/corpus_ecritures_hors_referentiel.jsonl"; then
+  if produit "écritures hors référentiel, Ecluse.redact" "$B/flou/pred_ecritures_hors_referentiel.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_ecritures_hors_referentiel.jsonl ../../bench/flou/pred_ecritures_hors_referentiel.jsonl; then
+    montre "écritures hors référentiel, couverture" -E "^écritures hors référentiel :|^# table|^  (variante=|écritures hors référentiel)" 0 non dans_B python3 ecritures_hors_referentiel.py couverture --corpus flou/corpus_ecritures_hors_referentiel.jsonl --pred flou/pred_ecritures_hors_referentiel.jsonl || true
+  fi
+fi
+
 # Courriers synthétiques en capitales (P2-210) : la fréquence de « cinq chiffres
 # + mot neutre + CEDEX » dans des courriers entiers (titres, références,
 # montants, nombres de dossiers, adresses de retour), que le témoin de P2-200

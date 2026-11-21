@@ -1997,3 +1997,44 @@ est faite une seule fois » ; elle ne l'est pas (voir « Ce qui reste incertain 
 seuls hors tournure dans des textes réels ; des noms de plusieurs mots ou à particule
 (non rattrapés, `LIMITES.md` § 8) ; le temps sur des documents plus longs que ceux du
 corpus.
+## Communes en capitales écrites hors référentiel : « ST », séparateurs collés (P2-244)
+
+Option 1 de `agent/specs/P2-215.md`, table réduite seulement (décision du 21 novembre). La
+règle « nom exact » lit « ST »/« STE » comme « SAINT »/« SAINTE » et compare les noms
+collés (apostrophe ou tiret perdu sans espace). Chemin mesuré : **`Ecluse.redact`**
+(prédictions de `run_redact_bench.dart`) ; une adresse par commune et par écriture, 261
+communes des formes A, C et D, tout en capitales, sans CEDEX, graine 42 ; `main` au commit
+`f7a94bb` plus cette PR. Les colonnes « règle simulée » de `ecritures_hors_referentiel.py`
+sont des simulations hors `lib/` (`resolveOverlaps` non rejoué) ; la colonne « code livré »
+est la mesure réelle. Rejoué par `bash bench/etat.sh` (section « communes en capitales hors
+référentiel »).
+
+| Écriture | Adresses | En partie en clair, avant | **après** |
+|---|---:|---:|---:|
+| référence (forme postale), contrôle | 261 | 0 | 0 |
+| accents gardés, contrôle | 80 | 0 | 0 |
+| « ST », « STE » pour SAINT, SAINTE | 170 | 66 | **0** |
+| apostrophe perdue, mots collés | 69 | 9 | **0** |
+| tiret perdu, mots collés | 246 | 33 | **0** |
+| une lettre fautive | 261 | 143 | 143 (non traité) |
+| une lettre omise | 261 | 141 | 141 (non traité) |
+| **cinq écritures hors référentiel** | **1 007** | **392** | **284** |
+
+Écart avec la fiche : la fiche écrit « 388 → 280 au plus ». Le départ mesuré aujourd'hui
+sur `main` est **392**, non 388 (les deux écritures par lettre valaient 141 et 139 dans la
+spec, 143 et 141 aujourd'hui : elles ont bougé depuis la spec, hors de cette tâche). L'option
+1 ne touche pas à ces deux écritures : 392 − 66 − 9 − 33 = **284**, et la simulation
+`normalise` de la spec donne le même chiffre sur le même corpus. Le seuil « 280 au plus »
+n'est donc pas atteint par la seule option 1 ; le critère de fond (les trois écritures à
+0) l'est.
+
+**Témoins** (lignes sans adresse, `Ecluse.redact`) : cinq chiffres, déterminant, mot neutre
+devant CEDEX, courriers, noms de forme neutre, communes moyennes, tournures : **identiques**
+au rejeu de `main` (diff du rejeu complet de `etat.sh` : seules les lignes de la nouvelle
+section sont ajoutées). Un test de non-régression existe pour « LES PLACES » (coût connu).
+
+**Ce que la mesure ne dit pas** : une fréquence (personne n'a compté combien d'adresses
+réelles écrivent « ST »), les abréviations autres (« ST. », « S/ », « STS »), deux fautes dans
+un nom, les anciens noms de communes ; le risque propre à la comparaison collée sur des noms
+longs (un témoin de phrases en capitales de cinq mots ou plus derrière un nombre à cinq
+chiffres est recommandé par la spec avant l'option 2, non construit ici).
