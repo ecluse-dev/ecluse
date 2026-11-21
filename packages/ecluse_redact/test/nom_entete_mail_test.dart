@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 /// Nom d'un correspondant dans un en-tête de courriel (P2-53). Un prénom
 /// absent du gazetteer échappait à toutes les règles : « From: Zorglub Quenelle
-/// <z@exemple.fr> » ne masquait que l'adresse. L'indice est la structure : un
+/// `<z@exemple.fr>` » ne masquait que l'adresse. L'indice est la structure : un
 /// nom devant `<adresse>` derrière une étiquette d'en-tête en début de ligne,
 /// ou devant `<adresse>` suivi de « a écrit ».
 void main() {

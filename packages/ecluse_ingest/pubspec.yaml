@@ -31,5 +31,5 @@ dev_dependencies:
     path: ../ecluse_core
   ecluse_redact:
     path: ../ecluse_redact
-  lints: ^4.0.0
+  lints: ^6.1.0
   test: ^1.25.0

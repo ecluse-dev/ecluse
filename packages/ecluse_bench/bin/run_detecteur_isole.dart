@@ -19,7 +19,7 @@ import 'package:ecluse_core/ecluse_core.dart';
 /// leurs sorties sont simplement concaténées, sans résolution de
 /// chevauchements (un détecteur isolé n'en fait pas).
 ///
-/// Usage : dart run ecluse_bench:run_detecteur_isole <corpus.jsonl> <sortie.jsonl>
+/// Usage : dart run ecluse_bench:run_detecteur_isole `<corpus.jsonl>` `<sortie.jsonl>`
 Future<void> main(List<String> args) async {
   if (args.length < 2) {
     stderr.writeln('Usage : run_detecteur_isole <corpus.jsonl> <sortie.jsonl>');

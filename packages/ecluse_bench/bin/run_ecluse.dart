@@ -6,7 +6,7 @@ import 'package:ecluse_core/ecluse_core.dart';
 /// Exécute les détecteurs Écluse sur un corpus JSONL et écrit les
 /// prédictions au format attendu par `bench/score.py`.
 ///
-/// Usage : dart run ecluse_bench:run_ecluse <corpus.jsonl> <sortie.jsonl>
+/// Usage : dart run ecluse_bench:run_ecluse `<corpus.jsonl>` `<sortie.jsonl>`
 Future<void> main(List<String> args) async {
   final corpusPath = args.isNotEmpty ? args[0] : 'bench/corpus.jsonl';
   final outPath = args.length > 1 ? args[1] : 'bench/predictions_ecluse.jsonl';

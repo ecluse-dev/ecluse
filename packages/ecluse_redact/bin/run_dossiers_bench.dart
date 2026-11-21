@@ -62,7 +62,7 @@ List<Map<String, dynamic>> mentionsAvecJeton(
 /// seuil par défaut.
 ///
 /// Usage :
-///   dart run bin/run_dossiers_bench.dart [--dossier|--regle=n2] [--prenoms-insee] <corpus.jsonl> <sortie.jsonl>
+///   dart run bin/run_dossiers_bench.dart [--dossier|--regle=n2] [--prenoms-insee] `<corpus.jsonl>` `<sortie.jsonl>`
 Future<void> main(List<String> arguments) async {
   final regleN2 = arguments.contains('--regle=n2');
   final avecDossier = arguments.contains('--dossier') || regleN2;

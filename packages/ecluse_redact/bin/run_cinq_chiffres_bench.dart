@@ -18,7 +18,7 @@ import 'package:ecluse_redact/ecluse_redact.dart';
 ///
 /// Aucune valeur du texte n'est imprimée : seulement des comptes par axe.
 ///
-/// Usage : dart run bin/run_cinq_chiffres_bench.dart <corpus.jsonl>
+/// Usage : dart run bin/run_cinq_chiffres_bench.dart `<corpus.jsonl>`
 Future<void> main(List<String> args) async {
   if (args.isEmpty) {
     stderr.writeln('Usage : run_cinq_chiffres_bench <corpus.jsonl>');

@@ -14,7 +14,7 @@ import 'package:ecluse_reference/ecluse_reference.dart';
 /// détection, pour une relecture à la main. Rien n'est écrit sur disque.
 ///
 /// Usage :
-///   dart run bin/run_prenoms_insee_prose.dart [--seuil=N] <fichier>...
+///   dart run bin/run_prenoms_insee_prose.dart [--seuil=N] `<fichier>`...
 Future<void> main(List<String> argv) async {
   final effectifs =
       EcluseReference(fileAssets(assetsDir: '../ecluse_reference/assets'))

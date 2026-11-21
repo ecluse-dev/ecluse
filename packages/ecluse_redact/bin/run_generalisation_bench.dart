@@ -17,7 +17,7 @@ import 'package:ecluse_reference/ecluse_reference.dart';
 /// restauration exacte des entités masquées).
 ///
 /// Usage (depuis `packages/ecluse_redact`) :
-///   dart run bin/run_generalisation_bench.dart <corpus_qi.jsonl>
+///   dart run bin/run_generalisation_bench.dart `<corpus_qi.jsonl>`
 Future<void> main(List<String> args) async {
   if (args.length != 1) {
     stderr.writeln(

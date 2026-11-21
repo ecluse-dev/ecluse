@@ -44,7 +44,7 @@ const Map<String, String> typeMap = {
 /// au format attendu par `bench/score_flou.py`.
 ///
 /// Usage :
-///   dart run bin/run_redact_bench.dart [--prenoms-insee[=SEUIL]] <corpus.jsonl> <sortie.jsonl>
+///   dart run bin/run_redact_bench.dart [--prenoms-insee[=SEUIL]] `<corpus.jsonl>` `<sortie.jsonl>`
 ///
 /// `--confiance` (P2-203) : ajoute à chaque entité sa `confidence` et, par
 /// document, `a_verifier` (vrai si un avertissement de `Ecluse.redact` contient

@@ -5,7 +5,7 @@ import 'support/cout.dart';
 
 /// Coût d'une chaîne de particules et de balises ouvertes (P2-79), trouvé par un
 /// relecteur indépendant. `_unite` répétait les particules sans borne : « Van Der »
-/// × 80 (640 octets) prenait 15 s dans la règle « nom devant <adresse> a écrit »
+/// × 80 (640 octets) prenait 15 s dans la règle « nom devant `<adresse>` a écrit »
 /// (P2-53), 10 Ko plus de 50 s ; « de la » × 4 000 : 11 s ; une formule de clôture
 /// suivie d'une chaîne de particules (P2-54) : cubique. `<prenom ` sans `>` était
 /// quadratique. Une chaîne de plus de trois particules n'est pas un nom.
