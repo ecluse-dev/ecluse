@@ -298,7 +298,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-228 | code | Tournures de personne : n'écarter les communes qu'après « à la demande de » (fuite « Gaillard a confirmé ») | P2-227 | fusionnée |
 | P2-229 | code | Tournures de personne : liste fermée d'organismes nationaux (« le dossier de France Travail », « à la demande de Emmaüs ») | P2-228 | fusionnée |
 | P2-230 | spec | Aperçu : signaler « à vérifier » les noms établis par une seule tournure de personne, sans changer ce qui est masqué | P2-229 | fusionnée |
-| P2-231 | humain | Lire la licence du fichier des noms de famille de l'INSEE (P2-221) et d'un lexique libre du français, puis décider si le référentiel de patronymes adossé aux tournures est mis en file | P2-221 | humain |
+| P2-231 | humain | Lire les licences : noms de famille de l'INSEE (P2-221), lexiques de formes fléchies du français (Lefff, LGPL-LR ; Morphalou, ATILF) et leur compatibilité avec Apache 2.0 ; puis décider du référentiel de patronymes et du lexique de verbes | P2-221 | humain |
 | P2-232 | code | Aperçu : signal « à vérifier » sur les noms dont la seule preuve est une tournure de personne (option A de P2-230), sans changer ce qui est masqué | P2-230 | fusionnée |
 | P2-233 | mesure | Patronymes qui sont aussi une commune derrière « à la demande de » : 24 sur 96 en clair (P2-228) ; options pour les départager des lieux, chiffrées hors `lib/` | P2-228 | fusionnée |
 | P2-234 | code | Tournures de personne : organismes encore masqués à tort (43 sur 96 au témoin de P2-226, après P2-229) | P2-229 | fusionnée |
@@ -572,10 +572,20 @@ rattrapés avant P2-220).
   `descriptionMoteur` ; ce qui n'apparaît jamais (valeur du texte dans un
   message ou un `toString`). **Fini quand** : au moins deux options comparées,
   une recommandation, les décisions du mainteneur listées.
-- **P2-231** : `humain`. Lecture des licences (noms de famille de l'INSEE,
-  lexique libre du français) ; un lexique seul est écarté (9 patronymes sur 10
-  de la sonde sont aussi des noms communs et fuiraient), il n'a de sens
-  qu'avec le référentiel de patronymes.
+- **P2-231** : `humain`. Lecture des licences, mise à jour le 21 novembre
+  après P2-242 (une liste de verbes écrite à la main généralise mal : 344
+  verbes ajoutés, 180 sur 200 et 630 sur 680 verbes de réserve encore
+  masqués). Trois ressources : (1) fichier des noms de famille de l'INSEE
+  (P2-221) ; (2) Lefff, lexique des formes fléchies du français (Inria),
+  distribué sous LGPL-LR ; (3) Morphalou (ATILF, CNRS), en accès libre « sous
+  acceptation de la licence », licence non lue. Question à trancher pour (2)
+  et (3) : un fichier dérivé (liste des formes verbales) peut-il vivre dans un
+  dépôt Apache 2.0, dans un fichier séparé sous sa propre licence, déclaré dans
+  `DATA_SOURCES.md` ? Un lexique seul de noms communs est écarté (9 patronymes
+  sur 10 de la sonde du 17 novembre sont aussi des noms communs). Si les
+  licences le permettent, une tâche de code : lexique de verbes (aucun verbe
+  masqué derrière un prénom, quelle que soit la forme) et règle de forme de
+  P2-241 limitée aux mots absents du référentiel de patronymes.
 
 ### P2-232 — Signal « à vérifier » dans l'aperçu (décisions du 19 novembre)
 
