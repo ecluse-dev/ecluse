@@ -61,11 +61,38 @@ List<Map<String, dynamic>> mentionsAvecJeton(
 /// Avec `--prenoms-insee` (P2-149), l'option `prenomsInsee` est active au
 /// seuil par défaut.
 ///
+/// Avec `--patronymes=<fichier.json>` (P2-243, implique `--dossier`), chaque
+/// dossier reçoit une liste de patronymes de l'application
+/// (`Dossier(patronymesConnus: …)`), lue dans le fichier produit par
+/// `bench/export_patronymes_dossiers.py` : `commun` pour tous, plus `ajoute` et
+/// moins `retire` par identifiant de dossier. Sans l'option, aucune liste.
+///
 /// Usage :
-///   dart run bin/run_dossiers_bench.dart [--dossier|--regle=n2] [--prenoms-insee] `<corpus.jsonl>` `<sortie.jsonl>`
+///   dart run bin/run_dossiers_bench.dart [--dossier|--regle=n2] [--prenoms-insee] [--patronymes=`<liste.json>`] `<corpus.jsonl>` `<sortie.jsonl>`
 Future<void> main(List<String> arguments) async {
   final regleN2 = arguments.contains('--regle=n2');
-  final avecDossier = arguments.contains('--dossier') || regleN2;
+  final fichierListe = [
+    for (final a in arguments)
+      if (a.startsWith('--patronymes=')) a.substring('--patronymes='.length)
+  ];
+  final avecDossier =
+      arguments.contains('--dossier') || regleN2 || fichierListe.isNotEmpty;
+  final listes = fichierListe.isEmpty
+      ? null
+      : jsonDecode(File(fichierListe.first).readAsStringSync())
+          as Map<String, dynamic>;
+  PatronymesConnus? listePour(Object? dossier) {
+    if (listes == null) return null;
+    final commun = {for (final n in listes['commun'] as List) n as String};
+    final propre = (listes['par_dossier'] as Map<String, dynamic>)['$dossier']
+        as Map<String, dynamic>?;
+    if (propre != null) {
+      commun.removeAll([for (final n in propre['retire'] as List) n as String]);
+      commun.addAll([for (final n in propre['ajoute'] as List) n as String]);
+    }
+    return PatronymesConnus(commun);
+  }
+
   PrenomsInsee? prenoms;
   if (arguments.contains('--prenoms-insee')) {
     final effectifs =
@@ -76,12 +103,16 @@ Future<void> main(List<String> arguments) async {
   }
   final args = [
     for (final a in arguments)
-      if (a != '--dossier' && a != '--regle=n2' && a != '--prenoms-insee') a
+      if (a != '--dossier' &&
+          a != '--regle=n2' &&
+          a != '--prenoms-insee' &&
+          !a.startsWith('--patronymes='))
+        a
   ];
   if (args.length != 2) {
     stderr.writeln(
         'Usage : dart run bin/run_dossiers_bench.dart [--dossier|--regle=n2] '
-        '<corpus.jsonl> <sortie.jsonl>');
+        '[--patronymes=<liste.json>] <corpus.jsonl> <sortie.jsonl>');
     exitCode = 64;
     return;
   }
@@ -102,7 +133,8 @@ Future<void> main(List<String> arguments) async {
             doc['dossier'],
             () => Dossier(
                 regle:
-                    regleN2 ? RegleNoms.inclusion : RegleNoms.identiteComplete))
+                    regleN2 ? RegleNoms.inclusion : RegleNoms.identiteComplete,
+                patronymesConnus: listePour(doc['dossier'])))
         : null;
     final resultat =
         await Ecluse.redact(texte, dossier: dossier, prenomsInsee: prenoms);
