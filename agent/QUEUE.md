@@ -316,8 +316,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-246 | mesure | Témoin de documents réalistes sans aucune donnée personnelle (au moins 400) : masquages à tort des six configurations du comparatif | P2-224 | à faire |
 | P2-247 | mesure | Comparatif : annoter les données personnelles non annotées de l'échantillon v3 (noms, téléphones, numéros de dossier) avant de compter les masquages à tort | P2-224 | à faire |
 | P2-248 | code | SIREN et SIRET nommés : après « SIREN » ou « SIRET », étiquette `siren` au lieu de `finess`, toujours masqué | — | à faire |
-| P2-249 | humain | Télécharger le fichier national des noms de l'INSEE (txt) et Morphalou 3.1 (CSV « tout en un ») et les déposer pour génération des fichiers dérivés (le réseau des sessions ne joint ni insee.fr ni ortolang.fr) | P2-231 | humain |
-| P2-250 | code | Référentiel de patronymes de l'INSEE (Licence Ouverte 2.0) : confirmer un nom derrière une tournure, et règle de forme de P2-241 limitée aux mots absents du référentiel | P2-249 | à faire |
+| P2-249 | humain | Télécharger le fichier national des noms de l'INSEE (txt, fait le 21 novembre : `patronymes_effectifs.tsv.gz`) et Morphalou 3.1 (CSV « tout en un ») et les déposer pour génération des fichiers dérivés (le réseau des sessions ne joint ni insee.fr ni ortolang.fr) | P2-231 | humain |
+| P2-250 | code | Référentiel de patronymes de l'INSEE (Licence Ouverte 2.0) : confirmer un nom derrière une tournure, et règle de forme de P2-241 limitée aux mots absents du référentiel | P2-231 | à faire |
 | P2-251 | code | Paquet optionnel `ecluse_lexique` (LGPL-LR) : formes verbales de Morphalou 3.1, chargées comme fichier remplaçable (spec P2-245) ; aucun verbe masqué derrière un prénom | P2-249 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
@@ -826,7 +826,11 @@ mention « Source : Insee » et date de mise à jour) ; Morphalou 3.1 (ATILF, 20
   « tout en un » (Ortolang), et les dépose dans la conversation de pilotage ;
   les fichiers dérivés, leurs empreintes SHA-256 et les scripts de génération
   (`tools/`) sont ajoutés par une PR distincte, avant P2-250 et P2-251.
-- **P2-250** : `ecluse_redact`. Table de patronymes dérivée du fichier de
+- **P2-250** : `ecluse_redact`. Table de patronymes dérivée de
+  `packages/ecluse_reference/assets/patronymes_effectifs.tsv.gz` (versionné le 21
+  novembre ; 218 111 noms normalisés avec effectif 1891-2000 ; attention : des
+  mots courants y figurent, par exemple « PRESSE », 1 795 naissances : un seuil
+  d'effectif est à mesurer, comme pour les prénoms en P2-149), du fichier de
   l'INSEE (noms seuls, sans effectifs, par le script de `tools/`, test de
   parité), mention dans `DATA_SOURCES.md`. Deux usages seulement (décision du
   21 novembre) : (a) confirmer un mot derrière une tournure de personne
