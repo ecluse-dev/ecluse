@@ -161,6 +161,18 @@ ATTENDU = [
          r"clair : \d+", 1, "signature du défaut"),
         (r"^  ligne « code postal \+ mot » masquée", 1, "masquage en trop"),
     ]),
+    ("## communes en capitales hors référentiel", [
+        (r"^écritures hors référentiel : \d+ adresses, \d+ communes des formes "
+         r"A, C et D", 1, "population et écritures (P2-244)"),
+        (r"^# table (complete|reduite) \(\d+ noms\)$", 2, "deux tables"),
+        (r"^  variante=(reference|accents|st|apostrophe_collee|tiret_colle|"
+         r"lettre_fautive|lettre_omise) : \d+ adresses, Ecluse\.redact seul "
+         r"\d+ ; exact \d+ ; normalise \d+ ; distance1 \d+$", 14,
+         "sept écritures, deux tables"),
+        (r"^  écritures hors référentiel \(cinq variantes\) : \d+ adresses, "
+         r"Ecluse\.redact seul \d+ ; exact \d+ ; normalise \d+ ; distance1 "
+         r"\d+$", 2, "total des cinq écritures, deux tables"),
+    ]),
     ("## courriers en capitales", [
         (r"^courriers : \d+ courriers, \d+ lignes, \d+ adresses annotées, "
          r"\d+ courrier\(s\) à adresse en partie en clair", 1,

@@ -311,7 +311,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-241 | code | « Prénom + mot » : dans un texte à casse normale, ne jamais étendre un prénom sur un mot en minuscule (aucun verbe masqué, hors liste comprise), coût mesuré d'abord | P2-240 | fusionnée |
 | P2-242 | code | « Prénom + verbe » : étendre la liste fermée de P2-240 (formes et terminaisons sûres) sans aucune fuite ajoutée | P2-241 | fusionnée |
 | P2-243 | code | Liste de personnes fournie par l'application, dans le `Dossier` (option B de la spec P2-219, décisions du 21 novembre) | P2-219 | fusionnée |
-| P2-244 | code | Communes hors référentiel : « ST »/« STE » et séparateurs collés (option 1 de la spec P2-215, table réduite) | P2-215 | à faire |
+| P2-244 | code | Communes hors référentiel : « ST »/« STE » et séparateurs collés (option 1 de la spec P2-215, table réduite) | P2-215 | fusionnée |
 | P2-245 | spec | Paquet optionnel `ecluse_lexique` sous sa propre licence (formes verbales du Lefff, LGPL-LR), hors du cœur Apache 2.0 | P2-242 | à faire |
 | P2-246 | mesure | Témoin de documents réalistes sans aucune donnée personnelle (au moins 400) : masquages à tort des six configurations du comparatif | P2-224 | à faire |
 | P2-247 | mesure | Comparatif : annoter les données personnelles non annotées de l'échantillon v3 (noms, téléphones, numéros de dossier) avant de compter les masquages à tort | P2-224 | à faire |
