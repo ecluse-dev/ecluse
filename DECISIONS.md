@@ -791,3 +791,26 @@ corpus adversarial en casse de phrase). Décision : pas de fuite ajoutée pour
 démasquer des verbes. Étendre la liste fermée de P2-240 (P2-242) ; la règle de
 forme reviendra limitée aux mots absents d'un référentiel de patronymes, après
 la lecture des licences (P2-231).
+
+## 2026-11 — Décisions du 21 novembre (specs P2-215, P2-219, P2-221 ; licences ; dépendances)
+
+Le mainteneur suit les recommandations présentées le 21 novembre.
+1. **Liste de personnes fournie par l'application** (spec P2-219) : option B
+   (liste dans le `Dossier`), type opaque, commune de la liste masquée, aucun
+   compte au journal, refus explicite des entrées invalides sans la valeur,
+   pas d'amorce en minuscules, `ajouterPatronymes`, particules et noms
+   contigus écrits comme limites (P2-243).
+2. **Lexiques sous licence copyleft** (Lefff, LGPL-LR ; Morphalou) : jamais
+   dans le cœur ni dans `ecluse_redact`. Un paquet optionnel séparé, sous sa
+   propre licence, à concevoir (P2-245). La lecture de la licence de l'INSEE et
+   de Morphalou reste au mainteneur (P2-231).
+3. **Référentiel de patronymes** (spec P2-221) : acceptable seulement pour
+   confirmer un mot derrière une tournure de personne, jamais pour masquer un
+   mot seul.
+4. **Article de benchmark** (P1-12) : refait avant publication à partir de
+   `bench/COMPARATIF.md`, limites écrites ; chiffres d'août retirés.
+5. **Communes hors référentiel** (spec P2-215) : option 1 sur la table réduite
+   (P2-244) ; option 2 reportée ; aucune mesure sur des adresses réelles.
+6. **lints 6.1** : adopté (#475, reprise de #343).
+7. **Prototypes OCR et LLM** (#10, #11) : fermés sans fusion, branches
+   conservées ; à rouvrir quand un client les demandera.
