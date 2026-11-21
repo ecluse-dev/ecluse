@@ -5,7 +5,7 @@ import 'support/cout.dart';
 
 /// Coût sur un mot composé très long (P2-58). Un mot en majuscule initiale
 /// fait de segments reliés par des tirets (« Aa-Aa-Aa-… », « AB-123-AB-123-… »)
-/// était traité en temps cubique par la règle « nom devant <adresse> a écrit »
+/// était traité en temps cubique par la règle « nom devant `<adresse>` a écrit »
 /// (P2-53) : le motif repartait de chaque segment du mot. 12 000 segments
 /// (36 Ko) prenaient plus de 15 s ; le motif exige maintenant un début de mot.
 void main() {

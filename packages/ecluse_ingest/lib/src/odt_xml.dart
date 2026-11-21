@@ -4,8 +4,9 @@
 /// Volontairement étroit plutôt que générique, comme `docx_xml.dart` :
 /// contrairement à l'OOXML, où le texte est toujours dans une balise
 /// feuille (`<w:t>`), l'OpenDocument place le texte directement entre les
-/// balises de bloc (`<text:p>du texte <text:span>stylé</text:span> encore
-/// du texte</text:p>`), sans balise de run intermédiaire. L'extraction
+/// balises de bloc
+/// (`<text:p>du texte <text:span>stylé</text:span> encore du texte</text:p>`),
+/// sans balise de run intermédiaire. L'extraction
 /// utilise donc un compteur de profondeur plutôt qu'une bascule sur une
 /// seule balise : tout texte rencontré alors qu'on est descendu dans un
 /// `<text:p>`, `<text:h>` ou `<text:list-item>` est capturé, quelles que

@@ -15,7 +15,7 @@ import 'package:ecluse_reid/ecluse_reid.dart';
 /// rapport.
 ///
 /// Usage (depuis `packages/ecluse_redact`) :
-///   dart run bin/run_risque_bench.dart <corpus_qi.jsonl>
+///   dart run bin/run_risque_bench.dart `<corpus_qi.jsonl>`
 Future<void> main(List<String> args) async {
   if (args.length != 1) {
     stderr.writeln('Usage : dart run bin/run_risque_bench.dart <corpus.jsonl>');

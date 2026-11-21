@@ -24,7 +24,7 @@ import 'package:ecluse_redact/ecluse_redact.dart';
 /// Aucune valeur du texte n'est imprimée : seulement des comptes par axe.
 ///
 /// Usage :
-///   dart run bin/run_cp_tete_bench.dart <adresses.jsonl>
+///   dart run bin/run_cp_tete_bench.dart `<adresses.jsonl>`
 ///       [--regle-candidate <temoin.jsonl>]
 Future<void> main(List<String> args) async {
   final i = args.indexOf('--regle-candidate');
