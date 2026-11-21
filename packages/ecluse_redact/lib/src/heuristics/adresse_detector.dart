@@ -542,6 +542,20 @@ final class AdresseDetector implements EntityDetector {
   /// ligne : ils ferment le nom.
   static final RegExp _entreMotsDeNom = RegExp("^[ \\t\\u00A0\\u202F'’()-]+\$");
 
+  /// « ST » et « STE » lus « SAINT » et « SAINTE » (P2-244). Aucun nom de
+  /// [communesNomExact] ne contient « ST » ni « STE » comme mot : le dépliement
+  /// ne peut pas défaire un nom du référentiel.
+  static const Map<String, String> _abreviationsSaint = {
+    'ST': 'SAINT',
+    'STE': 'SAINTE',
+  };
+
+  /// [communesNomExact] sans espaces : la clé de comparaison collée, calculée
+  /// une fois (aucune donnée de plus dans le dépôt).
+  static final Set<String> _nomsExactsCollesSet = {
+    for (final nom in communesNomExact) nom.replaceAll(' ', '')
+  };
+
   /// Portion de ligne relue derrière un code postal : le plus long nom de
   /// [communesNomExact] a huit mots et moins de 60 caractères.
   static const int _fenetreNomExact = 120;
@@ -558,9 +572,17 @@ final class AdresseDetector implements EntityDetector {
   /// ne masque que ce qui **est** une commune connue, écrite en entier. Le
   /// texte est comparé sans accent ni ponctuation, comme la table.
   ///
+  /// **Écritures postales hors référentiel** (P2-244, option 1 de
+  /// `agent/specs/P2-215.md`, table réduite seulement) : « ST » et « STE » sont
+  /// lus « SAINT » et « SAINTE », et les noms sont comparés **collés** (sans
+  /// espace, des deux côtés), ce qui absorbe une apostrophe ou un tiret perdu
+  /// sans espace (« DAURELLE », « CHATEAUCHINON »). La comparaison collée
+  /// reste sur des fins de mot du texte : un nom ne se termine jamais au milieu
+  /// d'un mot. Une faute de lettre ou une lettre omise n'est **pas** reconnue
+  /// (pas de distance d'édition) : `LIMITES.md`.
+  ///
   /// Le nom doit finir à une limite de mot ; une parenthèse fermante qui le
-  /// suit immédiatement en fait partie. Une écriture hors du référentiel
-  /// (« ST » pour « SAINT », une faute) n'est pas reconnue : `LIMITES.md`.
+  /// suit immédiatement en fait partie.
   static int? _finNomExact(String text, int codePostal) {
     final i = codePostal + 5;
     if (i >= text.length) return null;
@@ -584,10 +606,11 @@ final class AdresseDetector implements EntityDetector {
       // Avant le premier mot : des blancs seulement (le motif l'exige déjà).
       if (entre.isEmpty || !_entreMotsDeNom.hasMatch(entre)) break;
       if (++mots > communesNomExactMotsMax) break;
-      if (mots > 1) cle.write(' ');
-      cle.write(normName(mot.group(0)!));
+      // Collé : la clé n'a pas d'espace ; « ST »/« STE » sont dépliés.
+      final normalise = normName(mot.group(0)!);
+      cle.write(_abreviationsSaint[normalise] ?? normalise);
       precedent = mot.end;
-      if (communesNomExact.contains(cle.toString())) {
+      if (_nomsExactsCollesSet.contains(cle.toString())) {
         var f = mot.end;
         if (f < ligne.length && ligne[f] == ')') f++;
         fin = i + f;

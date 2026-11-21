@@ -893,10 +893,22 @@ forme B**, 57 adresses de 15 communes dont le premier mot est un mot neutre
 sans « CEDEX », ni le nom ni le code postal ne sont masqués, parce que les
 reconnaître ferait une adresse de « 08061 SON » ou « 70000 VERS » dans une
 phrase (200 phrases sur 200 au témoin construit). **Ce que la règle ne
-couvre pas** : une écriture hors du référentiel (« ST » pour « SAINT », une
-faute, une ancienne commune) garde la limite d'avant, fin du nom en clair
-(mesure prévue : P2-215) ; un texte en casse ordinaire n'est pas concerné par
-la règle. **Coût mesuré** : « LES PLACES » est le seul nom de la table qui se
+couvre pas** : une faute de lettre, une lettre omise, une ancienne commune
+garde la limite d'avant, fin du nom en clair ; un texte en casse ordinaire n'est
+pas concerné par la règle. **Écritures postales lues depuis P2-244** : « ST » et
+« STE » sont lus « SAINT » et « SAINTE », et les noms sont comparés **collés**
+(sans espace des deux côtés), ce qui absorbe une apostrophe ou un tiret perdu sans
+espace (« DAURELLE », « CHATEAUCHINON »). Mesure (`Ecluse.redact`, 1 007 adresses
+de 261 communes écrites hors référentiel, tout en capitales, sans CEDEX) :
+**392 → 284** adresses en partie en clair ; « ST »/« STE » 66 → 0, apostrophe collée
+9 → 0, tiret collé 33 → 0 ; les deux écritures qui restent sont la lettre fautive
+(143) et la lettre omise (141), **non traitées** : pas de distance d'édition (option 2
+de la spec P2-215, reportée après un témoin de noms longs). Ne sont pas lus non plus :
+« ST. » avec un point, « S/ » pour « SUR », « STS », deux fautes dans un même nom. Le
+dépliement ne vaut que sur la table réduite (261 noms) : la table complète
+changerait le risque de faux positifs, non mesuré ici. La fréquence réelle de ces
+écritures dans des adresses réelles n'est pas connue (aucune mesure sur des
+adresses réelles : règle 1 de `CLAUDE.md`). **Coût mesuré** : « LES PLACES » est le seul nom de la table qui se
 lit aussi comme du texte ; « VIREMENT DE 99307 LES PLACES EFFECTUE LUNDI », en
 capitales, est masqué jusqu'à « PLACES » (8 phrases sur 200 au témoin des noms
 de forme neutre, 0 avant ; les autres témoins sans adresse sont inchangés).

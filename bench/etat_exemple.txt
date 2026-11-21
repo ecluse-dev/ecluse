@@ -449,6 +449,26 @@ commune à mot de voie : 3744 documents, 52 communes, 22 document(s) à adresse 
   en clair : vraie voie 0, code postal 0, commune 22, seconde adresse 0
   début en clair (code postal ou premier mot de la commune) : 0 document(s) ; fin du nom seule en clair : 22
   ligne « code postal + mot » masquée (en trop, pas une fuite) : 1248 / 1248
+## communes en capitales hors référentiel : « ST », séparateurs collés, fautes (P2-244) : Ecluse.redact (chemin du produit), règles simulées hors lib/
+écritures hors référentiel : 1348 adresses, 261 communes des formes A, C et D, tout en capitales, sans CEDEX ; adresses en partie en clair (Ecluse.redact + règle simulée, hors lib/ ; distance 1 pour un nom d'au moins 8 lettres)
+# table complete (32587 noms)
+  variante=reference : 261 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+  variante=accents : 80 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+  variante=st : 170 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+  variante=apostrophe_collee : 69 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+  variante=tiret_colle : 246 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+  variante=lettre_fautive : 261 adresses, Ecluse.redact seul 143 ; exact 143 ; normalise 143 ; distance1 0
+  variante=lettre_omise : 261 adresses, Ecluse.redact seul 141 ; exact 141 ; normalise 141 ; distance1 0
+  écritures hors référentiel (cinq variantes) : 1007 adresses, Ecluse.redact seul 284 ; exact 284 ; normalise 284 ; distance1 0
+# table reduite (261 noms)
+  variante=reference : 261 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+  variante=accents : 80 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+  variante=st : 170 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+  variante=apostrophe_collee : 69 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+  variante=tiret_colle : 246 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+  variante=lettre_fautive : 261 adresses, Ecluse.redact seul 143 ; exact 143 ; normalise 143 ; distance1 0
+  variante=lettre_omise : 261 adresses, Ecluse.redact seul 141 ; exact 141 ; normalise 141 ; distance1 0
+  écritures hors référentiel (cinq variantes) : 1007 adresses, Ecluse.redact seul 284 ; exact 284 ; normalise 284 ; distance1 0
 ## courriers en capitales (P2-210) : Ecluse.redact (chemin du produit), masquage en trop et adresses annotées
 courriers : 400 courriers, 3185 lignes, 970 adresses annotées, 0 courrier(s) à adresse en partie en clair (Ecluse.redact)
   masquage en trop : 0 courriers / 400, 0 lignes / 3185
