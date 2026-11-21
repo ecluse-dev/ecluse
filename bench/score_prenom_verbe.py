@@ -41,7 +41,7 @@ def affiche(par):
     t = par["*"]
     print(f"prénom + verbe : {t['documents']} phrases, {t['verbes']} verbes "
           f"masqués, {t['fuites']} prénoms en clair (fuite)")
-    for famille in ("courants", "reserve"):
+    for famille in ("courants", "reserve", "reserve2"):
         c = par[famille]
         print(f"  famille={famille} : {c['verbes']} / {c['documents']} verbes "
               f"masqués, {c['fuites']} prénoms en clair")

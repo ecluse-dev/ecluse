@@ -224,7 +224,8 @@ fi
 
 # Sonde « prénom + verbe conjugué » (P2-235, P2-240) : 10 prénoms × 40 verbes
 # courants (famille courants) et 20 verbes hors de la liste fermée du
-# détecteur (famille reserve). Un verbe masqué est un masquage en trop ; un
+# détecteur (famille reserve), plus 68 verbes de l'écrit soignant écrits avant
+# l'extension de la liste (famille reserve2, P2-242). Un verbe masqué est un masquage en trop ; un
 # prénom en clair serait une fuite. Chemin mesuré : Ecluse.redact, document par
 # document.
 echo "## prénom + verbe conjugué (P2-240) : Ecluse.redact (chemin du produit)"
