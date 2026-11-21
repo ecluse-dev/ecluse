@@ -309,7 +309,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-239 | code | Tournures de personne : n'écarter après « à la demande de » que les communes de 100 000 habitants et plus (option D de P2-233) | P2-238 | fusionnée |
 | P2-240 | code | « Prénom + verbe » : ne plus étendre un nom sur un verbe conjugué (« Sophie rappelle. »), ni retenir ce verbe comme patronyme | P2-235 | fusionnée |
 | P2-241 | code | « Prénom + mot » : dans un texte à casse normale, ne jamais étendre un prénom sur un mot en minuscule (aucun verbe masqué, hors liste comprise), coût mesuré d'abord | P2-240 | fusionnée |
-| P2-242 | code | « Prénom + verbe » : étendre la liste fermée de P2-240 (formes et terminaisons sûres) sans aucune fuite ajoutée | P2-241 | à faire |
+| P2-242 | code | « Prénom + verbe » : étendre la liste fermée de P2-240 (formes et terminaisons sûres) sans aucune fuite ajoutée | P2-241 | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 

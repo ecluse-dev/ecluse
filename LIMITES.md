@@ -822,12 +822,23 @@ de formes verbales courantes (`verbes_conjugues.dart`, écrite par le projet) et
 les terminaisons « -ait », « -aient », « -erait », « -eraient », « -eront »
 écartent le mot qui suit un prénom : seul le prénom est masqué (320 → 0). Deux
 limites assumées. **(1) Un verbe absent de la liste reste masqué avec son
-prénom** : 20 verbes écrits après la liste donnent 20 phrases sur 20 encore
-masquées (« Sophie sollicite. »), sur-masquage seulement. **(2) Fuite connue :
+prénom** : après l'extension de P2-242 (558 formes), 20 verbes écrits
+après la première liste donnent encore 180 phrases sur 200, et 68 verbes
+écrits avant la seconde extension 630 sur 680 (« Sophie sollicite. »),
+sur-masquage seulement ; la liste ne couvre pas tout et ne généralise presque
+pas. **(2) Fuite connue :
 un patronyme homographe d'un verbe de la liste passe en clair derrière un
 prénom** (« marc porte », « julien marche » : le nom n'est pas masqué ; un
-patronyme en « -ait » ou « -aient » aussi). Aucun mot de nom annoté des corpus
-du dépôt (234 mots) n'est dans la liste, et aucune forme de la liste n'est un
+patronyme en « -ait » ou « -aient » aussi). P2-242 étend la fuite : tout verbe ajouté (« marc dispose »,
+« julien documente ») et les formes dérivées (pluriel, futur) sont en clair
+s'ils sont aussi un patronyme ; mesure ponctuelle (21 novembre, texte en minuscules « rdv avec
+marc calme ce matin. », 20 verbes ajoutés par P2-242 pris comme patronymes × 10 prénoms,
+chemin `Ecluse.redact`) : **200 patronymes sur 200 en clair** (même chose
+pour 20 verbes de P2-240 : 200 sur 200), c'est-à-dire que la fuite est totale
+pour tout mot de la liste, par construction ; les terminaisons ajoutées (« -ifie »,
+« -ionne », « -isent »…) ont été mesurées contre les noms annotés et les prénoms
+INSEE d'effectif au moins 1 000, pas contre de vrais patronymes. Aucun mot de nom annoté des corpus
+du dépôt (107 mots de plus de 4 lettres) n'est reconnu comme verbe, et aucune forme de la liste n'est un
 prénom du gazetteer : la fuite n'est donc **pas mesurée** sur des patronymes
 réels (le dépôt n'a pas de référentiel de patronymes, voir P2-231) ; à lire
 comme un risque, pas comme un chiffre. Un texte entièrement en MAJUSCULES n'est

@@ -1852,6 +1852,51 @@ session » = `Dossier`. Test écrit d'abord (4 cas « masqué » en échec sur
 - La seule autre ligne du témoin de P2-226 qui bouge est `organismes` (+1 :
   « Orange »), soit la marque qui est aussi une commune de plus de 10 000
   habitants, déjà signalée par `LIMITES.md`.
+## Prénom + verbe : liste de verbes étendue (P2-242)
+
+Correction de `verbes_conjugues.dart` (liste fermée étendue de 177 à 558
+formes, terminaisons et formes dérivées) ; `NomMinusculesDetector` inchangé.
+Sonde : `bench/generate_corpus_prenom_verbe.py`, désormais **trois familles**
+(graine 42) : `courants` (400), `reserve` (200, P2-240) et `reserve2` (680 =
+10 prénoms × 68 verbes de l'écrit soignant et social, **écrite avant la liste**
+et jamais reprise dans la liste, un test le contrôle). Chemin mesuré :
+**`Ecluse.redact`**, document par document ; un verbe masqué est une détection
+qui recouvre le verbe.
+
+| | Avant (`main`) | Après |
+|---|---:|---:|
+| `courants`, verbes masqués | 0 / 400 | **0 / 400** |
+| `reserve` (P2-240), verbes masqués | 200 / 200 | **180 / 200** |
+| `reserve2` (P2-242), verbes masqués | 660 / 680 | **630 / 680** |
+| Prénoms en clair (fuite), 1 280 phrases | 0 | **0** |
+
+- **Le critère « réserve au plus 100 sur 200 » n'est pas atteint** (180). Une
+  liste fermée ne généralise presque pas : 344 verbes ajoutés (558 formes au total) écrits par champ
+  lexical, sans les 20 verbes de `reserve` ni les 68 de `reserve2`, en couvrent
+  20 sur 200 et 30 sur 680. Atteindre 100 sur 200 sans reprendre les verbes de la
+  réserve est contradictoire avec la consigne « ne pas reprendre mot à mot » ;
+  la voie qui généralise est la règle de forme (P2-241, bloquée à +25,9 %) ou un
+  référentiel de patronymes (P2-231). À décider par le mainteneur.
+- Terminaisons ajoutées, **une à la fois**, mesurées avec
+  `bench/mesure_terminaisons_verbes.py` contre les mots des entités `nom` de tous
+  les corpus du dépôt (107 mots de plus de 4 lettres) et les prénoms INSEE
+  d'effectif au moins 1 000 (2 859) : « -ifie », « -ionne », « -ifient »,
+  « -ionnent », « -isent », « -issent », « -ivent », « -iera » : 0 nom annoté, 0
+  prénom. Écartées : « -ise » (0 nom annoté mais 25 prénoms : Louise, Denise),
+  « -era » (Herrera), « -dra » (Sandra), « -ère », « -ite », « -ige », « -are »,
+  « -ule », « -ent » (2 noms), « -ume » (1 nom), « -ure » (2 noms).
+- Formes dérivées : pluriel (base + « nt ») et futur (base + « ra ») d'un verbe de la
+  liste en « -e » ; jamais d'un mot quelconque en « -ent » ou « -era » (Laurent,
+  Parent, Herrera). Un test Dart et un test Python vérifient qu'aucune forme
+  reconnue n'est un nom annoté ni un prénom courant.
+- **Reste du tableau de bord : identique ligne à ligne** à un rejeu de `main`
+  (diff des deux sorties de `bench/etat.sh` : seules les lignes de la sonde
+  changent). Noms en clair (entier ou en partie), corpus flous et de dossiers :
+  inchangés.
+- Limite de la mesure : les corpus du dépôt n'ont que 107 mots de nom de plus de
+  4 lettres ; un compte nul ne prouve rien sur de vrais patronymes. La fuite par
+  homographe (« marc dispose », « julien observe ») n'est pas mesurée.
+
 ## « Prénom + mot » en minuscule : mesure préalable de P2-241 (arrêt, aucun code livré)
 
 Mesure préalable exigée par la fiche (« combien de noms annotés `Prénom nom-en-minuscule`

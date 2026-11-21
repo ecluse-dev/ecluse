@@ -105,4 +105,73 @@ void main() {
           verbesConjuguesCourants.every((v) => v == v.toLowerCase()), isTrue);
     });
   });
+
+  group('liste étendue (P2-242)', () {
+    for (final (texte, fin) in [
+      ('Sophie documente.', 6),
+      ('Marc soulage.', 4),
+      ('Nathalie transporte.', 8),
+      ('Julien justifie.', 6),
+      ('Isabelle mentionne.', 8),
+    ]) {
+      test(texte, () {
+        final e = detecteur.detect(texte);
+        expect(e, hasLength(1));
+        expect(e.single.end, fin);
+      });
+    }
+
+    test('formes dérivées d\'un verbe de la liste : pluriel et futur', () {
+      for (final v in [
+        'rappellent',
+        'transportent',
+        'rappellera',
+        'respectera'
+      ]) {
+        expect(estVerbeConjugue(v), isTrue, reason: v);
+      }
+      for (final v in ['arrivent', 'suivent', 'finissent', 'planifiera']) {
+        expect(estVerbeConjugue(v), isTrue, reason: v);
+      }
+    });
+
+    test('la forme dérivée exige une base de la liste', () {
+      // Aucun mot en « -ent » ou en « -ra » n'est pris pour un verbe par sa
+      // seule forme : prénoms et patronymes réels.
+      for (final v in [
+        'laurent',
+        'vincent',
+        'clément',
+        'parent',
+        'sandra',
+        'herrera',
+        'louise',
+        'denise',
+        'barrère',
+        'cabrera',
+      ]) {
+        expect(estVerbeConjugue(v), isFalse, reason: v);
+      }
+    });
+
+    test('un patronyme derrière un prénom reste masqué', () {
+      for (final texte in [
+        'rdv avec marc parent ce matin.',
+        'rdv avec julien herrera ce matin.',
+        'rdv avec sophie louise ce matin.',
+      ]) {
+        final e = detecteur.detect(texte);
+        expect(e.single.value, texte.substring(9, texte.length - 10),
+            reason: texte);
+      }
+    });
+
+    test('l\'effet en chaîne : le verbe étendu reste lisible', () async {
+      final r =
+          await Ecluse.redact('Sophie documente. Le médecin documente aussi.');
+      expect(r.maskedText, isNot(contains('Sophie')));
+      expect('documente'.allMatches(r.maskedText), hasLength(2),
+          reason: r.maskedText);
+    });
+  });
 }
