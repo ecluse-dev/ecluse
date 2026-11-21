@@ -8,7 +8,7 @@ alors masqué, puis retenu comme patronyme établi (`patronymeEtabli`) et masqu�
 ailleurs, y compris dans les documents suivants d'un dossier. Exigence du
 mainteneur (20 novembre) : **aucun verbe ne doit être masqué**.
 
-Ce corpus rend la sonde de P2-235 reproductible. Deux familles, 10 prénoms
+Ce corpus rend la sonde de P2-235 reproductible. Trois familles, 10 prénoms
 courants chacune, une phrase « Prénom verbe. » par couple :
 
 - `courants` : 40 verbes conjugués d'usage courant (3e personne du singulier) ;
@@ -17,6 +17,9 @@ courants chacune, une phrase « Prénom verbe. » par couple :
   qu'une liste fermée ne couvre pas ; ils ne servent pas à la régler. Une
   première réserve avait été écrite avant la liste, qui en a repris 15 verbes :
   elle ne mesurait rien et a été remplacée.
+
+- `reserve2` : 68 verbes de l'écrit soignant et social, écrits avant l'extension
+  de la liste (P2-242), absents de la liste (un test le contrôle).
 
 Chaque document annote le seul prénom (`nom`). Le verbe n'est jamais annoté : toute
 détection qui dépasse le prénom est un verbe masqué (de la lisibilité perdue).
@@ -51,7 +54,26 @@ RESERVE = [
     "reconnaît", "renonce", "persiste", "félicite", "regrette", "encaisse",
 ]
 
-FAMILLES = {"courants": COURANTS, "reserve": RESERVE}
+# Seconde réserve (P2-242) : 68 verbes de l'écrit soignant, social et
+# administratif (3e personne du singulier), **écrits avant l'extension de la
+# liste fermée** et jamais repris mot à mot dans cette liste (un test le
+# contrôle). Elle mesure ce que la liste étendue généralise, sans servir à la
+# régler.
+RESERVE2 = [
+    "constate", "observe", "relève", "consigne", "administre", "évalue",
+    "oriente", "rassure", "apaise", "stimule", "mobilise", "hospitalise",
+    "transfère", "programme", "convoque", "notifie", "sécurise", "héberge",
+    "finance", "instruit", "saisit", "archive", "classe", "trie", "corrige",
+    "modifie", "complète", "renseigne", "actualise", "coordonne", "anticipe",
+    "interroge", "mesure", "pèse", "injecte", "perfuse", "rince",
+    "désinfecte", "stérilise", "aère", "chauffe", "nettoie", "repasse",
+    "sèche", "dépanne", "règle", "verse", "facture", "réserve", "inscrit",
+    "radie", "licencie", "recrute", "embauche", "remplace", "remplit",
+    "sanctionne", "menace", "insulte", "frappe", "agresse", "rassemble",
+    "négocie", "plaide", "conclut", "abandonne", "tutoie", "photographie",
+]
+
+FAMILLES = {"courants": COURANTS, "reserve": RESERVE, "reserve2": RESERVE2}
 
 
 def construit(seed):

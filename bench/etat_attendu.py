@@ -231,7 +231,7 @@ ATTENDU = [
     ("## prénom + verbe conjugué", [
         (r"^prénom \+ verbe : \d+ phrases, \d+ verbes masqués, \d+ prénoms en "
          r"clair \(fuite\)$", 1, "sonde prénom + verbe (P2-240)"),
-        (r"^  famille=(courants|reserve) : \d+ / \d+ verbes masqués, \d+ "
+        (r"^  famille=(courants|reserve|reserve2) : \d+ / \d+ verbes masqués, \d+ "
          r"prénoms en clair$", 2, "par famille"),
     ]),
     ("## mots neutres, un mot à la fois", [
