@@ -298,7 +298,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-228 | code | Tournures de personne : n'écarter les communes qu'après « à la demande de » (fuite « Gaillard a confirmé ») | P2-227 | fusionnée |
 | P2-229 | code | Tournures de personne : liste fermée d'organismes nationaux (« le dossier de France Travail », « à la demande de Emmaüs ») | P2-228 | fusionnée |
 | P2-230 | spec | Aperçu : signaler « à vérifier » les noms établis par une seule tournure de personne, sans changer ce qui est masqué | P2-229 | fusionnée |
-| P2-231 | humain | Lire les licences : noms de famille de l'INSEE (P2-221), lexiques de formes fléchies du français (Lefff, LGPL-LR ; Morphalou, ATILF) et leur compatibilité avec Apache 2.0 ; puis décider du référentiel de patronymes et du lexique de verbes | P2-221 | humain |
+| P2-231 | humain | Lire les licences : noms de famille de l'INSEE (P2-221), lexiques de formes fléchies du français (Lefff, LGPL-LR ; Morphalou, ATILF) et leur compatibilité avec Apache 2.0 ; puis décider du référentiel de patronymes et du lexique de verbes | P2-221 | fusionnée |
 | P2-232 | code | Aperçu : signal « à vérifier » sur les noms dont la seule preuve est une tournure de personne (option A de P2-230), sans changer ce qui est masqué | P2-230 | fusionnée |
 | P2-233 | mesure | Patronymes qui sont aussi une commune derrière « à la demande de » : 24 sur 96 en clair (P2-228) ; options pour les départager des lieux, chiffrées hors `lib/` | P2-228 | fusionnée |
 | P2-234 | code | Tournures de personne : organismes encore masqués à tort (43 sur 96 au témoin de P2-226, après P2-229) | P2-229 | fusionnée |
@@ -316,6 +316,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-246 | mesure | Témoin de documents réalistes sans aucune donnée personnelle (au moins 400) : masquages à tort des six configurations du comparatif | P2-224 | à faire |
 | P2-247 | mesure | Comparatif : annoter les données personnelles non annotées de l'échantillon v3 (noms, téléphones, numéros de dossier) avant de compter les masquages à tort | P2-224 | à faire |
 | P2-248 | code | SIREN et SIRET nommés : après « SIREN » ou « SIRET », étiquette `siren` au lieu de `finess`, toujours masqué | — | à faire |
+| P2-249 | humain | Télécharger le fichier national des noms de l'INSEE (txt) et Morphalou 3.1 (CSV « tout en un ») et les déposer pour génération des fichiers dérivés (le réseau des sessions ne joint ni insee.fr ni ortolang.fr) | P2-231 | humain |
+| P2-250 | code | Référentiel de patronymes de l'INSEE (Licence Ouverte 2.0) : confirmer un nom derrière une tournure, et règle de forme de P2-241 limitée aux mots absents du référentiel | P2-249 | à faire |
+| P2-251 | code | Paquet optionnel `ecluse_lexique` (LGPL-LR) : formes verbales de Morphalou 3.1, chargées comme fichier remplaçable (spec P2-245) ; aucun verbe masqué derrière un prénom | P2-249 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -809,3 +812,39 @@ n'annote que les identifiants : la ligne compare donc mal.
   précision FINESS du benchmark d'identifiants 75,4 % → 100 % sans perte de
   rappel ; aucune entité de moins masquée sur aucun corpus (même couverture au
   caractère) ; reste du tableau de bord inchangé ou expliqué.
+
+### P2-249 à P2-251 — Référentiel de patronymes et lexique de verbes (licences lues le 21 novembre)
+
+Licences (lues le 21 novembre, voir `DECISIONS.md`) : fichier des noms de
+l'INSEE sous Licence Ouverte 2.0 (réutilisation libre, y compris commerciale,
+mention « Source : Insee » et date de mise à jour) ; Morphalou 3.1 (ATILF, 2023,
+159 271 lemmes, 976 570 formes fléchies) sous LGPL-LR.
+
+- **P2-249** : `humain`. Le réseau des sessions refuse insee.fr et ortolang.fr.
+  Le mainteneur télécharge (1) le fichier national des noms (page « Fichier des
+  noms État civil » de l'INSEE, format txt) et (2) Morphalou 3.1 au format CSV
+  « tout en un » (Ortolang), et les dépose dans la conversation de pilotage ;
+  les fichiers dérivés, leurs empreintes SHA-256 et les scripts de génération
+  (`tools/`) sont ajoutés par une PR distincte, avant P2-250 et P2-251.
+- **P2-250** : `ecluse_redact`. Table de patronymes dérivée du fichier de
+  l'INSEE (noms seuls, sans effectifs, par le script de `tools/`, test de
+  parité), mention dans `DATA_SOURCES.md`. Deux usages seulement (décision du
+  21 novembre) : (a) confirmer un mot derrière une tournure de personne
+  (P2-220) ; (b) règle de forme de P2-241 (« prénom + mot en minuscule » non
+  étendu) appliquée seulement aux mots **absents** du référentiel. Jamais pour
+  masquer un mot seul. Test d'abord. **Fini quand** : noms communs à majuscule et
+  verbes de réserve des témoins de P2-226 et P2-240/P2-242 mesurés avant/après ;
+  corpus adversarial en casse de phrase : noms en clair (entier ou en partie)
+  inchangés ou en baisse ; patronymes seuls et dossiers inchangés ; reste du
+  tableau de bord inchangé ou expliqué ; `LIMITES.md` à jour (noms nés après
+  2000 ou attribués moins de 30 fois absents).
+- **P2-251** : nouveau paquet `packages/ecluse_lexique`, sous LGPL-LR (fichier
+  `LICENSE` complet, mention de modification datée, crédit ATILF), selon la
+  recommandation de la spec P2-245 : un fichier de formes verbales dérivé de
+  Morphalou 3.1 (script de `tools/`), chargé par l'application et
+  **remplaçable** par l'utilisateur ; `ecluse_redact` reçoit un ensemble de
+  formes et n'importe jamais le paquet ; le cœur reste Apache 2.0. Test d'abord.
+  **Fini quand** : avec le lexique, verbes de réserve de P2-240 et P2-242 à 0
+  masqué ; prénoms et noms des corpus : aucune fuite ajoutée ; sans le lexique,
+  sortie octet pour octet identique ; taille du fichier et coût de chargement
+  rapportés ; `DATA_SOURCES.md`, `LIMITES.md` et README du paquet à jour.

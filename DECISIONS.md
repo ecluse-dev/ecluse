@@ -824,3 +824,20 @@ nom**. D'abord un témoin de documents sans donnée personnelle et une annotatio
 corrigée (P2-246, P2-247) ; le SIREN reste masqué mais nommé (P2-248). Les
 leviers de fond restent le lexique de verbes (P2-245) et le référentiel de
 patronymes (P2-231).
+
+## 2026-11 — Licences lues (21 novembre) : INSEE et Morphalou
+
+1. **Fichier des noms de l'INSEE** : Licence Ouverte 2.0 (mentions légales du
+   site : réutilisation libre, y compris commerciale, sous réserve de « Source :
+   Insee » et de la date de mise à jour). Utilisable dans le dépôt (P2-250).
+   Limite : noms attribués au moins 30 fois, naissances de 1891 à 2000.
+2. **Morphalou 3.1** (ATILF, 2023) retenu plutôt que le Lefff, qu'il contient :
+   même licence (LGPL-LR), couverture plus large. Lecture de la LGPL-LR : un
+   programme qui lit la ressource sans en contenir est hors de son champ (§ 3) ;
+   une liste dérivée reste sous LGPL-LR (§ 2c) ; une application qui embarque la
+   ressource peut garder sa propre licence si la ressource reste remplaçable et
+   que la licence est jointe (§ 4b). D'où un paquet optionnel séparé,
+   `ecluse_lexique`, sous LGPL-LR (P2-251), et un cœur Apache 2.0.
+3. Les fichiers sources sont téléchargés par le mainteneur (P2-249), les
+   sessions n'ayant pas accès à ces sites. Lecture non juridique : à faire
+   valider si un client le demande.
