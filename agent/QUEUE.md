@@ -310,6 +310,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-240 | code | « Prénom + verbe » : ne plus étendre un nom sur un verbe conjugué (« Sophie rappelle. »), ni retenir ce verbe comme patronyme | P2-235 | fusionnée |
 | P2-241 | code | « Prénom + mot » : dans un texte à casse normale, ne jamais étendre un prénom sur un mot en minuscule (aucun verbe masqué, hors liste comprise), coût mesuré d'abord | P2-240 | fusionnée |
 | P2-242 | code | « Prénom + verbe » : étendre la liste fermée de P2-240 (formes et terminaisons sûres) sans aucune fuite ajoutée | P2-241 | fusionnée |
+| P2-243 | code | Liste de personnes fournie par l'application, dans le `Dossier` (option B de la spec P2-219, décisions du 21 novembre) | P2-219 | à faire |
+| P2-244 | code | Communes hors référentiel : « ST »/« STE » et séparateurs collés (option 1 de la spec P2-215, table réduite) | P2-215 | à faire |
+| P2-245 | spec | Paquet optionnel `ecluse_lexique` sous sa propre licence (formes verbales du Lefff, LGPL-LR), hors du cœur Apache 2.0 | P2-242 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -727,3 +730,43 @@ rattrapés avant P2-220).
   corpus flous et de dossiers, prénoms de la sonde à 0 ; reste du tableau de
   bord inchangé ou expliqué ligne à ligne ; `LIMITES.md` à jour (la liste ne
   couvre pas tout).
+
+### P2-243 à P2-245 — Décisions du 21 novembre
+
+- **P2-243** : `ecluse_redact`, selon `agent/specs/P2-219.md` et les
+  décisions de `DECISIONS.md` du 21 novembre : option **B**
+  (`Dossier(patronymesConnus: …)`), type opaque de la § 4.1 (`toString` qui ne
+  donne que le nombre, pas d'`==`, `jsonEncode` refusé, `vider()` appelé par
+  `fermer()`) ; une commune présente dans la liste est masquée ; aucun compte
+  dans le journal d'audit, schéma inchangé, limite écrite dans `LIMITES.md`
+  § 8 ; entrée invalide (vide, un seul mot de moins de deux lettres, sigle
+  exclu, plus de N mots) **refusée à la construction avec un motif, sans la
+  valeur** ; la liste n'amorce pas `NomMinusculesDetector` (casse de titre et
+  capitales seulement) ; `ajouterPatronymes` sur le dossier pour une liste qui
+  grandit ; noms à particule (« de La Fontaine ») et deux noms contigus écrits
+  comme limites dans `LIMITES.md`. Test d'abord : sortie octet pour octet
+  identique sans liste (corpus v3 et dossiers). **Fini quand** : protocole de
+  la § 7 de la spec appliqué (liste exacte, large, sans la bonne personne ;
+  noms manqués et masqués à tort au témoin), chiffres dans `bench/ETAT.md` ;
+  un test par voie de fuite (exception, `toString`, journal) ; reste du
+  tableau de bord inchangé.
+- **P2-244** : `AdresseDetector`, table réduite seulement (spec P2-215,
+  option 1) : « ST »/« STE » lus « SAINT »/« SAINTE », puis comparaison des
+  noms collés (sans espaces) pour absorber apostrophe et tiret perdus. Pas de
+  distance d'édition (option 2 reportée, après un témoin de noms longs). Test
+  d'abord. **Fini quand** : sur le corpus de la spec, 388 → 280 au plus et les
+  trois écritures « ST », apostrophe collée, tiret collé à 0 ; témoins cinq
+  chiffres, déterminant, mot neutre devant CEDEX, courriers, noms de forme
+  neutre inchangés ; reste du tableau de bord inchangé ; `LIMITES.md` à jour.
+- **P2-245** : spec seulement (`agent/specs/P2-245.md`). Un paquet optionnel
+  `ecluse_lexique`, sous sa propre licence, fournirait à
+  `NomMinusculesDetector` les formes verbales du Lefff (LGPL-LR) ; le cœur et
+  `ecluse_redact` restent Apache 2.0 et fonctionnent sans lui. Décrire :
+  forme de l'injection (le détecteur reçoit un ensemble de formes, jamais
+  d'import du paquet), génération du fichier de formes (script dans `tools/`,
+  source et version citées, aucun téléchargement dans la CI), taille estimée,
+  fichiers de licence et `DATA_SOURCES.md`, ce que la règle de forme de P2-241
+  deviendrait avec ce lexique et avec le référentiel de patronymes (P2-231),
+  et ce qu'il faut que le mainteneur vérifie sur la licence. **Aucune donnée
+  ajoutée au dépôt.** **Fini quand** : au moins deux options d'architecture
+  comparées, une recommandation, les décisions du mainteneur listées.
