@@ -22,7 +22,7 @@
 set -Eeuo pipefail
 R=$(pwd)
 B=$R/bench
-mkdir -p "$B"/{flou,qi,dossiers,patho,transcrit}
+mkdir -p "$B"/{flou,qi,dossiers,patho,transcrit,patronymes}
 ERR=$(mktemp)
 NONMAP=$(mktemp)
 LOG=$(mktemp)
@@ -88,7 +88,7 @@ tableau() {
 # résultat manquant : tout ce que le script produit est supprimé d'abord. Ces
 # fichiers sont générés (graine 42), ignorés par git, jamais versionnés.
 rm -f "$B"/corpus.jsonl "$B"/predictions_ecluse.jsonl \
-  "$B"/{flou,qi,dossiers,patho,transcrit}/*.jsonl "$B"/flou/*.traites
+  "$B"/{flou,qi,dossiers,patho,transcrit,patronymes}/*.jsonl "$B"/flou/*.traites
 echo "## commit $(git rev-parse --short HEAD)"
 
 echo "## v3 (identifiants structurels)"
@@ -193,6 +193,59 @@ fi
 if produit "tournures sans nom, générateur" "$B/flou/corpus_tournures_sans_nom.jsonl" python3 "$B/generate_corpus_tournures_sans_nom.py" --n 400 --seed 42 --out "$B/flou/corpus_tournures_sans_nom.jsonl"; then
   if produit "tournures sans nom, Ecluse.redact" "$B/flou/pred_tournures_sans_nom.jsonl" redact run_redact_bench.dart ../../bench/flou/corpus_tournures_sans_nom.jsonl ../../bench/flou/pred_tournures_sans_nom.jsonl; then
     montre "tournures sans nom, score" -E "^tournures sans nom :|^  (tournure|genre)=|^  types sur" 0 non dans_B python3 score_tournures_sans_nom.py --corpus flou/corpus_tournures_sans_nom.jsonl --pred flou/pred_tournures_sans_nom.jsonl || true
+  fi
+fi
+
+# Liste de patronymes fournie par l'application (P2-243, protocole de la § 7 de
+# agent/specs/P2-219.md). Chemin mesuré : Ecluse.redact avec
+# `Dossier(patronymesConnus: …)` (ce que reçoit le LLM), rien du moteur seul.
+# Quatre états : sans liste, liste exacte (les personnes du dossier), liste
+# large (toutes les personnes du corpus, des patronymes qui sont des mots
+# courants et 10 000 noms tirés au hasard) et liste large privée des personnes
+# du dossier. Tout est synthétique (graine 42). Le temps n'est pas rejoué ici :
+# `bin/run_patronymes_cout.dart`, à la main (chiffres non déterministes).
+echo "## liste de patronymes de l'application (P2-243) : Ecluse.redact (chemin du produit)"
+LP="$B/patronymes"
+liste() { # ÉTIQUETTE CORPUS LISTE.json SORTIE : un dossier par clé du corpus
+  local etiquette=$1 corpus=$2 liste=$3 sortie=$4
+  produit "liste $etiquette" "$sortie" redact run_dossiers_bench.dart "--patronymes=$liste" "$corpus" "$sortie"
+}
+if produit "corpus patronymes (b, c, leurres)" "$LP/corpus_patronymes_leurres.jsonl" python3 "$B/generate_corpus_patronymes.py" --n 400 --seed 42 --out-dir "$LP" \
+  && produit "listes, première mention (b)" "$LP/liste_b/patronymes_large.json" python3 "$B/export_patronymes_dossiers.py" --corpus "$LP/corpus_patronymes_b.jsonl" --out-dir "$LP/liste_b" \
+  && produit "listes, leurres isolés" "$LP/liste_leurres/isoles/patronymes_large.json" python3 "$B/export_patronymes_dossiers.py" --corpus "$LP/corpus_patronymes_leurres.jsonl" --out-dir "$LP/liste_leurres" --leurres-isoles "$LP/corpus_patronymes_leurres_isoles.jsonl" \
+  && produit "listes, corpus de dossiers réaliste" "$B/dossiers/patronymes_large.json" python3 "$B/export_patronymes_dossiers.py" --corpus "$B/dossiers/corpus_dossiers_realiste.jsonl" --out-dir "$B/dossiers"; then
+  echo "# patronyme seul en première mention (corpus b, 400 mentions) : détecté / annoté"
+  for m in sans_liste exacte large sans; do
+    echo "# b, liste $m"
+    if [ "$m" = sans_liste ]; then
+      ok=0; produit "liste b $m" "$LP/pred_b_$m.jsonl" redact run_dossiers_bench.dart --dossier $LP/corpus_patronymes_b.jsonl "$LP/pred_b_$m.jsonl" && ok=1
+    else
+      ok=0; liste "b $m" $LP/corpus_patronymes_b.jsonl "$LP/liste_b/patronymes_$m.json" "$LP/pred_b_$m.jsonl" && ok=1
+    fi
+    [ "$ok" = 1 ] && { montre "liste b $m, score" -E "^  b_(debut|milieu) " 2 non dans_B python3 score_patronymes.py --corpus patronymes/corpus_patronymes_b.jsonl --pred "patronymes/pred_b_$m.jsonl" || true; }
+  done
+  echo "# leurres (un mot courant fourni comme nom, document seul dans son dossier)"
+  for m in sans_liste exacte large sans; do
+    ok=0
+    if [ "$m" = sans_liste ]; then
+      produit "liste leurres $m" "$LP/pred_leurres_$m.jsonl" redact run_dossiers_bench.dart --dossier $LP/corpus_patronymes_leurres_isoles.jsonl "$LP/pred_leurres_$m.jsonl" && ok=1
+    else
+      liste "leurres $m" $LP/corpus_patronymes_leurres_isoles.jsonl "$LP/liste_leurres/isoles/patronymes_$m.json" "$LP/pred_leurres_$m.jsonl" && ok=1
+    fi
+    [ "$ok" = 1 ] && { montre "liste leurres $m, score" -E . 0 non python3 "$B/score_liste_temoin.py" "leurres, liste $m" "$LP/corpus_patronymes_leurres_isoles.jsonl" "$LP/pred_leurres_$m.jsonl" || true; }
+  done
+  echo "# corpus de dossiers réaliste (116 patronymes seuls) : manqués en session"
+  for m in exacte large sans; do
+    if liste "réaliste $m" $B/dossiers/corpus_dossiers_realiste.jsonl "$B/dossiers/patronymes_$m.json" "$B/dossiers/pred_realiste_liste_$m.jsonl"; then
+      montre "liste réaliste $m, score" -E "^noms hors civilité, patronyme seul" 1 non dans_B python3 score_patronyme_seul.py --corpus dossiers/corpus_dossiers_realiste.jsonl --pred-document dossiers/pred_realiste_document.jsonl --pred-session "dossiers/pred_realiste_liste_$m.jsonl" | sed "s/^/  liste $m : /" || true
+    fi
+  done
+  echo "# témoin sans nom de personne (tournures, 400 documents) : liste large de 10 042 noms"
+  if produit "témoin sans nom, sans liste, en dossier" "$B/flou/pred_tsn_dossier_sans.jsonl" redact run_dossiers_bench.dart --dossier $B/flou/corpus_tournures_sans_nom.jsonl $B/flou/pred_tsn_dossier_sans.jsonl; then
+    montre "témoin sans liste" -E . 0 non python3 "$B/score_liste_temoin.py" "témoin, sans liste" "$B/flou/corpus_tournures_sans_nom.jsonl" "$B/flou/pred_tsn_dossier_sans.jsonl" || true
+  fi
+  if liste "témoin large" $B/flou/corpus_tournures_sans_nom.jsonl "$B/dossiers/patronymes_large.json" $B/flou/pred_tsn_liste_large.jsonl; then
+    montre "témoin liste large" -E . 0 non python3 "$B/score_liste_temoin.py" "témoin, liste large" "$B/flou/corpus_tournures_sans_nom.jsonl" "$B/flou/pred_tsn_liste_large.jsonl" || true
   fi
 fi
 

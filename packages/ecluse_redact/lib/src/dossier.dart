@@ -15,8 +15,18 @@ part of 'ecluse.dart';
 /// noms des documents précédents (N3 de `agent/specs/P2-05.md` § 5) ; elle est
 /// fixée à la création. Défaut : [RegleNoms.identiteComplete].
 final class Dossier {
-  Dossier({RegleNoms regle = RegleNoms.identiteComplete})
-      : _etat = _Etat(regle);
+  /// [patronymesConnus] (P2-243) : patronymes que l'application connaît avant
+  /// la première pièce. Le dossier en garde **sa propre copie**, effacée par
+  /// [fermer] ; la liste passée n'est ni modifiée ni vidée. Voir
+  /// [PatronymesConnus] pour ce que la liste masque et ne masque pas.
+  Dossier({
+    RegleNoms regle = RegleNoms.identiteComplete,
+    PatronymesConnus? patronymesConnus,
+  }) : _etat = _Etat(regle) {
+    if (patronymesConnus != null) {
+      _etat!.fournis._noms.addAll(patronymesConnus._noms);
+    }
+  }
 
   _Etat? _etat;
   Future<void> _file = Future<void>.value();
@@ -30,6 +40,17 @@ final class Dossier {
   void fermer() {
     _etat?.efface();
     _etat = null;
+  }
+
+  /// Ajoute [patronymes] à la liste fournie par l'application (nouveau patient
+  /// d'une liste vivante, P2-243). Vaut pour les pièces masquées **ensuite** ;
+  /// un nom déjà présent reste unique. Lève [DossierFermeException] si le
+  /// dossier est fermé. Un appel en cours (détection en attente) peut voir ou
+  /// non l'ajout : l'application l'appelle entre deux pièces.
+  void ajouterPatronymes(PatronymesConnus patronymes) {
+    final etat = _etat;
+    if (etat == null) throw const DossierFermeException();
+    etat.fournis._noms.addAll(patronymes._noms);
   }
 
   /// Remplace dans [text] chaque jeton attribué dans ce dossier, quel que soit

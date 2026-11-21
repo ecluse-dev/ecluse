@@ -814,6 +814,13 @@ final class NameDetector implements EntityDetector {
   static bool _isExcludedAcronym(String word) =>
       _excludedAcronyms.contains(word);
 
+  /// Vrai si [mot], écrit en capitales, est un sigle exclu (« eva », « Eva » et
+  /// « EVA » donnent vrai). Sert à refuser, à la construction d'une liste de
+  /// patronymes fournie (P2-243), un nom que la deuxième passe ignorerait sans
+  /// message quand il est écrit en capitales.
+  static bool estSigleExclu(String mot) =>
+      _isExcludedAcronym(mot.toUpperCase());
+
   /// Titres professionnels : révèlent une profession, un quasi-identifiant
   /// de premier ordre en contexte hospitalier — le span masqué les inclut
   /// désormais (voir `LIMITES.md`). Périmètre strict et volontairement

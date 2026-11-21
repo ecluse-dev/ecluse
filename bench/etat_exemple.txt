@@ -237,6 +237,32 @@ tournures sans nom : 400 documents, 0 entité(s) annotée(s), 141 masqués à to
   genre=commun_majuscule : 80 / 100 masqués à tort
   genre=commun_minuscule : 0 / 100 masqués à tort
   types sur les masquages à tort : nom 141
+## liste de patronymes de l'application (P2-243) : Ecluse.redact (chemin du produit)
+# patronyme seul en première mention (corpus b, 400 mentions) : détecté / annoté
+# b, liste sans_liste
+  b_debut      66 /  201   32.8 %
+  b_milieu    130 /  199   65.3 %
+# b, liste exacte
+  b_debut     201 /  201  100.0 %
+  b_milieu    199 /  199  100.0 %
+# b, liste large
+  b_debut     201 /  201  100.0 %
+  b_milieu    199 /  199  100.0 %
+# b, liste sans
+  b_debut      66 /  201   32.8 %
+  b_milieu    130 /  199   65.3 %
+# leurres (un mot courant fourni comme nom, document seul dans son dossier)
+leurres, liste sans_liste : 0 / 265 documents sans personne avec un nom masqué
+leurres, liste exacte : 265 / 265 documents sans personne avec un nom masqué
+leurres, liste large : 265 / 265 documents sans personne avec un nom masqué
+leurres, liste sans : 0 / 265 documents sans personne avec un nom masqué
+# corpus de dossiers réaliste (116 patronymes seuls) : manqués en session
+  liste exacte : noms hors civilité, patronyme seul : 116 mentions, manquées document par document 0, en session 0
+  liste large : noms hors civilité, patronyme seul : 116 mentions, manquées document par document 0, en session 0
+  liste sans : noms hors civilité, patronyme seul : 116 mentions, manquées document par document 0, en session 0
+# témoin sans nom de personne (tournures, 400 documents) : liste large de 10 042 noms
+témoin, sans liste : 141 / 400 documents sans personne avec un nom masqué
+témoin, liste large : 141 / 400 documents sans personne avec un nom masqué
 ## tournures de personne, témoin élargi (P2-226) : Ecluse.redact (chemin du produit)
 tournures de personne : 480 documents, 5 familles, 192 noms annotés, 0 détection(s) hors du mot
   famille=roles : 0 / 96 masqués à tort

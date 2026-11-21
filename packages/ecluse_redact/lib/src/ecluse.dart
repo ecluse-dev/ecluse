@@ -28,6 +28,7 @@ import 'tokenizer.dart';
 part 'apercu.dart';
 part 'dossier.dart';
 part 'identites_de_noms.dart';
+part 'patronymes_connus.dart';
 part 'normalisation_du_texte.dart';
 part 'restauration.dart';
 part 'session.dart';
@@ -254,9 +255,9 @@ abstract final class Ecluse {
     // amorcent la détection de noms (P2-14) ; des détecteurs fournis par
     // l'appelant ne sont jamais modifiés.
     final base = detectors ??
-        (etat.patronymes.isEmpty
+        (etat.patronymes.isEmpty && etat.fournis.isEmpty
             ? defaultDetectors
-            : _detecteursAvecPatronymes(etat.patronymes));
+            : _detecteursAvecPatronymes(etat.patronymes, etat.fournis._noms));
     final engine = EcluseEngine(
         supplementaires.isEmpty ? base : [...base, ...supplementaires]);
     final (vue, positions) = _vueDeDetection(text);
@@ -569,12 +570,17 @@ abstract final class Ecluse {
   }
 }
 
-/// Les détecteurs par défaut, avec un [NameDetector] amorcé par [patronymes].
-List<Detector> _detecteursAvecPatronymes(Set<String> patronymes) => [
+/// Les détecteurs par défaut, avec un [NameDetector] amorcé par [patronymes]
+/// (établis par les pièces du dossier) et [fournis] (liste de l'application,
+/// P2-243). Seuls les patronymes établis amorcent `NomMinusculesDetector` : la
+/// liste fournie n'y entre pas (casse de titre et capitales seulement).
+List<Detector> _detecteursAvecPatronymes(Set<String> patronymes,
+        [Set<String> fournis = const {}]) =>
+    [
       for (final detecteur in Ecluse.defaultDetectors)
         if (detecteur is LegacyDetectorAdapter && detecteur.name == 'nom')
           LegacyDetectorAdapter(
-            NameDetector(knownSurnames: Set.of(patronymes)),
+            NameDetector(knownSurnames: {...patronymes, ...fournis}),
             DetectorTier.reference,
             name: 'nom',
           )

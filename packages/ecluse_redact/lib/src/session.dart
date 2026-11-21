@@ -107,6 +107,11 @@ final class _Etat {
   /// du dossier : amorcent la détection des documents suivants.
   final Set<String> patronymes = {};
 
+  /// Liste de patronymes fournie par l'application (P2-243) : amorce
+  /// `NameDetector` seulement, jamais `NomMinusculesDetector`. Copie propre à
+  /// l'état, effacée avec lui ; jamais mêlée à [patronymes] (établis).
+  PatronymesConnus fournis = PatronymesConnus._vide();
+
   /// Tous les jetons attribués, y compris ceux qui ne sont pas dans la carte
   /// (secrets non restaurables).
   final Set<String> attribues = {};
@@ -150,6 +155,7 @@ final class _Etat {
     }
     c.counterByType.addAll(counterByType);
     c.patronymes.addAll(patronymes);
+    c.fournis._noms.addAll(fournis._noms);
     c.attribues.addAll(attribues);
     return c;
   }
@@ -163,6 +169,7 @@ final class _Etat {
     _sansSegment.clear();
     counterByType.clear();
     patronymes.clear();
+    fournis.vider();
     attribues.clear();
   }
 }

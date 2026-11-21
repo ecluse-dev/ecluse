@@ -1934,3 +1934,66 @@ ne peut pas distinguer ce patronyme d'un verbe (« sophie rappelle »), car la f
 Pistes à décider par le mainteneur : liste fermée plus large (P2-240) complétée par
 des terminaisons verbales, ou règle de forme **limitée** (texte à casse de phrase *et*
 mot absent d'une liste de patronymes, P2-231), ou accepter le coût chiffré ici.
+
+## Liste de patronymes fournie par l'application, dans le `Dossier` (P2-243)
+
+Protocole de la § 7 de `agent/specs/P2-219.md`. Chemin mesuré :
+**`Ecluse.redact`** avec `Dossier(patronymesConnus: …)` (ce que reçoit le LLM), `main`
+au commit `f7a94bb` plus cette PR, graine 42. Tout est synthétique : les patronymes
+viennent des listes du générateur, 10 000 noms de remplissage sont tirés par syllabes
+(`bench/export_patronymes_dossiers.py`) ; aucune liste réelle. « Liste exacte » = les
+patronymes des personnes du dossier ; « large » = toutes les personnes du corpus, les
+patronymes du générateur qui sont des mots courants et 10 000 noms tirés au hasard
+(10 042 distincts) ; « sans » = la liste large privée des personnes du dossier.
+Rejoué par `bench/etat.sh` (section « liste de patronymes de l'application »).
+
+| Mesure (corpus, chemin) | Sans liste | Exacte | Large | Sans la bonne personne |
+|---|---:|---:|---:|---:|
+| Patronyme seul en **première mention**, corpus `b` (400 mentions) : détecté / annoté | 196 / 400 | **400 / 400** | **400 / 400** | 196 / 400 |
+| Leurres (mot courant du dossier, 265 documents seuls dans leur dossier) : masqués à tort | 0 / 265 | **265 / 265** | **265 / 265** | 0 / 265 |
+| Corpus de dossiers réaliste (116 patronymes seuls) : manqués en session | 0 | 0 | 0 | 0 |
+| Témoin sans personne (tournures, 400 documents) : documents avec un nom masqué | 141 / 400 | — | 141 / 400 | — |
+
+Lecture, sans en tirer plus qu'elle ne dit :
+
+- **Gain réel, en première mention sans tournure reconnue** : 204 noms sur 400 en
+  clair sans liste (66/201 en début de phrase, 130/199 au milieu détectés), 0 avec la
+  liste exacte ou large. Une liste **sans la bonne personne** ne change rien (196/400
+  comme sans liste), ce qui est attendu : la liste n'ajoute que ce qu'elle contient.
+- **Aucun gain sur le corpus de dossiers réaliste** : le patronyme seul manqué y est
+  déjà à 0 sans liste au rejeu de ce jour (112 sans règle au départ de P2-218, 4 après
+  P2-220). La liste ne s'y mesure donc pas ; le seuil « liste exacte → 0 manqué » est tenu trivialement.
+- **Le seuil « au plus 1 % de phrases masquées à tort » n'est pas tenable pour un mot
+  courant fourni comme nom** : 265 / 265 phrases de leurres masquées quand la liste
+  contient le mot (« Petit déjeuner », « Marchand de journaux »). C'est le sur-masquage
+  assumé de la spec (§ 3) et de `LIMITES.md` § 8 ; ici l'application le déclenche en
+  fournissant le nom. Sur le **témoin sans personne** (141 / 400 déjà masqués sans
+  liste, faux positifs existants des tournures), la liste large n'ajoute **aucun**
+  masquage (141 / 400) : ce témoin ne contient pas les mots de la liste ; il ne dit
+  donc rien du sur-masquage d'un mot courant (voir la ligne des leurres).
+- **Équivalence** : sans liste, le reste du tableau de bord est identique au rejeu de
+  `main` (diff du rejeu complet : seules les lignes de cette section sont ajoutées).
+  Test d'équivalence unitaire : `packages/ecluse_redact/test/patronymes_connus_test.dart`.
+
+**Coût** (§ 7.4), `bin/run_patronymes_cout.dart`, 397 documents du corpus réaliste,
+un `Dossier` neuf par dossier, trois répétitions, médiane (étendue), noms
+**distincts** ; temps non déterministes, donc **hors de `etat.sh`**, une seule
+machine de développement cloud :
+
+| Noms dans la liste | Temps de la passe | Mémoire résidente maximale |
+|---:|---:|---:|
+| 0 | 553 ms (526–736) | 321 Mio |
+| 100 | 531 ms (506–766) | 331 Mio |
+| 1 000 | 743 ms (607–953) | 327 Mio |
+| 10 000 | **1 615 ms** (1 582–1 924) | 347 Mio |
+
+Le coût est linéaire en la taille de la liste **à chaque pièce** (copie de l'ensemble
+par appel, `NameDetector` le recopie) : environ 2,7 ms de plus par document à 10 000
+noms, soit environ trois fois le temps sans liste. La spec attendait « nul si la copie
+est faite une seule fois » ; elle ne l'est pas (voir « Ce qui reste incertain » de la PR).
+
+**Ce que la mesure ne dit pas** : le comportement sur de vraies listes de patients
+(jamais disponibles ici, règle 1 de `CLAUDE.md`) ; la fréquence réelle de patronymes
+seuls hors tournure dans des textes réels ; des noms de plusieurs mots ou à particule
+(non rattrapés, `LIMITES.md` § 8) ; le temps sur des documents plus longs que ceux du
+corpus.
