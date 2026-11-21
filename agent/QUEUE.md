@@ -313,6 +313,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-243 | code | Liste de personnes fournie par l'application, dans le `Dossier` (option B de la spec P2-219, décisions du 21 novembre) | P2-219 | à faire |
 | P2-244 | code | Communes hors référentiel : « ST »/« STE » et séparateurs collés (option 1 de la spec P2-215, table réduite) | P2-215 | à faire |
 | P2-245 | spec | Paquet optionnel `ecluse_lexique` sous sa propre licence (formes verbales du Lefff, LGPL-LR), hors du cœur Apache 2.0 | P2-242 | à faire |
+| P2-246 | mesure | Témoin de documents réalistes sans aucune donnée personnelle (au moins 400) : masquages à tort des six configurations du comparatif | P2-224 | à faire |
+| P2-247 | mesure | Comparatif : annoter les données personnelles non annotées de l'échantillon v3 (noms, téléphones, numéros de dossier) avant de compter les masquages à tort | P2-224 | à faire |
+| P2-248 | code | SIREN et SIRET nommés : après « SIREN » ou « SIRET », étiquette `siren` au lieu de `finess`, toujours masqué | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -770,3 +773,39 @@ rattrapés avant P2-220).
   et ce qu'il faut que le mainteneur vérifie sur la licence. **Aucune donnée
   ajoutée au dépôt.** **Fini quand** : au moins deux options d'architecture
   comparées, une recommandation, les décisions du mainteneur listées.
+
+### P2-246 à P2-248 — Masquages à tort mesurés honnêtement (décisions du 21 novembre)
+
+Contexte : le comparatif du 21 novembre (`f7a94bb`) compte 11 documents sur
+24 « masqués à tort » par Écluse contre 2 pour les règles d'EDS-Pseudo. Relus un
+par un, ces 11 cas sont : 3 noms de personnes non annotés (« Rappel : Nadia Roux
+est attendu… », laissés en clair par EDS-Pseudo), 1 numéro de dossier, 1
+téléphone, 3 IBAN à clé invalide, 3 SIREN lus comme FINESS. Le corpus v3
+n'annote que les identifiants : la ligne compare donc mal.
+
+- **P2-246** : mesure seulement. Générateur versionné (`bench/`, graine 42) d'au
+  moins 400 documents réalistes du soin et du social **sans aucune donnée
+  personnelle** : consignes de service, comptes rendus de réunion sans nom,
+  protocoles, plannings de salles, notes logistiques, courriers types, avec la
+  casse ordinaire, des majuscules de titre, des sigles, des numéros non
+  personnels (salles, pages, articles de loi, codes de protocole), des marques,
+  des villes et des verbes en tête de phrase. Ajouté à `bench/comparatif.py`
+  (option ou second échantillon) sans changer l'échantillon existant.
+  **Fini quand** : pour les six configurations, documents et caractères masqués
+  à tort, par type prédit, dans `bench/COMPARATIF.md` ; pour Écluse, chaque
+  famille de masquage à tort décrite (exemple synthétique) ; aucune correction.
+- **P2-247** : mesure seulement. Dans l'échantillon du comparatif, annoter
+  (annotation propre au comparatif, sans toucher `generate_corpus.py`) les
+  données personnelles présentes mais non annotées par le corpus v3 : noms de
+  personnes, téléphones, numéros de dossier. **Fini quand** : la ligne « masqués à
+  tort » et la couverture recalculées pour les six configurations ; l'ancienne et
+  la nouvelle ligne côte à côte dans `bench/COMPARATIF.md`, avec la règle
+  d'annotation écrite ; aucune correction.
+- **P2-248** : détecteur FINESS. Quand le nombre suit « SIREN » ou « SIRET »
+  (mêmes fenêtres que le contexte FINESS existant), l'entité est de type
+  `siren` et non `finess`, **toujours masquée** (le SIREN d'un entrepreneur
+  individuel désigne une personne). Jeton, restauration et `LIMITES.md` à jour.
+  Test d'abord. **Fini quand** : les 42 SIREN du corpus v3 typés `siren` ;
+  précision FINESS du benchmark d'identifiants 75,4 % → 100 % sans perte de
+  rappel ; aucune entité de moins masquée sur aucun corpus (même couverture au
+  caractère) ; reste du tableau de bord inchangé ou expliqué.
