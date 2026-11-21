@@ -174,3 +174,12 @@ enregistrer à la prochaine régénération.
   CIM-11 du pack ne sont **pas** utilisés.
 - **Mise à jour** : pack annuel (juillet). Rejouer le script sur le nouveau
   ZIP ; la sortie est déterministe (gzip, `mtime` 0).
+
+## Morphalou 3.1 (ATILF) — paquet optionnel `ecluse_lexique`, sous LGPL-LR
+
+| Fichier versionné | Fichier source | Producteur | Page | Fichier | Version | Licence |
+|---|---|---|---|---|---|---|
+| `packages/ecluse_lexique/assets/formes_verbales.txt.gz` (511 245 formes fléchies de 14 760 verbes) | `Morphalou3.1_formatCSV_toutEnUn.zip` → `Morphalou3.1_CSV.csv` (`tools/build_formes_verbales.py`, P2-249) ; SHA-256 du ZIP : `4fc815cbf17aecdf1b47f6bbc263489a460fd8d11ae17e6b522336c72bd0e333` | ATILF (CNRS - Université de Lorraine), ORTOLANG | `https://www.ortolang.fr/market/item/morphalou/v3.1` | `/api/content/morphalou/5/Morphalou3.1_formatCSV_toutEnUn.zip` | Morphalou 3.1, version de juin 2016 publiée en 2023 (DOI 10.82270/morphalou/v3.1) | **LGPL-LR** (texte complet dans `packages/ecluse_lexique/LICENSE`) ; téléchargé le 21 novembre 2026 après acceptation de la charte ORTOLANG et de la licence par le mainteneur |
+
+Ce fichier n'est **pas** sous Apache 2.0 : voir `packages/ecluse_lexique/README.md`.
+
