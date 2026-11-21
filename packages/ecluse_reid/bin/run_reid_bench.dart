@@ -17,12 +17,12 @@ String _cause(String message) {
 
 /// Deux usages (graine et corpus : `bench/generate_corpus_qi.py`) :
 ///
-///   dart run bin/run_reid_bench.dart --avant <corpus.jsonl>
+///   dart run bin/run_reid_bench.dart --avant `<corpus.jsonl>`
 ///     Mesure l'état actuel : sur chaque document, exécute `extractQis` puis
 ///     `estimate`, compte les exceptions par cause et les documents sans QI que
 ///     `estimate` classe pourtant en risque « faible ».
 ///
-///   dart run bin/run_reid_bench.dart <corpus.jsonl> <sortie.jsonl>
+///   dart run bin/run_reid_bench.dart `<corpus.jsonl>` `<sortie.jsonl>`
 ///     Exécute `evaluateText` et écrit, par document, les QI positionnés et le
 ///     statut, au format attendu par `bench/score_qi.py`.
 Future<void> main(List<String> args) async {

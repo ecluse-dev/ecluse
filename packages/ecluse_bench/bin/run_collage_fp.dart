@@ -25,14 +25,14 @@ import 'package:ecluse_core/ecluse_core.dart';
 /// Aucune valeur tirée d'un texte n'est imprimée : seulement des comptes et,
 /// pour les détections à tort, l'identifiant du document et les positions.
 ///
-/// Usage : dart run ecluse_bench:run_collage_fp <entrée>... où chaque entrée
+/// Usage : dart run ecluse_bench:run_collage_fp `<entrée>`... où chaque entrée
 /// est un `.jsonl` (champ `text`, champ `entities` facultatif) ou un fichier
 /// texte lu en entier. Sans argument : cas ciblés de P2-162 § 5.3 seulement.
 ///
 /// Deux autres mesures (P2-171, points 2 et 4 du plan de P2-162 § 5), toujours
 /// sans rien changer dans `lib/` :
 ///
-///   dart run bin/run_collage_fp.dart --equivalence <entrée>...
+///   dart run bin/run_collage_fp.dart --equivalence `<entrée>`...
 ///     Compare, document par document, les détections des détecteurs isolés
 ///     sur le texte d'origine et sur le texte recollé (positions reprojetées
 ///     vers l'origine). Sans entrée : cas de voisinage tirés à graine 42 (un
