@@ -205,6 +205,19 @@ ATTENDU = [
         (r"^  genre=.+ : \d+ / \d+ masqués à tort$", 4, "témoin, par genre"),
         (r"^  types sur les masquages à tort : ", 1, "types détectés à tort"),
     ]),
+    ("## liste de patronymes de l'application", [
+        (r"^# b, liste (sans_liste|exacte|large|sans)$", 4, "quatre listes"),
+        (r"^  b_(debut|milieu) +\d+ / +\d+ +[\d.]+ %$", 8,
+         "première mention, deux cas pour chacune des quatre listes (P2-243)"),
+        (r"^leurres, liste (sans_liste|exacte|large|sans) : \d+ / \d+ "
+         r"documents sans personne avec un nom masqué$", 4,
+         "leurres, quatre listes"),
+        (r"^  liste (exacte|large|sans) : noms hors civilité, patronyme seul "
+         r": \d+ mentions, manquées document par document \d+, en session \d+$",
+         3, "corpus de dossiers réaliste, trois listes"),
+        (r"^témoin, (sans liste|liste large) : \d+ / \d+ documents sans "
+         r"personne avec un nom masqué$", 2, "témoin sans nom, avec et sans liste"),
+    ]),
     ("## tournures de personne, témoin élargi", [
         (r"^tournures de personne : \d+ documents, 5 familles, \d+ noms "
          r"annotés, \d+ détection\(s\) hors du mot$", 1,

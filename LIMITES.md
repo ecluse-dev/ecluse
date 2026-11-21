@@ -1878,7 +1878,8 @@ patronyme court.
 
 Les mentions partielles sont rattrapées **uniquement via un patronyme établi
 dans le document courant** — jamais de liste externe, jamais
-d'apprentissage. Limites de cette approche :
+d'apprentissage ; seule exception, la liste que l'application donne elle-même au
+`Dossier` (P2-243, § 8). Limites de cette approche :
 
 - Le patronyme n'est extrait que de mentions **certaines** (civilité, ou
   couple prénom + nom d'au plus deux mots) ; jamais d'une mention déjà
@@ -2336,6 +2337,52 @@ avec 80 000 segments : de l'ordre de la minute) ; (b) **la restauration n'est pa
 une seule mention (`Dr Bernard Dr Costa`, `Marie Marie Marie`), ce qui contredit en partie § 5.3 : aucun avertissement n'est émis ; (c) **entités numériques HTML et échappements
 `\uXXXX`** (`jean&#46;dupont&#64;example&#46;fr`, `06&#32;12…`) ne sont pas décodés par l'ingestion : l'identifiant correspondant reste en clair, sans avertissement ;
 (d) un journal d'audit importé n'est pas validé (`ts` arbitraire, clés de comptes libres) et l'export peut lever une exception.
+
+**Liste de patronymes fournie par l'application (P2-243).** Une application qui
+connaît ses patients ou ses salariés avant la première pièce peut les donner au
+`Dossier` (`Dossier(patronymesConnus: PatronymesConnus([...]))`, puis
+`ajouterPatronymes`). La liste amorce la deuxième passe de `NameDetector` comme un
+patronyme établi par une pièce précédente. Ce qu'elle **ne fait pas**, et ce que
+l'application déclenche en la fournissant :
+
+- **Le journal ne la voit pas.** Aucun compte, aucun nombre d'entrées ni aucun
+  champ ajouté : le schéma d'audit ne change pas (la taille d'une liste de
+  patients est elle-même une donnée de l'application), et `descriptionMoteur`
+  ne liste que des noms de détecteurs, qui ne changent pas. Une entrée de journal
+  ne dit donc pas qu'une liste a servi.
+- **Une liste est une liste de mots, pas de personnes.** Un nom qui est aussi un
+  mot courant (« Petit », « Marchand », « Boulanger ») ou une commune (« Vesoul »)
+  est masqué partout où il s'écrit avec une majuscule ou en capitales, y compris
+  dans « Petit déjeuner » ; une commune fournie est masquée (décision du
+  21 novembre). Mesure : 265 phrases de leurres, chacune seule dans son dossier,
+  sont masquées à tort 265 fois quand la liste contient le mot, 0 fois sinon.
+  Aucun budget de faux positifs ne tient pour un mot courant fourni comme nom.
+- **Les minuscules ne sont pas amorcées.** La liste n'entre pas dans
+  `NomMinusculesDetector` : « le marchand est venu » reste en clair. Un patronyme
+  seul écrit en minuscules (texte tout en minuscules) n'est donc pas rattrapé par
+  la liste seule.
+- **Comparaison mot à mot, sur les formes écrites dans la liste.** Un nom à
+  particule (« de La Fontaine ») ou à plusieurs mots ne correspond à rien (la
+  liste l'accepte, jusqu'à quatre mots) ; un pluriel, une faute ou une variante
+  d'accent ne sont pas rattrapés.
+- **Deux noms de la liste côte à côte** (« Verdier Lenoir a confirmé ») donnent
+  **un seul** jeton : à la restauration, c'est la forme la plus complète qui est
+  écrite.
+- **Entrées refusées à la construction**, avec un motif et un nombre, jamais la
+  valeur : vide, un seul mot d'une lettre, un sigle exclu du détecteur de noms
+  (« EVA », « Eva »), plus de quatre mots. Tout ou rien : une entrée refusée et la
+  liste n'est pas construite.
+- **Aucun gain mesurable sur les corpus de dossiers** : le patronyme seul manqué y
+  est déjà à 0 sans liste (P2-220). Le gain existe en première mention sans
+  tournure reconnue (corpus `b` : 204 noms sur 400 en clair sans liste, 0 avec la
+  liste exacte ou large) ; une liste **sans la bonne personne** ne change rien.
+- **Copies.** La bibliothèque n'écrit rien sur disque et efface sa copie à
+  `fermer()` ; l'application garde ses propres copies de sa liste, et l'opacité de
+  `PatronymesConnus` (`toString`, pas d'`==`, `jsonEncode` refusé) protège de
+  l'affichage accidentel, pas de la mémoire du processus.
+- **Coût linéaire en la taille de la liste, à chaque pièce** : à 10 000 noms
+  distincts, une passe sur 397 documents prend environ trois fois plus de temps
+  qu'avec 0 nom (voir `bench/ETAT.md`).
 
 ---
 
