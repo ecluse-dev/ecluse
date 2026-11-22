@@ -821,6 +821,20 @@ pas masquer « 3 chemin de fer » ou « 12 place disponible ». Les mots outils,
 nom commun après un code postal peut être pris pour une commune
 (sur-masquage). Un patronyme seul sans civilité ni prénom connu n'est pas
 détecté, sauf s'il a été établi plus haut ou dans le dossier (P2-144).
+**Lexique de formes verbales fourni par l'application (P2-251, option
+`formesVerbales`, désactivée par défaut).** Avec le fichier de
+`packages/ecluse_lexique` (511 245 formes de Morphalou 3.1), un prénom suivi
+d'une forme verbale est masqué seul : sur la sonde de P2-240 (`Ecluse.redact`),
+verbes masqués 810 → 0 sur 1 280 phrases (reserve 180 → 0 sur 200, reserve2 630
+→ 0 sur 680), 0 prénom en clair. **Fuite connue et assumée seulement si
+l'application active l'option** : un patronyme homographe d'une forme du
+lexique (« laurent », « roche », « martinez »…) passe **en clair** derrière un
+prénom dans un texte sans majuscule ou en casse de phrase (« rdv avec marc
+laurent ») ; 5 583 patronymes du fichier de l'INSEE (4,5 % des naissances) sont
+dans ce cas. Aucun nom annoté des 76 corpus du dépôt n'est perdu (listes de
+patronymes courtes) : ce zéro ne dit rien des noms réels. Retirer du lexique les formes qui sont
+des patronymes fréquents réduit la fuite au prix de verbes de nouveau masqués
+(voir la PR de P2-251 pour le chiffrage par seuil).
 **Prénom + verbe conjugué (P2-240).** « Sophie rappelle. » donnait un seul nom
 de deux mots, puis le verbe était retenu comme patronyme et masqué dans toute
 la suite d'un dossier (sonde reproductible `bench/generate_corpus_prenom_verbe.py` :

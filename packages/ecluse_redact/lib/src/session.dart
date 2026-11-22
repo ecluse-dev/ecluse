@@ -4,7 +4,8 @@ part of 'ecluse.dart';
 /// une à une entre les étapes.
 final class _Options {
   const _Options(this.detectors, this.restoreSecrets, this.refuseSecrets,
-      this.riskReference, this.journal, this.supplementaires);
+      this.riskReference, this.journal, this.supplementaires,
+      [this.formesVerbales = const {}]);
 
   final List<Detector>? detectors;
   final bool restoreSecrets;
@@ -12,6 +13,7 @@ final class _Options {
   final EcluseReference? riskReference;
   final JournalAudit? journal;
   final List<Detector> supplementaires;
+  final Set<String> formesVerbales;
 }
 
 /// État de masquage : jetons attribués, identités de noms, compteurs et carte.

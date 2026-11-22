@@ -37,7 +37,19 @@ import 'verbes_conjugues.dart';
 /// ce type. Un mot courant égal à un patronyme établi est alors masqué :
 /// même sur-masquage assumé que `NameDetector` (`LIMITES.md` § 5.4).
 final class NomMinusculesDetector implements EntityDetector {
-  const NomMinusculesDetector({this.knownSurnames = const {}});
+  const NomMinusculesDetector({
+    this.knownSurnames = const {},
+    this.formesVerbales = const {},
+  });
+
+  /// Formes verbales (minuscules, accents conservés) fournies par
+  /// l'application (P2-251), par exemple depuis le paquet optionnel
+  /// `ecluse_lexique` : un prénom suivi d'une de ces formes est masqué **seul**,
+  /// comme avec la liste fermée de `verbes_conjugues.dart` (P2-240). Vide par
+  /// défaut : sortie identique à celle d'avant. Ce paquet-ci n'importe jamais
+  /// le lexique (licence LGPL-LR, cœur Apache 2.0) : il ne reçoit qu'un
+  /// ensemble de mots.
+  final Set<String> formesVerbales;
 
   /// Patronymes (minuscules) établis ailleurs que dans le texte, par les
   /// documents précédents d'un dossier (P2-14, P2-144).
@@ -403,7 +415,11 @@ final class NomMinusculesDetector implements EntityDetector {
           continue;
         }
         if (!_qualificatif(suivant)) {
-          ajoute(i, i + 1, 0.5);
+          // Forme verbale fournie par l'application (P2-251) : seul le prénom
+          // est masqué. Après le test d'adjectif ou de participe, pour que
+          // « rose pâle », « blanche agitée » gardent leur traitement de faux
+          // ami (le lexique contient les participes).
+          ajoute(i, formesVerbales.contains(suivant) ? i : i + 1, 0.5);
           i += 2;
           continue;
         }
