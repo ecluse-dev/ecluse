@@ -470,9 +470,10 @@ LIMITES = """## Ce que ce comparatif ne dit pas
   « document par document ».
 - **Chemin mesuré** : `Ecluse.redact` (ce que reçoit le LLM) pour Écluse ; pour
   les autres outils, la détection de l'outil : aucun n'est branché à un LLM ici.
-- Aucun chiffre de ce fichier n'est repris dans le `README.md` ni dans
-  l'article : ce comparatif est une mesure interne, à relire avant toute
-  citation.
+- Les chiffres de ce fichier sont la source des parties 2 et 3 de l'article
+  de benchmark (relu le 22 novembre 2026) ; ils ne sont pas repris dans
+  `bench/README.md`. Toute citation renvoie à ce fichier et au commit indiqué
+  plus haut.
 """
 
 
@@ -588,8 +589,8 @@ def rapport(resultats, docs, commande):
         "# Comparatif d'outils (P2-224)",
         "",
         "Mesure seule, produite par `bench/comparatif.py`. Elle ne tourne pas dans",
-        "`bench/etat.sh`. Aucun chiffre n'est repris dans le README ni dans",
-        "l'article.",
+        "`bench/etat.sh`. Ses chiffres sont la source des parties 2 et 3 de",
+        "l'article de benchmark ; ils ne sont pas repris dans `bench/README.md`.",
         "",
         "## Commande exacte",
         "",
