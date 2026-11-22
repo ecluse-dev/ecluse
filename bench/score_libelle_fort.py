@@ -97,6 +97,8 @@ def affiche(corpus, resultats):
     for lib in libelles:
         for v in variantes:
             c = par_case[(lib, v)]
+            if not c["positifs"]:
+                continue  # case vide (« sans libellé » n'a qu'une variante)
             print(f"  {lib} x {v} : {c['en_clair']} / {c['positifs']} en "
                   f"clair, {c['type_faux']} au type faux")
     for kind in ("libelle_seul", "non_communique", "mot_ordinaire",
@@ -106,6 +108,8 @@ def affiche(corpus, resultats):
               f"masqués à tort ({c['predictions']} prédiction(s))")
     for lib in libelles:
         c = negatifs[("libelle", lib)]
+        if not c["documents"]:
+            continue
         print(f"  témoin négatif, libellé={lib} : {c['masques']} / "
               f"{c['documents']} masqués à tort")
 

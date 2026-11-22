@@ -28,6 +28,12 @@ Deux populations, toutes deux synthétiques (clés calculées, graine fixe) :
   clé fausse ou lettres d'OCR, sans libellé : « clé validée ou rien » doit
   s'y appliquer). Chaque prédiction sur ces documents est un masquage de
   trop.
+- **IBAN à clé fausse sans libellé** (depuis le 22/11/2026, décision du
+  mainteneur, `DECISIONS.md`) : la forme `nombre_sans_libelle` tirée pour
+  l'IBAN n'est plus un négatif. Un IBAN mal recopié reste le compte de
+  quelqu'un : le document est annoté `iban` et compté comme positif, avec
+  `libelle` = « sans libellé » et `variante` = `cle_fausse_sans_libelle`.
+  Même tirage qu'avant : le texte des 3 000 documents ne change pas.
 
 Aucun nom, aucune valeur réelle : les identifiants sont tirés par
 `generate_corpus` (clés calculées).
@@ -59,6 +65,10 @@ VARIANTES = ("cle_juste", "cle_fausse", "ocr_zero", "ocr_un", "ligne_vide",
 
 NEGATIFS = ("libelle_seul", "non_communique", "mot_ordinaire",
             "nombre_sans_libelle")
+
+# IBAN à clé fausse sans libellé, annoté comme donnée personnelle (22/11/2026).
+LIBELLE_SANS = "sans libellé"
+VARIANTE_SANS = "cle_fausse_sans_libelle"
 
 SEP_LIBELLE = [": ", " "]
 
@@ -204,8 +214,20 @@ def negatif(libelle, type_id, kind, rng):
     elif kind == "mot_ordinaire":
         texte = f"{libelle} {rng.choice(MOTS_ORDINAIRES[type_id])} au dossier."
     else:
-        texte = (f"{rng.choice(INTRODUCTIONS_NEUTRES)} "
-                 f"{nombre_sans_libelle(type_id, rng)} noté au dossier.")
+        intro = rng.choice(INTRODUCTIONS_NEUTRES)
+        valeur = nombre_sans_libelle(type_id, rng)
+        texte = f"{intro} {valeur} noté au dossier."
+        if type_id == "iban":
+            # Un IBAN à clé fausse reste une donnée personnelle (22/11/2026) :
+            # annoté et compté comme positif, sans libellé fort devant.
+            return {
+                "text": texte,
+                "entities": [{"type": "iban", "start": len(intro) + 1,
+                              "end": len(intro) + 1 + len(valeur)}],
+                "libelle": LIBELLE_SANS,
+                "type_id": type_id,
+                "variante": VARIANTE_SANS,
+            }
     return {
         "text": texte,
         "entities": [],

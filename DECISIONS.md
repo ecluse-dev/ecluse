@@ -880,4 +880,13 @@ patronymes (P2-231).
    IBAN 100 %, total 95,2 % / 100 % / 97,5 % (42 SIREN) ; Presidio tel que livré
    rappel 18,9 % → 17,8 % (1 000) et 18,5 % → 17,5 % (200 000), car son
    recognizer IBAN écarte la clé fausse. Le corpus « libellé fort » n'est pas
-   touché : ses IBAN à clé fausse restent des négatifs.
+   touché : ses IBAN à clé fausse restent des négatifs. **Étendu le soir même
+   (point 8).**
+8. **Même règle pour le corpus « libellé fort »** (décision du mainteneur,
+   22 novembre au soir). Les 50 IBAN à clé fausse sans libellé
+   (`nombre_sans_libelle` tiré pour l'IBAN) deviennent des positifs annotés
+   `iban` (`libelle` « sans libellé », `variante` `cle_fausse_sans_libelle`) ;
+   texte inchangé. Mesuré par `Ecluse.redact` : 46 masqués en entier, **4 en
+   clair**, tous avec une lettre « o » d'OCR dans la clé (« FR8o52… »). Défaut
+   toléré au tableau de bord par un plafond de 4, correction inscrite (P2-254).
+   Témoins négatifs : 53 / 1 200 → 7 / 1 150 masqués à tort.
