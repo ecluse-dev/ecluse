@@ -26,6 +26,8 @@ const Map<String, String> typeMap = {
   'rpps': 'rpps',
   'iban': 'iban',
   'finess': 'finess',
+  // SIREN nommé (P2-248) : aucun corpus flou ne l'annote ; conservé tel quel.
+  'siren': 'siren',
   'adeli': 'adeli',
   // Identifiant administratif etiquete (numero de dossier, de patient,
   // IPP...) : produit par `Ecluse.redact` sur les corpus QI et le corpus
