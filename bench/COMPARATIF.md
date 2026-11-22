@@ -20,7 +20,7 @@ Les corpus sont ceux que `bench/etat.sh` génère (graine 42) ; `dart` doit
 
 | Composant | Version |
 |---|---|
-| Écluse (commit du dépôt) | af4bbe0 |
+| Écluse (commit du dépôt) | a84c34d |
 | Dart | Dart SDK version: 3.14.0 (stable) (Wed Nov 4 16:28:39 2026 -0800) on "linux_x64" |
 | Python | 3.13.18 |
 | presidio-analyzer | 2.2.366 |
@@ -49,9 +49,9 @@ Les corpus sont ceux que `bench/etat.sh` génère (graine 42) ; `dart` doit
 | rpps | 6/6 (100 %) | 6/6 (100 %) | 3/6 (50 %) | 3/6 (50 %) | 0/6 (0 %) | 3/6 (50 %) |
 | telephone | 40/40 (100 %) | 40/40 (100 %) | 39/40 (98 %) | 39/40 (98 %) | 0/40 (0 %) | 40/40 (100 %) |
 | **Toutes entités** | **371/371 (100 %)** | **371/371 (100 %)** | **199/371 (54 %)** | **258/371 (70 %)** | **164/371 (44 %)** | **200/371 (54 %)** |
-| Documents sans entité masqués à tort | 11/24 (46 %) | 11/24 (46 %) | 21/24 (88 %) | 12/24 (50 %) | 10/24 (42 %) | 2/24 (8 %) |
+| Documents sans entité masqués à tort | 13/24 (54 %) | 13/24 (54 %) | 21/24 (88 %) | 12/24 (50 %) | 10/24 (42 %) | 2/24 (8 %) |
 
-Mentions d'Écluse (document par document) sur les documents sans entité annotée, par source et par type prédit : v3 : iban 3, identifiant 1, nom 3, siren 3, telephone 1.
+Mentions d'Écluse (document par document) sur les documents sans entité annotée, par source et par type prédit : v3 : iban 5, identifiant 1, nom 3, siren 3, telephone 1.
 
 Règle de score : voir l'en-tête de `bench/comparatif.py`. Entité couverte =
 tous ses caractères non blancs sont sous une prédiction, quel que soit le
@@ -128,8 +128,8 @@ Ancienne et nouvelle lignes, côte à côte :
 |---|---:|---:|---:|---:|---:|---:|
 | Couverture, annotation du corpus | 371/371 (100 %) | 371/371 (100 %) | 199/371 (54 %) | 258/371 (70 %) | 164/371 (44 %) | 200/371 (54 %) |
 | Couverture, avec annotation complémentaire | 392/392 (100 %) | 392/392 (100 %) | 211/392 (54 %) | 278/392 (71 %) | 183/392 (47 %) | 206/392 (53 %) |
-| Sans entité masqués à tort, annotation du corpus | 11/24 (46 %) | 11/24 (46 %) | 21/24 (88 %) | 12/24 (50 %) | 10/24 (42 %) | 2/24 (8 %) |
-| Sans entité masqués à tort, avec annotation complémentaire | 6/19 (32 %) | 6/19 (32 %) | 17/19 (89 %) | 7/19 (37 %) | 6/19 (32 %) | 1/19 (5 %) |
+| Sans entité masqués à tort, annotation du corpus | 13/24 (54 %) | 13/24 (54 %) | 21/24 (88 %) | 12/24 (50 %) | 10/24 (42 %) | 2/24 (8 %) |
+| Sans entité masqués à tort, avec annotation complémentaire | 8/19 (42 %) | 8/19 (42 %) | 17/19 (89 %) | 7/19 (37 %) | 6/19 (32 %) | 1/19 (5 %) |
 
 Détail par type avec annotation complémentaire :
 
@@ -147,7 +147,7 @@ Détail par type avec annotation complémentaire :
 | rpps | 6/6 (100 %) | 6/6 (100 %) | 3/6 (50 %) | 3/6 (50 %) | 0/6 (0 %) | 3/6 (50 %) |
 | telephone | 41/41 (100 %) | 41/41 (100 %) | 40/41 (98 %) | 40/41 (98 %) | 0/41 (0 %) | 41/41 (100 %) |
 | **Toutes entités** | **392/392 (100 %)** | **392/392 (100 %)** | **211/392 (54 %)** | **278/392 (71 %)** | **183/392 (47 %)** | **206/392 (53 %)** |
-| Documents sans entité masqués à tort | 6/19 (32 %) | 6/19 (32 %) | 17/19 (89 %) | 7/19 (37 %) | 6/19 (32 %) | 1/19 (5 %) |
+| Documents sans entité masqués à tort | 8/19 (42 %) | 8/19 (42 %) | 17/19 (89 %) | 7/19 (37 %) | 6/19 (32 %) | 1/19 (5 %) |
 
 Limites : la règle ne voit que les personnes posées par les listes du générateur, les téléphones et dossiers de format régulier ; une donnée personnelle d'une autre forme (dans les dossiers ou le flou) resterait non annotée. Le chemin mesuré est inchangé : `Ecluse.redact` pour Écluse, la détection propre de chaque outil pour les autres.
 
