@@ -159,6 +159,13 @@ abstract final class Ecluse {
   /// nom. Voir
   /// `PrenomInseeDetector`. Sans [prenomsInsee], la sortie est exactement
   /// celle d'avant.
+  ///
+  /// **Formes verbales** (P2-251) : avec [formesVerbales] (ensemble de mots en
+  /// minuscules, accents conservés, **chargé par l'appelant**, par exemple depuis
+  /// le paquet optionnel `ecluse_lexique` sous LGPL-LR), un prénom suivi d'une de
+  /// ces formes (« Sophie félicite ») est masqué **seul** : le verbe reste
+  /// lisible. Ce paquet n'importe jamais le lexique. Sans [formesVerbales] (ou
+  /// vide), la sortie est exactement celle d'avant.
   static Future<RedactResult> redact(
     String text, {
     List<Detector>? detectors,
@@ -169,9 +176,16 @@ abstract final class Ecluse {
     JournalAudit? journal,
     RareDiseaseCatalog? maladiesRares,
     PrenomsInsee? prenomsInsee,
+    Set<String>? formesVerbales,
   }) {
-    final options = _Options(detectors, restoreSecrets, refuseSecrets,
-        riskReference, journal, _supplementaires(maladiesRares, prenomsInsee));
+    final options = _Options(
+        detectors,
+        restoreSecrets,
+        refuseSecrets,
+        riskReference,
+        journal,
+        _supplementaires(maladiesRares, prenomsInsee),
+        formesVerbales ?? const {});
     if (dossier == null) return _redact(text, _Etat(), options);
     return dossier._serialise(() {
       final etat = dossier._etat;
@@ -217,13 +231,17 @@ abstract final class Ecluse {
     Dossier? dossier,
     RareDiseaseCatalog? maladiesRares,
     PrenomsInsee? prenomsInsee,
+    Set<String>? formesVerbales,
   }) {
     final extra = _supplementaires(maladiesRares, prenomsInsee);
-    if (dossier == null) return _detecter(text, _Etat(), detectors, extra);
+    final formes = formesVerbales ?? const <String>{};
+    if (dossier == null) {
+      return _detecter(text, _Etat(), detectors, extra, formes);
+    }
     return dossier._serialise(() {
       final etat = dossier._etat;
       if (etat == null) throw const DossierFermeException();
-      return _detecter(text, etat, detectors, extra);
+      return _detecter(text, etat, detectors, extra, formes);
     });
   }
 
@@ -250,14 +268,18 @@ abstract final class Ecluse {
     _Etat etat,
     List<Detector>? detectors, [
     List<Detector> supplementaires = const [],
+    Set<String> formesVerbales = const {},
   ]) async {
     // Dans un dossier, les patronymes établis par les documents précédents
     // amorcent la détection de noms (P2-14) ; des détecteurs fournis par
     // l'appelant ne sont jamais modifiés.
     final base = detectors ??
-        (etat.patronymes.isEmpty && etat.fournis.isEmpty
+        (etat.patronymes.isEmpty &&
+                etat.fournis.isEmpty &&
+                formesVerbales.isEmpty
             ? defaultDetectors
-            : _detecteursAvecPatronymes(etat.patronymes, etat.fournis._noms));
+            : _detecteursAvecPatronymes(
+                etat.patronymes, etat.fournis._noms, formesVerbales));
     final engine = EcluseEngine(
         supplementaires.isEmpty ? base : [...base, ...supplementaires]);
     final (vue, positions) = _vueDeDetection(text);
@@ -341,8 +363,8 @@ abstract final class Ecluse {
     _Etat etat,
     _Options options,
   ) async {
-    final resolved =
-        await _detecter(text, etat, options.detectors, options.supplementaires);
+    final resolved = await _detecter(text, etat, options.detectors,
+        options.supplementaires, options.formesVerbales);
 
     final secretCount =
         resolved.where((e) => e.type == EntityType.secret).length;
@@ -575,7 +597,8 @@ abstract final class Ecluse {
 /// P2-243). Seuls les patronymes établis amorcent `NomMinusculesDetector` : la
 /// liste fournie n'y entre pas (casse de titre et capitales seulement).
 List<Detector> _detecteursAvecPatronymes(Set<String> patronymes,
-        [Set<String> fournis = const {}]) =>
+        [Set<String> fournis = const {},
+        Set<String> formesVerbales = const {}]) =>
     [
       for (final detecteur in Ecluse.defaultDetectors)
         if (detecteur is LegacyDetectorAdapter && detecteur.name == 'nom')
@@ -587,7 +610,10 @@ List<Detector> _detecteursAvecPatronymes(Set<String> patronymes,
         else if (detecteur is LegacyDetectorAdapter &&
             detecteur.name == 'nom_minuscules')
           LegacyDetectorAdapter(
-            NomMinusculesDetector(knownSurnames: Set.of(patronymes)),
+            NomMinusculesDetector(
+              knownSurnames: Set.of(patronymes),
+              formesVerbales: formesVerbales,
+            ),
             DetectorTier.reference,
             name: 'nom_minuscules',
           )

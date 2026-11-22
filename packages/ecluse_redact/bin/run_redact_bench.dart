@@ -55,16 +55,43 @@ const Map<String, String> typeMap = {
 /// sortie est identique à celle d'avant (les scoreurs existants n'en lisent
 /// pas plus).
 ///
+/// `--formes-verbales=CHEMIN` (P2-251) : active l'option `formesVerbales` de
+/// `Ecluse.redact` avec les formes lues dans CHEMIN (une par ligne, minuscules,
+/// `#` ignoré, gzip si `.gz`), par exemple
+/// `../ecluse_lexique/assets/formes_verbales.txt.gz`. Lu ici sans importer le
+/// paquet `ecluse_lexique` (LGPL-LR) : `ecluse_redact` ne dépend pas de lui.
+///
 /// `--prenoms-insee` (P2-149) : active l'option `prenomsInsee` de
 /// `Ecluse.redact` avec les effectifs de `ecluse_reference`, au seuil par
 /// défaut ou à `SEUIL`.
 Future<void> main(List<String> argv) async {
   final option = argv.where((a) => a.startsWith('--prenoms-insee')).toList();
   final avecConfiance = argv.contains('--confiance');
+  final optionFormes =
+      argv.where((a) => a.startsWith('--formes-verbales=')).toList();
   final args = [
     for (final a in argv)
-      if (!a.startsWith('--prenoms-insee') && a != '--confiance') a
+      if (!a.startsWith('--prenoms-insee') &&
+          !a.startsWith('--formes-verbales=') &&
+          a != '--confiance')
+        a
   ];
+  Set<String>? formesVerbales;
+  if (optionFormes.isNotEmpty) {
+    final chemin = optionFormes.last.substring('--formes-verbales='.length);
+    final brut = File(chemin).readAsBytesSync();
+    final texte =
+        utf8.decode(chemin.endsWith('.gz') ? gzip.decode(brut) : brut);
+    formesVerbales = {
+      for (final l in const LineSplitter().convert(texte))
+        if (l.trim().isNotEmpty && !l.startsWith('#')) l.trim()
+    };
+    if (formesVerbales.isEmpty) {
+      stderr.writeln('Lexique de formes verbales vide ou illisible.');
+      exitCode = 64;
+      return;
+    }
+  }
   PrenomsInsee? gazetteer;
   if (option.isNotEmpty) {
     final effectifs =
@@ -101,7 +128,8 @@ Future<void> main(List<String> argv) async {
 
     final RedactResult result;
     try {
-      result = await Ecluse.redact(text, prenomsInsee: gazetteer);
+      result = await Ecluse.redact(text,
+          prenomsInsee: gazetteer, formesVerbales: formesVerbales);
     } on TableauAmbiguException {
       // Refus explicite (règle 4) : rien n'est envoyé, donc rien ne fuit.
       // On le note (`refuse`) au lieu de faire tomber tout le banc ; le
