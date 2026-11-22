@@ -7,7 +7,7 @@ l'article.
 ## Commande exacte
 
 ```
-python3 bench/comparatif.py --md bench/COMPARATIF.md
+python3 bench/comparatif.py --md bench/COMPARATIF.md --temoin
 ```
 
 Environnement : `pip install -r bench/requirements-comparatif.txt` puis
@@ -20,7 +20,7 @@ Les corpus sont ceux que `bench/etat.sh` génère (graine 42) ; `dart` doit
 
 | Composant | Version |
 |---|---|
-| Écluse (commit du dépôt) | d88c8b0 |
+| Écluse (commit du dépôt) | 558ccd8 |
 | Dart | Dart SDK version: 3.14.1 (stable) (Tue Nov 17 00:01:24 2026 -0800) on "linux_x64" |
 | Python | 3.13.18 |
 | presidio-analyzer | 2.2.366 |
@@ -45,10 +45,10 @@ Les corpus sont ceux que `bench/etat.sh` génère (graine 42) ; `dart` doit
 | finess | 6/6 (100 %) | 6/6 (100 %) | 0/6 (0 %) | 0/6 (0 %) | 0/6 (0 %) | 0/6 (0 %) |
 | iban | 10/10 (100 %) | 10/10 (100 %) | 8/10 (80 %) | 8/10 (80 %) | 5/10 (50 %) | 0/10 (0 %) |
 | nir | 10/10 (100 %) | 10/10 (100 %) | 1/10 (10 %) | 0/10 (0 %) | 0/10 (0 %) | 7/10 (70 %) |
-| nom | 112/127 (88 %) | 127/127 (100 %) | 81/127 (64 %) | 127/127 (100 %) | 127/127 (100 %) | 78/127 (61 %) |
+| nom | 127/127 (100 %) | 127/127 (100 %) | 81/127 (64 %) | 127/127 (100 %) | 127/127 (100 %) | 78/127 (61 %) |
 | rpps | 6/6 (100 %) | 6/6 (100 %) | 3/6 (50 %) | 3/6 (50 %) | 0/6 (0 %) | 3/6 (50 %) |
 | telephone | 40/40 (100 %) | 40/40 (100 %) | 39/40 (98 %) | 39/40 (98 %) | 0/40 (0 %) | 40/40 (100 %) |
-| **Toutes entités** | **356/371 (96 %)** | **371/371 (100 %)** | **199/371 (54 %)** | **258/371 (70 %)** | **164/371 (44 %)** | **200/371 (54 %)** |
+| **Toutes entités** | **371/371 (100 %)** | **371/371 (100 %)** | **199/371 (54 %)** | **258/371 (70 %)** | **164/371 (44 %)** | **200/371 (54 %)** |
 | Documents sans entité masqués à tort | 11/24 (46 %) | 11/24 (46 %) | 21/24 (88 %) | 12/24 (50 %) | 10/24 (42 %) | 2/24 (8 %) |
 
 Mentions d'Écluse (document par document) sur les documents sans entité annotée, par source et par type prédit : v3 : finess 3, iban 3, identifiant 1, nom 3, telephone 1.
@@ -105,3 +105,38 @@ documents sans entité.
   l'article : ce comparatif est une mesure interne, à relire avant toute
   citation.
 
+
+## Témoin sans aucune donnée personnelle (P2-246)
+
+480 documents synthétiques du soin et du social, **sans aucune donnée personnelle** (générés par `bench/generate_corpus_temoin_sans_pii.py`, graine 42) : consignes de service, comptes rendus sans nom, protocoles, plannings de salles, notes logistiques, courriers types. Toute prédiction y est un masquage en trop ; aucune correction n'est faite ici.
+
+Chemin mesuré : `Ecluse.redact` (ce que reçoit le LLM) pour les deux colonnes Écluse ; la détection propre de chaque outil pour les autres.
+
+| | Écluse, document par document | Écluse, session de dossier | Presidio par défaut | Presidio en français | spaCy fr_core_news_lg seul | EDS-Pseudo (règles) |
+|---|---:|---:|---:|---:|---:|---:|
+| Documents masqués à tort | 16/480 (3 %) | 16/480 (3 %) | 447/480 (93 %) | 456/480 (95 %) | 480/480 (100 %) | 257/480 (54 %) |
+| Caractères (hors blancs) masqués à tort | 253/141910 (0 %) | 253/141910 (0 %) | 9459/141910 (7 %) | 11521/141910 (8 %) | 24311/141910 (17 %) | 2471/141910 (2 %) |
+| type prédit `DATE` (documents / caractères) | — | — | — | — | — | 257/2469 |
+| type prédit `DATE_TIME` (documents / caractères) | — | — | 80/579 | — | — | — |
+| type prédit `LOC` (documents / caractères) | — | — | — | — | 348/4754 | — |
+| type prédit `LOCATION` (documents / caractères) | — | — | 242/1972 | 348/4754 | — | — |
+| type prédit `MISC` (documents / caractères) | — | — | — | — | 420/12806 | — |
+| type prédit `NDA` (documents / caractères) | — | — | — | — | — | 1/2 |
+| type prédit `NRP` (documents / caractères) | — | — | 5/20 | — | — | — |
+| type prédit `ORG` (documents / caractères) | — | — | — | — | 291/2871 | — |
+| type prédit `ORGANIZATION` (documents / caractères) | — | — | — | 291/2871 | — | — |
+| type prédit `PER` (documents / caractères) | — | — | — | — | 242/3880 | — |
+| type prédit `PERSON` (documents / caractères) | — | — | 361/6888 | 242/3880 | — | — |
+| type prédit `PHONE_NUMBER` (documents / caractères) | — | — | 3/16 | 3/16 | — | — |
+| type prédit `etablissement` (documents / caractères) | 16/253 | 16/253 | — | — | — | — |
+
+Écluse (document par document), documents masqués à tort par famille : compte_rendu 7/80 ; consigne_service 0/80 ; courrier_type 0/80 ; note_logistique 9/80 ; planning_salles 0/80 ; protocole 0/80.
+
+Familles de masquage à tort d'Écluse sur le témoin (type `etablissement` seul, 16 documents sur 480, 253 caractères ; exemples synthétiques, aucune correction) :
+
+1. **Sigle ou type d'établissement suivi de « à » et d'une ville**, 8 documents, tous des comptes rendus : « Prévoir un point d'étape avec CHU à Lille. » masque « CHU à Lille » (idem « SSIAD à Tours », « EHPAD à Nantes »). Le texte désigne un type de structure générique et une ville, pas une structure identifiable ; Écluse y lit une tournure d'établissement.
+2. **Dénomination de service en majuscules de titre** après un titre de note, 8 documents, toutes des notes logistiques : « Note Logistique La Résidence Autonomie. » masque « Résidence Autonomie » (idem « Foyer D'accueil Médicalisé »). La casse de titre fait lire un nom propre d'établissement ; la même dénomination en casse ordinaire (« la résidence autonomie ») n'est pas masquée dans ce témoin.
+
+Aucun masquage à tort d'Écluse dans les quatre autres familles (consignes de service, courriers types, protocoles, plannings de salles) ni sur les numéros de salle, pages, articles de loi, codes de protocole, marques ou villes seules.
+
+Limite propre à ce témoin : il est produit par le projet, à partir de pools de mots limités (une quinzaine de villes, une dizaine de sigles) ; l'absence d'autres familles chez Écluse ne dit rien des tournures que ce générateur ne tire pas. Les autres outils produisent des types différents (`PERSON`, `LOC`, `MISC`…) sur des mots de ces mêmes phrases ; leurs masquages n'ont pas été décomposés famille par famille.

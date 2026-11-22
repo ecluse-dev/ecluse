@@ -73,5 +73,38 @@ class TestEchantillon(unittest.TestCase):
                             for d in a if d["source"] == "flou"))
 
 
+class TestTemoin(unittest.TestCase):
+    """Témoin sans donnée personnelle (P2-246) : mesure et générateur."""
+
+    def test_mesure_documents_caracteres_et_types(self):
+        docs = [{"id": 0, "text": "Salle 204 libre.", "entities": []},
+                {"id": 1, "text": "Rien ici.", "entities": []}]
+        # deux prédictions de types différents qui se chevauchent sur « 204 »
+        m = c.mesure_temoin(docs, {0: [(0, 9, "adresse"), (6, 9, "nom")]})
+        self.assertEqual(m["docs"], [1, 2])
+        self.assertEqual(m["car"], [8, 22])  # « Salle 204 » : 8 hors blanc ; total 14 + 8
+        self.assertEqual(m["types"], {"adresse": [1, 8], "nom": [1, 3]})
+
+    def test_score_tolere_le_type_predit(self):
+        e = ent("nom", 4, 20)
+        self.assertTrue(c.couverte(TEXTE, e, [(4, 20, "PER")]))
+
+    def test_generateur_reproductible_sans_entite_ni_identifiant(self):
+        import re
+        import generate_corpus_temoin_sans_pii as g
+        a, b = g.genere(480, 42), g.genere(480, 42)
+        self.assertEqual(a, b)
+        self.assertGreaterEqual(len(a), 400)
+        self.assertEqual(len(set(d["famille"] for d in a)), 6)
+        self.assertNotEqual(a, g.genere(480, 7))
+        for d in a:
+            self.assertEqual(d["entities"], [])
+            t = d["text"]
+            self.assertNotRegex(t, r"@")                       # pas d'e-mail
+            self.assertNotRegex(t, r"\b0\d([ .]?\d{2}){4}\b")  # pas de téléphone
+            self.assertNotRegex(t, r"\b[A-Z]{2}\d{2}\b")      # pas d'IBAN
+            self.assertNotRegex(t, r"\d{9,}")                   # pas de long numéro
+
+
 if __name__ == "__main__":
     unittest.main()
