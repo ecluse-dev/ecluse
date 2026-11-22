@@ -841,3 +841,18 @@ patronymes (P2-231).
 3. Les fichiers sources sont téléchargés par le mainteneur (P2-249), les
    sessions n'ayant pas accès à ces sites. Lecture non juridique : à faire
    valider si un client le demande.
+
+## 2026-11 — Décisions du 22 novembre (lexique, référentiel, corrections)
+
+1. **Lexique de verbes filtré par les noms de famille de l'INSEE, seuil 30**
+   (P2-251, #488) : 7 715 formes homographes d'un nom de famille retirées ; avec
+   l'option, 810 → 120 verbes masqués sur la sonde de P2-240, 0 prénom en clair.
+   Aucun patronyme du fichier de l'INSEE ne peut passer en clair derrière un
+   prénom à cause du lexique.
+2. **P2-250 abandonnée** : le référentiel de patronymes ne sert qu'à ce filtre.
+   L'usage « confirmer un nom derrière une tournure » n'avait pas d'effet défini
+   (P2-232 signale déjà ces noms « à vérifier ») ; il n'est pas repris.
+3. **Corrections mises en file** : IBAN à clé invalide masqué en entier (P2-252),
+   prénom « Eva » accepté dans la liste de patronymes (P2-253).
+4. **Article de benchmark** : la ligne « masqués à tort » est remplacée par le
+   témoin sans donnée personnelle (P2-246) et l'annotation complétée (P2-247).
