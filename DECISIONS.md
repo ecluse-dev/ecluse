@@ -856,3 +856,18 @@ patronymes (P2-231).
    prénom « Eva » accepté dans la liste de patronymes (P2-253).
 4. **Article de benchmark** : la ligne « masqués à tort » est remplacée par le
    témoin sans donnée personnelle (P2-246) et l'annotation complétée (P2-247).
+5. **IBAN de forme française à clé invalide masqué en entier** (P2-252, #490).
+   La règle « clé validée ou rien » ne vaut plus pour l'IBAN FR sans libellé :
+   une suite `FR` + 2 chiffres + 23 caractères de forme IBAN est masquée sous le
+   type `iban`, confiance 0,3, avec l'avertissement « à vérifier ». Mesuré sur
+   les 8 362 IBAN pièges du corpus de 200 000 documents (graine 42) : par
+   `Ecluse.redact`, avant 2 762 en clair et 43 en partie, après 0 et 0 ; au
+   moteur seul, avant 8 352 en clair et 10 en partie, après 0 et 0. Aucun autre
+   document ne change. Coût : ces pièges sont annotés comme non personnels, ils
+   comptent comme faux positifs (précision IBAN au moteur seul 100 % → 83,3 %,
+   comparatif sans entité 6/19 → 8/19). L'annotation des pièges n'est pas
+   modifiée : le choix d'en faire des positifs reste au mainteneur.
+6. **« Eva » accepté dans une liste de patronymes** (P2-253, #491) : seule
+   l'entrée écrite tout en capitales reste refusée ; le sigle « EVA » du texte
+   n'est jamais masqué à cause de la liste (prix accepté : « EVA MARTIN » garde
+   le prénom en clair).
