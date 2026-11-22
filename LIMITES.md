@@ -257,7 +257,8 @@ changements, dans `ecluse_core` :
   blancs irréguliers coupé par un retour à la ligne peut être lue comme un
   RPPS (1 faux positif de plus sur le corpus structurel à 90 colonnes : 2 →
   3). Par `Ecluse.redact`, qui recolle la ligne, l'IBAN est lu en entier
-  (778 / 778).
+  (778 / 778 ; 826 / 826 depuis l'annotation des IBAN à clé fausse le
+  22 novembre).
 
 **NIR et IBAN : variantes de forme.** Le NIR est reconnu avec un mois de
 naissance fictif (`00`, `20` à `42`, `50` à `99`, d'après la nomenclature
@@ -333,10 +334,12 @@ une coupure au milieu d'un groupe ne l'est pas.
   **`Ecluse.redact`** 43 masqués en partie (FINESS ou téléphone) et 2 762 laissés
   en clair (blancs insécables ou multiples, hors du champ de P2-188) → **0** et
   **0**. Rappel NIR, RPPS, IBAN et FINESS inchangé (100 %), fuite au caractère
-  0 %. **Coût** : ces IBAN sont des témoins négatifs du banc (« ne correspond à
-  aucun… »), donc comptés comme faux positifs : précision IBAN du moteur seul
-  100 % → 83,3 %, précision totale du corpus v3 94,9 % → 89,6 % (42 → 90 FP : 48 pièges sur les 1 000 documents).
-  C'est le sur-masquage voulu ; il ne vaut que pour une suite de la forme exacte
+  0 %. Ces IBAN étaient des témoins négatifs du banc, donc comptés comme faux
+  positifs (précision IBAN du moteur seul 100 % → 83,3 %) ; depuis le
+  22 novembre, le corpus les annote comme données personnelles (`iban`) et la
+  précision IBAN est revenue à 100 % (corpus v3 : 826 entités, précision
+  totale 95,2 %, les 42 faux positifs restants sont les SIREN). C'est un
+  masquage voulu ; il ne vaut que pour une suite de la forme exacte
   d'un IBAN français. Les IBAN d'autres pays à clé fausse ne sont pas traités.
 - **NIR, IBAN FR ou RPPS à clé fausse, annoncé par un libellé fort (P2-188).**
   `Ecluse.redact` masque quand même, à confiance 0,3, avec l'avertissement
@@ -1185,9 +1188,12 @@ Un détecteur d'`ecluse_core` appelé directement (`NirDetector().detect(texte)`
 moteur seul (`EcluseEngine`) **ne lit pas un identifiant coupé par une fin de ligne** : aucun des deux ne franchit
 un saut de ligne. Mesuré sur le corpus structurel synthétique remis en page (778 identifiants, `bench/ETAT.md`,
 section « Mise en page ») : **682 / 778** détectés à 60 colonnes (96 manqués : 22 NIR, 16 RPPS, 58 IBAN) et
-**751 / 778** à 90 colonnes (27 IBAN manqués), par l'appel direct comme par le moteur seul. Le morceau qui reste
+**751 / 778** à 90 colonnes (27 IBAN manqués), par l'appel direct comme par le moteur seul. Depuis le 22 novembre
+(48 IBAN à clé fausse annotés, 826 identifiants) : moteur seul 730 / 826 et 799 / 826 (mêmes coupures manquées),
+détecteur appelé seul 682 / 826 et 751 / 826 (il écarte en plus la clé fausse, que le moteur et `Ecluse.redact`
+masquent). Le morceau qui reste
 sur une ligne peut en plus être pris pour un autre identifiant (9 fins d'IBAN lues comme un RPPS). Par
-**`Ecluse.redact`**, le seul chemin du produit et ce que reçoit le LLM : **778 / 778** aux deux largeurs. Un texte
+**`Ecluse.redact`**, le seul chemin du produit et ce que reçoit le LLM : **778 / 778** aux deux largeurs (826 / 826 depuis le 22 novembre). Un texte
 qui vient d'un PDF, d'un courriel ou d'un formulaire passe donc par `Ecluse.redact`, pas par un détecteur seul.
 Ces chiffres valent pour un corpus synthétique recoupé mécaniquement ; ils ne disent pas la fréquence d'une
 coupure dans des documents réels. Descendre la neutralisation dans le cœur (option A1) n'est pas décidé : les deux

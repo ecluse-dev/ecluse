@@ -1,5 +1,13 @@
 # Ce que Presidio ne voit pas : un benchmark d'identifiants français
 
+> **Version du 8 novembre 2026, dépassée.** Depuis : SIREN nommé `siren`
+> (P2-248, précision FINESS 100 %), IBAN à clé invalide masqué en entier
+> (P2-252) et annoté comme donnée personnelle dans le corpus (22 novembre :
+> 826 entités, dont 262 IBAN ; Écluse 95,2 % / 100 % / 97,5 %, Presidio par
+> défaut 17,8 % de rappel). Chiffres à jour : `bench/README.md` et
+> `bench/ETAT.md`. Une nouvelle version de l'article remplacera celle-ci à la
+> publication ; le texte ci-dessous est laissé tel quel.
+
 > Mesures rejouées le 8 novembre 2026 sur `main` (commit `0b9fcd7`) avec les
 > commandes de la section « Reproduire ». Corpus synthétique ; aucune donnée
 > réelle.

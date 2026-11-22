@@ -33,13 +33,18 @@ sont répartis sur deux lignes (texte extrait d'un PDF, courriel replié à
 const NirDetector().detect('Patient 1 85 05 78 006\n084 91 admis.'); // []
 ```
 
-Mesuré sur le corpus synthétique du dépôt remis en page (778 identifiants,
-`bench/ETAT.md`, section « Mise en page ») :
+Mesuré sur le corpus synthétique du dépôt remis en page (826 identifiants
+depuis le 22 novembre 2026, dont 48 IBAN à clé fausse annotés ; `bench/ETAT.md`,
+section « Mise en page ») :
 
 | Chemin | 60 colonnes | 90 colonnes |
 |---|---:|---:|
-| détecteur appelé seul, ou `EcluseEngine` | 682 / 778 | 751 / 778 |
-| `Ecluse.redact` (paquet `ecluse_redact`) | 778 / 778 | 778 / 778 |
+| détecteur appelé seul | 682 / 826 | 751 / 826 |
+| `EcluseEngine` (options du banc, IBAN à clé fausse activé) | 730 / 826 | 799 / 826 |
+| `Ecluse.redact` (paquet `ecluse_redact`) | 826 / 826 | 826 / 826 |
+
+Avant cette annotation (778 identifiants) : 682 et 751 pour les deux premiers
+chemins, 778 pour `Ecluse.redact`.
 
 Pour un texte dont vous ne maîtrisez pas la mise en page, passez par
 `Ecluse.redact` : il neutralise ces fins de ligne dans sa vue de détection,

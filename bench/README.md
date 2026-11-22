@@ -3,7 +3,13 @@
 Harnais de comparaison sur corpus synthétique français annoté.
 Entités cibles : **NIR**, **RPPS**, **IBAN FR**, **FINESS**.
 
-## Résultats (corpus v3, seed 42, 1000 documents, 778 entités)
+## Résultats (corpus v3, seed 42, 1000 documents, 826 entités)
+
+Rejoués le 22 novembre 2026 (Écluse au commit `94749ac`, prédictions Presidio
+`presidio-analyzer` 2.2.366 inchangées). Depuis cette date, les **48 IBAN à clé
+invalide** du corpus (« L'IBAN … a été refusé par la banque ») sont **annotés**
+`iban` : un IBAN mal recopié reste le compte de quelqu'un (`DECISIONS.md`,
+22 novembre). Avant : 778 entités, 214 IBAN.
 
 Appariement strict (span exact + type) :
 
@@ -12,27 +18,32 @@ Appariement strict (span exact + type) :
 | **Écluse** | NIR | 100 % | 100 % | 100 % |
 | **Écluse** | RPPS | 100 % | 100 % | 100 % |
 | **Écluse** | IBAN FR | 100 % | 100 % | 100 % |
-| **Écluse** | FINESS | 75,4 % | 100 % | 86,0 % |
-| **Écluse** | **TOTAL** | **94,9 %** | **100 %** | **97,4 %** |
+| **Écluse** | FINESS | 100 % | 100 % | 100 % |
+| **Écluse** | **TOTAL**² | **95,2 %** | **100 %** | **97,5 %** |
 | Presidio¹ | NIR | — | 0 % | 0 % |
 | Presidio¹ | RPPS | — | 0 % | 0 % |
-| Presidio¹ | IBAN FR | 100 % | 68,7 % | 81,4 % |
+| Presidio¹ | IBAN FR | 100 % | 56,1 % | 71,9 % |
 | Presidio¹ | FINESS | — | 0 % | 0 % |
-| Presidio¹ | **TOTAL** | 100 % | **18,9 %** | **31,8 %** |
+| Presidio¹ | **TOTAL** | 100 % | **17,8 %** | **30,2 %** |
 
 ¹ Presidio rejoué sur le **corpus v3** (seed 42, 1000 documents,
-778 entités), configuration par défaut (`presidio-analyzer` 2.2.364,
+826 entités), configuration par défaut (`presidio-analyzer` 2.2.366,
 modèle spaCy `en_core_web_lg`, seuil 0,35). Le rappel NIR/RPPS/FINESS à
 0 % est structurel (aucun recognizer français ni FINESS livré par
-défaut). Le rappel IBAN de 68,7 % (147/214) vient du style
-`irregular` : les 67 IBAN à espacement irrégulier (voir plus bas) ne
-sont pas reconnus. Commande exacte de reproduction : voir *Reproduire*.
+défaut). Le rappel IBAN de 56,1 % (147/262) vient de deux familles :
+les 67 IBAN à espacement irrégulier (style `irregular`, voir plus bas) et
+les 48 IBAN à clé invalide, que son recognizer écarte par la clé (avant
+leur annotation : 68,7 %, 147/214).
+
+² Les 42 faux positifs d'Écluse sont les 42 SIREN pièges, nommés `siren` et
+masqués à dessein depuis P2-248 (un SIREN d'entrepreneur individuel désigne
+une personne) ; ils ne sont plus comptés comme FINESS. Commande exacte de reproduction : voir *Reproduire*.
 
 Lecture : en configuration par défaut, Presidio ne couvre **aucun
 identifiant spécifiquement français** (NIR, RPPS, FINESS). Son recognizer
 IBAN, à validation de clé, est précis (aucun faux positif) mais ne
-retrouve pas les IBAN à espacement irrégulier (rappel 68,7 %). Le
-corpus contient des pièges (NIR/IBAN à clé invalide, RPPS à Luhn cassé,
+retrouve ni les IBAN à espacement irrégulier ni ceux à clé invalide (rappel
+56,1 %). Le corpus contient des pièges non annotés (NIR à clé invalide, RPPS à Luhn cassé,
 téléphones, SIRET, SIREN) : aucun moteur n'y est tombé à tort, à
 l'exception du cas de collision FINESS/SIREN — assumé et mesuré, pas un
 bug.
@@ -83,9 +94,11 @@ du mot « finess »). Sur ce tirage (seed 42, 1000 documents) :
 | FINESS annotés (avec/sans contexte) | 129 | 129 (100 % rappel) |
 | SIREN pièges (non annotés) | 42 | 42 (tous captés, à confiance basse) |
 
-Les 42 pièges SIREN expliquent intégralement les 42 faux positifs FINESS du
-tableau de résultats ci-dessus (précision 75,4 % au lieu de 100 %) —
-vérifié un par un : aucun autre faux positif n'existe. C'est la mesure
+Les 42 pièges SIREN expliquaient intégralement les 42 faux positifs FINESS
+(précision FINESS 75,4 % au lieu de 100 %) — vérifié un par un : aucun autre
+faux positif n'existait. Depuis P2-248, ils sont nommés `siren` : précision
+FINESS 100 %, et les mêmes 42 apparaissent comme faux positifs `siren` du
+total (note ² ci-dessus). C'est la mesure
 honnête de la collision que le spec demande : le détecteur ne prétend pas
 distinguer FINESS et SIREN, il les capte tous deux (à confiance graduée)
 et le benchmark l'expose au lieu de le cacher. Presidio, qui ne fournit
@@ -174,15 +187,20 @@ L'objection prévisible : « Presidio est extensible ». `run_presidio.py
   recommandée par Presidio. C'est le **meilleur reconnaisseur raisonnable** :
   je l'ai écrit tolérant, pour ne pas affaiblir artificiellement Presidio.
 
-Corpus v3 (seed 42, 1000 documents, 778 entités), appariement strict, même
+Corpus v3 (seed 42, 1000 documents, 826 entités depuis le 22 novembre), appariement strict, même
 configuration Presidio que la note ¹ (modèle `en_core_web_lg`, seuil 0,35) :
 
 | Configuration | NIR (préc. / rappel) | RPPS (préc. / rappel) | IBAN FR | FINESS | TOTAL (préc. / rappel) |
 |---|---:|---:|---:|---:|---:|
-| Presidio par défaut | — / 0 % | — / 0 % | 100 % / 68,7 % | — / 0 % | 100 % / 18,9 % |
-| + reconnaisseurs `simple` | 85,7 % / 100 % | 81,0 % / 100 % | 100 % / 68,7 % | — / 0 % | 87,4 % / 74,8 % |
-| + reconnaisseurs `validated` | **100 % / 100 %** | **100 % / 100 %** | 100 % / 68,7 % | — / 0 % | 100 % / 74,8 % |
-| Écluse | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 75,4 % / 100 % | 94,9 % / 100 % |
+| Presidio par défaut | — / 0 % | — / 0 % | 100 % / 56,1 % | — / 0 % | 100 % / 17,8 % |
+| + reconnaisseurs `simple` | 85,7 % / 100 % | 81,0 % / 100 % | 100 % / 56,1 % | — / 0 % | 87,4 % / 70,5 % |
+| + reconnaisseurs `validated` | **100 % / 100 %** | **100 % / 100 %** | 100 % / 56,1 % | — / 0 % | 100 % / 70,5 % |
+| Écluse | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 95,2 % / 100 % (42 SIREN) |
+
+Lignes Presidio étendues recalculées le 22 novembre sans rejouer les
+reconnaisseurs : seule l'annotation des 48 IBAN à clé invalide change (non
+détectés par le recognizer IBAN), NIR et RPPS sont identiques. Avant : IBAN
+68,7 %, rappel total 18,9 % et 74,8 %.
 
 Lecture, sans l'arrondir en faveur d'Écluse :
 
@@ -192,8 +210,9 @@ Lecture, sans l'arrondir en faveur d'Écluse :
   tombe à 85,7 % (NIR, 45 faux positifs) et 81,0 % (RPPS, 39 faux positifs) :
   la validation de clé est ce qui compte, pas le moteur.
 - **L'écart restant vient de l'IBAN et du FINESS.** Le recognizer IBAN livré
-  par Presidio ne reconnaît pas les 67 IBAN à espacement irrégulier (rappel
-  68,7 %, fuite au caractère de 36,6 %), et rien ne couvre le FINESS. Un
+  par Presidio ne reconnaît ni les 67 IBAN à espacement irrégulier ni les 48
+  à clé invalide (rappel 56,1 %, fuite au caractère de 48,3 % ; avant leur
+  annotation : 68,7 % et 36,6 %), et rien ne couvre le FINESS. Un
   utilisateur pourrait écrire ces deux reconnaisseurs aussi : ce n'est pas
   mesuré ici (hors de la tâche).
 - **Le même défaut apparaît des deux côtés** : sur le corpus étendu, le RPPS
