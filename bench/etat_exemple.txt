@@ -1,39 +1,39 @@
-## commit d01cca7
+## commit 94749ac
 ## v3 (identifiants structurels)
-Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
-Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
+Ecluse     TOTAL    95.2%  100.0%   97.5%   826    42     0
+Ecluse     TOTAL    95.2%  100.0%   97.5%   826    42     0
 ## v3 transcrit
 # sans_ponctuation
-Ecluse     TOTAL    94.9%  100.0%   97.4%   778    42     0
+Ecluse     TOTAL    95.2%  100.0%   97.5%   826    42     0
 # en_lettres
-Ecluse     TOTAL     0.0%    0.0%    0.0%     0     0   778
+Ecluse     TOTAL     0.0%    0.0%    0.0%     0     0   826
 ## v3 dictée : variantes de P2-160 (rappel = identifiant entièrement couvert ; fuite au caractère)
 # double_triple : moteur seul (ecluse_core)
-Ecluse     TOTAL     0.0%    0.0%    0.0%     0     0   778
+Ecluse     TOTAL     0.0%    0.0%    0.0%     0     0   826
 # regional : moteur seul (ecluse_core)
-Ecluse     TOTAL     0.0%    0.0%    0.0%     0     0   778
+Ecluse     TOTAL     0.0%    0.0%    0.0%     0     0   826
 # zero_o : moteur seul (ecluse_core)
-Ecluse     TOTAL     0.0%    0.0%    0.0%     0     0   778
+Ecluse     TOTAL     0.0%    0.0%    0.0%     0     0   826
 # sans_traits_union : moteur seul (ecluse_core)
-Ecluse     TOTAL     0.0%    0.0%    0.0%     0     0   778
+Ecluse     TOTAL     0.0%    0.0%    0.0%     0     0   826
 # sans_ponctuation : Ecluse.redact (chemin du produit)
-finess 129/129  iban 214/214  nir 269/269  rpps 166/166  TOTAL 778/778 (100.0 %)
+finess 129/129  iban 262/262  nir 269/269  rpps 166/166  TOTAL 826/826 (100.0 %)
   fuite au caractère : finess 0.0 %  iban 0.0 %  nir 0.0 %  rpps 0.0 %  TOTAL 0.0 %
 # en_lettres : Ecluse.redact (chemin du produit)
-finess 23/129  iban 0/214  nir 0/269  rpps 0/166  TOTAL 23/778 (3.0 %)
-  fuite au caractère : finess 72.5 %  iban 99.9 %  nir 99.9 %  rpps 100.0 %  TOTAL 97.3 %
+finess 23/129  iban 0/262  nir 0/269  rpps 0/166  TOTAL 23/826 (2.8 %)
+  fuite au caractère : finess 72.5 %  iban 99.9 %  nir 99.9 %  rpps 100.0 %  TOTAL 97.6 %
 # double_triple : Ecluse.redact (chemin du produit)
-finess 18/129  iban 0/214  nir 0/269  rpps 0/166  TOTAL 18/778 (2.3 %)
-  fuite au caractère : finess 75.7 %  iban 99.9 %  nir 99.9 %  rpps 100.0 %  TOTAL 97.6 %
+finess 18/129  iban 0/262  nir 0/269  rpps 0/166  TOTAL 18/826 (2.2 %)
+  fuite au caractère : finess 75.7 %  iban 99.9 %  nir 99.9 %  rpps 100.0 %  TOTAL 97.8 %
 # regional : Ecluse.redact (chemin du produit)
-finess 32/129  iban 0/214  nir 0/269  rpps 0/166  TOTAL 32/778 (4.1 %)
-  fuite au caractère : finess 68.1 %  iban 100.0 %  nir 100.0 %  rpps 100.0 %  TOTAL 96.9 %
+finess 32/129  iban 0/262  nir 0/269  rpps 0/166  TOTAL 32/826 (3.9 %)
+  fuite au caractère : finess 68.1 %  iban 99.9 %  nir 100.0 %  rpps 100.0 %  TOTAL 97.1 %
 # zero_o : Ecluse.redact (chemin du produit)
-finess 25/129  iban 0/214  nir 0/269  rpps 0/166  TOTAL 25/778 (3.2 %)
-  fuite au caractère : finess 72.6 %  iban 99.9 %  nir 100.0 %  rpps 100.0 %  TOTAL 97.2 %
+finess 25/129  iban 0/262  nir 0/269  rpps 0/166  TOTAL 25/826 (3.0 %)
+  fuite au caractère : finess 72.6 %  iban 99.9 %  nir 100.0 %  rpps 100.0 %  TOTAL 97.5 %
 # sans_traits_union : Ecluse.redact (chemin du produit)
-finess 34/129  iban 0/214  nir 0/269  rpps 0/166  TOTAL 34/778 (4.4 %)
-  fuite au caractère : finess 67.8 %  iban 99.9 %  nir 100.0 %  rpps 100.0 %  TOTAL 96.9 %
+finess 34/129  iban 0/262  nir 0/269  rpps 0/166  TOTAL 34/826 (4.1 %)
+  fuite au caractère : finess 67.8 %  iban 99.9 %  nir 100.0 %  rpps 100.0 %  TOTAL 97.1 %
 ## témoin mots-nombres (P2-160) : Ecluse.redact, aucune entité annotée
 témoin mots-nombres : 0 prédictions sur 300 phrases
 ## flou (entités floues) et variantes de casse
@@ -292,6 +292,32 @@ tournures de personne : 480 documents, 5 familles, 192 noms annotés, 0 détecti
     tournure=sujet : a confirmé : 24 / 24
   types sur les masquages à tort : nom 140
   types sur les patronymes masqués : nom 192
+## communes moyennes derrière les tournures de personne (P2-238) : Ecluse.redact (chemin du produit)
+communes moyennes : 240 documents, 0 entité(s) annotée(s), 235 lieux masqués à tort
+  tranche=10-30k : 78 / 80 lieux masqués à tort
+  tranche=30-50k : 80 / 80 lieux masqués à tort
+  tranche=50-100k : 77 / 80 lieux masqués à tort
+  tournure=dossier de : 60 / 60 lieux masqués à tort
+  tournure=à la demande de : 60 / 60 lieux masqués à tort
+  tournure=entretien avec : 60 / 60 lieux masqués à tort
+  tournure=sujet : a confirmé : 55 / 60 lieux masqués à tort
+  tranche_tournure=10-30k / dossier de : 20 / 20 lieux masqués à tort
+  tranche_tournure=10-30k / à la demande de : 20 / 20 lieux masqués à tort
+  tranche_tournure=10-30k / entretien avec : 20 / 20 lieux masqués à tort
+  tranche_tournure=10-30k / sujet : a confirmé : 18 / 20 lieux masqués à tort
+  tranche_tournure=30-50k / dossier de : 20 / 20 lieux masqués à tort
+  tranche_tournure=30-50k / à la demande de : 20 / 20 lieux masqués à tort
+  tranche_tournure=30-50k / entretien avec : 20 / 20 lieux masqués à tort
+  tranche_tournure=30-50k / sujet : a confirmé : 20 / 20 lieux masqués à tort
+  tranche_tournure=50-100k / dossier de : 20 / 20 lieux masqués à tort
+  tranche_tournure=50-100k / à la demande de : 20 / 20 lieux masqués à tort
+  tranche_tournure=50-100k / entretien avec : 20 / 20 lieux masqués à tort
+  tranche_tournure=50-100k / sujet : a confirmé : 17 / 20 lieux masqués à tort
+## prénom + verbe conjugué (P2-240) : Ecluse.redact (chemin du produit)
+prénom + verbe : 1280 phrases, 810 verbes masqués, 0 prénoms en clair (fuite)
+  famille=courants : 0 / 400 verbes masqués, 0 prénoms en clair
+  famille=reserve : 180 / 200 verbes masqués, 0 prénoms en clair
+  famille=reserve2 : 630 / 680 verbes masqués, 0 prénoms en clair
 ## pathologies
 # indices
   indices : TP 397, FP 0, FN 0 ; précision 100.0 %, rappel 100.0 % ; catégorie juste 96.7 %
@@ -480,46 +506,21 @@ courriers : 400 courriers, 3185 lignes, 970 adresses annotées, 0 courrier(s) à
   famille=montant_adresse : 0 / 133 lignes masquées en trop
   types en trop : aucun
 ## SIREN masqués comme FINESS (P2-223) : Ecluse.redact (chemin du produit)
-SIREN masqués comme FINESS : corpus v3 entier 42 / 42 nombres à clé valide non annotés, témoin SIREN 383 / 400, SIREN voisins du pendant FINESS 100 / 100
+SIREN masqués comme FINESS : corpus v3 entier 0 / 42 nombres à clé valide non annotés, témoin SIREN 83 / 400, SIREN voisins du pendant FINESS 50 / 100
 vrais FINESS en clair sans option : corpus v3 0 / 129, pendant FINESS 0 / 400
   témoin libelle=sans_mot : 83 / 100 masqués comme FINESS
-  témoin libelle=siren_apres : 100 / 100 masqués comme FINESS
-  témoin libelle=siren_immediat : 100 / 100 masqués comme FINESS
-  témoin libelle=siren_phrase : 100 / 100 masqués comme FINESS
-  témoin ecriture=compact : 183 / 200 masqués comme FINESS
-  témoin ecriture=groupe : 200 / 200 masqués comme FINESS
-  option=libelle_immediat : SIREN masqués v3 42 / 42, témoin 283 / 400, voisins 24 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
-  option=libelle_40 : SIREN masqués v3 0 / 42, témoin 183 / 400, voisins 24 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 26 / 400
-  option=libelle_40_sans_mot_finess : SIREN masqués v3 0 / 42, témoin 183 / 400, voisins 50 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
-  option=contexte_exige : SIREN masqués v3 0 / 42, témoin 0 / 400, voisins 50 / 100 ; vrais FINESS perdus en plus (en clair) v3 43 / 129, pendant 124 / 400
-  option=prefixe : SIREN masqués v3 42 / 42, témoin 375 / 400, voisins 99 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
+  témoin libelle=siren_apres : 0 / 100 masqués comme FINESS
+  témoin libelle=siren_immediat : 0 / 100 masqués comme FINESS
+  témoin libelle=siren_phrase : 0 / 100 masqués comme FINESS
+  témoin ecriture=compact : 33 / 200 masqués comme FINESS
+  témoin ecriture=groupe : 50 / 200 masqués comme FINESS
+  option=libelle_immediat : SIREN masqués v3 0 / 42, témoin 83 / 400, voisins 24 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
+  option=libelle_40 : SIREN masqués v3 0 / 42, témoin 83 / 400, voisins 24 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 26 / 400
+  option=libelle_40_sans_mot_finess : SIREN masqués v3 0 / 42, témoin 83 / 400, voisins 50 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
+  option=contexte_exige : SIREN masqués v3 0 / 42, témoin 0 / 400, voisins 50 / 100 ; vrais FINESS perdus en plus (en clair) v3 43 / 129, pendant 100 / 400
+  option=prefixe : SIREN masqués v3 0 / 42, témoin 81 / 400, voisins 50 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
   témoin : SIREN sous une détection de n'importe quel type 400 / 400 (le reste est lu comme FINESS ou comme un autre type, p. ex. une plaque après « immatriculation »)
   option=luhn : SIREN du témoin valides à la clé du FINESS 400 / 400 : aucune distinction possible
-## communes moyennes derrière les tournures de personne (P2-238) : Ecluse.redact (chemin du produit)
-communes moyennes : 240 documents, 0 entité(s) annotée(s), 235 lieux masqués à tort
-  tranche=10-30k : 78 / 80 lieux masqués à tort
-  tranche=30-50k : 80 / 80 lieux masqués à tort
-  tranche=50-100k : 77 / 80 lieux masqués à tort
-  tournure=dossier de : 60 / 60 lieux masqués à tort
-  tournure=à la demande de : 60 / 60 lieux masqués à tort
-  tournure=entretien avec : 60 / 60 lieux masqués à tort
-  tournure=sujet : a confirmé : 55 / 60 lieux masqués à tort
-  tranche_tournure=10-30k / dossier de : 20 / 20 lieux masqués à tort
-  tranche_tournure=10-30k / à la demande de : 20 / 20 lieux masqués à tort
-  tranche_tournure=10-30k / entretien avec : 20 / 20 lieux masqués à tort
-  tranche_tournure=10-30k / sujet : a confirmé : 18 / 20 lieux masqués à tort
-  tranche_tournure=30-50k / dossier de : 20 / 20 lieux masqués à tort
-  tranche_tournure=30-50k / à la demande de : 20 / 20 lieux masqués à tort
-  tranche_tournure=30-50k / entretien avec : 20 / 20 lieux masqués à tort
-  tranche_tournure=30-50k / sujet : a confirmé : 20 / 20 lieux masqués à tort
-  tranche_tournure=50-100k / dossier de : 20 / 20 lieux masqués à tort
-  tranche_tournure=50-100k / à la demande de : 20 / 20 lieux masqués à tort
-  tranche_tournure=50-100k / entretien avec : 20 / 20 lieux masqués à tort
-  tranche_tournure=50-100k / sujet : a confirmé : 17 / 20 lieux masqués à tort
-## prénom + verbe conjugué (P2-240) : Ecluse.redact (chemin du produit)
-prénom + verbe : 600 phrases, 200 verbes masqués, 0 prénoms en clair (fuite)
-  famille=courants : 0 / 400 verbes masqués, 0 prénoms en clair
-  famille=reserve : 200 / 200 verbes masqués, 0 prénoms en clair
 ## mots neutres, un mot à la fois (P2-211) : Ecluse.redact (chemin du produit), nombres masqués en adresse
 mots neutres : 78 mots, 31200 phrases, 218 nombre(s) masqué(s) en adresse, 0 sous un autre type, 4 mot(s) touché(s) (Ecluse.redact)
   casse=capitales : 218 / 15600 nombres masqués en adresse
@@ -625,7 +626,7 @@ identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) f
   défaut : finess lu « rpps », nombre, espace : 1
   défaut : rpps lu « nir », nombre, ligne : 1
 ## identifiant derrière un libellé fort (P2-194) : Ecluse.redact (chemin du produit)
-libellé fort : 1800 identifiants positifs, 0 en clair, 0 au type faux ; 1200 documents témoins, 8 masqués à tort (8 prédiction(s))
+libellé fort : 1800 identifiants positifs, 0 en clair, 0 au type faux ; 1200 documents témoins, 53 masqués à tort (53 prédiction(s))
   variante=cle_juste : 0 / 300 en clair, 0 au type faux
   variante=cle_fausse : 0 / 300 en clair, 0 au type faux
   variante=ocr_zero : 0 / 300 en clair, 0 au type faux
@@ -677,11 +678,11 @@ libellé fort : 1800 identifiants positifs, 0 en clair, 0 au type faux ; 1200 do
   témoin négatif=libelle_seul : 0 / 300 masqués à tort (0 prédiction(s))
   témoin négatif=non_communique : 0 / 300 masqués à tort (0 prédiction(s))
   témoin négatif=mot_ordinaire : 0 / 300 masqués à tort (0 prédiction(s))
-  témoin négatif=nombre_sans_libelle : 8 / 300 masqués à tort (8 prédiction(s))
+  témoin négatif=nombre_sans_libelle : 53 / 300 masqués à tort (53 prédiction(s))
   témoin négatif, libellé=NIR : 1 / 200 masqués à tort
   témoin négatif, libellé=N° de sécurité sociale : 0 / 200 masqués à tort
   témoin négatif, libellé=numéro SS : 3 / 200 masqués à tort
-  témoin négatif, libellé=IBAN : 1 / 200 masqués à tort
+  témoin négatif, libellé=IBAN : 46 / 200 masqués à tort
   témoin négatif, libellé=RPPS : 2 / 200 masqués à tort
   témoin négatif, libellé=ADELI : 1 / 200 masqués à tort
 confiance des masquages (chemin : Ecluse.redact) :
@@ -692,8 +693,8 @@ confiance des masquages (chemin : Ecluse.redact) :
   confiance variante=ocr_un : 0.3=300
   confiance variante=ligne_vide : 0.3=300
   confiance variante=ocr_et_ligne_vide : 0.3=300
-  confiance détections des négatifs : 0.5=1, 0.55=4, 0.9=2, 1=1
-  avertissement à vérifier : positifs 1500 / 1800, négatifs 0 / 1200
+  confiance détections des négatifs : 0.3=45, 0.5=1, 0.55=4, 0.9=2, 1=1
+  avertissement à vérifier : positifs 1500 / 1800, négatifs 45 / 1200
   à vérifier variante=cle_juste : 0 / 300
   à vérifier variante=cle_fausse : 300 / 300
   à vérifier variante=ocr_zero : 300 / 300
@@ -720,13 +721,13 @@ GLOBAL            1082  1067  85.5%  84.3%  84.9%   99.3%     5.3%
 # structurel largeur 60, moteur seul (ecluse_core)
 Ecluse     nir     100.0%   91.8%   95.7%   247     0    22
 Ecluse     rpps     95.5%   90.4%   92.9%   150     7    16
-Ecluse     iban    100.0%   72.9%   84.3%   156     0    58
-Ecluse     finess   75.4%  100.0%   86.0%   129    42     0
-Ecluse     TOTAL    93.3%   87.7%   90.4%   682    49    96
+Ecluse     iban    100.0%   77.9%   87.6%   204     0    58
+Ecluse     finess  100.0%  100.0%  100.0%   129     0     0
+Ecluse     TOTAL    93.7%   88.4%   91.0%   730    49    96
 # structurel largeur 60, détecteur isolé (appel direct des quatre détecteurs)
-finess 129/129  iban 156/214  nir 247/269  rpps 150/166  TOTAL 682/778 (87.7 %)
+finess 129/129  iban 156/262  nir 247/269  rpps 150/166  TOTAL 682/826 (82.6 %)
 # structurel largeur 60, Ecluse.redact (chemin du produit)
-finess 129/129  iban 214/214  nir 269/269  rpps 166/166  TOTAL 778/778 (100.0 %)
+finess 129/129  iban 262/262  nir 269/269  rpps 166/166  TOTAL 826/826 (100.0 %)
 # realiste largeur 90 : 0 refus
 adresse            159   159 100.0% 100.0% 100.0%  100.0%     0.0%
 etablissement      400   400  79.2%  79.2%  79.2%  100.0%     0.0%
@@ -744,13 +745,13 @@ GLOBAL            1082  1067  85.5%  84.3%  84.9%   99.3%     5.3%
 # structurel largeur 90, moteur seul (ecluse_core)
 Ecluse     nir     100.0%  100.0%  100.0%   269     0     0
 Ecluse     rpps     98.2%  100.0%   99.1%   166     3     0
-Ecluse     iban    100.0%   87.4%   93.3%   187     0    27
-Ecluse     finess   75.4%  100.0%   86.0%   129    42     0
-Ecluse     TOTAL    94.3%   96.5%   95.4%   751    45    27
+Ecluse     iban    100.0%   89.7%   94.6%   235     0    27
+Ecluse     finess  100.0%  100.0%  100.0%   129     0     0
+Ecluse     TOTAL    94.7%   96.7%   95.7%   799    45    27
 # structurel largeur 90, détecteur isolé (appel direct des quatre détecteurs)
-finess 129/129  iban 187/214  nir 269/269  rpps 166/166  TOTAL 751/778 (96.5 %)
+finess 129/129  iban 187/262  nir 269/269  rpps 166/166  TOTAL 751/826 (90.9 %)
 # structurel largeur 90, Ecluse.redact (chemin du produit)
-finess 129/129  iban 214/214  nir 269/269  rpps 166/166  TOTAL 778/778 (100.0 %)
+finess 129/129  iban 262/262  nir 269/269  rpps 166/166  TOTAL 826/826 (100.0 %)
 ## collage de fin de ligne hors du cœur (P2-166)
 ../../bench/flou/structurel_l60.jsonl : 1000 doc., 97 coupures chiffre-fin de ligne-chiffre, 96 détections traversant une coupure (iban 58, nir 22, rpps 16) = 96 attendues + 0 à tort, 0 colonnes de 9/11/13 chiffres
 ../../bench/flou/structurel_l90.jsonl : 1000 doc., 27 coupures chiffre-fin de ligne-chiffre, 27 détections traversant une coupure (iban 27) = 27 attendues + 0 à tort, 0 colonnes de 9/11/13 chiffres

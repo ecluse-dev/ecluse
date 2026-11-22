@@ -26,17 +26,17 @@ Corpus **synthétiques** uniquement ; aucun chiffre ne vaut fréquence réelle.
 Presidio n'est pas rejoué ici (environnement à part, `bench/README.md`,
 « Reproduire ») ; ses chiffres de référence datent de la relecture P1-12.
 
-## Identifiants structurels (corpus v3, 1 000 documents, 778 entités)
+## Identifiants structurels (corpus v3, 1 000 documents, 826 entités)
 
 | Corpus | Précision | Rappel | F1 | FP | Source |
 |---|---:|---:|---:|---:|---|
-| v3 d'origine | 89,6 % | 100 % | 94,5 % | 90 (42 FINESS/SIREN + 48 IBAN à clé fausse, P2-252) | = P1-36 ; avant P2-252 : 94,9 % / 97,4 % / 42 |
-| v3 sans ponctuation, minuscules | 89,6 % | 100 % | 94,5 % | 90 | = P2-98 ; avant P2-252 : 94,9 % / 97,4 % / 42 |
+| v3 d'origine | 95,2 % | 100 % | 97,5 % | 42 (SIREN masqués à dessein) | 22/11 : les 48 IBAN à clé fausse sont annotés (826 entités) ; avant : 89,6 % / 94,5 % / 90 sur 778 ; avant P2-252 : 94,9 % / 97,4 % / 42 |
+| v3 sans ponctuation, minuscules | 95,2 % | 100 % | 97,5 % | 42 | = P2-98 ; même historique |
 | v3 nombres en lettres | 0 % | **0 %** | 0 % | 0 | = P2-98 |
 
 ## Dictée : identifiants dits en lettres (P2-160)
 
-Corpus v3 (1 000 documents, 778 identifiants) transcrits sans audio par
+Corpus v3 (1 000 documents, 826 identifiants depuis le 22 novembre, 778 avant) transcrits sans audio par
 `bench/generate_corpus_transcrit.py` : les deux variantes d'origine (sorties
 **identiques octet pour octet** après P2-160) et quatre variantes de dictée
 (`agent/specs/P2-155.md` § 2) : `double_triple` (« double zéro », « triple
@@ -51,12 +51,15 @@ d'identifiant (blancs exclus) couverts par aucune détection.
 
 | Variante | **`Ecluse.redact`** (ce que reçoit le LLM) : rappel | fuite au caractère | moteur seul (`ecluse_core`) : rappel |
 |---|---:|---:|---:|
-| sans ponctuation (chiffres) | 778/778 | 0,0 % | 100 % (42 FP FINESS/SIREN) |
-| en lettres (d'origine) | 23/778 (3,0 %) | 97,3 % | 0 % |
-| double / triple | 18/778 (2,3 %) | 97,6 % | 0 % |
-| septante / huitante / nonante | 32/778 (4,1 %) | 96,9 % | 0 % |
-| zéro dit « o » | 25/778 (3,2 %) | 97,2 % | 0 % |
-| traits d'union perdus | 34/778 (4,4 %) | 96,9 % | 0 % |
+| sans ponctuation (chiffres) | 826/826 | 0,0 % | 100 % (42 FP SIREN) |
+| en lettres (d'origine) | 23/826 (2,8 %) | 97,6 % | 0 % |
+| double / triple | 18/826 (2,2 %) | 97,8 % | 0 % |
+| septante / huitante / nonante | 32/826 (3,9 %) | 97,1 % | 0 % |
+| zéro dit « o » | 25/826 (3,0 %) | 97,5 % | 0 % |
+| traits d'union perdus | 34/826 (4,1 %) | 97,1 % | 0 % |
+
+Depuis le 22 novembre (IBAN à clé fausse annotés), les identifiants couverts ne
+changent pas (ce sont des FINESS) ; seul le dénominateur passe de 778 à 826.
 
 Par type (fuite au caractère, `Ecluse.redact`) : NIR 99,9 à 100 %, RPPS 100 %,
 IBAN 99,9 à 100 %, FINESS 68 à 76 % selon la variante. Les rares identifiants
@@ -2553,6 +2556,12 @@ Corpus structurel (rappel ; sans recoupe : 100 % partout). Deux chemins,
 | 90 | **détecteur isolé** (`NirDetector`, `RppsDetector`, `IbanFrDetector`, `FinessDetector` appelés directement, P2-166) | 100 % | 100 % | 87,4 % | 100 % | 96,5 % |
 | 60 | **détecteur isolé** (id.) | 91,8 % | 90,4 % | 72,9 % | 100 % | 87,7 % |
 
+Depuis le 22 novembre, les 48 IBAN à clé fausse du corpus v3 sont annotés (826
+identifiants, 262 IBAN) : `Ecluse.redact` **826/826** aux deux largeurs ; moteur
+seul IBAN 77,9 % (60 col.) et 89,7 % (90 col.), total 88,4 % et 96,7 % ;
+détecteur isolé 682/826 et 751/826 (l'`IbanFrDetector` appelé seul écarte la clé
+fausse, le moteur l'active : les deux chemins ne coïncident plus).
+
 Le détecteur isolé (`bench/` : `run_detecteur_isole.dart`) donne exactement les
 chiffres du moteur seul : l'appel direct d'un détecteur, comme dans l'exemple du
 README d'`ecluse_core`, manque 96 identifiants sur 778 à 60 colonnes (22 NIR,
@@ -2989,3 +2998,29 @@ négatifs les comptent maintenant en faux positifs, ce qui est le sur-masquage v
 Les rappels de la mise en page (72,9 % et 87,4 % pour l'IBAN) ne changent pas. Les
 45 nouveaux « masqués à tort » du corpus libellé fort portent tous l'avertissement
 (confiance 0,3 : 45 sur 1 200 négatifs). Presidio n'est pas rejoué.
+
+
+## IBAN à clé fausse annotés comme données personnelles (22 novembre 2026)
+
+Décision du mainteneur du 22 novembre (`DECISIONS.md`) : les 48 IBAN « pièges »
+à clé fausse du corpus v3 (« L'IBAN … a été refusé par la banque », 8 362 sur
+200 000 documents) sont **annotés** `iban` par `bench/generate_corpus.py`. Le
+texte des documents est inchangé (vérifié octet pour octet sur 1 000 et
+200 000 documents) ; seule l'annotation est ajoutée. Rejeu complet de
+`bench/etat.sh` avant et après : seules les lignes ci-dessous changent.
+
+| Ligne | Avant | Après | Chemin |
+|---|---|---|---|
+| v3, entités annotées (1 000 docs) | 778 (214 IBAN) | 826 (262 IBAN) | — |
+| v3, précision / F1 / FP | 89,6 % / 94,5 % / 90 | 95,2 % / 97,5 % / 42 | moteur seul |
+| v3, IBAN précision (200 000 docs) | 83,3 % | 100 % | moteur seul |
+| Presidio, rappel IBAN / total (1 000 docs) | 68,7 % / 18,9 % | 56,1 % / 17,8 % | Presidio tel que livré |
+| Presidio, rappel IBAN / total (200 000 docs) | 66,6 % / 18,5 % | 55,5 % / 17,5 % | Presidio tel que livré |
+| mise en page 60 col., IBAN préc. / rappel | 76,5 % / 72,9 % | 100 % / 77,9 % | moteur seul |
+| mise en page 90 col., IBAN préc. / rappel | 79,6 % / 87,4 % | 100 % / 89,7 % | moteur seul |
+
+Presidio n'est pas rejoué : ses prédictions du 21 novembre (`c3de6a8`) sont
+rescorées sur la nouvelle annotation. Son recognizer IBAN écarte la clé fausse :
+il manque les 48 (1 000 documents) et 8 362 (200 000) IBAN à clé fausse, en plus
+de ceux à blancs irréguliers. Le corpus « libellé fort » garde ses IBAN à clé
+fausse comme négatifs (générateur à part, non modifié).

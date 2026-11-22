@@ -867,7 +867,17 @@ patronymes (P2-231).
    comptent comme faux positifs (précision IBAN au moteur seul 100 % → 83,3 %,
    comparatif sans entité 6/19 → 8/19). L'annotation des pièges n'est pas
    modifiée : le choix d'en faire des positifs reste au mainteneur.
+   **Tranché le soir même (point 7).**
 6. **« Eva » accepté dans une liste de patronymes** (P2-253, #491) : seule
    l'entrée écrite tout en capitales reste refusée ; le sigle « EVA » du texte
    n'est jamais masqué à cause de la liste (prix accepté : « EVA MARTIN » garde
    le prénom en clair).
+7. **IBAN à clé invalide annotés comme données personnelles dans le corpus**
+   (décision du mainteneur, 22 novembre au soir). `bench/generate_corpus.py`
+   annote `iban` les IBAN pièges du profil v3 ; le texte est inchangé, octet
+   pour octet. Conséquences mesurées : corpus v3 778 → 826 entités (IBAN 214 →
+   262 sur 1 000 documents, 41 749 → 50 111 sur 200 000) ; Écluse précision
+   IBAN 100 %, total 95,2 % / 100 % / 97,5 % (42 SIREN) ; Presidio tel que livré
+   rappel 18,9 % → 17,8 % (1 000) et 18,5 % → 17,5 % (200 000), car son
+   recognizer IBAN écarte la clé fausse. Le corpus « libellé fort » n'est pas
+   touché : ses IBAN à clé fausse restent des négatifs.

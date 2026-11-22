@@ -171,9 +171,10 @@ def score(docs, spans_par_doc):
 # - **dossier** : le nombre qui suit « dossier n° » ou « dossier numéro ».
 #
 # Un ajout qui recouvre une entité déjà annotée est ignoré. Les numéros que le
-# corpus pose comme pièges (SIREN, SIRET, IBAN à clé invalide, numéros de
-# praticien inconnus) ne sont **pas** annotés : ce ne sont pas des données
-# personnelles au sens de cette règle (le SIREN est traité par P2-248).
+# corpus pose comme pièges (SIREN, SIRET, numéros de praticien inconnus) ne
+# sont **pas** annotés : ce ne sont pas des données personnelles au sens de
+# cette règle (le SIREN est traité par P2-248). L'IBAN à clé invalide n'est pas
+# ajouté ici : le corpus l'annote lui-même `iban` depuis le 22/11/2026.
 
 RE_TEL = re.compile(r"(?<!\d)(?:0|\+33[ .\u00a0]?)[1-9](?:[ .\u00a0]?\d{2}){4}(?!\d)")
 RE_DOSSIER = re.compile(r"dossier\s+(?:n°|numéro)\s*(\d+)", re.IGNORECASE)
@@ -513,9 +514,10 @@ def section_annotation(resultats, resultats_a, docs_a, comptes):
         "sont dans `PRENOMS` et `NOMS` de `generate_corpus.py`, civilité exclue.",
         "Téléphones : numéro français à dix chiffres groupés par deux (`0X`, ou `+33 X`).",
         "Numéros de dossier : le nombre qui suit « dossier n° ». Un ajout qui recouvre une",
-        "entité déjà annotée est ignoré. **Non annotés** : SIREN, SIRET, IBAN à clé",
-        "invalide et numéros de praticien inconnus (pièges du corpus, pas des données",
-        "personnelles au sens de cette règle ; le SIREN relève de P2-248).",
+        "entité déjà annotée est ignoré. **Non annotés** : SIREN, SIRET et numéros de",
+        "praticien inconnus (pièges du corpus, pas des données personnelles au sens de",
+        "cette règle ; le SIREN relève de P2-248). L'IBAN à clé invalide est annoté",
+        "`iban` par le corpus lui-même depuis le 22/11/2026.",
         "",
         "Entités ajoutées (source, type : nombre) : "
         + ", ".join(f"{s} {t} : {n}" for (s, t), n in sorted(comptes.items()))

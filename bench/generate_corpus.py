@@ -6,7 +6,7 @@ Produit un fichier JSONL où chaque ligne est un document :
 
 Entités cibles : nir, rpps, iban, finess (français).
 Le corpus contient aussi des pièges non annotés : NIR à clé invalide,
-IBAN à clé invalide, RPPS à Luhn cassé, téléphones, SIRET, SIREN (même
+RPPS à Luhn cassé, téléphones, SIRET, SIREN (même
 Luhn que le FINESS -- collision assumée, voir trap_siren), dates, codes
 postaux. Un bon détecteur doit les ignorer (sauf FINESS/SIREN, capté à
 confiance basse par construction -- voir docs/Ecluse-FINESS-detecteur-spec.md).
@@ -18,6 +18,11 @@ Profils :
     invalide). Sert à mesurer la collision FINESS/SIREN sans la circularité
     du gabarit unique de v3 (voir agent/specs/P1-03-finess.md). Les ADELI
     sont annotés avec le type `adeli`, que le moteur actuel ne produit pas.
+
+Les IBAN de forme française à clé invalide (« L'IBAN … a été refusé par la
+banque ») sont annotés `iban` depuis le 22/11/2026 : un IBAN mal recopié reste
+le compte de quelqu'un (DECISIONS.md, 22 novembre). Le texte des documents est
+inchangé ; seule l'annotation de ces pièges a été ajoutée.
 
 Déterministe : même seed => même corpus. Aucune donnée réelle.
 """
@@ -143,7 +148,8 @@ def fmt_finess(finess: str, rng: random.Random) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Pièges (jamais annotés : un détecteur correct doit les ignorer)
+# Pièges (non annotés, sauf l'IBAN à clé invalide depuis le 22/11/2026 : voir
+# build_doc) : un détecteur correct doit ignorer les autres
 # ---------------------------------------------------------------------------
 
 def trap_nir_bad_key(rng: random.Random) -> str:
@@ -334,7 +340,13 @@ def build_doc(doc_id: int, rng: random.Random, templates=None) -> dict:
         elif slot == "trap_nir":
             text += trap_nir_bad_key(rng)
         elif slot == "trap_iban":
-            text += trap_iban_bad_key(rng)
+            # Annoté depuis le 22/11/2026 (décision du mainteneur, DECISIONS.md) :
+            # un IBAN mal recopié reste le compte de quelqu'un, c'est une donnée
+            # personnelle. Le texte généré ne change pas (même tirage), seule
+            # l'annotation est ajoutée.
+            v = trap_iban_bad_key(rng)
+            entities.append({"type": "iban", "start": len(text), "end": len(text) + len(v)})
+            text += v
         elif slot == "trap_rpps":
             text += trap_rpps_bad_luhn(rng)
         elif slot == "trap_misc":
