@@ -15,6 +15,7 @@ workspace:
   - packages/ecluse_core
   - packages/ecluse_demo
   - packages/ecluse_ingest
+  - packages/ecluse_lexique
   - packages/ecluse_ner
   - packages/ecluse_redact
   - packages/ecluse_reference
