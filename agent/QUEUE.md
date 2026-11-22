@@ -319,7 +319,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-249 | humain | Télécharger le fichier national des noms de l'INSEE (txt, fait le 21 novembre : `patronymes_effectifs.tsv.gz`) et Morphalou 3.1 (CSV « tout en un ») et les déposer pour génération des fichiers dérivés (le réseau des sessions ne joint ni insee.fr ni ortolang.fr) | P2-231 | fusionnée |
 | P2-250 | code | Référentiel de patronymes de l'INSEE (Licence Ouverte 2.0) : confirmer un nom derrière une tournure, et règle de forme de P2-241 limitée aux mots absents du référentiel | P2-231 | abandonnée |
 | P2-251 | code | Paquet optionnel `ecluse_lexique` (LGPL-LR) : formes verbales de Morphalou 3.1, chargées comme fichier remplaçable (spec P2-245) ; aucun verbe masqué derrière un prénom | P2-249 | fusionnée |
-| P2-252 | code | IBAN à clé invalide masqué en entier : ne plus masquer 9 de ses chiffres comme FINESS en laissant le reste en clair (10 cas sur 200 000) | — | à faire |
+| P2-252 | code | IBAN à clé invalide masqué en entier : ne plus masquer 9 de ses chiffres comme FINESS en laissant le reste en clair (10 cas sur 200 000) | — | fusionnée |
 | P2-253 | code | Liste de patronymes fournie (P2-243) : un nom écrit avec une majuscule initiale (« Eva ») n'est pas refusé parce que sa forme en capitales est un sigle exclu | P2-243 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
