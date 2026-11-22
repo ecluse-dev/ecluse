@@ -319,6 +319,25 @@ une coupure au milieu d'un groupe ne l'est pas.
   contient jamais la valeur. Un numéro corse (« 2A… ») n'a pas de règle de clé
   établie : il n'est pas jugé faux et n'avertit pas. Chemin `Ecluse.redact` :
   ADELI × clé fausse 0 → 50 / 300 avec avertissement, négatifs 0 / 1 200.
+- **IBAN de forme française à clé fausse, sans libellé : masqué en entier (P2-252).**
+  Un IBAN mal recopié reste celui de quelqu'un (décision du 22 novembre).
+  `IbanCleInvalideDetector` (et l'option `cleInvalideFr` d'`IbanDetector`, activée
+  dans `Ecluse.defaultDetectors`) masque en entier toute suite `FR` + 2 chiffres +
+  23 caractères alphanumériques (mêmes séparateurs et blancs que le détecteur
+  strict) dont la clé ISO 7064 est fausse : type `iban`, **confiance 0,3**,
+  avertissement « identifiant à clé invalide masqué : à vérifier » (sans valeur).
+  Avant, une fenêtre de neuf chiffres Luhn-valide à l'intérieur était masquée
+  comme FINESS et le reste du numéro partait en clair. Corpus d'identifiants,
+  graine 42, 200 000 documents, 8 362 IBAN « pièges » à clé invalide : **moteur
+  seul** (`run_ecluse.dart`) 10 masqués en partie → **0**, tous masqués en entier ;
+  **`Ecluse.redact`** 43 masqués en partie (FINESS ou téléphone) et 2 762 laissés
+  en clair (blancs insécables ou multiples, hors du champ de P2-188) → **0** et
+  **0**. Rappel NIR, RPPS, IBAN et FINESS inchangé (100 %), fuite au caractère
+  0 %. **Coût** : ces IBAN sont des témoins négatifs du banc (« ne correspond à
+  aucun… »), donc comptés comme faux positifs : précision IBAN du moteur seul
+  100 % → 83,3 %, précision totale du corpus v3 94,9 % → 89,6 % (42 → 90 FP : 48 pièges sur les 1 000 documents).
+  C'est le sur-masquage voulu ; il ne vaut que pour une suite de la forme exacte
+  d'un IBAN français. Les IBAN d'autres pays à clé fausse ne sont pas traités.
 - **NIR, IBAN FR ou RPPS à clé fausse, annoncé par un libellé fort (P2-188).**
   `Ecluse.redact` masque quand même, à confiance 0,3, avec l'avertissement
   « identifiant à clé invalide masqué : à vérifier », un NIR précédé de
