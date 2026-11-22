@@ -1128,6 +1128,925 @@ de santé (documents construits, un nombre par document) ; le coût d'une option
 sur un FINESS dont le texte voisin contient « SIREN » dans un autre sens ; les
 SIRET (14 chiffres : le détecteur ne lit pas neuf chiffres dans un SIRET).
 
+
+## SIREN nommé : type `siren` (P2-248)
+
+Changement de `lib/` (`FinessDetector`, `EntityType.siren`, jeton `[SIREN_n]`),
+rejeu complet de `bench/etat.sh` sur la branche, graine 42. Chemins mesurés,
+ligne par ligne : les SIREN typés et le témoin de 400 documents viennent de
+**`Ecluse.redact`** (ce que reçoit le LLM) ; la précision FINESS vient du
+**moteur seul** (`ecluse_core`, `run_ecluse.dart`), sur le corpus « structurel »
+recoupé à la largeur 60 et à la largeur 90 (section « mise en page », P2-153) :
+ce n'est **pas** une mesure de ce que reçoit le LLM. La section P2-223 ci-dessus
+décrit l'état d'**avant** P2-248.
+
+| Mesure | Avant | Après |
+|---|---:|---:|
+| Mentions rares du corpus indices masquées | 0 / 51 | 51 / 51 |
+| Pathologies fréquentes masquées (hors mucoviscidose, drépanocytose) | 0 | 0 |
+| Masquages dans le témoin | 0 | 0 |
+| Échantillon Orphanet (300, graine 42), rattachées ou personne nommée | 0 / 300 | 276 / 300 |
+| Échantillon Orphanet, niées ou sans personne | 0 / 300 | 0 / 300 |
+
+## Identifiant suivi d'une date, d'un âge ou d'un nombre (P2-174)
+
+Témoin `bench/generate_corpus_identifiant_suivi.py` (graine 42) : 4 800
+documents, 100 par combinaison de type (NIR, RPPS, IBAN, FINESS), de suite
+(date en chiffres, date en lettres, âge, quantité) et de séparateur (espace,
+virgule, retour à la ligne). Identifiants valides fabriqués (clés calculées),
+écrits dans les styles du corpus v3 (collé, groupé, pointé, blancs
+irréguliers). Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM),
+scoreur `bench/score_identifiant_suivi.py`. « Non couvert » = au moins un
+caractère de l'identifiant hors de toute détection (une fuite) ; « type
+faux » = couvert sous un autre type ; « suite avalée » = la date, l'âge ou le
+nombre voisin pris dans la détection de l'identifiant.
+
+| | avant P2-174 | après P2-174 |
+|---|---:|---:|
+| Identifiants non couverts (4 800) | **804** | **1** |
+| dont FINESS (1 200) | 312 | 1 |
+| dont IBAN (1 200) | 290 | 0 |
+| dont NIR (1 200) | 202 | 0 |
+| dont RPPS (1 200) | 0 | 0 |
+| Type faux (non couverts compris) | 863 | 2 |
+| dont FINESS couvert mais lu comme RPPS | 55 | 0 |
+| Suite avalée | 72 | 2 |
+| Documents en défaut | 863 | **2** |
+| Séparateur virgule (1 600) | 0 | 0 |
+| Séparateur espace (1 600) | 439 | 1 |
+| Séparateur retour à la ligne (1 600) | 424 | 1 |
+
+Avant, les non couverts étaient les identifiants à blancs irréguliers et les
+FINESS groupés collés à un nombre voisin (reste connu de P1-19, jamais
+chiffré). Les deux documents restants : un FINESS groupé suivi de « 1250
+jours », où un bloc de onze chiffres à cheval sur les deux passe Luhn (les
+deux premiers chiffres du FINESS restent en clair) ; un RPPS suivi de « 1250
+jours », lu comme un NIR à clé valide par hasard (tout est masqué). Détail et
+restes dans `LIMITES.md` (« Identifiant suivi d'une date… »).
+
+Effet sur le reste du tableau de bord : **une seule ligne change**, par le
+**moteur seul** (pas `Ecluse.redact`) : corpus structurel à 90 colonnes, faux
+positifs RPPS 2 → 3 (précision RPPS 98,8 % → 98,2 %, total 94,5 % → 94,3 %).
+C'est la fin d'un IBAN à blancs irréguliers coupé par un retour à la ligne,
+que le moteur seul ne lit pas comme un IBAN et dont le dernier bloc est
+maintenant lu comme un RPPS. Rappels inchangés partout ; v3 d'origine :
+toujours 42 faux positifs (FINESS/SIREN).
+
+## Identifiant derrière un libellé fort : clé fausse, O/l d'OCR, ligne vide (P2-194)
+
+Témoin `bench/generate_corpus_libelle_fort.py` (graine 42, `--n 50`) : 3 000
+documents synthétiques (clés calculées), scoreur `bench/score_libelle_fort.py`.
+Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM), pas le moteur
+seul. Il mesure pour la première fois la voie de P2-188 (clé fausse) et de
+P2-191 (O pour 0, l ou I pour 1, ligne vide), que seuls des tests unitaires de
+`IdentifiantCleInvalideDetector` couvraient : « tableau de bord inchangé » ne
+disait rien sur elle.
+
+- **1 800 positifs** : 6 libellés (NIR, « N° de sécurité sociale », « numéro
+  SS », IBAN, RPPS, ADELI) x 6 variantes (`cle_juste`, `cle_fausse`,
+  `ocr_zero`, `ocr_un`, `ligne_vide`, `ocr_et_ligne_vide`) x 50. « En clair » =
+  au moins un caractère de l'identifiant (hors blancs) sous aucune détection.
+- **1 200 négatifs** (aucune entité annotée) : `libelle_seul` (« IBAN : voir
+  pièce jointe »), `non_communique`, `mot_ordinaire` (« RPPS du praticien »),
+  `nombre_sans_libelle` (nombre de forme d'identifiant, clé fausse, parfois
+  avec des lettres d'OCR, sans libellé), 6 libellés x 50 chacun.
+
+État après P2-199 (au départ, P2-194, `main` au commit `b3b6d8e` : 50 positifs en
+clair sur chacune des quatre cases ADELI OCR et ligne vide, 0 ailleurs) :
+
+| Positifs en clair, sur 50 par case | cle_juste | cle_fausse | ocr_zero | ocr_un | ligne_vide | ocr_et_ligne_vide |
+|---|---:|---:|---:|---:|---:|---:|
+| NIR, « N° de sécurité sociale », « numéro SS » (3 x 50) | 0 | 0 | 0 | 0 | 0 | 0 |
+| IBAN | 0 | 0 | 0 | 0 | 0 | 0 |
+| RPPS | 0 | 0 | 0 | 0 | 0 | 0 |
+| ADELI | 0 | 0 | 0 | 0 | 0 | 0 |
+
+Total : **0 identifiant positif sur 1 800 en clair** (200 au départ, tous
+ADELI, `main` au commit `3b03ca1`). P2-199 a étendu à ADELI les tolérances de
+P2-191 (O/o pour 0, l/I pour 1, ligne vide), derrière le libellé « ADELI »
+seulement, dans `IdentifiantCleInvalideDetector`, et écarté une adresse qui
+chevauche un identifiant annoncé (un cas, « ADELI 209l73939 noté » : « 73939
+noté » lu comme une adresse, de confiance plus haute, laissait « 209l » en
+clair). Chemin mesuré : `Ecluse.redact`. Le plafond
+`PLAFOND_LIBELLE_FORT` de `bench/etat_attendu.py` est vide : zéro partout,
+`etat.sh` échoue si un identifiant positif repasse en clair.
+
+Témoins négatifs : **8 documents sur 1 200 masqués** (0 sur `libelle_seul`,
+`non_communique`, `mot_ordinaire` ; 8 sur 300 `nombre_sans_libelle`). Ce sont
+des collisions de hasard, jamais l'effet du libellé : une sous-suite de onze
+ou neuf chiffres qui passe Luhn (lue RPPS ou FINESS), un nombre à cinq
+chiffres suivi d'un mot (adresse), un IBAN dont la clé fausse redevient juste
+par la lettre d'OCR du corps. Le libellé fort n'ajoute donc aucun masquage
+sur ses faux amis.
+
+**Confiance et avertissement « à vérifier » (P2-203, mesure seule, aucun
+détecteur modifié).** `run_redact_bench.dart --confiance` écrit pour chaque
+entité sa `confidence` et, par document, `a_verifier` (un avertissement de
+`Ecluse.redact` contient « à vérifier ») ; `score_libelle_fort.py` en tire les
+lignes ci-dessous (aucun texte ni valeur). Chemin : **`Ecluse.redact`**.
+`main` au commit `3b03ca1`, même témoin (3 000 documents, graine 42). Pour un
+positif, la confiance est la plus haute parmi les détections qui touchent
+l'identifiant.
+
+| Positifs, confiance du masquage | 0,3 | 0,55 | 0,6 | 0,9 | 0,95 | 1 | aucune |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| tous (1 800) | 1 250 | 1 | 50 | 50 | 50 | 200 | 199 |
+| `cle_juste` (300) | 0 | 0 | 0 | 50 | 50 | 200 | 0 |
+| `cle_fausse` (300) | 250 | 0 | 50 | 0 | 0 | 0 | 0 |
+| `ocr_zero`, `ligne_vide`, `ocr_et_ligne_vide` (900) | 750 | 0 | 0 | 0 | 0 | 0 | 150 |
+| `ocr_un` (300) | 250 | 1 | 0 | 0 | 0 | 0 | 49 |
+
+(« aucune » = en clair : les 200 ADELI OCR du point de départ ; le document de
+confiance 0,55 est une adresse qui chevauche un ADELI, voir P2-199.)
+
+- **Avertissement « à vérifier »** : 1 250 positifs sur 1 800 (250 sur 300 par
+  variante autre que `cle_juste`, 0 sur `cle_juste`) ; **0 négatif sur 1 200**.
+  Il coïncide avec les masquages à confiance 0,3 : 0 incohérence (aucun masquage
+  à 0,3 sans avertissement, aucun avertissement sans 0,3), positifs et négatifs.
+- **ADELI à clé fausse masqué à 0,6 : sans avertissement** (50 documents,
+  `AdeliDetector`, confiance 0,6 par `LIMITES.md` § 2) alors que NIR, IBAN et
+  RPPS à clé fausse (confiance 0,3) en portent un. Constat de P2-203 ;
+  **corrigé par P2-204** (ci-dessous).
+- **Après P2-204** (chemin `Ecluse.redact`, graine 42, même témoin) :
+  avertissement « à vérifier » **1 450 → 1 500** positifs sur 1 800 au
+  tableau de bord actuel (les ADELI OCR de P2-199 en portaient déjà un) ;
+  `cle_fausse` 250 → **300 / 300**, soit ADELI × `cle_fausse` **0 → 50 / 300** ;
+  négatifs inchangés (0 / 1 200) ; confiance 0,6 inchangée. L'invariant
+  « avertissement ⇔ confiance 0,3 » ne tient plus pour ce seul cas : le
+  scoreur le compte à part (`exception P2-204 … positifs 50`) au lieu de
+  l'afficher comme incohérence (`incohérence … positifs 0` reste le garde-fou
+  pour tout autre cas).
+- Les 8 négatifs masqués sont masqués par d'autres détecteurs, de confiance 0,5
+  (1), 0,55 (4), 0,9 (2) et 1 (1) : aucun à 0,3, donc aucun avertissement ; le
+  libellé fort n'y est pour rien.
+
+Non mesuré ici : les libellés « sécurité sociale » seuls ou en minuscules accentuées variées ;
+les identifiants dans un tableau ou un PDF. Corpus synthétique : aucun chiffre
+ne vaut fréquence réelle.
+
+## Nombres à cinq chiffres hors adresse (P2-167)
+
+Témoin `bench/generate_corpus_cinq_chiffres.py` (400 phrases, graine 42,
+**aucune adresse annotée** : toute adresse prédite est un faux positif) :
+quantités (« Commande de 70000 unités »), montants, références, lots et
+dossiers, suivis d'un mot en minuscules, d'un mot à majuscule ou de rien, le
+nombre ouvrant la phrase ou venant après des mots, en casse ordinaire ou en
+casse de phrase. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM) ;
+les deux voies (détecteur seul, texte d'ombre des casses de phrase et
+minuscules) sont comptées à part par `run_cinq_chiffres_bench.dart` pour dire
+quelle règle produit la prédiction.
+
+| | avant P2-167 | après P2-167 |
+|---|---:|---:|
+| Adresses prédites à tort (400 phrases) | 130 | **74** |
+| dont voie « détecteur seul » (nombre + mot à majuscule) | 88 | 49 |
+| dont voie « texte d'ombre » (nombre + nom commun, casse de phrase) | 42 | 25 |
+| nombre après des mots (200 phrases) | 64 | **8** |
+| nombre en tête de phrase (200 phrases) | 66 | 66 |
+| montants (« euros ») et nombre sans mot suivant | 0 | 0 |
+
+Correction : un nombre à cinq chiffres **introduit par une tournure de
+quantité ou de référence** (« environ », « lot », « réf. », « n° », « total »,
+« commande de », « lot de »… ; **jamais « de » seul** : « la mairie de 70000
+Vesoul » reste masqué, les 8 nombres restants sont introduits par « de » seul) n'est plus pris pour un code postal sans voie. **Reste** : un nombre
+en tête de phrase suivi d'un mot (« 58699 Alpha livrés ») a exactement la forme
+d'un code postal en tête de ligne (« 70000 Vesoul ») ; aucune tournure ne les
+sépare, ils restent masqués (66 sur 200). Reste du tableau de bord inchangé
+(adresses des corpus flous comprises).
+
+## Code postal en tête : les adresses à ne pas perdre (P2-177)
+
+Pendant du témoin ci-dessus : `bench/generate_corpus_cp_tete.py` (432 documents,
+graine 42, **une adresse annotée par document**), un code postal qui ouvre le
+texte, une ligne (bloc d'adresse ou prose recoupée) ou une phrase, suivi de sa
+commune puis de rien, d'une fin de ligne, d'une ponctuation ou de mots en
+minuscules (« 25000 Besançon depuis 2019 »), en casse ordinaire et sans
+majuscule. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM). Une
+adresse est « en clair » dès qu'un de ses caractères hors blancs n'est sous
+aucune détection.
+
+| | `Ecluse.redact` |
+|---|---:|
+| Adresses laissées en clair, en tout ou en partie (432) | **0** |
+| dont suivies de mots en minuscules (108) | 0 |
+
+**Règle candidate, simulée par le banc** (`run_cp_tete_bench.dart
+--regle-candidate`, **absente de `lib/`**) : écarter une adresse prédite qui
+commence par un code postal en tête et dont le nom est suivi, sur la même
+ligne, d'un mot en minuscules. Les deux colonnes mesurent `Ecluse.redact`, la
+règle étant appliquée à ses prédictions.
+
+| Règle candidate | sans la règle | avec la règle (simulée) |
+|---|---:|---:|
+| Témoin sans adresse : prédictions à tort (400 phrases) | 74 | 8 |
+| dont nombre en tête de phrase (200 phrases) | 66 | **0** |
+| Corpus « code postal en tête » : adresses en clair (432) | 0 | **108** |
+| dont début de texte / début de ligne / après une phrase | 0 | 36 / 36 / 36 |
+| Corpus flous réaliste et adversarial : adresses en clair (159 et 155)¹ | 0 | 0 |
+
+¹ Hors tableau de bord (rejeu à la main du même binaire sur les corpus flous
+d'origine, en minuscules et recoupés à 60 et 90 colonnes ; réaliste en casse
+de phrase ; 3 documents refusés à 60 colonnes, hors compte) : ces corpus n'ont aucune adresse en tête suivie d'un
+mot en minuscules, ils n'exercent donc pas la perte.
+
+**Décision appliquée (fiche P2-177)** : les deux formes ne se séparent pas
+sans perte ; le masquage à tort est gardé, **aucun détecteur n'est modifié**,
+la limite est écrite dans `LIMITES.md` § 5.2. Le témoin reste à 74 (66 en
+tête).
+
+## Communes : nom en partie en clair après CEDEX (P2-178, P2-180, P2-181)
+
+Balayage des 34 875 communes du référentiel (`geo_communes.csv.gz`,
+populations légales INSEE), une fois par écriture, avec « code postal +
+commune + CEDEX n » (`bench/generate_corpus_cedex.py --balayage`, graine 42).
+Chemin mesuré : **`Ecluse.redact`**. Une commune est « en défaut » dès qu'un
+de ses caractères (ou du mot « CEDEX »/son numéro) reste en clair ; détail
+par cause, longueur et forme de CEDEX dans `agent/specs/P2-178.md`.
+
+| Écriture | Avant (P2-178, mesure) | Après P2-180 | Après P2-181 |
+|---|---:|---:|---:|
+| `libelle` (officiel) | 163 / 34 875 | 26 / 34 875 | **10** / 34 875 |
+| `postale` | 145 / 34 875 | 145 / 34 875 | **7** / 34 875 |
+| `libelle_espaces` | 901 / 34 875 | 626 / 34 875 | **15** / 34 875 |
+| `capitales_tirets` | 143 / 34 875 | 14 / 34 875 | **9** / 34 875 |
+
+**P2-180 (tâche A de `agent/specs/P2-178.md` § 7)** corrige deux causes
+indépendantes de la longueur, dans `AdresseDetector` : la lettre « œ »/« Œ »
+(hors des classes Latin-1 du motif de commune, « 59112 Annœullin » perdait
+tout après « Ann », « 02000 Œuilly » n'était pas reconnu comme commune du
+tout) et un mot qui commence comme un titre abrégé (« M », « Pr »…) suivi
+d'une lettre accentuée, pris à tort pour une civilité annonçant un nom
+(`\b` de Dart ne voit pas les lettres accentuées comme des lettres sans le
+drapeau `unicode` : « Le **Pr**é-Saint-Gervais », « Les **M**ées »). Les
+civilités réelles devant un nom (« Mme Durand », « M. Durand », « Dr Faure »,
+« Me Blanc ») sont toujours suivies d'un espace ou d'un point, donc
+inchangées. `postale` n'est pas concerné (sa cause dominante est la longueur,
+tâche B) ; `libelle_espaces` baisse en sous-produit (il partage les deux
+causes corrigées ici avec sa cause dominante, les mots de liaison absents,
+non traités par P2-180).
+
+Témoins flous à 0 prédiction à tort, reste du tableau de bord inchangé
+ligne à ligne (vérifié par rejeu complet).
+
+**P2-181 (tâche B de `agent/specs/P2-178.md` § 7)** : ce qui sépare un code
+postal du mot « CEDEX », sur la même ligne, est la localité. Devant « CEDEX »
+seulement, `AdresseDetector` prend jusqu'à cinq mots de plus et les mots de
+liaison que le balayage avait trouvés absents (« et », « au », « à », « près »,
+« devant », « di », « ès »…). **Sans « CEDEX » derrière, le motif est celui
+d'avant** : la correction ne masque rien de plus dans un texte sans CEDEX
+(témoin ci-dessous, inchangé).
+
+Ce balayage n'a que des adresses avec CEDEX : il ne mesure donc que ce cas.
+Le corpus par longueur (`generate_corpus_cedex.py` sans `--balayage`,
+5 880 adresses, **hors tableau de bord**, rejoué à la main par `Ecluse.redact`)
+dit ce qui reste sans CEDEX :
+
+| Forme (1 960 adresses chacune) | Avant P2-181 | Après P2-181 |
+|---|---:|---:|
+| sans CEDEX | 263 en défaut (4,1 % des caractères) | 263 (4,1 %), **inchangé** |
+| « CEDEX n » | 270 (5,6 %) | **22** (0,8 %) |
+| « Cedex 0n » | 294 (6,2 %) | **22** (0,8 %) |
+
+Restent, au balayage (41 adresses, classement du scoreur) : 30 pour une
+parenthèse ou un tiret isolé dans le nom (« Bors (Canton de …) », non
+traité), 6 pour un mot en minuscules hors liste (« et ses environs », « es »,
+« plages », « sans », « ô »), 3 autres (double espace laissé par un tiret
+isolé retiré, « Bourg Madame » sans tiret : « Madame » annonce un nom) et 2 où
+la fin du nom est prise par une détection de nom (la commune n'est pas en
+clair, le numéro de CEDEX l'est). 15 communes distinctes sur 34 875, contre
+951 à la mesure P2-178.
+
+## Commune suivie de mots ordinaires : le sur-masquage (P2-181)
+
+Témoin `bench/generate_corpus_commune_suivie.py` (480 documents, graine 42) :
+une adresse « code postal + commune » annotée, suivie **sur la même ligne**
+d'une suite qui n'en fait pas partie — mots ordinaires en capitales (« 25000
+BESANCON ET ENVIRONS »), mots à majuscule (« Service des Admissions »), ou mot
+de liaison (« 70000 Vesoul à 9 h », « et Besançon »). Chemin mesuré :
+**`Ecluse.redact`** (`score_commune_suivie.py`). La suite masquée est du texte
+ordinaire que le LLM ne reçoit plus (lisibilité perdue, **pas une fuite**) ;
+l'adresse en clair, elle, serait une fuite.
+
+| | Avant P2-181 | Après P2-181 |
+|---|---:|---:|
+| Documents à la suite masquée en partie (480) | 308 | 308 |
+| Caractères de suite masqués | 3 739 / 6 659 (56,1 %) | 3 739 / 6 659 (56,1 %) |
+| dont suite en capitales (160 documents) | 152 documents, 1 797 / 2 497 | inchangé |
+| dont suite à majuscule (160) | 145 documents, 1 898 / 2 354 | inchangé |
+| dont suite introduite par une liaison (160) | 11 documents, 44 / 1 808 | inchangé |
+| Adresses en partie en clair | 0 | 0 |
+
+Deux lectures :
+
+- **Le témoin ne bouge pas** avec P2-181 (aucune suite du témoin n'est suivie
+  de « CEDEX ») : c'est la condition de la fiche.
+- **Le sur-masquage existait déjà** et il est fort : un mot à majuscule ou en
+  capitales qui suit une commune de moins de quatre mots est pris pour la
+  suite de son nom (« 70000 VESOUL SERVICE DES ADMISSIONS » est masqué en
+  entier). C'est la limite connue du motif « un mot puis trois au plus », sans
+  table des communes ; ce témoin la chiffre pour la première fois.
+
+**Règle candidate mesurée et non retenue** (rejeu à la main du même binaire,
+règle **absente de `lib/`**) : prolonger aussi le nom quand il va jusqu'à la
+**fin de la ligne**, sans CEDEX. Par `Ecluse.redact` :
+
+| Règle candidate « fin de ligne » | P2-181 (retenu) | avec la candidate |
+|---|---:|---:|
+| Corpus par longueur, sans CEDEX : adresses en défaut (1 960) | 263 | **22** |
+| Témoin : caractères de suite masqués (6 659) | 3 739 | **4 858** |
+| dont suite qui finit la ligne (240 documents) | 155 documents, 1 882 car. | 214 documents, 3 001 car. |
+| dont suite introduite par une liaison (160) | 11 documents | 62 documents |
+
+Elle comble la fuite sans CEDEX mais masque nettement plus de texte
+ordinaire : la fiche P2-181 demande de s'arrêter là et de laisser le choix au
+mainteneur.
+
+## Communes en capitales : nom en partie en clair après CEDEX (P2-183, P2-185, P2-187)
+
+Même balayage que ci-dessus (34 875 communes × 4 écritures, 139 500
+adresses), le document **tout en capitales** (`variantes_casse.py`, branche
+`capitales` d'`AdresseDetector`). Chemin mesuré : **`Ecluse.redact`** (ce que
+reçoit le LLM). 0 refus. Ajouté à `etat.sh` par P2-185 (qui s'était arrêtée
+sans toucher de détecteur, `agent/specs/P2-185.md`) ; la correction est livrée
+par P2-187.
+
+| | Adresses en défaut | Fuite au caractère | dont cause « déterminant initial » |
+|---|---:|---:|---:|
+| `main` avant P2-187 (rejoué le 15 novembre)¹ | 8 736 / 139 500 | 6,4 % (200 271 / 3 117 758) | **8 457** |
+| après P2-187 | **95** | **0,1 %** (2 020) | **4** |
+
+¹ Le tableau de P2-185 donnait 8 885 / 6,5 % (202 070) : `main` avait bougé
+depuis (cause « autre » 63 aujourd'hui) ; le chiffre « avant » ci-dessus est
+celui rejoué sur `main` le 15 novembre, la cause « déterminant initial »
+(8 457) n'a pas changé. Autres causes après P2-187 : autre 59, ponctuation 30.
+
+**Coût (P2-187)** : témoin `bench/generate_corpus_determinant.py` (400
+phrases, graine 42, **aucune adresse annotée**), « nombre à cinq chiffres +
+LE/LA/LES/L' + mots ordinaires », chemin **`Ecluse.redact`**. Toute adresse
+prédite est un masquage en trop (de la lisibilité perdue ; la commune en clair
+serait une fuite) :
+
+| Phrases avec une adresse prédite (sur 200) | Avant | Après |
+|---|---:|---:|
+| en capitales | 26 | **107** |
+| en casse ordinaire | 113 | 113 (inchangé) |
+
+La casse ordinaire est le comportement de `main` depuis P2-167/P2-177 ;
+l'essai y aligne les capitales (107 contre 113). En capitales, la « commune »
+avale les mots à majuscule qui suivent : « VOIR 12345 LE SERVICE DES
+ADMISSIONS. » devient « VOIR [ADRESSE_1]. ». Restent intacts : déterminant seul
+(« 70000 LA »), second mot neutre (« 70000 LES DOSSIERS DU MOIS »), « 70000 LES
+3 PREMIERS ».
+
+## Communes en capitales sans « CEDEX », témoin mot neutre devant CEDEX (P2-200)
+
+Mesure de départ avant P2-201 (`main` au commit `3b03ca1`, graine 42, aucun
+détecteur modifié). Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM).
+
+**Balayage sans CEDEX** (`generate_corpus_cedex.py --balayage --cedex sans`) :
+mêmes 34 875 communes × 4 écritures, 139 500 adresses, tout en capitales
+(`variantes_casse.py`), sans mot « CEDEX ». 0 refus.
+
+| Balayage en capitales | Adresses en défaut | Fuite au caractère | Causes (`score_cedex.py`) |
+|---|---:|---:|---|
+| avec « CEDEX n » (P2-187) | 95 / 139 500 | 0,1 % (2 020 / 3 117 758) | autre 59, ponctuation 30, déterminant initial 4 |
+| **sans CEDEX** (P2-200) | **338 / 139 500** | **0,1 %** (3 061 / 2 280 758) | **longueur 216, autre 60, ponctuation 30, déterminant initial 16** |
+
+Par écriture, sans CEDEX : libellé 30, postale 168, libellé à espaces 110,
+capitales à tirets 30 ; 165 communes distinctes sur 34 875 touchées sous au
+moins une écriture. La cause « longueur » (216) est la commune de plus de
+quatre mots, que la suite devant « CEDEX » de P2-181 couvrait ; elle n'existe
+qu'ici. La cause « autre » (60) contient la classe « mot neutre en tête » de
+`agent/specs/P2-196.md` (non ventilée par le scoreur). Les 338 adresses sont
+de la fuite de nom de commune (lieu, pas une personne) ; aucun CEDEX en jeu.
+
+**Témoin de faux positifs devant CEDEX** (`generate_corpus_neutre_cedex.py`,
+400 phrases, graine 42, **aucune adresse annotée**), « cinq chiffres + mot
+neutre (+ parenthèse, tiret) + CEDEX n » (« VIREMENT DE 70000 EUROS CEDEX 3 »),
+en capitales et en casse ordinaire :
+
+| Phrases avec une adresse prédite | Avant correction |
+|---|---:|
+| en capitales (sur 200) | **0** |
+| en casse ordinaire (sur 200) | **0** |
+| par forme de suite : mot / parenthèse / tiret | 0 / 136, 0 / 132, 0 / 132 |
+
+Aujourd'hui la règle du mot neutre protège entièrement ce cas ; le chiffre à
+suivre pour P2-201 est donc **0 → ?** (coût de la levée devant CEDEX). Témoin
+construit : il dit le pire cas, pas une fréquence. Corpus synthétique.
+
+## Communes en capitales devant « CEDEX » (P2-201)
+
+Avant : `main` au commit `1cb1e9b` (rejoué le 16 novembre, identique à P2-200).
+Après : branche `claude/P2-201-commune-capitales-cedex`. Graine 42. Chemin
+mesuré : **`Ecluse.redact`** (ce que reçoit le LLM). Détecteur modifié :
+`AdresseDetector` (règle du mot neutre levée quand le texte reconnu finit par
+« CEDEX » ; parenthèse, tiret entouré de blancs et deux ou trois blancs admis
+dans la suite devant « CEDEX »). Rien d'autre dans `lib/`.
+
+| Mesure | Avant | Après |
+|---|---:|---:|
+| Balayage en capitales avec « CEDEX n » : adresses en partie en clair | 95 / 139 500 | **1** / 139 500 |
+| fuite au caractère | 0,1 % (2 020 / 3 117 758) | **0,0 %** (1 / 3 117 758) |
+| Balayage en capitales **sans** « CEDEX » | 338 / 139 500 | 338 (inchangé) |
+| Témoin « nombre + mot neutre + CEDEX », capitales (sur 200) | 0 | **113** |
+| Témoin « nombre + mot neutre + CEDEX », casse ordinaire (sur 200) | 0 | 0 |
+
+Le reste d'une adresse en défaut après P2-201 : « SAINT M HERVE » en écriture
+postale (le « M » isolé est lu comme une civilité, le numéro de CEDEX reste).
+Témoin par forme de suite (mot / parenthèse / tiret) : 38 / 136, 37 / 132,
+38 / 132 ; par position : 100 / 200 en tête de phrase, 13 / 200 après des mots
+(les tournures de quantité « total de », « lot », « réf. » protègent le nombre) ;
+par famille : quantité 64 / 204, référence 49 / 196. Témoin construit : il dit
+le pire cas (une phrase par forme, toutes avec « CEDEX »), pas une fréquence.
+
+**Changement que la fiche ne prévoyait pas** : le motif de la suite devant
+« CEDEX » est partagé avec la casse ordinaire, donc le balayage **en casse
+ordinaire** avec « CEDEX n » (section P2-178 ci-dessus) passe de 41 à **8**
+adresses en partie en clair (`libelle` 10 → 1, `postale` 7 → 1,
+`libelle_espaces` 15 → 6, `capitales_tirets` 9 → 0). C'est une amélioration de
+la même règle (« devant CEDEX seulement »), pas une régression ; aucun témoin
+de faux positifs en casse ordinaire ne bouge (0 / 200 au témoin ci-dessus). Le
+mainteneur peut demander de la limiter aux capitales.
+
+## Communes en capitales sans « CEDEX » : formes et coût des règles candidates (P2-206)
+
+Mesure seulement, `main` au commit `8b516b7`, graine 42, **aucun `lib/`
+modifié**. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM) pour les
+prédictions de départ ; les deux règles candidates sont **simulées** par
+`bench/regles_candidates_communes.py` en ajoutant leur étendue aux détections
+de `Ecluse.redact` (union). Une implémentation réelle règle aussi les
+chevauchements avec les autres détecteurs (`resolveOverlaps`) : les chiffres
+ci-dessous sont un ordre de grandeur du gain et du coût, pas la mesure d'une
+implémentation. Reproduit par `bash bench/etat.sh`, section « formes et règles
+candidates ».
+
+**Ventilation des 338 adresses en défaut** (`classe_communes_capitales.py
+--sans`, une seule forme par adresse, dans l'ordre E, C, D, B, A) : le total et
+les cinq formes de `agent/specs/P2-205.md` sont retrouvés.
+
+| Forme | Adresses | Communes | Exemples du référentiel |
+|---|---:|---:|---|
+| A plus de quatre mots | 216 | 135 | FLAVIGNY LE GRAND ET BEAURAIN |
+| B mot neutre en tête (hors LE, LA, LES, L') | 57 | 15 | SON ; VERS ; SOUS PARSAT |
+| C parenthèse, tiret isolé, blancs multiples | 32 | 9 | SARROUX - SAINT JULIEN |
+| D déterminant puis mot neutre | 4 | 1 | LES PLACES |
+| E mot-clé d'établissement dans le nom | 29 | **14** | MAS CABARDES |
+| autre | 0 | 0 | |
+
+Un écart avec la spec : E compte **14** communes ici, la spec en annonçait 15
+(elle avait classé avec un script jetable). La forme E se lit sur les
+prédictions : une détection de type `etablissement` recouvre l'adresse
+annotée ; les autres formes se lisent sur le nom de la commune.
+
+**Gain des règles sur le balayage** (139 500 adresses ; formes A à D, 309
+adresses ; la forme E n'est pas simulable, c'est un autre détecteur) :
+
+| Règle simulée | Formes A à D en partie en clair |
+|---|---:|
+| aucune (`Ecluse.redact` seul) | 309 |
+| nom exact du référentiel (plus long préfixe de la fin de ligne) | **0** |
+| nom exact, ligne entière | **0** |
+| fin de ligne (mots à majuscule ou de liaison) | **61** (B 57, D 4) |
+
+Lecture : le **0** du nom exact est vrai **par construction** (le balayage est
+fait avec les noms du référentiel, la règle les reconnaît tous). Il ne dit rien
+de ce qui n'est pas au référentiel (abréviations « ST », « STE », fautes) : non
+mesuré. « Fin de ligne » ne lève pas la règle du mot neutre, donc B et D
+restent.
+
+**Coût sur le témoin « commune suivie »** (`generate_corpus_commune_suivie.py`,
+480 documents, 6 659 caractères de suite ordinaire ; caractères de suite
+masqués, hors blancs ; adresse en partie en clair : 0 partout) :
+
+| Règle simulée | Règle à toute ligne (comme P2-181) | Règle aux seuls textes en capitales¹ |
+|---|---:|---:|
+| `Ecluse.redact` seul | 3 739 (308 documents) | 5 379 (462 documents) |
+| nom exact (préfixe ou ligne entière) | 3 739 (**+0**) | 5 379 (**+0**) |
+| fin de ligne | 4 808 (**+1 069**, 363 documents) | 6 631 (**+1 252**, 476 documents) |
+
+¹ Le témoin passé en capitales par `variantes_casse.py`, la branche où la règle
+vivrait. Le sur-masquage de départ y est déjà de 462 documents sur 480 : le
+témoin en capitales ne distingue presque plus rien.
+
+Depuis P2-212 (formes sans accent des mots neutres), la colonne « capitales »
+change de 3 caractères : `Ecluse.redact` seul 5 376 (au lieu de 5 379), nom exact
+5 376 (+0), fin de ligne 6 631 (**+1 255**), 462 et 476 documents inchangés ; la
+colonne « toute ligne » ne bouge pas. Moins de suite masquée en trop, 0 adresse
+en partie en clair.
+
+**Écart de 3 caractères expliqué (P2-237, mesure seulement).** Chemin mesuré :
+`Ecluse.redact` (`run_redact_bench.dart`), témoin « commune suivie » en
+capitales (`variantes_casse.py`, 480 documents, graine 42), rejoué sur le
+parent de P2-212 (`d88c8b0^`) et sur `main`, document par document ; caractères
+de suite masqués = caractères non blancs de la suite sous une détection.
+
+| | Avant P2-212 | Après P2-212 |
+|---|---:|---:|
+| Caractères de suite masqués, 480 documents | 5 379 | 5 376 |
+| Documents dont l'étendue masquée diffère | — | **3** (n° 78, 276, 312) |
+
+- **Documents.** Les trois ont la suite « RETOUR A L EXPEDITEUR » (11 documents
+  du témoin portent cette suite ; les huit autres ne changent pas, la commune y
+  est trop longue pour que « A » entre dans le même passage). Pour chacun,
+  l'étendue de l'adresse passe de « …commune RETOUR A » à « …commune RETOUR » :
+  **un seul caractère** de moins, la lettre « A » (7 → 6 caractères de suite
+  masqués), soit 3 caractères au total. Aucune autre différence de prédiction
+  sur les 480 documents.
+- **Règle responsable.** `MinusculesRecapitaliseDetector` (passage
+  `communesSeules` autour de `AdresseDetector`, `ecluse.dart`). Il passe au
+  détecteur d'adresse un texte d'ombre où chaque mot reçoit une majuscule
+  initiale, sauf les mots neutres. P2-212 (#436) a ajouté la forme sans accent
+  « a » aux mots neutres (`estMotNeutre`) : « A » (écriture sans accent de
+  « à ») reste en minuscule dans l'ombre, la commune s'arrête avant lui. Avant,
+  il était recapitalisé et avalé comme dernier mot de la commune. Sonde sur le
+  texte « 90046 LONS LE SAUNIER RETOUR A L EXPEDITEUR » : `AdresseDetector` seul
+  20–48 avant et après ; avec l'ombre, 20–50 avant, 20–48 après.
+- **Verdict : masquage plus juste, ni fuite ni perte.** « A » est une préposition
+  ordinaire, pas une partie de l'adresse. L'adresse annotée reste entièrement
+  couverte (0 adresse en partie en clair sur les 480 documents, avant et
+  après). Le mot « RETOUR » reste masqué dans les trois cas (sur-masquage connu
+  de la colonne « capitales », non traité ici). Aucune correction.
+- **Non mesuré.** Les prédictions de `Ecluse.redact` seul : la colonne « fin de
+  ligne » simulée (6 631) n'a pas été recalculée ici.
+
+La règle « fin de ligne » de P2-181 avait été rejouée à la main et n'était pas
+versionnée : la lecture écrite ici donne 4 808 là où P2-181 avait noté 4 858
+(écart de 50 caractères, non expliqué, la règle d'origine n'est pas
+retrouvable). Le nom exact ne masque **rien de plus** sur ce témoin : le nom
+exact est « VESOUL », que le motif à quatre mots masque déjà avec sa suite.
+
+**Coût sur des témoins sans adresse annotée** (toute adresse en plus est un
+masquage en trop, de la lisibilité perdue ; la règle ne vit que dans les
+capitales) :
+
+| Témoin | Capitales : adresses prédites, `Ecluse.redact` seul | + nom exact (préfixe) | + nom exact (ligne) | + fin de ligne |
+|---|---:|---:|---:|---:|
+| noms de communes de forme neutre (`generate_corpus_commune_neutre.py`, 200 en capitales) | 0 / 200 | **+200** | **+100** | +0 |
+| cinq chiffres (P2-167) | aucun texte en capitales : rien de mesuré | | | |
+| déterminant (P2-187, 200 en capitales) | 107 / 200 | +1 | +0 | +96 |
+
+Le témoin de formes neutres est **construit** : chaque phrase contient par
+construction un nom du référentiel après cinq chiffres (« 08061 SON »), il dit
+le pire cas du nom exact (le coût de lever la règle du mot neutre pour ces 15
+communes), pas une fréquence. Le +1 du témoin « déterminant » est « LA
+REUNION », commune du référentiel (« STOCK DE 59477 LA REUNION DE SERVICE ») :
+un cas réel de faux positif du nom exact, sur 200. **Non mesuré** : la
+fréquence de ces tournures dans du texte réel, la part des écritures hors
+référentiel, l'interaction avec les autres détecteurs.
+## `EtablissementDetector` : frontière de mot et étendue limitée au nom (P2-207)
+
+Avant : `main` au commit `8b516b7` (rejeu du 16 novembre). Après : branche
+`claude/P2-207-etablissement-frontiere-mot`. Graine 42. Chemin mesuré :
+**`Ecluse.redact`** (ce que reçoit le LLM). Modifié : `EtablissementDetector`
+(frontière de mot à gauche écrite `(?<![\wÀ-ÿ])`, `\b` ne connaissant pas les
+lettres accentuées : « CH » trouvé dans « BUËCH ») et le recollage de fin de
+ligne de `coupures_de_nom.dart` (même frontière ; les débuts de phrase de la
+liste fermée se lisent aussi en capitales : « MERCI » n'est plus la suite du
+nom, « DE », « DES », « SUR » le restent). L'étendue masquée ne déborde plus
+sur la ligne suivante (« MAS GRENIER⏎MERCI DE VOTRE RETOUR »).
+
+| Mesure (balayage en capitales sans CEDEX, 139 500 adresses) | Avant | Après |
+|---|---:|---:|
+| Adresses en partie en clair | 338 | **309** |
+| Fuite au caractère | 0,1 % (3 061 / 2 280 758) | 0,1 % (2 886) |
+| Cause « déterminant initial » | 16 | **4** |
+| Cause « autre » | 60 | 59 |
+
+Les 29 adresses de la forme E (`agent/specs/P2-205.md` § E) sont corrigées ; les
+309 restantes sont les formes A (216), B (57), C (32) et D (4), non touchées.
+**Reste du tableau de bord inchangé** : `bash bench/etat.sh` rejoué en entier
+sur `main` et sur la branche, seules ces quatre lignes diffèrent (corpus
+flous d'établissements, mises en page, balayage avec CEDEX, témoins de
+sur-masquage : identiques, donc aucun établissement du corpus perdu). Le
+corpus d'établissements est celui des corpus flous du tableau de bord
+(`bench/etat.sh`, sections « flou » et « mise en page »).
+## Communes en capitales sans « CEDEX » : règle « nom exact du référentiel » (P2-214)
+
+Avant : `main` au commit `bd7d24b` ; après : P2-214. Graine 42. Chemin mesuré :
+**`Ecluse.redact`** (ce que reçoit le LLM). La règle est dans `lib/`
+(`AdresseDetector`, texte tout en capitales) ; elle lit une table de 261 noms
+écrite dans le paquet (`communes_nom_exact.dart` : 251 noms de cinq mots ou
+plus, 9 à parenthèse ou tiret isolé, « LES PLACES »), générée depuis le
+référentiel versionné par `tools/build_communes_nom_exact.py`. Les 15 communes
+de forme B (mot neutre en tête) n'y sont pas, par décision du 16 novembre.
+
+| Mesure (`Ecluse.redact`) | Avant | Après | Simulation de P2-206 |
+|---|---:|---:|---:|
+| Balayage capitales sans CEDEX, adresses en partie en clair | 309 / 139 500 | **57 / 139 500** | 0 (forme B comprise) |
+| dont forme A (plus de quatre mots) | 216 | **0** | 0 |
+| dont forme B (mot neutre en tête), laissée de côté | 57 | 57 | 0 |
+| dont forme C (parenthèse, tiret isolé, blancs) | 32 | **0** | 0 |
+| dont forme D (« LES PLACES ») | 4 | **0** | 0 |
+| Fuite au caractère, même balayage | 2 886 / 2 280 758 | 921 / 2 280 758 | |
+| Balayage capitales avec « CEDEX n » | 0 / 139 500 | 0 / 139 500 | |
+| Témoin commune suivie (P2-181), caractères de suite masqués | 3 739 / 6 659 | 3 739 / 6 659 | +0 |
+| Témoin cinq chiffres (P2-167), phrases à adresse prédite | 74 / 400 | 74 / 400 | +0 |
+| Témoin déterminant (P2-187), capitales | 107 / 200 | 107 / 200 | +1 (« LA REUNION ») |
+| Témoin mot neutre devant CEDEX (P2-200), capitales | 113 / 200 | 113 / 200 | |
+| Témoin commune de forme neutre (P2-206), capitales | 0 / 200 | **8 / 200** | +200 |
+| Courriers en capitales (P2-210), lignes masquées en trop | 35 / 3 185 | 35 / 3 185 | |
+
+Deux écarts avec la simulation, tous deux dans le bon sens et expliqués par la
+table. **« LA REUNION »** : la simulation comparait à tout le référentiel ; la
+table ne contient que les noms que le motif ne lit pas seul, et ce nom de deux
+mots n'en est pas. **Témoin de forme neutre, 8 / 200** : ce sont les phrases
+du seul nom de forme D, « LES PLACES » (« VIREMENT DE 99307 LES PLACES EFFECTUE
+LUNDI », 8 de ses 14 phrases en capitales ; les 6 autres suivent une tournure
+de quantité) ; les 192 autres phrases portent un nom de forme B, hors de la
+règle. C'est du masquage en trop, pas une fuite.
+
+Le « 0 » des formes A, C et D est vrai par construction : le balayage écrit
+les noms du référentiel, et la règle les lit. Une écriture hors référentiel
+(« ST », faute) n'est pas mesurée ici (P2-215). Les lignes « règles simulées »
+de `etat.sh` (P2-206) repartent maintenant de 57 au lieu de 309. Reste du
+tableau de bord : identique à `main`, ligne pour ligne.
+
+## « SAINT M HERVE » : le « M » isolé n'est pas une civilité (P2-208)
+
+Avant : `main` au commit `8b516b7` (rejeu du 16 novembre). Après : branche
+`claude/P2-208-saint-m-civilite`. Graine 42. Chemin mesuré : **`Ecluse.redact`**
+(ce que reçoit le LLM). Modifiés : `AdresseDetector` (`_titres` : le « M »
+derrière SAINT, SAINTE, ST ou STE n'est plus refusé comme mot de commune) et
+`NameDetector` (le « M » isolé derrière un mot Saint n'est plus le nom qui
+précède le prénom connu « HERVE »). Les autres « M » restent des civilités
+(« M DUPONT » : nom masqué, civilité visible).
+
+| Mesure (`Ecluse.redact`) | Avant | Après |
+|---|---:|---:|
+| Balayage en capitales avec « CEDEX n » : adresses en partie en clair | 1 / 139 500 | **0** |
+| fuite au caractère | 0,0 % (1 / 3 117 758) | 0,0 % (0) |
+| Balayage en casse ordinaire avec « CEDEX n » (P2-178) | 8 | **7** |
+| dont écriture `postale` | 1 | 0 |
+| Balayage en capitales sans CEDEX | 338 | 338 (inchangé) |
+
+Le gain en casse ordinaire est le même cas (« Saint M Hervé CEDEX 3 »), pas un
+effet voulu à part. `bash bench/etat.sh` rejoué en entier sur `main` et sur la
+branche : seules ces lignes diffèrent (témoin de faux titres de P2-180 et
+sections de noms inclus : identiques). Non mesuré : « SAINT M HERVE » sans
+CEDEX (le balayage sans CEDEX le comptait déjà parmi ses 338, cause
+« autre »).
+## Commune dont le nom contient un mot de voie (P2-213)
+
+Avant : `main` au commit `bd7d24b` ; après : P2-213. Graine 42. Chemin mesuré :
+**`Ecluse.redact`** (ce que reçoit le LLM). Générateur
+`bench/generate_corpus_commune_voie.py`, scoreur `bench/score_commune_voie.py`.
+Le balayage prend **toutes** les communes du référentiel dont la forme postale
+contient un type de voie du détecteur (liste `_voies` lue dans
+`adresse_detector.dart`) : 52 communes (CHAUSSEE 15, COURS 11, CHEMIN 7, RUE 7,
+CLOS 3, PLACE 3, RUELLE 2, PASSAGE 2, HAMEAU 1, AVE 1). Chacune sous 72 formes :
+six cases écriture × casse (quatre écritures en casse ordinaire, deux tout en
+capitales), avec ou sans « CEDEX n », suivie d'une phrase, d'une ligne « code
+postal + mot » (« 39314 Colis en attente ») ou d'une seconde adresse, derrière
+ou non une vraie voie (« 12 chemin des Vignes », le contrôle). 3 744 documents.
+Une adresse annotée en partie en clair est une fuite.
+
+| Mesure (`Ecluse.redact`) | Avant | Après |
+|---|---:|---:|
+| Documents à adresse en partie en clair | **641 / 3 744** (52 communes) | **26 / 3 744** (4 communes) |
+| dont code postal ou premier mot du nom en clair | **615** | **0** |
+| dont fin du nom seule en clair | 26 | 26 |
+| Code postal en clair | 615 | 0 |
+| Seconde adresse en clair | 5 | 0 |
+| Vraie voie en clair (contrôle) | 0 | 0 |
+| Casse ordinaire / capitales | 426 / 2 496 ; 215 / 1 248 | 22 / 2 496 ; 4 / 1 248 |
+| Avec CEDEX / sans CEDEX | 523 / 1 872 ; 118 / 1 872 | 0 / 1 872 ; 26 / 1 872 |
+| Suite : phrase / « code postal + mot » / adresse | 10 ; 320 ; 311 (sur 1 248) | 10 ; 9 ; 7 |
+| Derrière une vraie voie : sans / avec | 616 ; 25 (sur 1 872) | 8 ; 18 |
+| Ligne « code postal + mot » masquée (en trop) | 1 246 / 1 248 | 1 248 / 1 248 |
+
+Lecture. Le défaut visé (la voie lue à partir du mot de voie du nom, le vrai
+code postal en clair) est à **0**. Le « Fini quand » de la fiche demandait 0
+adresse en partie en clair sur le balayage : il en reste **26, d'une autre
+cause**, identiques avant et après. Ce sont 4 communes sans CEDEX dont seule la
+fin du nom reste en clair : nom de plus de quatre mots (« SAINT JEAN DE LA
+RUELLE » et « SAINT CLEMENT DE LA PLACE » derrière une vraie voie ou une ligne
+« code postal + mot », « VILLERS CHEMIN ET MONT LES ETRELLES ») ou lié par
+« au », « et » (« Villeneuve au Chemin »). C'est la limite des communes longues
+sans CEDEX (P2-205, formes A ; règle « nom exact » de P2-214 pour les
+capitales), pas le mot de voie. Les 5 secondes adresses en clair du départ
+venaient, dans les cas regardés, d'un nom de personne lu sur « SAINT-…-AUX-CLOS CEDEX », qui écartait
+l'adresse fautive sans rien mettre à la place.
+
+Reste du tableau de bord : identique à `main`, ligne pour ligne.
+
+## Courriers synthétiques en capitales : fréquence de « cinq chiffres + mot neutre + CEDEX » (P2-210)
+
+Mesure de départ, `main` au commit `8b516b7`, graine 42, **aucun `lib/`
+modifié**. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM).
+Générateur `bench/generate_corpus_courriers.py` (400 courriers tout en
+capitales, 3 185 lignes, 970 adresses annotées « code postal commune CEDEX n »),
+scoreur `bench/score_courriers.py`. **Motif de construction** (écrit dans le
+générateur, une hypothèse et non une observation) : un titre, une référence,
+puis 5 à 9 lignes tirées à ces poids : référence 20, montant 22, quantité 18,
+texte 20, adresse de retour avec CEDEX 15, et **5** pour la seule famille où un
+nombre suivi d'un mot neutre et un CEDEX sont sur la même ligne
+(« TOTAL 70000 EUROS HT, RETOUR A 25000 BESANCON CEDEX 2 », virgule une fois
+sur deux). Chaque courrier a au moins une adresse. Un masquage en trop est de la
+lisibilité perdue ; une adresse annotée en partie en clair est une fuite.
+
+| Mesure (`Ecluse.redact`) | Résultat |
+|---|---:|
+| Courriers avec au moins une ligne masquée en trop | **32 / 400** (8 %) |
+| Lignes masquées en trop | **35 / 3 185** |
+| dont famille « nombre + mot neutre + CEDEX sur la même ligne » | **0 / 133** |
+| dont famille « quantité » (« 39314 NUMEROS EN ATTENTE ») | 35 / 469 |
+| Adresses annotées en partie en clair | **0 courrier** sur 400 |
+
+Deux lectures. **Le coût de P2-201 est nul sur ce motif** : aucune des 133
+lignes qui portent à la fois un nombre suivi d'un mot neutre et un CEDEX n'est
+masquée en trop (le témoin pire cas de P2-200 en masque 113 / 200 parce que son
+« CEDEX n » suit directement le mot neutre, sans nombre ni mot entre les
+deux). Ce zéro vaut pour ce motif, pas pour du texte réel. **Le masquage en
+trop mesuré ici n'a rien à voir avec CEDEX** : les 35 lignes sont toutes de la
+forme « nombre à cinq chiffres + NUMEROS » ; `mots_neutres.dart` ne connaît que
+« numéros » avec accent, et une écriture en capitales sans accent n'est pas
+reconnue comme mot neutre (même cause possible pour « SALARIES », « RESIDENTS »,
+non mesurés ici).
+
+**Une fuite observée à la main** (tirage intermédiaire du même générateur, non
+retenue dans le corpus final : 0 courrier à adresse en partie en clair sur les
+400) : « A RETOURNER A : 52417 GRAFFIGNY CHEMIN CEDEX 7⏎39314 NUMEROS EN
+ATTENTE » donne « 52417 GRAFFIGNY [ADRESSE_1] ». Le mot « CHEMIN » du nom de
+commune est lu comme une voie et la ligne suivante comme code postal et commune ;
+le code postal et « GRAFFIGNY » restent en clair. Avec « DOSSIERS » à la place de
+« NUMEROS » : masqué en entier. Cas construit à la main, une commune du
+référentiel public ; fréquence non mesurée.
+
+## Mots neutres, un mot à la fois : là où la liste ne protège pas le nombre (P2-211)
+
+Mesure de départ, `main` au commit `bd7d24b`, graine 42, **aucun `lib/`
+modifié**. Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM).
+Générateur `bench/generate_corpus_mots_neutres.py`, scoreur
+`bench/score_mots_neutres.py`. Le générateur lit les mots dans
+`mots_neutres.dart` lui-même (78 mots, aucune liste recopiée) et écrit 400
+phrases « nombre à cinq chiffres + mot » par mot, à parts égales entre ses
+cases : forme accentuée et, **quand elle diffère**, forme sans accent (cinq
+mots : « à », « numéro », « numéros », « salariés », « résidents ») ; capitales
+et casse ordinaire (mot en minuscules). 31 200 phrases, aucune entité annotée :
+un nombre sous une détection `adresse` est un **masquage en trop** (de la
+lisibilité perdue, **pas une fuite**).
+
+**Motif de construction** (écrit dans le générateur, une hypothèse et non une
+observation). Dans chaque case, les phrases tournent sur la position du nombre
+(en tête, ou après « Total de », « Reste », « Lot », « Soit », « Compte de »,
+« Suivi : »), sur ce qui suit le mot (rien ; une suite neutre : « en attente »,
+« par an » ; un nom commun : « traites », « valides ») et, en casse ordinaire,
+sur la présence d'une majuscule hors début de phrase. Tournures et suites sont
+écrites sans accent, pour que seule l'écriture du mot change entre les deux
+formes.
+
+| Mesure (`Ecluse.redact`) | Nombres masqués en adresse |
+|---|---:|
+| Toutes les phrases | **846 / 31 200** (9 mots touchés sur 78) |
+| Capitales | 639 / 15 600 |
+| Casse ordinaire | 207 / 15 600 |
+| Forme de la liste (accentuée ou sans accent possible) | 218 / 30 200 |
+| Forme sans accent (cinq mots) | **628 / 1 000** |
+| Sous un autre type que `adresse` | 0 |
+
+Les neuf mots touchés (les 69 autres sont à 0 dans les deux casses) :
+
+| Mot | Forme | Capitales | Casse ordinaire |
+|---|---|---:|---:|
+| « à » | sans accent (« A », « a ») | 83 / 100 | 38 / 100 |
+| « numéro » | sans accent | 87 / 100 | 44 / 100 |
+| « numéros » | sans accent | 82 / 100 | 43 / 100 |
+| « résidents » | sans accent | 87 / 100 | 43 / 100 |
+| « salariés » | sans accent | 82 / 100 | 39 / 100 |
+| les cinq, forme accentuée | | 0 / 500 | 0 / 500 |
+| « le » | de la liste | 56 / 200 | 0 / 200 |
+| « la » | de la liste | 57 / 200 | 0 / 200 |
+| « les » | de la liste | 54 / 200 | 0 / 200 |
+| « l » | de la liste | 51 / 200 | 0 / 200 |
+
+Trois lectures.
+
+1. **Forme sans accent : la liste ne protège rien.** Les cinq mots accentués de
+   la liste sont tous dans le même cas que « NUMEROS » (P2-210), « A » compris
+   (« 70000 A TRAITER »). En capitales, 421 / 500 ; les 79 phrases épargnées
+   commencent toutes par « TOTAL DE » ou « LOT » (la tournure de quantité ou de
+   référence avant le nombre les protège, pas la liste) : hors de ces deux
+   tournures, **421 / 421**. La forme accentuée en capitales (« NUMÉROS ») est
+   à 0 / 500.
+2. **Casse ordinaire : seulement en casse de phrase.** Les 207 phrases sont
+   toutes de la forme sans accent et n'ont qu'une majuscule, l'initiale
+   (« 39314 numeros en attente. ») : 207 / 250, les 43 épargnées étant encore
+   « Total de » et « Lot ». Avec une majuscule hors début de phrase : 0 / 250.
+3. **Déterminants : le coût connu de P2-187, chiffré mot par mot.** « LE »,
+   « LA », « LES », « L » ne sont masqués que suivis d'un nom commun, en
+   capitales : 218 / 264 (les 46 épargnées : « TOTAL DE », « LOT ») ; 0 / 536
+   quand rien ou une suite neutre les suit, 0 / 800 en casse ordinaire. Ce
+   n'est pas un défaut nouveau (décision du 15 novembre, P2-195 abandonnée).
+
+Ce que ce témoin ne dit pas : une fréquence (une phrase par forme, pire cas
+construit) ; le mot écrit avec une majuscule initiale en casse ordinaire
+(« 39314 Numeros ») ; les mots absents de la liste.
+
+### Après P2-212 : formes sans accent des mots neutres
+
+`estMotNeutre` (`mots_neutres.dart`) compare aussi la forme sans accent des
+cinq mots accentués de la liste (« a », « numero », « numeros », « salaries »,
+« residents »), calculée depuis la même liste. Aucun de ces mots n'est premier
+mot d'une commune du référentiel versionné. Même graine, même générateur,
+chemin **`Ecluse.redact`** (ce que reçoit le LLM) ; masquage en trop, pas une
+fuite :
+
+| Mesure | Avant (`main`) | Après |
+|---|---:|---:|
+| Mots neutres, toutes les phrases | 846 / 31 200 | **218 / 31 200** |
+| Forme sans accent (cinq mots) | 628 / 1 000 | **0 / 1 000** |
+| Capitales / casse ordinaire | 639 et 207 / 15 600 | 218 et **0** / 15 600 |
+| Mots touchés | 9 sur 78 | 4 sur 78 (« le », « la », « les », « l ») |
+| Courriers (P2-210), lignes masquées en trop | 35 / 3 185 (32 courriers) | **0 / 3 185** |
+| Commune suivie (P2-181), caractères de suite masqués | 5 379 / 6 659 | 5 376 / 6 659 (0 adresse en partie en clair, avant et après) |
+
+Les 218 restantes sont le coût assumé de P2-187 (déterminants suivis d'un nom
+commun, en capitales), inchangé. Le reste du tableau de bord est identique.
+
+## SIREN masqués comme FINESS : chiffre de départ et options (P2-223)
+
+Mesure seule, **aucun `lib/` modifié** (seule la table de types de
+`bin/run_redact_bench.dart`, un outil de banc, apprend `vehicule`), `main` au
+commit `0c53e59`, graine 42. Chemin mesuré : **`Ecluse.redact`** (ce que
+reçoit le LLM). Le FINESS et le SIREN ont la même structure (neuf chiffres,
+même clé de Luhn) : sans le mot « FINESS » à proximité, un SIREN est masqué à
+confiance 0,5 (`LIMITES.md` § 1) : un identifiant d'organisation masqué en
+trop, pas une fuite (l'entrepreneur individuel, dont le SIREN identifie une
+personne, n'est pas traité ici). Générateur `bench/generate_corpus_siren.py`,
+scoreur `bench/score_siren_finess.py`.
+
+| Jeu | SIREN masqués comme FINESS |
+|---|---:|
+| Corpus v3 entier (1 000 documents) : nombres de neuf chiffres à clé valide non annotés | **42 / 42** (tous derrière « Le SIREN de la société est », à confiance 0,5) |
+| Témoin de 400 documents à SIREN | **383 / 400** |
+| dont avec « SIREN » juste avant, plus loin dans la phrase, ou après | 100 / 100 dans chaque cas |
+| dont sans le mot SIREN (RCS, Kbis, numéro d'entreprise) | 83 / 100 |
+| écriture collée / groupée 3-3-3 | 183 / 200 et 200 / 200 |
+
+Les 17 autres du témoin ne sont pas lus comme FINESS mais masqués quand même :
+sous « Extrait Kbis : immatriculation » le nombre devient une plaque
+(`vehicule`) : 400 / 400 sont donc sous une détection. Aucun SIREN n'est en
+clair. Vrais FINESS en clair sans option : 0 / 129 (v3) et 0 / 400 (pendant
+FINESS : 400 vrais FINESS, dont ceux écrits sans le mot « FINESS » et ceux
+voisins d'un SIREN).
+
+**Options chiffrées hors `lib/`** : des filtres appliqués aux prédictions de
+`Ecluse.redact`, pour compter ce qu'une règle gagnerait (SIREN en moins) et ce
+qu'elle coûterait (vrais FINESS qui repartiraient **en clair**). Rien n'est
+implémenté.
+
+| Option | SIREN masqués, v3 | SIREN masqués, témoin | Vrais FINESS perdus, v3 | Vrais FINESS perdus, pendant |
+|---|---:|---:|---:|---:|
+| Aucune (départ) | 42 / 42 | 383 / 400 | 0 / 129 | 0 / 400 |
+| « SIREN » ou « SIRET » **juste avant** le nombre | 42 / 42 | 283 / 400 | 0 | 0 |
+| « SIREN » ou « SIRET » dans les 40 caractères avant | **0 / 42** | 183 / 400 | 0 | **26 / 400** |
+| Idem, **seulement sans le mot « FINESS »** à proximité | **0 / 42** | 183 / 400 | 0 | **0** |
+| Mot « FINESS » exigé (confiance haute seule) | 0 / 42 | **0 / 400** | **43 / 129** | **124 / 400** |
+| Préfixe département valide (01 à 95, 97, 98) | 42 / 42 | 375 / 400 | 0 | 0 |
+| Clé de Luhn | sans effet : 400 / 400 SIREN valides à la clé du FINESS | | | |
+
+Lectures. (1) La fenêtre de 40 caractères réservée aux détections **sans** le
+mot « FINESS » enlève les 42 SIREN du v3 et 200 du témoin sans perdre aucun
+FINESS annoncé par son mot (les 26 perdus par la version sans cette réserve sont
+les « SIREN S ; FINESS F »). (2) Exiger le mot « FINESS » supprime tous les
+SIREN mais fait repartir en clair 43 FINESS sur 129 du v3 (ceux écrits sans le
+mot) : à écarter. (3) La clé de Luhn ne sépare rien, par construction. (4) Le
+préfixe ne retire que 8 SIREN sur 383 : des SIREN **tirés au hasard** ici (les
+premiers chiffres d'un vrai SIREN ne sont pas uniformes, non mesuré faute de
+donnée réelle). (5) Les 183 restants du témoin sont les SIREN **sans** mot
+SIREN avant le nombre (« SIREN de l'entreprise gestionnaire » après lui, RCS,
+Kbis) : aucune option de cette liste ne les atteint.
+
+Ce que cette mesure ne dit pas : une fréquence réelle de SIREN dans des textes
+de santé (documents construits, un nombre par document) ; le coût d'une option
+sur un FINESS dont le texte voisin contient « SIREN » dans un autre sens ; les
+SIRET (14 chiffres : le détecteur ne lit pas neuf chiffres dans un SIRET).
+
+
+## SIREN nommé : type `siren` (P2-248)
+
+Changement de `lib/` (`FinessDetector`, `EntityType.siren`, jeton `[SIREN_n]`),
+rejeu complet de `bench/etat.sh` sur la branche, graine 42. Chemin mesuré :
+**`Ecluse.redact`** (ce que reçoit le LLM) pour les corpus de la section
+précédente ; le tableau « Ecluse finess » du benchmark d'identifiants
+(`bench/score.py`) vient de `run_ecluse.dart` et de `Ecluse.redact` selon la
+ligne (les deux lignes du tableau changent de la même façon). La section
+P2-223 ci-dessus décrit l'état d'**avant** P2-248.
+
+| Mesure | Avant | Après |
+|---|---:|---:|
+| Corpus v3, `Ecluse.redact` : SIREN typés `finess` / `siren` | 42 / 0 | 0 / 42 |
+| Précision FINESS, moteur seul, corpus structurel largeur 60 et 90 (rappel inchangé 100 %) | 75,4 % (42 faux positifs) | 100,0 % (0) |
+| Témoin de 400 documents à SIREN lus comme FINESS | 383 | 83 |
+| dont SIREN annoncé par le mot (« SIREN » avant, après, dans la phrase) | 300 / 300 | 0 / 300 |
+| SIREN sans le mot (RCS, Kbis, numéro d'entreprise), toujours lus FINESS | 83 | 83 |
+
+Le reste du tableau de bord est identique octet pour octet (hors lignes de
+temps et du commit) : même couverture au caractère sur tous les corpus, aucune
+entité de moins masquée. Les 83 SIREN sans le mot restent à confiance 0,5
+sous le type `finess` (voir `LIMITES.md` § 1).
+
 ## Patronyme seul hors civilité : chiffre de départ (P2-218)
 
 Mesure seule, **aucun `lib/` modifié**, `main` au commit `0c53e59`, graine 42.
