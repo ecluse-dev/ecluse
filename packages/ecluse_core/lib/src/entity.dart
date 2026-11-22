@@ -72,6 +72,12 @@ enum EntityType {
   /// désigner une personne ; une pathologie fréquente reste en clair
   /// (décision P2-143). Voir `MaladieRareDetector` dans `ecluse_redact`.
   maladieRare,
+
+  /// Numéro SIREN nommé : un nombre de neuf chiffres à clé de Luhn valide que le
+  /// texte appelle « SIREN » ou « SIRET » (P2-248). Même structure que le
+  /// FINESS : seul le mot le distingue. Toujours masqué, parce que le SIREN
+  /// d'un entrepreneur individuel désigne une personne. Voir `FinessDetector`.
+  siren,
 }
 
 /// Ce qui a établi une entité, quand ce n'est pas une preuve forte (P2-232).

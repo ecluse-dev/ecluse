@@ -90,10 +90,66 @@ void main() {
       expect(entities.single.confidence, 0.5);
     });
 
-    test('SIREN dans un contexte sans "finess" reste à confiance basse',
+    test(
+        'un nombre sans aucun mot de contexte reste un FINESS à confiance basse',
         () async {
-      final entities = await detect('Le SIREN de la société est 732829320.');
+      final entities = await detect('Société 732829320 immatriculée.');
+      expect(entities.single.type, EntityType.finess);
       expect(entities.single.confidence, 0.5);
+    });
+  });
+
+  // P2-248 : le nombre nommé « SIREN » ou « SIRET » est un SIREN, pas un
+  // FINESS. Il reste masqué (le SIREN d'un entrepreneur individuel désigne une
+  // personne) : confiance haute, comme un identifiant annoncé par son nom.
+  group('FinessDetector — SIREN nommé (P2-248)', () {
+    test('« Le SIREN de la société est 732829320. » -> siren, 0,9', () async {
+      const text = 'Le SIREN de la société est 732829320.';
+      final e = (await detect(text)).single;
+      expect(e.type, EntityType.siren);
+      expect(e.confidence, 0.9);
+      expect(text.substring(e.start, e.end), '732829320');
+      expect(e.value, '732829320');
+    });
+
+    test('« SIRET » nomme aussi un SIREN (nombre de neuf chiffres)', () async {
+      final e = (await detect('SIRET : 732829320')).single;
+      expect(e.type, EntityType.siren);
+    });
+
+    test('le libellé peut suivre le nombre, dans la même fenêtre', () async {
+      final e = (await detect('732829320 (numéro SIREN)')).single;
+      expect(e.type, EntityType.siren);
+    });
+
+    test('casse indifférente et écriture groupée 3-3-3', () async {
+      final e = (await detect('siren 732 829 320')).single;
+      expect(e.type, EntityType.siren);
+      expect(e.value, '732 829 320');
+    });
+
+    test('hors de la fenêtre de 40 caractères : reste un FINESS', () async {
+      final texte = 'SIREN${' ' * 45}732829320';
+      final e = (await detect(texte)).single;
+      expect(e.type, EntityType.finess);
+      expect(e.confidence, 0.5);
+    });
+
+    test('le mot FINESS à proximité l\'emporte : FINESS à confiance haute',
+        () async {
+      final e = (await detect('FINESS 570000125, SIREN voisin')).single;
+      expect(e.type, EntityType.finess);
+      expect(e.confidence, 0.9);
+    });
+
+    test('un vrai FINESS sans le mot SIREN reste un FINESS', () async {
+      final e =
+          (await detect('Établissement CH de Metz, FINESS 570000125')).single;
+      expect(e.type, EntityType.finess);
+    });
+
+    test('clé de Luhn cassée : rien, même après « SIREN »', () async {
+      expect(await detect('Le SIREN est 732829321'), isEmpty);
     });
   });
 
