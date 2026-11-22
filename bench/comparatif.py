@@ -128,7 +128,7 @@ def borne_sans_civilite(texte, ent):
 def couverte(texte, ent, spans):
     debut, fin = borne_sans_civilite(texte, ent)
     sous = set()
-    for a, b in spans:
+    for a, b, *_ in spans:  # le type prédit éventuel (P2-246) est indifférent
         sous.update(range(a, b))
     return all(texte[i].isspace() or i in sous for i in range(debut, fin))
 
@@ -166,10 +166,9 @@ def ecrit_corpus(docs):
             f.write(json.dumps(d, ensure_ascii=False) + "\n")
 
 
-def lance_ecluse(docs, dossier):
-    corpus = CORPUS
-    sortie = os.path.join(SORTIE, "pred_ecluse_%s.jsonl"
-                          % ("session" if dossier else "document"))
+def lance_ecluse(docs, dossier, corpus=CORPUS, etiquette=""):
+    sortie = os.path.join(SORTIE, "pred_ecluse_%s%s.jsonl"
+                          % ("session" if dossier else "document", etiquette))
     cmd = ["dart", "run", "bin/run_dossiers_bench.dart"]
     if dossier:
         cmd.append("--dossier")
@@ -177,7 +176,7 @@ def lance_ecluse(docs, dossier):
     subprocess.run(cmd, cwd=os.path.join(RACINE, "packages", "ecluse_redact"),
                    check=True, stdin=subprocess.DEVNULL,
                    stdout=subprocess.DEVNULL)
-    return {p["id"]: [(m["start"], m["end"]) for m in p["mentions"]]
+    return {p["id"]: [(m["start"], m["end"], m["type"]) for m in p["mentions"]]
             for p in _lire(sortie)}
 
 
@@ -199,7 +198,7 @@ def lance_presidio(docs, francais):
     else:
         moteur = AnalyzerEngine()
         langue = "en"
-    return {d["id"]: [(r.start, r.end) for r in
+    return {d["id"]: [(r.start, r.end, r.entity_type) for r in
                       moteur.analyze(text=d["text"], language=langue,
                                      score_threshold=0.35)]
             for d in docs}
@@ -208,8 +207,8 @@ def lance_presidio(docs, francais):
 def lance_spacy(docs):
     import spacy
     nlp = spacy.load("fr_core_news_lg")
-    return {d["id"]: [(e.start_char, e.end_char) for e in nlp(d["text"]).ents]
-            for d in docs}
+    return {d["id"]: [(e.start_char, e.end_char, e.label_)
+                      for e in nlp(d["text"]).ents] for d in docs}
 
 
 def lance_eds_pseudo(docs):
@@ -221,23 +220,83 @@ def lance_eds_pseudo(docs):
     for pipe in ("eds_pseudo.simple_rules", "eds_pseudo.addresses",
                  "eds_pseudo.dates"):
         nlp.add_pipe(pipe)
-    return {d["id"]: [(e.start_char, e.end_char) for e in nlp(d["text"]).ents]
-            for d in docs}
+    return {d["id"]: [(e.start_char, e.end_char, e.label_)
+                      for e in nlp(d["text"]).ents] for d in docs}
 
 
-def lance(outil, docs):
+def lance(outil, docs, corpus=CORPUS, etiquette=""):
     """Les outils Python tournent chacun dans leur processus : edsnlp et spaCy
     enregistrent des composants dans un registre commun, et charger l'un avant
     l'autre fait échouer la création des règles d'EDS-Pseudo (constaté)."""
     if outil == "ecluse_document":
-        return lance_ecluse(docs, dossier=False)
+        return lance_ecluse(docs, False, corpus, etiquette)
     if outil == "ecluse_session":
-        return lance_ecluse(docs, dossier=True)
-    sortie = os.path.join(SORTIE, f"pred_{outil}.jsonl")
+        return lance_ecluse(docs, True, corpus, etiquette)
+    sortie = os.path.join(SORTIE, f"pred_{outil}{etiquette}.jsonl")
     subprocess.run([sys.executable, os.path.abspath(__file__), "--interne",
-                    outil], check=True, stdin=subprocess.DEVNULL,
+                    outil, "--corpus", corpus, "--sortie", sortie], check=True, stdin=subprocess.DEVNULL,
                    stdout=subprocess.DEVNULL)
     return {p["id"]: [tuple(s) for s in p["spans"]] for p in _lire(sortie)}
+
+
+# --- témoin sans donnée personnelle (P2-246) ---------------------------------
+
+CORPUS_TEMOIN = os.path.join(SORTIE, "corpus_temoin.jsonl")
+
+
+def mesure_temoin(docs, spans_par_doc):
+    """Masquages à tort sur des documents **sans aucune** donnée personnelle.
+    Renvoie {"docs": [masqués, total], "car": [masqués, total], "types":
+    {type: [documents, caractères]}}. Un caractère compte une fois (union des
+    prédictions, blancs exclus) ; un type compte un document s'il y figure."""
+    r = {"docs": [0, len(docs)], "car": [0, 0], "types": {}}
+    for d in docs:
+        texte = d["text"]
+        r["car"][1] += sum(1 for c in texte if not c.isspace())
+        spans = spans_par_doc.get(d["id"], [])
+        if spans:
+            r["docs"][0] += 1
+        sous = set()
+        par_type = {}
+        for a, b, *t in spans:
+            nom = t[0] if t else "?"
+            pos = {i for i in range(a, b) if not texte[i].isspace()}
+            sous |= pos
+            par_type.setdefault(nom, set()).update(pos)
+        r["car"][0] += len(sous)
+        for nom, pos in par_type.items():
+            c = r["types"].setdefault(nom, [0, 0])
+            c[0] += 1
+            c[1] += len(pos)
+    return r
+
+
+def tableau_temoin(mesures, docs):
+    outils = [o for o in OUTILS if o in mesures]
+    lignes = ["| | " + " | ".join(LIBELLES[o] for o in outils) + " |",
+              "|---|" + "---:|" * len(outils),
+              "| Documents masqués à tort | " + " | ".join(
+                  pct(*mesures[o]["docs"]) for o in outils) + " |",
+              "| Caractères (hors blancs) masqués à tort | " + " | ".join(
+                  pct(*mesures[o]["car"]) for o in outils) + " |"]
+    types = sorted({t for o in outils for t in mesures[o]["types"]})
+    for t in types:
+        lignes.append(f"| type prédit `{t}` (documents / caractères) | " + " | ".join(
+            "{}/{}".format(*mesures[o]["types"][t]) if t in mesures[o]["types"]
+            else "—" for o in outils) + " |")
+    familles = sorted({d.get("famille", "?") for d in docs})
+    return "\n".join(lignes), familles
+
+
+def familles_ecluse(docs, spans):
+    """Documents d'Écluse masqués à tort, par famille de document."""
+    par = {}
+    for d in docs:
+        c = par.setdefault(d.get("famille", "?"), [0, 0])
+        c[1] += 1
+        if spans.get(d["id"]):
+            c[0] += 1
+    return par
 
 
 def lance_interne(outil, docs):
@@ -379,6 +438,36 @@ def detail_ecluse(docs):
                 for s, c in sorted(par.items())) + ".")
 
 
+FAMILLES_TEMOIN = os.path.join(ICI, "comparatif_temoin_familles.md")
+
+
+def section_temoin(docs, mesures, spans_ecluse):
+    tab, _ = tableau_temoin(mesures, docs)
+    lignes = [
+        "## Témoin sans aucune donnée personnelle (P2-246)",
+        "",
+        f"{len(docs)} documents synthétiques du soin et du social, **sans aucune "
+        "donnée personnelle** (générés par `bench/generate_corpus_temoin_sans_pii.py`, "
+        f"graine {GRAINE}) : consignes de service, comptes rendus sans nom, protocoles, "
+        "plannings de salles, notes logistiques, courriers types. Toute prédiction "
+        "y est un masquage en trop ; aucune correction n'est faite ici.",
+        "",
+        "Chemin mesuré : `Ecluse.redact` (ce que reçoit le LLM) pour les deux "
+        "colonnes Écluse ; la détection propre de chaque outil pour les autres.",
+        "",
+        tab,
+        "",
+        "Écluse (document par document), documents masqués à tort par famille : "
+        + " ; ".join(f"{f} {c[0]}/{c[1]}" for f, c in
+                     sorted(familles_ecluse(docs, spans_ecluse).items())) + ".",
+        "",
+    ]
+    if os.path.exists(FAMILLES_TEMOIN):
+        with open(FAMILLES_TEMOIN, encoding="utf-8") as f:
+            lignes += [f.read().rstrip(), ""]
+    return "\n".join(lignes)
+
+
 def rapport(resultats, docs, commande):
     comptes = {}
     for d in docs:
@@ -437,13 +526,18 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--md", help="écrit le rapport dans ce fichier")
     ap.add_argument("--outils", default=",".join(OUTILS))
+    ap.add_argument("--temoin", action="store_true",
+                    help="mesure aussi le témoin sans donnée personnelle (P2-246) : "
+                         "bench/generate_corpus_temoin_sans_pii.py, graine 42")
     ap.add_argument("--interne", help=argparse.SUPPRESS)
+    ap.add_argument("--corpus", default=CORPUS, help=argparse.SUPPRESS)
+    ap.add_argument("--sortie", help=argparse.SUPPRESS)
     a = ap.parse_args()
     if a.interne:  # un outil Python, dans son propre processus
-        docs = _lire(CORPUS)
+        docs = _lire(a.corpus)
         spans = lance_interne(a.interne, docs)
-        with open(os.path.join(SORTIE, f"pred_{a.interne}.jsonl"), "w",
-                  encoding="utf-8") as f:
+        with open(a.sortie or os.path.join(SORTIE, f"pred_{a.interne}.jsonl"),
+                  "w", encoding="utf-8") as f:
             for i, s in spans.items():
                 f.write(json.dumps({"id": i, "spans": s}) + "\n")
         return
@@ -469,8 +563,28 @@ def main():
         print(f"{LIBELLES[outil]} : {sum(v[0] for v in resultats[outil][0].values())}"
               f" / {sum(v[1] for v in resultats[outil][0].values())} entités couvertes",
               file=sys.stderr)
-    commande = "python3 bench/comparatif.py --md bench/COMPARATIF.md"
+    temoin = None
+    if a.temoin:
+        subprocess.run([sys.executable,
+                        os.path.join(ICI, "generate_corpus_temoin_sans_pii.py"),
+                        "--n", "480", "--seed", str(GRAINE), "--out",
+                        CORPUS_TEMOIN], check=True, stdin=subprocess.DEVNULL,
+                       stdout=subprocess.DEVNULL)
+        docs_t = _lire(CORPUS_TEMOIN)
+        mesures, spans_ecluse = {}, {}
+        for outil in choisis:
+            sp = lance(outil, docs_t, CORPUS_TEMOIN, "_temoin")
+            mesures[outil] = mesure_temoin(docs_t, sp)
+            if outil == "ecluse_document":
+                spans_ecluse = sp
+            print(f"témoin, {LIBELLES[outil]} : {mesures[outil]['docs'][0]} / "
+                  f"{mesures[outil]['docs'][1]} documents masqués", file=sys.stderr)
+        temoin = (docs_t, mesures, spans_ecluse)
+    commande = "python3 bench/comparatif.py --md bench/COMPARATIF.md" + (
+        " --temoin" if a.temoin else "")
     texte = rapport(resultats, docs, commande)
+    if temoin:
+        texte += "\n" + section_temoin(*temoin)
     if a.md:
         with open(a.md, "w", encoding="utf-8") as f:
             f.write(texte)
