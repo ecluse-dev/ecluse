@@ -368,7 +368,10 @@ une coupure au milieu d'un groupe ne l'est pas.
   est juste après correction** (le détecteur strict ne le voit pas), avec le
   même avertissement « à vérifier ». Les détecteurs stricts de `ecluse_core`
   ne changent pas ; sans libellé fort, « 1 85 05 78 OO6 084 91 » reste en
-  clair. **ADELI (P2-199)** : le libellé « ADELI » reçoit les mêmes
+  clair. De même, un IBAN français à clé fausse **sans libellé** dont la clé
+  porte une lettre d'OCR (« FR8o52… ») part en clair : mesuré au corpus
+  « libellé fort », 4 sur 50 IBAN à clé fausse sans libellé (les 46 autres
+  sont masqués, P2-252) ; correction inscrite (P2-254). **ADELI (P2-199)** : le libellé « ADELI » reçoit les mêmes
   tolérances (neuf chiffres, O/o/l/I, ligne vide) ; un numéro ADELI lu par OCR
   derrière son libellé est masqué à confiance 0,3 avec le même avertissement
   (le numéro corse `2A`/`2B` reste l'affaire d'`AdeliDetector`). Sans le mot

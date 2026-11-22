@@ -8,8 +8,8 @@ import unittest
 import etat_attendu
 import verifie_etat
 from generate_corpus import luhn_digit, nir_key
-from generate_corpus_libelle_fort import (LIBELLES, NEGATIFS, VARIANTES,
-                                          construit)
+from generate_corpus_libelle_fort import (LIBELLE_SANS, LIBELLES, NEGATIFS,
+                                          VARIANTE_SANS, VARIANTES, construit)
 from score_libelle_fort import (affiche_confiance, confiance, format_confiance,
                                 juge_positif, mesure)
 
@@ -25,13 +25,16 @@ class Generateur(unittest.TestCase):
     def test_effectifs(self):
         pos = [d for d in self.docs if d["entities"]]
         neg = [d for d in self.docs if not d["entities"]]
-        self.assertEqual(len(pos), 6 * len(LIBELLES) * len(VARIANTES))
-        self.assertEqual(len(neg), 6 * len(LIBELLES) * len(NEGATIFS))
+        # Les 6 « nombre sans libellé » tirés pour l'IBAN sont des positifs
+        # depuis le 22/11/2026 (IBAN à clé fausse annoté).
+        self.assertEqual(len(pos), 6 * len(LIBELLES) * len(VARIANTES) + 6)
+        self.assertEqual(len(neg), 6 * len(LIBELLES) * len(NEGATIFS) - 6)
         self.assertEqual([d["id"] for d in self.docs],
                          list(range(len(self.docs))))
 
     def test_offsets_et_libelle_devant_l_identifiant(self):
-        for d in (d for d in self.docs if d["entities"]):
+        for d in (d for d in self.docs
+                  if d["entities"] and d["libelle"] != LIBELLE_SANS):
             e = d["entities"][0]
             self.assertTrue(d["text"].startswith(d["libelle"]))
             avant = d["text"][len(d["libelle"]):e["start"]]
@@ -45,6 +48,8 @@ class Generateur(unittest.TestCase):
             ocr = d["variante"] in ("ocr_zero", "ocr_un", "ocr_et_ligne_vide")
             if d["variante"] == "cle_fausse":
                 self.assertFalse(self.cle_juste(d["type_id"], v), d["text"])
+            elif d["variante"] == VARIANTE_SANS:
+                continue  # clé fausse, lettres d'OCR possibles : test dédié
             elif not ocr:
                 self.assertTrue(self.cle_juste(d["type_id"], v), d["text"])
 
@@ -89,6 +94,31 @@ class Generateur(unittest.TestCase):
                         if d.get("temoin_negatif") == "libelle_seul"]
         for d in libelle_seul:
             self.assertNotRegex(d["text"], r"\d{5}")
+
+    def test_iban_a_cle_fausse_sans_libelle_annote_iban(self):
+        """22/11/2026 : l'IBAN à clé fausse sans libellé est une donnée
+        personnelle : une entité `iban` qui couvre exactement le numéro,
+        sans libellé fort devant, et dont la clé reste fausse."""
+        sans = [d for d in self.docs if d.get("variante") == VARIANTE_SANS]
+        self.assertEqual(len(sans), 6)
+        for d in sans:
+            self.assertEqual(d["libelle"], LIBELLE_SANS)
+            self.assertEqual(d["type_id"], "iban")
+            self.assertNotIn("temoin_negatif", d)
+            (e,) = d["entities"]
+            self.assertEqual(e["type"], "iban")
+            v = d["text"][e["start"]:e["end"]]
+            self.assertRegex(v, r"^FR")
+            self.assertEqual(d["text"][e["end"]:], " noté au dossier.")
+            self.assertNotRegex(d["text"], r"NIR|IBAN|RPPS|ADELI|SS\b")
+            compact = re.sub(r"\s", "", v)
+            if not re.search("[Oo]", compact[2:]):
+                self.assertFalse(self.cle_juste("iban", compact), d["text"])
+
+    def test_plus_aucun_negatif_iban_sans_libelle(self):
+        self.assertFalse([d for d in self.docs
+                          if d.get("temoin_negatif") == "nombre_sans_libelle"
+                          and d["type_id"] == "iban"])
 
     def test_le_nombre_sans_libelle_n_a_pas_de_libelle_fort(self):
         for d in (d for d in self.docs
@@ -160,9 +190,11 @@ class Plafond(unittest.TestCase):
         self.assertEqual(p, [])
 
     def test_le_defaut_connu_est_toleree_jusqu_a_son_plafond_et_pas_au_dela(self):
-        # Depuis P2-199 aucun défaut n'est plus connu : le plafond est vide,
-        # donc zéro partout. Le mécanisme reste testé avec un plafond injecté.
-        self.assertEqual(etat_attendu.PLAFOND_LIBELLE_FORT, {})
+        # Depuis le 22/11/2026, un seul défaut connu : 4 IBAN à clé fausse
+        # sans libellé (lettre « o » d'OCR) en clair. Le mécanisme reste
+        # testé avec un plafond injecté.
+        self.assertEqual(etat_attendu.PLAFOND_LIBELLE_FORT,
+                         {(LIBELLE_SANS, VARIANTE_SANS): 4})
         sauve = dict(verifie_etat.PLAFOND_LIBELLE_FORT)
         verifie_etat.PLAFOND_LIBELLE_FORT.update({("ADELI", "ocr_zero"): 5})
         try:
@@ -175,6 +207,13 @@ class Plafond(unittest.TestCase):
         finally:
             verifie_etat.PLAFOND_LIBELLE_FORT.clear()
             verifie_etat.PLAFOND_LIBELLE_FORT.update(sauve)
+
+    def test_iban_sans_libelle_tolere_a_4_echoue_a_5(self):
+        ligne = "  sans libellé x cle_fausse_sans_libelle : {} / 50 en clair, 0 au type faux"
+        for n, attendu in ((4, 0), (5, 1)):
+            p = verifie_etat.plafonds_libelle_fort(verifie_etat.sections(
+                self.section(ligne.format(n)).splitlines()))
+            self.assertEqual(len(p), attendu, n)
 
     def test_verifie_remonte_le_depassement(self):
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),

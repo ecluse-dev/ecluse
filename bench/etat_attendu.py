@@ -301,8 +301,9 @@ ATTENDU = [
          r"type faux ; \d+ documents témoins, \d+ masqués à tort", 1,
          "synthèse du témoin libellé fort (P2-194)"),
         (r"^  variante=(cle_juste|cle_fausse|ocr_zero|ocr_un|ligne_vide|"
-         r"ocr_et_ligne_vide) : \d+ / \d+ en clair", 6, "par variante"),
-        (r"^  libellé=.+ : \d+ / \d+ en clair", 6, "par libellé"),
+         r"ocr_et_ligne_vide|cle_fausse_sans_libelle) : \d+ / \d+ en clair",
+         7, "par variante"),
+        (r"^  libellé=.+ : \d+ / \d+ en clair", 7, "par libellé"),
         (r"^  .+ x (cle_juste|cle_fausse|ocr_zero|ocr_un|ligne_vide|"
          r"ocr_et_ligne_vide) : \d+ / \d+ en clair", 36,
          "6 libellés x 6 variantes"),
@@ -356,8 +357,11 @@ ATTENDU = [
 # (`verifie_etat.py`). Une case ne figure ici qu'avec le constat d'un défaut
 # déjà connu ; le plafond ne peut que baisser et se retire quand la
 # correction est livrée. Vide depuis P2-199 (ADELI : 50 sur chacune des quatre
-# cases OCR et ligne vide au départ, 0 depuis).
-PLAFOND_LIBELLE_FORT = {}
+# cases OCR et ligne vide au départ, 0 depuis), jusqu'au 22/11/2026 : les IBAN
+# à clé fausse sans libellé sont annotés depuis cette date, et 4 sur 50 (clé
+# fausse et lettre « o » d'OCR, sans libellé) partent en clair par
+# `Ecluse.redact`. Défaut constaté, correction à décider (agent/QUEUE.md).
+PLAFOND_LIBELLE_FORT = {("sans libellé", "cle_fausse_sans_libelle"): 4}
 
 # Une ligne qui commence ainsi est un échec en soi.
 LIGNES_ECHEC = ("ÉCHEC", "section vide")
