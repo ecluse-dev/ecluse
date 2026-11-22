@@ -2423,8 +2423,17 @@ l'application déclenche en la fournissant :
   écrite.
 - **Entrées refusées à la construction**, avec un motif et un nombre, jamais la
   valeur : vide, un seul mot d'une lettre, un sigle exclu du détecteur de noms
-  (« EVA », « Eva »), plus de quatre mots. Tout ou rien : une entrée refusée et la
-  liste n'est pas construite.
+  **écrit en capitales** (« EVA », « HTA »), plus de quatre mots. Tout ou rien : une
+  entrée refusée et la liste n'est pas construite. **P2-253** : une entrée écrite
+  avec une majuscule initiale et des minuscules (« Eva ») est acceptée même si sa
+  forme en capitales est un sigle exclu : une patiente prénommée Eva ne rend plus la
+  liste entière inutilisable. Dans le texte, « Eva Martin est venue » est masqué ;
+  le sigle « EVA 6/10 » en capitales n'est **jamais** masqué à cause de la liste
+  (le mot en capitales reste exclu de la deuxième passe). Conséquence : une
+  patiente « Eva » écrite en capitales n'est pas rattrapée par la liste seule :
+  mesuré, « EVA MARTIN est venue » devient « EVA [NOM_1] est venue » (le prénom
+  reste en clair) et « Pour EVA » reste intact. Écrit comme sigle, « EVA » est
+  indiscernable d'une échelle de douleur ; c'est le choix du sigle protégé.
 - **Aucun gain mesurable sur les corpus de dossiers** : le patronyme seul manqué y
   est déjà à 0 sans liste (P2-220). Le gain existe en première mention sans
   tournure reconnue (corpus `b` : 204 noms sur 400 en clair sans liste, 0 avec la

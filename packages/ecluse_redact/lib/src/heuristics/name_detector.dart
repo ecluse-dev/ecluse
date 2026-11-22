@@ -815,9 +815,10 @@ final class NameDetector implements EntityDetector {
       _excludedAcronyms.contains(word);
 
   /// Vrai si [mot], écrit en capitales, est un sigle exclu (« eva », « Eva » et
-  /// « EVA » donnent vrai). Sert à refuser, à la construction d'une liste de
-  /// patronymes fournie (P2-243), un nom que la deuxième passe ignorerait sans
-  /// message quand il est écrit en capitales.
+  /// « EVA » donnent vrai). Sert, avec un test de casse de l'appelant (P2-253 :
+  /// seule l'entrée **écrite en capitales** est refusée), à refuser à la
+  /// construction d'une liste de patronymes fournie (P2-243) un nom que la
+  /// deuxième passe ignorerait sans message.
   static bool estSigleExclu(String mot) =>
       _isExcludedAcronym(mot.toUpperCase());
 
