@@ -317,8 +317,10 @@ tâches copiées ici sont prises par l'agent.
 | P2-247 | mesure | Comparatif : annoter les données personnelles non annotées de l'échantillon v3 (noms, téléphones, numéros de dossier) avant de compter les masquages à tort | P2-224 | fusionnée |
 | P2-248 | code | SIREN et SIRET nommés : après « SIREN » ou « SIRET », étiquette `siren` au lieu de `finess`, toujours masqué | — | fusionnée |
 | P2-249 | humain | Télécharger le fichier national des noms de l'INSEE (txt, fait le 21 novembre : `patronymes_effectifs.tsv.gz`) et Morphalou 3.1 (CSV « tout en un ») et les déposer pour génération des fichiers dérivés (le réseau des sessions ne joint ni insee.fr ni ortolang.fr) | P2-231 | fusionnée |
-| P2-250 | code | Référentiel de patronymes de l'INSEE (Licence Ouverte 2.0) : confirmer un nom derrière une tournure, et règle de forme de P2-241 limitée aux mots absents du référentiel | P2-231 | à faire |
+| P2-250 | code | Référentiel de patronymes de l'INSEE (Licence Ouverte 2.0) : confirmer un nom derrière une tournure, et règle de forme de P2-241 limitée aux mots absents du référentiel | P2-231 | abandonnée |
 | P2-251 | code | Paquet optionnel `ecluse_lexique` (LGPL-LR) : formes verbales de Morphalou 3.1, chargées comme fichier remplaçable (spec P2-245) ; aucun verbe masqué derrière un prénom | P2-249 | fusionnée |
+| P2-252 | code | IBAN à clé invalide masqué en entier : ne plus masquer 9 de ses chiffres comme FINESS en laissant le reste en clair (10 cas sur 200 000) | — | à faire |
+| P2-253 | code | Liste de patronymes fournie (P2-243) : un nom écrit avec une majuscule initiale (« Eva ») n'est pas refusé parce que sa forme en capitales est un sigle exclu | P2-243 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -826,7 +828,10 @@ mention « Source : Insee » et date de mise à jour) ; Morphalou 3.1 (ATILF, 20
   « tout en un » (Ortolang), et les dépose dans la conversation de pilotage ;
   les fichiers dérivés, leurs empreintes SHA-256 et les scripts de génération
   (`tools/`) sont ajoutés par une PR distincte, avant P2-250 et P2-251.
-- **P2-250** : `ecluse_redact`. Table de patronymes dérivée de
+- **P2-250** : **abandonnée le 22 novembre** (décision du mainteneur, voir
+  `DECISIONS.md`) : le référentiel ne sert qu'à filtrer le lexique de verbes
+  (P2-251) ; l'usage (a), sans effet défini, est abandonné. Mesure préalable dans
+  `bench/mesure_patronymes_referentiel.py` (#487). Fiche d'origine : `ecluse_redact`. Table de patronymes dérivée de
   `packages/ecluse_reference/assets/patronymes_effectifs.tsv.gz` (versionné le 21
   novembre ; 218 111 noms normalisés avec effectif 1891-2000 ; attention : des
   mots courants y figurent, par exemple « PRESSE », 1 795 naissances : un seuil
@@ -852,3 +857,30 @@ mention « Source : Insee » et date de mise à jour) ; Morphalou 3.1 (ATILF, 20
   masqué ; prénoms et noms des corpus : aucune fuite ajoutée ; sans le lexique,
   sortie octet pour octet identique ; taille du fichier et coût de chargement
   rapportés ; `DATA_SOURCES.md`, `LIMITES.md` et README du paquet à jour.
+
+### P2-252 et P2-253 — Corrections (décisions du 22 novembre)
+
+- **P2-252** : `ecluse_core` (IBAN, FINESS) ou résolution des chevauchements.
+  Sur 200 000 documents du corpus d'identifiants (graine 42), 10 IBAN « pièges » à
+  clé invalide (« L'IBAN … a été refusé par la banque (clé invalide). ») voient 9
+  de leurs chiffres masqués comme FINESS et le reste laissé en clair : un numéro de
+  compte partiellement exposé. Décision : un IBAN de forme française complète mais
+  à clé invalide est masqué **en entier** (un IBAN mal recopié reste celui de
+  quelqu'un), sous un type à choisir et à justifier (iban à confiance réduite, par
+  exemple) ; le FINESS ne doit plus être cherché à l'intérieur. Test d'abord, à
+  partir d'un cas synthétique qui reproduit le défaut. **Fini quand** : sur le corpus
+  de 200 000 documents (`generate_corpus.py --n 200000 --seed 42`), 0 IBAN piège
+  masqué en partie (chemin `Ecluse.redact` et moteur seul, chacun nommé) ; vrais
+  IBAN et FINESS : rappel inchangé (100 %) ; aucune entité de moins masquée sur
+  aucun corpus du tableau de bord ; `LIMITES.md` à jour.
+- **P2-253** : `patronymes_connus.dart`. Aujourd'hui une entrée d'un seul mot
+  dont la forme en capitales est un sigle exclu du détecteur de noms (« EVA »,
+  échelle visuelle analogique) est refusée, et le refus porte sur toute la liste :
+  une application qui a une patiente prénommée Eva ne peut pas fournir sa liste.
+  Décision : une entrée écrite avec une majuscule initiale suivie de minuscules
+  (« Eva ») est acceptée et masquée ; seule la forme tout en capitales reste
+  refusée (ou acceptée seulement en casse de titre dans le texte : à justifier).
+  Le sigle « EVA » en capitales dans le texte n'est jamais masqué à cause de la
+  liste. Test d'abord. **Fini quand** : « Eva » accepté, masqué dans « Eva Martin
+  est venue », « EVA 6/10 » non masqué ; refus de « EVA » ou comportement choisi
+  documenté ; protocole de P2-243 rejoué sans régression ; `LIMITES.md` à jour.
