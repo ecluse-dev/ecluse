@@ -3024,3 +3024,26 @@ rescorées sur la nouvelle annotation. Son recognizer IBAN écarte la clé fauss
 il manque les 48 (1 000 documents) et 8 362 (200 000) IBAN à clé fausse, en plus
 de ceux à blancs irréguliers. Le corpus « libellé fort » garde ses IBAN à clé
 fausse comme négatifs (générateur à part, non modifié).
+
+## Corpus « libellé fort » : IBAN à clé fausse sans libellé annotés (22 novembre 2026)
+
+Même règle que pour le corpus v3 (`DECISIONS.md`, 22 novembre, point 8) : les
+50 IBAN à clé fausse sans libellé (`nombre_sans_libelle` tiré pour l'IBAN) sont
+annotés `iban` et comptés comme positifs (`sans libellé x
+cle_fausse_sans_libelle`). Texte des 3 000 documents inchangé ; prédictions de
+`Ecluse.redact` identiques, seul le score change.
+
+| Ligne | Avant | Après |
+|---|---|---|
+| positifs / en clair | 1 800 / 0 | 1 850 / **4** |
+| témoins négatifs masqués à tort | 53 / 1 200 | 7 / 1 150 |
+| `nombre_sans_libelle` masqués à tort | 53 / 300 | 7 / 250 |
+| négatifs au libellé IBAN masqués à tort | 46 / 200 | 0 / 150 |
+| avertissement « à vérifier » sur les négatifs | 45 / 1 200 | 0 / 1 150 |
+
+**Défaut révélé** : les 4 IBAN en clair ont tous une lettre « o » ou « O » à la
+place d'un chiffre de la clé (« FR8o52… », « FRo6… ») ; `IbanCleInvalideDetector`
+exige deux chiffres après `FR`, et sans libellé fort la tolérance d'OCR de
+P2-191 ne s'applique pas. Toléré par un plafond de 4 dans
+`PLAFOND_LIBELLE_FORT` (`bench/etat_attendu.py`), correction inscrite en P2-254.
+Le scoreur n'imprime plus les cases vides (libellé × variante sans positif).

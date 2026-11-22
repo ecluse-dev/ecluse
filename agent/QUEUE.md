@@ -321,6 +321,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-251 | code | Paquet optionnel `ecluse_lexique` (LGPL-LR) : formes verbales de Morphalou 3.1, chargées comme fichier remplaçable (spec P2-245) ; aucun verbe masqué derrière un prénom | P2-249 | fusionnée |
 | P2-252 | code | IBAN à clé invalide masqué en entier : ne plus masquer 9 de ses chiffres comme FINESS en laissant le reste en clair (10 cas sur 200 000) | — | fusionnée |
 | P2-253 | code | Liste de patronymes fournie (P2-243) : un nom écrit avec une majuscule initiale (« Eva ») n'est pas refusé parce que sa forme en capitales est un sigle exclu | P2-243 | fusionnée |
+| P2-254 | code | IBAN FR à clé fausse sans libellé dont la clé porte une lettre « o » d'OCR (« FR8o52… ») : 4 sur 50 en clair au corpus libellé fort | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -884,3 +885,27 @@ mention « Source : Insee » et date de mise à jour) ; Morphalou 3.1 (ATILF, 20
   liste. Test d'abord. **Fini quand** : « Eva » accepté, masqué dans « Eva Martin
   est venue », « EVA 6/10 » non masqué ; refus de « EVA » ou comportement choisi
   documenté ; protocole de P2-243 rejoué sans régression ; `LIMITES.md` à jour.
+
+### P2-254 — IBAN FR à clé fausse, lettre « o » dans la clé, sans libellé
+
+Depuis le 22 novembre (décision du mainteneur, `DECISIONS.md`), le corpus
+« libellé fort » (`bench/generate_corpus_libelle_fort.py`) annote comme donnée
+personnelle les IBAN à clé fausse **sans libellé** (variante
+`cle_fausse_sans_libelle`). Par `Ecluse.redact`, 46 sur 50 sont masqués en
+entier ; **les 4 qui partent en clair ont tous une lettre `o` ou `O` à la place
+d'un chiffre de la clé** (« FR8o52… », « FRo6… »). `IbanCleInvalideDetector`
+(P2-252) exige deux chiffres après `FR` ; le libellé fort (P2-191) tolère cette
+lettre, mais il n'y a pas de libellé ici. Le défaut est toléré au tableau de bord
+par un plafond de 4 (`PLAFOND_LIBELLE_FORT` dans `bench/etat_attendu.py`).
+
+Travail : admettre `O`/`o` à la place d'un chiffre **dans les deux caractères de
+clé** d'un IBAN de forme française complète (`FR` + 2 + 23 caractères), sans
+libellé, au même type `iban`, confiance 0,3, avertissement « à vérifier ». Test
+d'abord, à partir d'un cas synthétique qui reproduit le défaut. Mesurer le coût :
+une suite « FRo… » qui n'est pas un IBAN (référence, code) serait masquée ;
+compter les nouveaux masquages sur tous les témoins du tableau de bord et sur le
+témoin de 480 documents sans donnée personnelle (`comparatif.py --temoin`).
+**Fini quand** : `sans libellé x cle_fausse_sans_libelle` à 0 / 50 en clair et le
+plafond retiré ; aucun témoin négatif du tableau de bord ne gagne de masquage (ou
+chaque nouveau masquage est listé et justifié dans la PR) ; vrais IBAN : rappel
+inchangé ; `LIMITES.md` à jour.

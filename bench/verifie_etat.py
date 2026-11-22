@@ -50,7 +50,8 @@ def verifie(texte):
 
 _CASE_LIBELLE_FORT = re.compile(
     r"^  (?P<lib>.+) x (?P<var>cle_juste|cle_fausse|ocr_zero|ocr_un|"
-    r"ligne_vide|ocr_et_ligne_vide) : (?P<n>\d+) / (?P<tot>\d+) en clair")
+    r"ligne_vide|ocr_et_ligne_vide|cle_fausse_sans_libelle) : (?P<n>\d+) / "
+    r"(?P<tot>\d+) en clair")
 
 
 def plafonds_libelle_fort(par_section):
