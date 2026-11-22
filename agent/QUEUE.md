@@ -322,6 +322,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-252 | code | IBAN à clé invalide masqué en entier : ne plus masquer 9 de ses chiffres comme FINESS en laissant le reste en clair (10 cas sur 200 000) | — | fusionnée |
 | P2-253 | code | Liste de patronymes fournie (P2-243) : un nom écrit avec une majuscule initiale (« Eva ») n'est pas refusé parce que sa forme en capitales est un sigle exclu | P2-243 | fusionnée |
 | P2-254 | code | IBAN FR à clé fausse sans libellé dont la clé porte une lettre « o » d'OCR (« FR8o52… ») : 4 sur 50 en clair au corpus libellé fort | — | à faire |
+| P2-255 | mesure | Recensement des pièges de tous les générateurs de corpus : lesquels sont des données personnelles d'après DECISIONS.md, comment chacun est annoté et traité aujourd'hui | — | à faire |
+| P2-256 | mesure | `bench/README.md` rejoué de bout en bout : chiffres périmés depuis P2-248 (SIREN typé) et l'annotation des IBAN à clé fausse (826 entités) | — | à faire |
+| P2-257 | code | `bench/ETAT.md` : 18 sections en double (17 identiques, 1 divergente) fusionnées, sans changer aucun chiffre | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -909,3 +912,53 @@ témoin de 480 documents sans donnée personnelle (`comparatif.py --temoin`).
 plafond retiré ; aucun témoin négatif du tableau de bord ne gagne de masquage (ou
 chaque nouveau masquage est listé et justifié dans la PR) ; vrais IBAN : rappel
 inchangé ; `LIMITES.md` à jour.
+
+### P2-255 — Recensement des pièges des corpus (mesure)
+
+Le 22 novembre, deux corpus ont changé d'annotation : un IBAN à clé fausse est
+désormais une donnée personnelle (`DECISIONS.md`, 22 novembre, points 7 et 8).
+D'autres pièges restent « non annotés » sans qu'on ait vérifié s'ils relèvent de
+la même logique (NIR à clé fausse, RPPS à Luhn cassé, ADELI à clé fausse,
+numéros voisins, SIRET, téléphones, numéros de dossier…).
+
+Travail : pour **chaque** générateur `bench/generate_corpus*.py`, lister chaque
+forme de piège ou de témoin négatif qui ressemble à une donnée personnelle ; pour
+chacune : exemple synthétique, annotée ou non, traitement actuel par
+`Ecluse.redact` (masquée en entier, en partie, en clair, comptée sur le corpus
+de graine 42) et la règle de `DECISIONS.md` ou `LIMITES.md` qui s'y applique.
+Signaler les cas où l'annotation et la règle se contredisent, ou où une partie
+seulement du numéro est masquée. **Ne rien corriger, ne changer aucune
+annotation** : les choix reviennent au mainteneur. Rapport dans
+`agent/specs/P2-255.md`, terminé par la liste des questions à trancher, chacune
+avec ses conséquences mesurées (combien de masquages ou de fuites changeraient).
+**Fini quand** : tous les générateurs sont couverts (le rapport liste ceux qui
+n'ont aucun piège) ; chaque chiffre vient d'une commande citée.
+
+### P2-256 — `bench/README.md` rejoué (mesure)
+
+`bench/README.md` mêle des chiffres de dates différentes : le tableau principal
+et la section « reconnaisseurs NIR et RPPS » ont été remis à jour le 22 novembre
+(826 entités), mais d'autres sections citent encore l'état d'avant P2-248 (42
+faux positifs FINESS, précision FINESS 75,4 %) ou d'avant l'annotation des IBAN
+à clé fausse (778 entités, 214 IBAN, « 67 IBAN »), et le corpus étendu (P1-13)
+n'a pas été rejoué depuis. Travail : rejouer chaque mesure citée par le fichier
+avec la commande qu'il donne (Écluse ; Presidio seulement si l'environnement le
+permet, sinon rescorer les prédictions existantes et le dire), corriger chaque
+chiffre, dater chaque section, et garder les anciennes valeurs en note quand
+elles ont été publiées. Aucun code ni corpus modifié. **Fini quand** : chaque
+chiffre du fichier est relié à une commande rejouée au même commit (cité) ; la
+PR liste chaque chiffre changé, avant/après.
+
+### P2-257 — `bench/ETAT.md` dédoublonné (code, documentation seule)
+
+`bench/ETAT.md` (≈ 3 050 lignes) contient 18 titres de section en double : 17
+blocs strictement identiques, 1 divergent (des mises à jour successives ont
+recopié une série de sections). Travail : ne garder qu'un exemplaire de chaque
+section, à sa première place ; pour la section divergente, fusionner les deux
+versions sans perdre une ligne d'information (signaler dans la PR ce qui
+différait). Mettre à jour l'en-tête du fichier (date, commit). **Aucun chiffre ne
+change** : un script dans la PR doit montrer que l'ensemble des lignes du
+fichier après est inclus dans l'ensemble des lignes d'avant, plus les seules
+lignes de fusion listées. **Fini quand** : aucun titre `## ` en double ;
+`bash bench/etat.sh` inchangé (le fichier n'est pas lu par le script, à
+vérifier) ; diff relu ligne à ligne pour la section divergente.
