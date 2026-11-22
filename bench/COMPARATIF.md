@@ -20,8 +20,8 @@ Les corpus sont ceux que `bench/etat.sh` génère (graine 42) ; `dart` doit
 
 | Composant | Version |
 |---|---|
-| Écluse (commit du dépôt) | 558ccd8 |
-| Dart | Dart SDK version: 3.14.1 (stable) (Tue Nov 17 00:01:24 2026 -0800) on "linux_x64" |
+| Écluse (commit du dépôt) | af4bbe0 |
+| Dart | Dart SDK version: 3.14.0 (stable) (Wed Nov 4 16:28:39 2026 -0800) on "linux_x64" |
 | Python | 3.13.18 |
 | presidio-analyzer | 2.2.366 |
 | spacy | 3.8.18 |
@@ -51,7 +51,7 @@ Les corpus sont ceux que `bench/etat.sh` génère (graine 42) ; `dart` doit
 | **Toutes entités** | **371/371 (100 %)** | **371/371 (100 %)** | **199/371 (54 %)** | **258/371 (70 %)** | **164/371 (44 %)** | **200/371 (54 %)** |
 | Documents sans entité masqués à tort | 11/24 (46 %) | 11/24 (46 %) | 21/24 (88 %) | 12/24 (50 %) | 10/24 (42 %) | 2/24 (8 %) |
 
-Mentions d'Écluse (document par document) sur les documents sans entité annotée, par source et par type prédit : v3 : finess 3, iban 3, identifiant 1, nom 3, telephone 1.
+Mentions d'Écluse (document par document) sur les documents sans entité annotée, par source et par type prédit : v3 : iban 3, identifiant 1, nom 3, siren 3, telephone 1.
 
 Règle de score : voir l'en-tête de `bench/comparatif.py`. Entité couverte =
 tous ses caractères non blancs sont sous une prédiction, quel que soit le
@@ -105,6 +105,51 @@ documents sans entité.
   l'article : ce comparatif est une mesure interne, à relire avant toute
   citation.
 
+
+## Annotation complémentaire des données personnelles non annotées (P2-247)
+
+Mêmes prédictions que ci-dessus, **deux annotations** : celle du corpus, et celle du
+corpus plus une annotation propre au comparatif (`annote_complement` dans
+`bench/comparatif.py` ; ni `generate_corpus.py` ni les corpus ne sont touchés).
+
+**Règle d'annotation.** Noms : suite « Prénom Nom » dont le prénom et le nom
+sont dans `PRENOMS` et `NOMS` de `generate_corpus.py`, civilité exclue.
+Téléphones : numéro français à dix chiffres groupés par deux (`0X`, ou `+33 X`).
+Numéros de dossier : le nombre qui suit « dossier n° ». Un ajout qui recouvre une
+entité déjà annotée est ignoré. **Non annotés** : SIREN, SIRET, IBAN à clé
+invalide et numéros de praticien inconnus (pièges du corpus, pas des données
+personnelles au sens de cette règle ; le SIREN relève de P2-248).
+
+Entités ajoutées (source, type : nombre) : v3 dossier : 1, v3 nom : 19, v3 telephone : 1. Documents sans entité : 19 après annotation.
+
+Ancienne et nouvelle lignes, côte à côte :
+
+| | Écluse, document par document | Écluse, session de dossier | Presidio par défaut | Presidio en français | spaCy fr_core_news_lg seul | EDS-Pseudo (règles) |
+|---|---:|---:|---:|---:|---:|---:|
+| Couverture, annotation du corpus | 371/371 (100 %) | 371/371 (100 %) | 199/371 (54 %) | 258/371 (70 %) | 164/371 (44 %) | 200/371 (54 %) |
+| Couverture, avec annotation complémentaire | 392/392 (100 %) | 392/392 (100 %) | 211/392 (54 %) | 278/392 (71 %) | 183/392 (47 %) | 206/392 (53 %) |
+| Sans entité masqués à tort, annotation du corpus | 11/24 (46 %) | 11/24 (46 %) | 21/24 (88 %) | 12/24 (50 %) | 10/24 (42 %) | 2/24 (8 %) |
+| Sans entité masqués à tort, avec annotation complémentaire | 6/19 (32 %) | 6/19 (32 %) | 17/19 (89 %) | 7/19 (37 %) | 6/19 (32 %) | 1/19 (5 %) |
+
+Détail par type avec annotation complémentaire :
+
+| Type annoté | Écluse, document par document | Écluse, session de dossier | Presidio par défaut | Presidio en français | spaCy fr_core_news_lg seul | EDS-Pseudo (règles) |
+|---|---:|---:|---:|---:|---:|---:|
+| adresse | 50/50 (100 %) | 50/50 (100 %) | 0/50 (0 %) | 0/50 (0 %) | 0/50 (0 %) | 0/50 (0 %) |
+| date_naissance | 50/50 (100 %) | 50/50 (100 %) | 41/50 (82 %) | 31/50 (62 %) | 0/50 (0 %) | 50/50 (100 %) |
+| dossier | 1/1 (100 %) | 1/1 (100 %) | 0/1 (0 %) | 0/1 (0 %) | 0/1 (0 %) | 0/1 (0 %) |
+| email | 22/22 (100 %) | 22/22 (100 %) | 22/22 (100 %) | 22/22 (100 %) | 4/22 (18 %) | 22/22 (100 %) |
+| etablissement | 50/50 (100 %) | 50/50 (100 %) | 4/50 (8 %) | 28/50 (56 %) | 28/50 (56 %) | 0/50 (0 %) |
+| finess | 6/6 (100 %) | 6/6 (100 %) | 0/6 (0 %) | 0/6 (0 %) | 0/6 (0 %) | 0/6 (0 %) |
+| iban | 10/10 (100 %) | 10/10 (100 %) | 8/10 (80 %) | 8/10 (80 %) | 5/10 (50 %) | 0/10 (0 %) |
+| nir | 10/10 (100 %) | 10/10 (100 %) | 1/10 (10 %) | 0/10 (0 %) | 0/10 (0 %) | 7/10 (70 %) |
+| nom | 146/146 (100 %) | 146/146 (100 %) | 92/146 (63 %) | 146/146 (100 %) | 146/146 (100 %) | 83/146 (57 %) |
+| rpps | 6/6 (100 %) | 6/6 (100 %) | 3/6 (50 %) | 3/6 (50 %) | 0/6 (0 %) | 3/6 (50 %) |
+| telephone | 41/41 (100 %) | 41/41 (100 %) | 40/41 (98 %) | 40/41 (98 %) | 0/41 (0 %) | 41/41 (100 %) |
+| **Toutes entités** | **392/392 (100 %)** | **392/392 (100 %)** | **211/392 (54 %)** | **278/392 (71 %)** | **183/392 (47 %)** | **206/392 (53 %)** |
+| Documents sans entité masqués à tort | 6/19 (32 %) | 6/19 (32 %) | 17/19 (89 %) | 7/19 (37 %) | 6/19 (32 %) | 1/19 (5 %) |
+
+Limites : la règle ne voit que les personnes posées par les listes du générateur, les téléphones et dossiers de format régulier ; une donnée personnelle d'une autre forme (dans les dossiers ou le flou) resterait non annotée. Le chemin mesuré est inchangé : `Ecluse.redact` pour Écluse, la détection propre de chaque outil pour les autres.
 
 ## Témoin sans aucune donnée personnelle (P2-246)
 
