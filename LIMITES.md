@@ -167,6 +167,14 @@ réel.
 > structurelle **ne peut pas** les distinguer. En l'absence du mot-clé
 > « FINESS » à proximité, un SIREN peut donc être masqué par précaution —
 > sur-masquage d'un identifiant d'organisation, jamais une fuite.
+> **SIREN nommé (P2-248).** Quand le texte appelle le nombre « SIREN » ou
+> « SIRET » (fenêtre de 40 caractères avant ou après), l'entité est de type
+> `siren` (jeton `[SIREN_n]`), toujours masquée : le SIREN d'un entrepreneur
+> individuel désigne une personne. Si le mot « FINESS » est aussi dans la
+> fenêtre, le FINESS l'emporte. Un SIREN écrit sans ce mot (« RCS », « Kbis »,
+> « numéro d'entreprise ») reste lu comme FINESS à confiance 0,5, et un
+> vrai FINESS voisin du mot « SIREN » sans le mot « FINESS » serait typé `siren` :
+> dans les deux cas le nombre est masqué, seule l'étiquette change.
 
 **Heuristiques v0** (nom, adresse, date de naissance, téléphone, email,
 établissement) : aucune structure vérifiable n'existe pour ces types. La

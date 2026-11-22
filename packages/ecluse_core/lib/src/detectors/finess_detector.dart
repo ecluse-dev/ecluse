@@ -28,6 +28,16 @@ import '../luhn.dart';
 /// (sources contradictoires) et le modèle de confiance de ce détecteur est
 /// déjà entièrement défini par Luhn + contexte — ajouter une vérification
 /// de préfixe non branchée sur une décision réelle serait du code mort.
+///
+/// **SIREN nommé (P2-248).** Quand le texte appelle le nombre « SIREN » ou
+/// « SIRET » (même fenêtre de 40 caractères que le mot « FINESS », avant ou
+/// après), l'entité est de type [EntityType.siren], à confiance haute : le
+/// mot lève l'ambiguïté que la structure ne peut pas lever, et le SIREN d'un
+/// entrepreneur individuel désigne une personne, donc il reste **masqué**. Si
+/// le mot « FINESS » est aussi dans la fenêtre, le FINESS l'emporte (deux mots
+/// contradictoires : la lecture « établissement de santé » garde son type
+/// d'avant). Sans aucun des deux mots, rien ne change : FINESS à confiance
+/// basse.
 final class FinessDetector implements Detector {
   const FinessDetector();
 
@@ -76,6 +86,9 @@ final class FinessDetector implements Detector {
   /// casse — pas besoin de pliage d'accents ici.
   static const String _contextKeyword = 'finess';
 
+  /// Mots qui nomment un SIREN (« SIRET » : son préfixe de neuf chiffres).
+  static final RegExp _sirenKeyword = RegExp('siren|siret');
+
   /// Luhn OK + indice de contexte à proximité.
   static const double _highConfidence = 0.9;
 
@@ -97,28 +110,27 @@ final class FinessDetector implements Detector {
       final start = match.start;
       final end = match.end;
       if (!vus.add((start, end))) continue;
-      final hasContext = _hasContext(raw, start, end);
+      final fenetre = _fenetre(raw, start, end);
+      final hasContext = fenetre.contains(_contextKeyword);
+      final siren = !hasContext && _sirenKeyword.hasMatch(fenetre);
       results.add(
         DetectedEntity(
-          type: EntityType.finess,
+          type: siren ? EntityType.siren : EntityType.finess,
           start: start,
           end: end,
           value: raw.substring(start, end),
-          confidence: hasContext ? _highConfidence : _lowConfidence,
+          confidence: (hasContext || siren) ? _highConfidence : _lowConfidence,
         ),
       );
     }
     return results;
   }
 
-  /// Le mot-clé « finess » apparaît-il dans une fenêtre de
-  /// [_contextWindow] caractères autour de `raw[start:end)` ?
-  static bool _hasContext(String raw, int start, int end) {
+  /// Texte en minuscules dans une fenêtre de [_contextWindow] caractères autour
+  /// de `raw[start:end)`, où l'on cherche les mots de contexte.
+  static String _fenetre(String raw, int start, int end) {
     final windowStart = (start - _contextWindow).clamp(0, raw.length);
     final windowEnd = (end + _contextWindow).clamp(0, raw.length);
-    return raw
-        .substring(windowStart, windowEnd)
-        .toLowerCase()
-        .contains(_contextKeyword);
+    return raw.substring(windowStart, windowEnd).toLowerCase();
   }
 }
