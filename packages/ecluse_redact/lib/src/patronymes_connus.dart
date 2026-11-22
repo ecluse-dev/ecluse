@@ -11,8 +11,12 @@ enum MotifPatronymeRefuse {
   /// Un seul mot de moins de deux lettres.
   tropCourt,
 
-  /// Un seul mot qui est un sigle exclu du détecteur de noms (« EVA », « HTA »…) :
-  /// il serait ignoré sans message, ce que la règle 4 de `CLAUDE.md` interdit.
+  /// Un seul mot **écrit en capitales** qui est un sigle exclu du détecteur de
+  /// noms (« EVA », « HTA »…) : il serait ignoré sans message, ce que la règle 4
+  /// de `CLAUDE.md` interdit. Depuis P2-253, la même entrée écrite avec une
+  /// majuscule initiale et des minuscules (« Eva ») est acceptée : le prénom
+  /// d'une patiente ne rend plus toute la liste inutilisable. Dans le texte, le
+  /// sigle « EVA » en capitales n'est jamais masqué à cause de la liste.
   sigleExclu,
 
   /// Plus de [PatronymesConnus.motsMax] mots : ce n'est plus un nom.
@@ -89,7 +93,9 @@ final class PatronymesConnus {
         refuse(MotifPatronymeRefuse.tropDeMots);
       } else if (mots.length == 1 && mots.first.runes.length < 2) {
         refuse(MotifPatronymeRefuse.tropCourt);
-      } else if (mots.length == 1 && NameDetector.estSigleExclu(mots.first)) {
+      } else if (mots.length == 1 &&
+          mots.first == mots.first.toUpperCase() &&
+          NameDetector.estSigleExclu(mots.first)) {
         refuse(MotifPatronymeRefuse.sigleExclu);
       } else {
         retenus.add(mots.join(' ').toLowerCase());

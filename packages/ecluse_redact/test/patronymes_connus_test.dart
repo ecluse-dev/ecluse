@@ -141,16 +141,18 @@ void main() {
       fail('aurait dû refuser');
     }
 
-    test('vide, un caractère, sigle exclu, trop de mots : comptés par motif',
+    test(
+        'vide, un caractère, sigle en capitales, trop de mots : comptés par motif',
         () {
       final e = refus(['Verdier', '', '   ', 'x', 'EVA', 'Eva', 'a b c d e']);
       expect(e.parMotif, {
         MotifPatronymeRefuse.vide: 2,
         MotifPatronymeRefuse.tropCourt: 1,
-        MotifPatronymeRefuse.sigleExclu: 2,
+        MotifPatronymeRefuse.sigleExclu:
+            1, // « EVA » seul ; « Eva » est accepté
         MotifPatronymeRefuse.tropDeMots: 1,
       });
-      expect(e.total, 6);
+      expect(e.total, 5);
     });
 
     test('le message ne contient aucune entrée de la liste', () {
