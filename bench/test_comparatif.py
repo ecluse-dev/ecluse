@@ -73,6 +73,46 @@ class TestEchantillon(unittest.TestCase):
                             for d in a if d["source"] == "flou"))
 
 
+class TestAnnotationComplement(unittest.TestCase):
+    """Annotation propre au comparatif (P2-247), textes synthétiques."""
+
+    def doc(self, texte, entites=()):
+        return {"id": 0, "text": texte, "entities": list(entites),
+                "source": "v3", "dossier": "v3-0"}
+
+    def test_nom_telephone_dossier_ajoutes_avec_positions(self):
+        t = "Rappel : Nadia Roux est attendu, tel 07 83 66 74 28, dossier n° 18220919."
+        sortie, comptes = c.annote_complement([self.doc(t)])
+        ajoutes = {e["type"]: t[e["start"]:e["end"]]
+                   for e in sortie[0]["entities"] if e.get("ajoute")}
+        self.assertEqual(ajoutes, {"nom": "Nadia Roux",
+                                   "telephone": "07 83 66 74 28",
+                                   "dossier": "18220919"})
+        self.assertEqual(comptes, {("v3", "nom"): 1, ("v3", "telephone"): 1,
+                                   ("v3", "dossier"): 1})
+
+    def test_pieges_non_annotes(self):
+        for t in ["Le SIREN de la société est 367365764.",
+                  "Le SIRET de l'établissement est 20812191361934.",
+                  "Le numéro 18350305648 ne correspond à aucun praticien connu.",
+                  "L'IBAN FR5057939542874381561497805 a été refusé."]:
+            sortie, comptes = c.annote_complement([self.doc(t)])
+            self.assertEqual(comptes, {}, t)
+            self.assertEqual(sortie[0]["entities"], [])
+
+    def test_recouvrement_avec_une_entite_existante_ignore(self):
+        t = "Nadia Roux"
+        e = ent("nom", 0, 10)
+        sortie, comptes = c.annote_complement([self.doc(t, [e])])
+        self.assertEqual(comptes, {})
+        self.assertEqual(sortie[0]["entities"], [e])
+
+    def test_copie_sans_toucher_l_original(self):
+        d = self.doc("Rappel : Jean Fontaine est attendu.")
+        c.annote_complement([d])
+        self.assertEqual(d["entities"], [])
+
+
 class TestTemoin(unittest.TestCase):
     """Témoin sans donnée personnelle (P2-246) : mesure et générateur."""
 

@@ -314,7 +314,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-244 | code | Communes hors référentiel : « ST »/« STE » et séparateurs collés (option 1 de la spec P2-215, table réduite) | P2-215 | fusionnée |
 | P2-245 | spec | Paquet optionnel `ecluse_lexique` sous sa propre licence (formes verbales du Lefff, LGPL-LR), hors du cœur Apache 2.0 | P2-242 | fusionnée |
 | P2-246 | mesure | Témoin de documents réalistes sans aucune donnée personnelle (au moins 400) : masquages à tort des six configurations du comparatif | P2-224 | fusionnée |
-| P2-247 | mesure | Comparatif : annoter les données personnelles non annotées de l'échantillon v3 (noms, téléphones, numéros de dossier) avant de compter les masquages à tort | P2-224 | à faire |
+| P2-247 | mesure | Comparatif : annoter les données personnelles non annotées de l'échantillon v3 (noms, téléphones, numéros de dossier) avant de compter les masquages à tort | P2-224 | fusionnée |
 | P2-248 | code | SIREN et SIRET nommés : après « SIREN » ou « SIRET », étiquette `siren` au lieu de `finess`, toujours masqué | — | fusionnée |
 | P2-249 | humain | Télécharger le fichier national des noms de l'INSEE (txt, fait le 21 novembre : `patronymes_effectifs.tsv.gz`) et Morphalou 3.1 (CSV « tout en un ») et les déposer pour génération des fichiers dérivés (le réseau des sessions ne joint ni insee.fr ni ortolang.fr) | P2-231 | fusionnée |
 | P2-250 | code | Référentiel de patronymes de l'INSEE (Licence Ouverte 2.0) : confirmer un nom derrière une tournure, et règle de forme de P2-241 limitée aux mots absents du référentiel | P2-231 | à faire |
