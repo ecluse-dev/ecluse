@@ -53,6 +53,7 @@ isolée (un champ de formulaire, une cellule). Voir `LIMITES.md` § 5.2.
 | NIR (n° de sécurité sociale) | `NirDetector` | Structure + clé mod 97 (2A/2B inclus) | 1.0 |
 | RPPS (professionnels de santé) | `RppsDetector` | Longueur + clé de Luhn | 0.9 |
 | IBAN français | `IbanFrDetector` | Structure + clé ISO 7064 mod 97 | 1.0 |
+| IBAN français à clé fausse (P2-252) | `IbanCleInvalideDetector` | Même forme, clé fausse : masqué en entier | 0.3 |
 
 À venir : FINESS, téléphones FR, plaques d'immatriculation, adresses.
 

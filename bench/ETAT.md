@@ -30,8 +30,8 @@ Presidio n'est pas rejoué ici (environnement à part, `bench/README.md`,
 
 | Corpus | Précision | Rappel | F1 | FP | Source |
 |---|---:|---:|---:|---:|---|
-| v3 d'origine | 94,9 % | 100 % | 97,4 % | 42 (FINESS/SIREN) | = P1-36 |
-| v3 sans ponctuation, minuscules | 94,9 % | 100 % | 97,4 % | 42 | = P2-98 |
+| v3 d'origine | 89,6 % | 100 % | 94,5 % | 90 (42 FINESS/SIREN + 48 IBAN à clé fausse, P2-252) | = P1-36 ; avant P2-252 : 94,9 % / 97,4 % / 42 |
+| v3 sans ponctuation, minuscules | 89,6 % | 100 % | 94,5 % | 90 | = P2-98 ; avant P2-252 : 94,9 % / 97,4 % / 42 |
 | v3 nombres en lettres | 0 % | **0 %** | 0 % | 0 | = P2-98 |
 
 ## Dictée : identifiants dits en lettres (P2-160)
@@ -336,7 +336,7 @@ clair). Chemin mesuré : `Ecluse.redact`. Le plafond
 `PLAFOND_LIBELLE_FORT` de `bench/etat_attendu.py` est vide : zéro partout,
 `etat.sh` échoue si un identifiant positif repasse en clair.
 
-Témoins négatifs : **8 documents sur 1 200 masqués** (0 sur `libelle_seul`,
+Témoins négatifs (**avant P2-252** ; depuis, voir la section « IBAN à clé fausse masqué en entier (P2-252) » ci-dessous : 53 sur 1 200) : **8 documents sur 1 200 masqués** (0 sur `libelle_seul`,
 `non_communique`, `mot_ordinaire` ; 8 sur 300 `nombre_sans_libelle`). Ce sont
 des collisions de hasard, jamais l'effet du libellé : une sous-suite de onze
 ou neuf chiffres qui passe Luhn (lue RPPS ou FINESS), un nombre à cinq
@@ -1231,7 +1231,7 @@ clair). Chemin mesuré : `Ecluse.redact`. Le plafond
 `PLAFOND_LIBELLE_FORT` de `bench/etat_attendu.py` est vide : zéro partout,
 `etat.sh` échoue si un identifiant positif repasse en clair.
 
-Témoins négatifs : **8 documents sur 1 200 masqués** (0 sur `libelle_seul`,
+Témoins négatifs (**avant P2-252** ; depuis, voir la section « IBAN à clé fausse masqué en entier (P2-252) » ci-dessous : 53 sur 1 200) : **8 documents sur 1 200 masqués** (0 sur `libelle_seul`,
 `non_communique`, `mot_ordinaire` ; 8 sur 300 `nombre_sans_libelle`). Ce sont
 des collisions de hasard, jamais l'effet du libellé : une sous-suite de onze
 ou neuf chiffres qui passe Luhn (lue RPPS ou FINESS), un nombre à cinq
@@ -2957,3 +2957,35 @@ réelles écrivent « ST »), les abréviations autres (« ST. », « S/ », « 
 un nom, les anciens noms de communes ; le risque propre à la comparaison collée sur des noms
 longs (un témoin de phrases en capitales de cinq mots ou plus derrière un nombre à cinq
 chiffres est recommandé par la spec avant l'option 2, non construit ici).
+
+## IBAN de forme française à clé fausse masqué en entier (P2-252, 22 novembre 2026)
+
+Décision du 22 novembre : un IBAN mal recopié reste celui de quelqu'un. Les IBAN
+« pièges » du corpus (`trap_iban`, clé fausse, avec ou sans libellé) sont masqués
+en entier, type `iban`, confiance 0,3, avertissement « à vérifier ». Rejeu complet
+de `bench/etat.sh` sur `main` (`8387b39`) puis sur la branche : seules ces lignes
+changent, toutes attendues.
+
+**Défaut mesuré (corpus d'identifiants, graine 42, 200 000 documents, 8 362 IBAN
+pièges).** Chemin **moteur seul** (`run_ecluse.dart`) : 10 masqués en partie
+(FINESS), 8 352 en clair → 0 en partie, 8 362 en entier. Chemin **`Ecluse.redact`**
+(`run_redact_bench.dart`) : 43 masqués en partie (FINESS ou téléphone), 2 762 en
+clair, 5 557 en entier → 0, 0, 8 362. Rappel NIR, RPPS, IBAN, FINESS : 100 % avant
+et après ; fuite au caractère 0 % partout.
+
+**Ce qui change au tableau de bord** (les corpus qui contiennent ces témoins comme
+négatifs les comptent maintenant en faux positifs, ce qui est le sur-masquage voulu) :
+
+| Ligne | Avant | Après | Chemin |
+|---|---|---|---|
+| v3, précision / F1 / FP | 94,9 % / 97,4 % / 42 | 89,6 % / 94,5 % / 90 | moteur seul |
+| v3, IBAN précision (200 000 docs) | 100 % | 83,3 % | moteur seul |
+| libellé fort, négatifs masqués | 8 / 1 200 | 53 / 1 200 | `Ecluse.redact` |
+| libellé fort, `nombre_sans_libelle` | 8 / 300 | 53 / 300 | `Ecluse.redact` |
+| libellé fort, négatifs au libellé IBAN | 1 / 200 | 46 / 200 | `Ecluse.redact` |
+| mise en page, 60 colonnes, précision IBAN / total | 100 % / 93,3 % | 76,5 % / 87,5 % | moteur seul |
+| mise en page, 90 colonnes, précision IBAN / total | 100 % / 94,3 % | 79,6 % / 89,0 % | moteur seul |
+
+Les rappels de la mise en page (72,9 % et 87,4 % pour l'IBAN) ne changent pas. Les
+45 nouveaux « masqués à tort » du corpus libellé fort portent tous l'avertissement
+(confiance 0,3 : 45 sur 1 200 négatifs). Presidio n'est pas rejoué.

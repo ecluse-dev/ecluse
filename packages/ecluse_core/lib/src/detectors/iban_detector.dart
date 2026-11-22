@@ -95,6 +95,63 @@ final class IbanFrDetector implements EntityDetector {
   }
 }
 
+/// IBAN de forme française complète mais à **clé de contrôle invalide**
+/// (P2-252), masqué en entier à confiance basse.
+///
+/// Pourquoi : un IBAN mal recopié reste celui de quelqu'un. Avant cette
+/// tâche, [IbanFrDetector] l'ignorait (« clé validée ou rien », `DECISIONS.md`),
+/// et une fenêtre de 9 chiffres qui passait Luhn par hasard à l'intérieur
+/// était masquée comme FINESS, ou une fenêtre de 12 comme téléphone : le
+/// reste du numéro de compte partait en clair (10 cas sur 200 000 documents du
+/// corpus d'identifiants au moteur seul, 43 par `Ecluse.redact`). Une entité
+/// qui couvre tout l'IBAN l'emporte sur ces sous-fenêtres dans
+/// `resolveOverlaps` (la plus longue gagne), donc plus de masquage partiel.
+///
+/// **Type et confiance** : [EntityType.iban], confiance [confidence] (0,3). Le
+/// type reste « iban » : c'est bien un IBAN, et le jeton restauré le dira. La
+/// confiance 0,3 est celle des identifiants à clé invalide annoncés par un
+/// libellé fort (`IdentifiantCleInvalideDetector`, P2-188) : `Ecluse.redact`
+/// l'accompagne du même avertissement « identifiant à clé invalide masqué : à
+/// vérifier », sans valeur dans le message. Aucun seuil ne filtre les
+/// entités : le coût est un sur-masquage possible d'une suite alphanumérique
+/// de forme `FR` + 2 chiffres + 23 caractères qui n'est pas un IBAN, jamais
+/// une fuite.
+///
+/// **Périmètre** : la forme exacte de [IbanFrDetector] (27 caractères, mêmes
+/// séparateurs, même compaction des blancs). Un IBAN valide n'est jamais émis
+/// ici (confiance 1,0 par [IbanFrDetector] / [IbanDetector]). Les IBAN
+/// d'autres pays à clé invalide ne sont pas traités.
+final class IbanCleInvalideDetector implements EntityDetector {
+  const IbanCleInvalideDetector();
+
+  /// Confiance de l'IBAN à clé invalide (voir la doc de la classe).
+  static const double confidence = 0.3;
+
+  @override
+  EntityType get type => EntityType.iban;
+
+  @override
+  List<DetectedEntity> detect(String text) {
+    final compaction = DigitCompaction(text);
+    final results = <DetectedEntity>[];
+    for (final match in compaction.candidates(IbanFrDetector._candidate)) {
+      final normalized =
+          match.text.replaceAll(IbanFrDetector._separators, '').toUpperCase();
+      if (IbanFrDetector._isValidIban(normalized)) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.iban,
+          start: match.start,
+          end: match.end,
+          value: text.substring(match.start, match.end),
+          confidence: confidence,
+        ),
+      );
+    }
+    return results;
+  }
+}
+
 /// Détecteur d'IBAN de l'espace SEPA (P2-62) : les 38 pays de la table
 /// [longueurs], dont la France. Même validation que [IbanFrDetector] — clé
 /// ISO 7064 mod 97-10, confiance 1.0 — avec, en plus, la **longueur propre au
@@ -106,8 +163,19 @@ final class IbanFrDetector implements EntityDetector {
 /// recoupées avec des documents bancaires publics, les autres sont reprises du
 /// registre (voir `LIMITES.md`). Une longueur fausse entraînerait un IBAN
 /// manqué, jamais un faux positif : la clé de contrôle reste exigée.
+///
+/// **[cleInvalideFr]** (P2-252, faux par défaut : comportement d'avant) : en
+/// plus des IBAN valides, rend aussi les IBAN de forme française à clé
+/// invalide, tels que [IbanCleInvalideDetector] les produit (confiance 0,3,
+/// empan entier). Une option plutôt qu'un détecteur de plus dans
+/// `Ecluse.defaultDetectors` : la description du moteur écrite au journal
+/// d'audit liste les noms des détecteurs et se réduit à leur nombre au-delà de
+/// 200 caractères ; un dix-neuvième nom la ferait basculer.
 final class IbanDetector implements EntityDetector {
-  const IbanDetector();
+  const IbanDetector({this.cleInvalideFr = false});
+
+  /// Voir la doc de la classe.
+  final bool cleInvalideFr;
 
   @override
   EntityType get type => EntityType.iban;
@@ -142,6 +210,9 @@ final class IbanDetector implements EntityDetector {
   List<DetectedEntity> detect(String text) {
     final compaction = DigitCompaction(text);
     final results = <DetectedEntity>[];
+    if (cleInvalideFr) {
+      results.addAll(const IbanCleInvalideDetector().detect(text));
+    }
     for (final match in compaction.candidates(_candidate)) {
       final normalized = match.text.replaceAll(_separators, '').toUpperCase();
       if (!IbanFrDetector._isValidIban(

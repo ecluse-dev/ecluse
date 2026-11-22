@@ -66,7 +66,11 @@ abstract final class Ecluse {
     LegacyDetectorAdapter(NirDetector(), DetectorTier.structural, name: 'nir'),
     LegacyDetectorAdapter(RppsDetector(), DetectorTier.structural,
         name: 'rpps'),
-    LegacyDetectorAdapter(IbanDetector(), DetectorTier.structural,
+    // `cleInvalideFr` (P2-252) : un IBAN de forme française à clé invalide est
+    // masqué en entier à confiance 0,3, pour qu'une fenêtre FINESS ou
+    // téléphone à l'intérieur ne masque jamais qu'une partie du numéro.
+    LegacyDetectorAdapter(
+        IbanDetector(cleInvalideFr: true), DetectorTier.structural,
         name: 'iban'),
     LegacyDetectorAdapter(InsDetector(), DetectorTier.structural, name: 'ins'),
     FinessDetector(),
@@ -406,7 +410,8 @@ abstract final class Ecluse {
         resolved.where((e) => e.type == EntityType.secret).length;
     // Identifiant à clé invalide masqué quand même, grâce au libellé fort
     // qui l'annonce (P2-188) : confiance 0.3, unique à
-    // `IdentifiantCleInvalideDetector` parmi les types nir/iban/rpps.
+    // `IdentifiantCleInvalideDetector` et, pour l'IBAN de forme française à
+    // clé invalide sans libellé, à `IbanCleInvalideDetector` (P2-252).
     final cleInvalideCount = resolved
             .where((e) =>
                 (e.type == EntityType.nir ||

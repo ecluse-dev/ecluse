@@ -17,6 +17,9 @@ Future<void> main(List<String> args) async {
         name: 'rpps'),
     LegacyDetectorAdapter(IbanFrDetector(), DetectorTier.structural,
         name: 'iban'),
+    // P2-252 : IBAN de forme française à clé invalide, masqué en entier.
+    LegacyDetectorAdapter(IbanCleInvalideDetector(), DetectorTier.structural,
+        name: 'iban_cle'),
     FinessDetector(),
     AdeliDetector(),
   ]);
