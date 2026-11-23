@@ -2370,3 +2370,800 @@ du témoin flou** sont toutes de type `siren`, toutes sur « TVA FR11123456782 �
 `generate_corpus_flou.py` : ancien témoin « rien à masquer », masqué à dessein
 depuis la décision du 23 novembre (P2-259 y masque aussi « SIRET 12345678200010 » :
 216 prédictions si les deux sont fusionnées). Le témoin n'a pas été modifié.
+
+## Valeurs courantes contrôlées (P2-265, 23 novembre 2026)
+
+Tout ce qui précède est de l'**historique daté** : des tableaux écrits section
+par section, jamais comparés d'un bloc à la sortie d'`etat.sh`. Le bloc
+ci-dessous est la seule partie **courante** : l'extrait verbatim de la sortie
+d'`etat.sh` (espaces écrasés, ligne `## commit` exclue) au commit où il a été
+rejoué. `python3 bench/controle_etat.py etat.log` compare chaque ligne à la
+sortie, dans l'ordre et sous le même titre, et sort en erreur au premier écart
+en montrant la ligne fautive. Après une tâche qui change une mesure : rejouer
+`etat.sh`, puis `python3 bench/controle_etat.py --propose etat.log` imprime le
+bloc à recoller entre les deux marqueurs (les tableaux d'historique
+au-dessus n'ont pas à être touchés par ce script).
+
+<!-- controle:debut -->
+```
+## v3 (identifiants structurels)
+Ecluse TOTAL 100.0% 100.0% 100.0% 943 0 0
+Ecluse TOTAL 100.0% 100.0% 100.0% 943 0 0
+Ecluse (c) COMMUNS 100.0% 100.0% 100.0% 871 0 0
+Ecluse (c) COMMUNS 100.0% 100.0% 100.0% 871 0 0
+Ecluse (e) strict 100.0% 100.0% 100.0% 72 0 0
+Ecluse (e) souple 100.0% 100.0% 100.0% 72 0 0
+## v3 transcrit
+# sans_ponctuation
+Ecluse TOTAL 100.0% 100.0% 100.0% 943 0 0
+# en_lettres
+Ecluse TOTAL 0.0% 0.0% 0.0% 0 0 943
+## v3 dictée : variantes de P2-160 (rappel = identifiant entièrement couvert ; fuite au caractère)
+# double_triple : moteur seul (ecluse_core)
+Ecluse TOTAL 0.0% 0.0% 0.0% 0 0 943
+# regional : moteur seul (ecluse_core)
+Ecluse TOTAL 0.0% 0.0% 0.0% 0 0 943
+# zero_o : moteur seul (ecluse_core)
+Ecluse TOTAL 0.0% 0.0% 0.0% 0 0 943
+# sans_traits_union : moteur seul (ecluse_core)
+Ecluse TOTAL 0.0% 0.0% 0.0% 0 0 943
+# sans_ponctuation : Ecluse.redact (chemin du produit)
+finess 129/129 iban 262/262 nir 314/314 rpps 166/166 siren 72/72 TOTAL 943/943 (100.0 %)
+fuite au caractère : finess 0.0 % iban 0.0 % nir 0.0 % rpps 0.0 % siren 0.0 % TOTAL 0.0 %
+# en_lettres : Ecluse.redact (chemin du produit)
+finess 23/129 iban 0/262 nir 0/314 rpps 0/166 siren 0/72 TOTAL 23/943 (2.4 %)
+fuite au caractère : finess 72.5 % iban 99.9 % nir 99.9 % rpps 100.0 % siren 100.0 % TOTAL 97.8 %
+# double_triple : Ecluse.redact (chemin du produit)
+finess 18/129 iban 0/262 nir 0/314 rpps 0/166 siren 0/72 TOTAL 18/943 (1.9 %)
+fuite au caractère : finess 75.7 % iban 99.9 % nir 99.9 % rpps 100.0 % siren 100.0 % TOTAL 98.0 %
+# regional : Ecluse.redact (chemin du produit)
+finess 32/129 iban 0/262 nir 0/314 rpps 0/166 siren 0/72 TOTAL 32/943 (3.4 %)
+fuite au caractère : finess 68.1 % iban 99.9 % nir 100.0 % rpps 100.0 % siren 100.0 % TOTAL 97.4 %
+# zero_o : Ecluse.redact (chemin du produit)
+finess 25/129 iban 0/262 nir 0/314 rpps 0/166 siren 0/72 TOTAL 25/943 (2.7 %)
+fuite au caractère : finess 72.6 % iban 99.9 % nir 100.0 % rpps 100.0 % siren 100.0 % TOTAL 97.7 %
+# sans_traits_union : Ecluse.redact (chemin du produit)
+finess 34/129 iban 0/262 nir 0/314 rpps 0/166 siren 0/72 TOTAL 34/943 (3.6 %)
+fuite au caractère : finess 67.8 % iban 99.9 % nir 100.0 % rpps 100.0 % siren 100.0 % TOTAL 97.4 %
+## témoin mots-nombres (P2-160) : Ecluse.redact, aucune entité annotée
+témoin mots-nombres : 0 prédictions sur 300 phrases
+## flou (entités floues) et variantes de casse
+# realiste
+restaurations non identiques (harmonisation, LIMITES 5.3) : 0
+adresse 159 159 100.0% 100.0% 100.0% 100.0% 0.0%
+etablissement 400 400 79.2% 79.2% 79.2% 100.0% 0.0%
+nom 479 479 16.3% 16.3% 16.3% 100.0% 27.7%
+GLOBAL 1677 1677 71.1% 71.1% 71.1% 100.0% 7.5%
+entites predites 1677
+# adversarial
+restaurations non identiques (harmonisation, LIMITES 5.3) : 62
+adresse 155 155 100.0% 100.0% 100.0% 100.0% 0.0%
+etablissement 114 114 100.0% 100.0% 100.0% 100.0% 0.0%
+nom 594 579 73.2% 71.4% 72.3% 98.7% 11.0%
+GLOBAL 1082 1067 85.5% 84.3% 84.9% 99.3% 5.3%
+entites predites 1067
+# temoin
+restaurations non identiques (harmonisation, LIMITES 5.3) : 0
+entites predites 0
+# realiste_minuscules
+restaurations non identiques (harmonisation, LIMITES 5.3) : 0
+adresse 159 159 100.0% 100.0% 100.0% 100.0% 0.0%
+etablissement 400 400 79.2% 79.2% 79.2% 100.0% 0.0%
+nom 479 458 12.4% 11.9% 12.2% 97.8% 30.0%
+GLOBAL 1677 1656 70.8% 69.9% 70.3% 99.4% 8.1%
+entites predites 1656
+# adversarial_minuscules
+restaurations non identiques (harmonisation, LIMITES 5.3) : 61
+adresse 155 155 100.0% 100.0% 100.0% 100.0% 0.0%
+etablissement 114 114 100.0% 100.0% 100.0% 100.0% 0.0%
+nom 594 560 66.8% 63.0% 64.8% 97.1% 14.1%
+GLOBAL 1082 1048 82.3% 79.7% 80.9% 98.4% 6.8%
+entites predites 1048
+# temoin_minuscules
+restaurations non identiques (harmonisation, LIMITES 5.3) : 0
+entites predites 0
+# realiste_majuscules
+restaurations non identiques (harmonisation, LIMITES 5.3) : 0
+adresse 159 159 100.0% 100.0% 100.0% 100.0% 0.0%
+etablissement 400 331 74.9% 62.0% 67.9% 90.6% 0.0%
+nom 479 527 9.9% 10.9% 10.3% 91.1% 30.0%
+GLOBAL 1677 1656 66.3% 65.5% 65.9% 95.2% 8.1%
+entites predites 1656
+# adversarial_majuscules
+restaurations non identiques (harmonisation, LIMITES 5.3) : 55
+adresse 155 155 100.0% 100.0% 100.0% 100.0% 0.0%
+etablissement 114 16 100.0% 14.0% 24.6% 24.6% 0.0%
+nom 594 658 25.7% 28.5% 27.0% 89.5% 14.1%
+GLOBAL 1082 1048 53.3% 51.7% 52.5% 89.2% 6.8%
+entites predites 1048
+# temoin_majuscules
+restaurations non identiques (harmonisation, LIMITES 5.3) : 0
+entites predites 0
+# realiste_phrase
+restaurations non identiques (harmonisation, LIMITES 5.3) : 0
+adresse 159 159 100.0% 100.0% 100.0% 100.0% 0.0%
+etablissement 400 400 79.2% 79.2% 79.2% 100.0% 0.0%
+nom 479 458 12.4% 11.9% 12.2% 97.8% 30.0%
+GLOBAL 1677 1656 70.8% 69.9% 70.3% 99.4% 8.1%
+entites predites 1656
+# adversarial_phrase
+restaurations non identiques (harmonisation, LIMITES 5.3) : 61
+adresse 155 155 100.0% 100.0% 100.0% 100.0% 0.0%
+etablissement 114 114 100.0% 100.0% 100.0% 100.0% 0.0%
+nom 594 546 66.7% 61.3% 63.9% 95.8% 16.8%
+GLOBAL 1082 1034 82.4% 78.7% 80.5% 97.7% 8.1%
+entites predites 1034
+# temoin_phrase
+restaurations non identiques (harmonisation, LIMITES 5.3) : 0
+entites predites 0
+# fauxamis
+restaurations non identiques (harmonisation, LIMITES 5.3) : 0
+entites predites 0
+## quasi-identifiants (ecluse_reid)
+# realiste
+age 241 241 100.0% 100.0% 100.0% 100.0% 0.0%
+lieu 320 320 100.0% 100.0% 100.0% 100.0% 0.0%
+profession 170 170 100.0% 100.0% 100.0% 100.0% 0.0%
+# adversarial
+age 330 330 100.0% 100.0% 100.0% 100.0% 0.0%
+lieu 396 396 100.0% 100.0% 100.0% 100.0% 0.0%
+profession 183 183 100.0% 100.0% 100.0% 100.0% 0.0%
+# temoin
+Extractions totales : 0
+# temoin_durees
+Extractions totales : 53
+## quasi-identifiants par Ecluse.redact (P2-175) : patronyme en clair derrière un métier sans civilité
+# realiste
+QI par Ecluse.redact : /home/claude/ecluse/bench/qi/corpus_qi_realiste.jsonl
+documents : 400
+patronyme en clair : 0 document(s)
+# adversarial
+QI par Ecluse.redact : /home/claude/ecluse/bench/qi/corpus_qi_adversarial.jsonl
+documents : 400
+patronyme en clair : 29 document(s)
+## généralisation appliquée
+# realiste
+documents avec suggestion : 170 (42.5 %)
+refus ou exception à l'application : 0
+F médian : avant 74.0, après 1er tour 2002.0, à la fin 7116.0
+bande après 1er tour : faible=170
+bande à la fin : faible=170
+arrêt : plus de suggestion=170
+# adversarial
+documents avec suggestion : 118 (29.5 %)
+refus ou exception à l'application : 0
+F médian : avant 7.0, après 1er tour 2320.0, à la fin 9042.3
+bande après 1er tour : eleve=1, faible=110, moyen=7
+bande à la fin : faible=111, moyen=7
+arrêt : plus de suggestion=118
+# temoin
+documents avec suggestion : 0 (0.0 %)
+refus ou exception à l'application : 0
+F médian : avant n/a, après 1er tour n/a, à la fin n/a
+bande après 1er tour :
+bande à la fin :
+# lieu
+bande recalculée : eleve=1, faible=3, moyen=20
+QI lieu dans l'évaluation après application : un QI lieu relu=24
+F recalculé vs F simulé : F recalculé = F simulé=24
+## dossiers (avec Dossier)
+# realiste
+Cohérence (identités citées ≥ 2 fois dans un dossier, un seul jeton)
+nom 28 / 161 17.4 %
+Collisions (jeton désignant plusieurs identités dans un dossier) : 0 / 557 jetons 0.0 %
+Fausses fusions (jeton couvrant plusieurs identités dans un même document) : 0 / 935 0.0 %
+Restaurations non identiques : 0 / 397 documents 0.0 %
+Mentions annotées non détectées (exclues) : aucune
+# adversarial
+Cohérence (identités citées ≥ 2 fois dans un dossier, un seul jeton)
+nom 36 / 128 28.1 %
+Collisions (jeton désignant plusieurs identités dans un dossier) : 7 / 455 jetons 1.5 %
+Fausses fusions (jeton couvrant plusieurs identités dans un même document) : 7 / 606 1.2 %
+Restaurations non identiques : 52 / 398 documents 13.1 %
+Mentions annotées non détectées (exclues) : aucune
+# temoin
+Cohérence (identités citées ≥ 2 fois dans un dossier, un seul jeton)
+nom 0 / 129 0.0 %
+Collisions (jeton désignant plusieurs identités dans un dossier) : 0 / 757 jetons 0.0 %
+Fausses fusions (jeton couvrant plusieurs identités dans un même document) : 0 / 757 0.0 %
+Restaurations non identiques : 0 / 396 documents 0.0 %
+Mentions annotées non détectées (exclues) : aucune
+# realiste_minuscules
+Cohérence (identités citées ≥ 2 fois dans un dossier, un seul jeton)
+nom 30 / 160 18.8 %
+Collisions (jeton désignant plusieurs identités dans un dossier) : 0 / 553 jetons 0.0 %
+Fausses fusions (jeton couvrant plusieurs identités dans un même document) : 0 / 931 0.0 %
+Restaurations non identiques : 0 / 397 documents 0.0 %
+Mentions annotées non détectées (exclues) : nom 4
+# realiste_majuscules
+Cohérence (identités citées ≥ 2 fois dans un dossier, un seul jeton)
+nom 8 / 154 5.2 %
+Collisions (jeton désignant plusieurs identités dans un dossier) : 0 / 657 jetons 0.0 %
+Fausses fusions (jeton couvrant plusieurs identités dans un même document) : 0 / 907 0.0 %
+Restaurations non identiques : 0 / 397 documents 0.0 %
+Mentions annotées non détectées (exclues) : nom 28
+# realiste_mixte
+Cohérence (identités citées ≥ 2 fois dans un dossier, un seul jeton)
+nom 18 / 161 11.2 %
+Collisions (jeton désignant plusieurs identités dans un dossier) : 0 / 628 jetons 0.0 %
+Fausses fusions (jeton couvrant plusieurs identités dans un même document) : 0 / 935 0.0 %
+Restaurations non identiques : 95 / 397 documents 23.9 %
+Mentions annotées non détectées (exclues) : aucune
+# adversarial_minuscules
+Cohérence (identités citées ≥ 2 fois dans un dossier, un seul jeton)
+nom 36 / 128 28.1 %
+Collisions (jeton désignant plusieurs identités dans un dossier) : 7 / 445 jetons 1.6 %
+Fausses fusions (jeton couvrant plusieurs identités dans un même document) : 7 / 596 1.2 %
+Restaurations non identiques : 52 / 398 documents 13.1 %
+Mentions annotées non détectées (exclues) : nom 10
+# adversarial_mixte
+Cohérence (identités citées ≥ 2 fois dans un dossier, un seul jeton)
+nom 24 / 128 18.8 %
+Collisions (jeton désignant plusieurs identités dans un dossier) : 6 / 480 jetons 1.2 %
+Fausses fusions (jeton couvrant plusieurs identités dans un même document) : 6 / 599 1.0 %
+Restaurations non identiques : 94 / 398 documents 23.6 %
+Mentions annotées non détectées (exclues) : nom 8
+# temoin_mixte
+Cohérence (identités citées ≥ 2 fois dans un dossier, un seul jeton)
+nom 0 / 129 0.0 %
+Collisions (jeton désignant plusieurs identités dans un dossier) : 0 / 757 jetons 0.0 %
+Fausses fusions (jeton couvrant plusieurs identités dans un même document) : 0 / 757 0.0 %
+Restaurations non identiques : 0 / 396 documents 0.0 %
+Mentions annotées non détectées (exclues) : aucune
+## patronyme seul hors civilité (P2-218) : Ecluse.redact (chemin du produit)
+noms hors civilité, patronyme seul : 116 mentions, manquées document par document 0, en session 0
+noms hors civilité, plusieurs mots (civilité ou prénom) : 476 mentions, manquées document par document 0, en session 0
+tournure=dossier de : 0 / 49 manqués document par document, 0 / 49 en session
+tournure=à la demande de : 0 / 19 manqués document par document, 0 / 19 en session
+tournure=entretien avec : 0 / 26 manqués document par document, 0 / 26 en session
+tournure=sujet : a confirmé : 0 / 22 manqués document par document, 0 / 22 en session
+tournures sans nom : 400 documents, 0 entité(s) annotée(s), 141 masqués à tort
+tournure=adressé à : 0 / 80 masqués à tort
+tournure=dossier de : 40 / 80 masqués à tort
+tournure=à la demande de : 21 / 80 masqués à tort
+tournure=entretien avec : 40 / 80 masqués à tort
+tournure=sujet : a confirmé : 40 / 80 masqués à tort
+genre=lieu : 61 / 100 masqués à tort
+genre=organisme : 0 / 100 masqués à tort
+genre=commun_majuscule : 80 / 100 masqués à tort
+genre=commun_minuscule : 0 / 100 masqués à tort
+types sur les masquages à tort : nom 141
+## liste de patronymes de l'application (P2-243) : Ecluse.redact (chemin du produit)
+# patronyme seul en première mention (corpus b, 400 mentions) : détecté / annoté
+# b, liste sans_liste
+b_debut 66 / 201 32.8 %
+b_milieu 130 / 199 65.3 %
+# b, liste exacte
+b_debut 201 / 201 100.0 %
+b_milieu 199 / 199 100.0 %
+# b, liste large
+b_debut 201 / 201 100.0 %
+b_milieu 199 / 199 100.0 %
+# b, liste sans
+b_debut 66 / 201 32.8 %
+b_milieu 130 / 199 65.3 %
+# leurres (un mot courant fourni comme nom, document seul dans son dossier)
+leurres, liste sans_liste : 0 / 265 documents sans personne avec un nom masqué
+leurres, liste exacte : 265 / 265 documents sans personne avec un nom masqué
+leurres, liste large : 265 / 265 documents sans personne avec un nom masqué
+leurres, liste sans : 0 / 265 documents sans personne avec un nom masqué
+# corpus de dossiers réaliste (116 patronymes seuls) : manqués en session
+liste exacte : noms hors civilité, patronyme seul : 116 mentions, manquées document par document 0, en session 0
+liste large : noms hors civilité, patronyme seul : 116 mentions, manquées document par document 0, en session 0
+liste sans : noms hors civilité, patronyme seul : 116 mentions, manquées document par document 0, en session 0
+# témoin sans nom de personne (tournures, 400 documents) : liste large de 10 042 noms
+témoin, sans liste : 141 / 400 documents sans personne avec un nom masqué
+témoin, liste large : 141 / 400 documents sans personne avec un nom masqué
+## tournures de personne, témoin élargi (P2-226) : Ecluse.redact (chemin du produit)
+tournures de personne : 480 documents, 5 familles, 192 noms annotés, 0 détection(s) hors du mot
+famille=roles : 0 / 96 masqués à tort
+tournure=dossier de : 0 / 24
+tournure=à la demande de : 0 / 24
+tournure=entretien avec : 0 / 24
+tournure=sujet : a confirmé : 0 / 24
+famille=organismes : 44 / 96 masqués à tort
+tournure=dossier de : 11 / 24
+tournure=à la demande de : 11 / 24
+tournure=entretien avec : 11 / 24
+tournure=sujet : a confirmé : 11 / 24
+famille=communs : 96 / 96 masqués à tort
+tournure=dossier de : 24 / 24
+tournure=à la demande de : 24 / 24
+tournure=entretien avec : 24 / 24
+tournure=sujet : a confirmé : 24 / 24
+famille=patronymes_communes : 96 / 96 masqués, 0 en clair (fuite)
+tournure=dossier de : 24 / 24
+tournure=à la demande de : 24 / 24
+tournure=entretien avec : 24 / 24
+tournure=sujet : a confirmé : 24 / 24
+famille=patronymes_noms_communs : 96 / 96 masqués, 0 en clair (fuite)
+tournure=dossier de : 24 / 24
+tournure=à la demande de : 24 / 24
+tournure=entretien avec : 24 / 24
+tournure=sujet : a confirmé : 24 / 24
+types sur les masquages à tort : nom 140
+types sur les patronymes masqués : nom 192
+## communes moyennes derrière les tournures de personne (P2-238) : Ecluse.redact (chemin du produit)
+communes moyennes : 240 documents, 0 entité(s) annotée(s), 235 lieux masqués à tort
+tranche=10-30k : 78 / 80 lieux masqués à tort
+tranche=30-50k : 80 / 80 lieux masqués à tort
+tranche=50-100k : 77 / 80 lieux masqués à tort
+tournure=dossier de : 60 / 60 lieux masqués à tort
+tournure=à la demande de : 60 / 60 lieux masqués à tort
+tournure=entretien avec : 60 / 60 lieux masqués à tort
+tournure=sujet : a confirmé : 55 / 60 lieux masqués à tort
+tranche_tournure=10-30k / dossier de : 20 / 20 lieux masqués à tort
+tranche_tournure=10-30k / à la demande de : 20 / 20 lieux masqués à tort
+tranche_tournure=10-30k / entretien avec : 20 / 20 lieux masqués à tort
+tranche_tournure=10-30k / sujet : a confirmé : 18 / 20 lieux masqués à tort
+tranche_tournure=30-50k / dossier de : 20 / 20 lieux masqués à tort
+tranche_tournure=30-50k / à la demande de : 20 / 20 lieux masqués à tort
+tranche_tournure=30-50k / entretien avec : 20 / 20 lieux masqués à tort
+tranche_tournure=30-50k / sujet : a confirmé : 20 / 20 lieux masqués à tort
+tranche_tournure=50-100k / dossier de : 20 / 20 lieux masqués à tort
+tranche_tournure=50-100k / à la demande de : 20 / 20 lieux masqués à tort
+tranche_tournure=50-100k / entretien avec : 20 / 20 lieux masqués à tort
+tranche_tournure=50-100k / sujet : a confirmé : 17 / 20 lieux masqués à tort
+## prénom + verbe conjugué (P2-240) : Ecluse.redact (chemin du produit)
+prénom + verbe : 1280 phrases, 810 verbes masqués, 0 prénoms en clair (fuite)
+famille=courants : 0 / 400 verbes masqués, 0 prénoms en clair
+famille=reserve : 180 / 200 verbes masqués, 0 prénoms en clair
+famille=reserve2 : 630 / 680 verbes masqués, 0 prénoms en clair
+## pathologies
+# indices
+indices : TP 397, FP 0, FN 0 ; précision 100.0 %, rappel 100.0 % ; catégorie juste 96.7 %
+FP indices : {}
+témoin : 0 faux positifs {}
+# variantes
+indices : TP 300, FP 0, FN 0 ; précision 100.0 %, rappel 100.0 % ; catégorie juste 100.0 %
+FP indices : {}
+témoin : 0 faux positifs {}
+# formes_libres
+TOTAL TP 120, FN 0, FP 210 ; précision 36.4 %, rappel 100.0 %
+TOTAL TP 120, FN 0, FP 0 ; précision 100.0 %, rappel 100.0 %
+# maladies rares masquées (P2-143)
+corpus indices : maladies rares annotées 51, masquées avant 0, après 51 ; pathologies fréquentes masquées 13 ; masquages hors annotation 13 {mucoviscidose: 12, drépanocytose: 1}
+corpus temoin : maladies rares annotées 0, masquées avant 0, après 0 ; pathologies fréquentes masquées 0 ; masquages hors annotation 0
+échantillon Orphanet (300 mentions, graine 42) : rattachées masquées 276 / 300 ; niées ou générales masquées 0 / 300
+## témoin nombres à cinq chiffres (P2-167) : Ecluse.redact (chemin du produit), aucune adresse annotée
+témoin cinq chiffres : 400 phrases, 74 prédiction(s) d'adresse par Ecluse.redact (chemin du produit)
+voie : détecteur seul 49, texte d'ombre 25, les deux 0 (phrases avec prédiction)
+casse=ordinaire : 49 / 244 phrases avec une adresse
+casse=phrase : 25 / 156 phrases avec une adresse
+famille=montant : 0 / 132 phrases avec une adresse
+famille=quantite : 42 / 136 phrases avec une adresse
+famille=reference : 32 / 132 phrases avec une adresse
+position=debut : 66 / 200 phrases avec une adresse
+position=milieu : 8 / 200 phrases avec une adresse
+suffixe=majuscule : 49 / 88 phrases avec une adresse
+suffixe=minuscule : 25 / 180 phrases avec une adresse
+suffixe=rien : 0 / 132 phrases avec une adresse
+## témoin déterminant après cinq chiffres (P2-187) : Ecluse.redact (chemin du produit), aucune adresse annotée
+témoin cinq chiffres : 400 phrases, 220 prédiction(s) d'adresse par Ecluse.redact (chemin du produit)
+voie : détecteur seul 194, texte d'ombre 1, les deux 25 (phrases avec prédiction)
+casse=capitales : 107 / 200 phrases avec une adresse
+casse=ordinaire : 113 / 200 phrases avec une adresse
+famille=quantite : 103 / 208 phrases avec une adresse
+famille=reference : 117 / 192 phrases avec une adresse
+position=debut : 196 / 200 phrases avec une adresse
+position=milieu : 24 / 200 phrases avec une adresse
+suffixe=l : 52 / 100 phrases avec une adresse
+suffixe=la : 56 / 100 phrases avec une adresse
+suffixe=le : 58 / 100 phrases avec une adresse
+suffixe=les : 54 / 100 phrases avec une adresse
+## code postal en tête (P2-177) : Ecluse.redact (chemin du produit), adresses à ne pas perdre
+code postal en tête : 432 adresses, 0 laissée(s) en clair par Ecluse.redact (chemin du produit)
+casse=minuscules : 0 / 216 en clair
+casse=ordinaire : 0 / 216 en clair
+position=apres_phrase : 0 / 144 en clair
+position=debut_ligne : 0 / 144 en clair
+position=debut_texte : 0 / 144 en clair
+suite=ligne : 0 / 108 en clair
+suite=minuscule : 0 / 108 en clair
+suite=ponctuation : 0 / 108 en clair
+suite=rien : 0 / 108 en clair
+règle candidate « nom suivi d'un mot en minuscules » (simulée dans le banc, absente de lib/) :
+témoin sans adresse : 66 prédiction(s) à tort écartée(s) sur 74 (en tête : 66 sur 66)
+adresses annotées : 108 perdue(s) sur 432 (partiraient en clair)
+casse=minuscules : 54 / 216 perdue(s)
+casse=ordinaire : 54 / 216 perdue(s)
+position=apres_phrase : 36 / 144 perdue(s)
+position=debut_ligne : 36 / 144 perdue(s)
+position=debut_texte : 36 / 144 perdue(s)
+suite=minuscule : 108 / 108 perdue(s)
+## communes : nom en partie en clair après CEDEX (P2-178, P2-180) : Ecluse.redact (chemin du produit)
+cedex commune longue : 139500 adresses, 7 avec au moins un caractère en clair, 0 refus (Ecluse.redact)
+ecriture=libelle : 1 / 34875 en défaut, fuite au caractère 0.0 % (19 / 792263) ; commune 1, mot CEDEX 1, numéro 1
+ecriture=postale : 0 / 34875 en défaut, fuite au caractère 0.0 % (0 / 766136) ; commune 0, mot CEDEX 0, numéro 0
+ecriture=libelle_espaces : 6 / 34875 en défaut, fuite au caractère 0.0 % (79 / 767096) ; commune 6, mot CEDEX 5, numéro 6
+ecriture=capitales_tirets : 0 / 34875 en défaut, fuite au caractère 0.0 % (0 / 792263) ; commune 0, mot CEDEX 0, numéro 0
+## commune suivie de mots ordinaires (P2-181) : Ecluse.redact (chemin du produit), suite à ne pas masquer
+commune suivie : 480 documents, 308 à la suite masquée en partie, 3739 / 6659 caractères de suite masqués (56.1 %), 0 adresse(s) en partie en clair, 0 refus (Ecluse.redact)
+famille=capitales : 152 / 160 documents à la suite masquée, 1797 / 2497 caractères ; 0 adresse(s) en clair
+famille=liaison : 11 / 160 documents à la suite masquée, 44 / 1808 caractères ; 0 adresse(s) en clair
+famille=majuscule : 145 / 160 documents à la suite masquée, 1898 / 2354 caractères ; 0 adresse(s) en clair
+ecriture=libelle : 165 / 240 documents à la suite masquée, 2142 / 3294 caractères ; 0 adresse(s) en clair
+ecriture=postale : 143 / 240 documents à la suite masquée, 1597 / 3365 caractères ; 0 adresse(s) en clair
+## communes en capitales : nom en partie en clair après CEDEX (P2-183, P2-185) : Ecluse.redact (chemin du produit)
+cedex commune longue : 139500 adresses, 0 avec au moins un caractère en clair, 0 refus (Ecluse.redact)
+cedex=CEDEX n : 0 / 139500 en défaut, fuite au caractère 0.0 % (0 / 3117758) ; commune 0, mot CEDEX 0, numéro 0
+## communes en capitales sans CEDEX : nom en partie en clair (P2-200) : Ecluse.redact (chemin du produit)
+cedex commune longue : 139500 adresses, 57 avec au moins un caractère en clair, 0 refus (Ecluse.redact)
+cedex=sans : 57 / 139500 en défaut, fuite au caractère 0.0 % (921 / 2280758) ; commune 57, mot CEDEX 0, numéro 0
+cause=autre : 57 adresse(s) au nom de commune en partie en clair
+## témoin mot neutre devant CEDEX (P2-200) : Ecluse.redact (chemin du produit), aucune adresse annotée
+témoin cinq chiffres : 400 phrases, 113 prédiction(s) d'adresse par Ecluse.redact (chemin du produit)
+voie : détecteur seul 113, texte d'ombre 0, les deux 0 (phrases avec prédiction)
+casse=capitales : 113 / 200 phrases avec une adresse
+casse=ordinaire : 0 / 200 phrases avec une adresse
+famille=quantite : 64 / 204 phrases avec une adresse
+famille=reference : 49 / 196 phrases avec une adresse
+position=debut : 100 / 200 phrases avec une adresse
+position=milieu : 13 / 200 phrases avec une adresse
+suffixe=mot : 38 / 136 phrases avec une adresse
+suffixe=parenthese : 37 / 132 phrases avec une adresse
+suffixe=tiret : 38 / 132 phrases avec une adresse
+## communes en capitales sans CEDEX : formes et règles candidates (P2-206) : Ecluse.redact (chemin du produit), règles simulées hors lib/
+sans CEDEX : 57 adresses en partie en clair sur 139500, par forme de commune (Ecluse.redact)
+forme A : 0 adresse(s), 0 commune(s) (plus de quatre mots) ; exemples :
+forme B : 57 adresse(s), 15 commune(s) (mot neutre en tête) ; exemples : SON ; VERS ; SOUS PARSAT
+forme C : 0 adresse(s), 0 commune(s) (parenthèse, tiret isolé ou blancs multiples) ; exemples :
+forme D : 0 adresse(s), 0 commune(s) (déterminant puis mot neutre) ; exemples :
+forme E : 0 adresse(s), 0 commune(s) (mot-clé d'établissement dans le nom) ; exemples :
+forme autre : 0 adresse(s), 0 commune(s) (aucune des cinq formes)
+balayage sans CEDEX : 57 adresses en partie en clair sur 139500 avec Ecluse.redact seul (règles simulées, hors lib/)
+règle=exact_prefixe : 57 → 0 en partie en clair (formes A à D) ; par forme : B 57 → 0
+règle=exact_ligne : 57 → 0 en partie en clair (formes A à D) ; par forme : B 57 → 0
+règle=fin_de_ligne : 57 → 57 en partie en clair (formes A à D) ; par forme : B 57 → 57
+forme E : 0 adresses, non simulable (autre détecteur, EtablissementDetector) ; la même pour toute règle
+# coût sur le témoin commune suivie (P2-181) : règle appliquée à toute ligne, puis aux seuls textes en capitales
+commune suivie, règles candidates (toute ligne, sans condition de casse) : 480 documents, 3739 / 6659 caractères de suite masqués avec Ecluse.redact seul (308 documents), 0 adresse(s) en partie en clair
+règle=exact_prefixe : 3739 / 6659 caractères de suite masqués (+0), 308 documents (+0), 0 adresse(s) en partie en clair
+règle=exact_ligne : 3739 / 6659 caractères de suite masqués (+0), 308 documents (+0), 0 adresse(s) en partie en clair
+règle=fin_de_ligne : 4808 / 6659 caractères de suite masqués (+1069), 363 documents (+55), 0 adresse(s) en partie en clair
+commune suivie, règles candidates (texte sans aucune minuscule seulement) : 480 documents, 5376 / 6659 caractères de suite masqués avec Ecluse.redact seul (462 documents), 0 adresse(s) en partie en clair
+règle=exact_prefixe : 5376 / 6659 caractères de suite masqués (+0), 462 documents (+0), 0 adresse(s) en partie en clair
+règle=exact_ligne : 5376 / 6659 caractères de suite masqués (+0), 462 documents (+0), 0 adresse(s) en partie en clair
+règle=fin_de_ligne : 6631 / 6659 caractères de suite masqués (+1255), 476 documents (+14), 0 adresse(s) en partie en clair
+# coût sur les témoins sans adresse annotée : noms de communes de forme neutre (P2-206), puis témoins P2-167 et P2-187
+# témoin commune neutre (P2-206)
+témoin sans adresse annotée, règles candidates : 400 phrases, 110 avec une adresse prédite par Ecluse.redact, aucune adresse annotée
+casse=capitales : 8 / 200 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +192 ; exact_ligne +97 ; fin_de_ligne +0
+casse=ordinaire : 102 / 200 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +0 ; exact_ligne +0 ; fin_de_ligne +0
+# témoin cinq_chiffres (P2-167, P2-187)
+témoin sans adresse annotée, règles candidates : 400 phrases, 74 avec une adresse prédite par Ecluse.redact, aucune adresse annotée
+casse=ordinaire : 49 / 244 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +0 ; exact_ligne +0 ; fin_de_ligne +0
+casse=phrase : 25 / 156 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +0 ; exact_ligne +0 ; fin_de_ligne +0
+# témoin determinant (P2-167, P2-187)
+témoin sans adresse annotée, règles candidates : 400 phrases, 220 avec une adresse prédite par Ecluse.redact, aucune adresse annotée
+casse=capitales : 107 / 200 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +1 ; exact_ligne +0 ; fin_de_ligne +96
+casse=ordinaire : 113 / 200 phrases à adresse prédite avec Ecluse.redact seul ; exact_prefixe +0 ; exact_ligne +0 ; fin_de_ligne +0
+## commune à mot de voie (P2-213) : Ecluse.redact (chemin du produit), adresses en partie en clair
+commune à mot de voie : 3744 documents, 52 communes, 22 document(s) à adresse en partie en clair (4 commune(s)), 0 refus (Ecluse.redact)
+casse=ordinaire : 22 / 2496 en défaut
+casse=capitales : 0 / 1248 en défaut
+ecriture=postale : 12 / 1248 en défaut
+ecriture=libelle : 0 / 624 en défaut
+ecriture=libelle_espaces : 10 / 624 en défaut
+ecriture=capitales_tirets : 0 / 1248 en défaut
+cedex=avec : 0 / 1872 en défaut
+cedex=sans : 22 / 1872 en défaut
+suite=sans : 8 / 1248 en défaut
+suite=mot : 8 / 1248 en défaut
+suite=adresse : 6 / 1248 en défaut
+voie=sans : 7 / 1872 en défaut
+voie=avec : 15 / 1872 en défaut
+mot de voie=AVE : 0 / 72 en défaut
+mot de voie=CHAUSSEE : 0 / 1080 en défaut
+mot de voie=CHEMIN : 14 / 504 en défaut
+mot de voie=CLOS : 0 / 216 en défaut
+mot de voie=COURS : 0 / 792 en défaut
+mot de voie=HAMEAU : 0 / 72 en défaut
+mot de voie=PASSAGE : 0 / 144 en défaut
+mot de voie=PLACE : 4 / 216 en défaut
+mot de voie=RUE : 0 / 504 en défaut
+mot de voie=RUELLE : 4 / 144 en défaut
+en clair : vraie voie 0, code postal 0, commune 22, seconde adresse 0
+début en clair (code postal ou premier mot de la commune) : 0 document(s) ; fin du nom seule en clair : 22
+ligne « code postal + mot » masquée (en trop, pas une fuite) : 1248 / 1248
+## communes en capitales hors référentiel : « ST », séparateurs collés, fautes (P2-244) : Ecluse.redact (chemin du produit), règles simulées hors lib/
+écritures hors référentiel : 1348 adresses, 261 communes des formes A, C et D, tout en capitales, sans CEDEX ; adresses en partie en clair (Ecluse.redact + règle simulée, hors lib/ ; distance 1 pour un nom d'au moins 8 lettres)
+# table complete (32587 noms)
+variante=reference : 261 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+variante=accents : 80 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+variante=st : 170 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+variante=apostrophe_collee : 69 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+variante=tiret_colle : 246 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+variante=lettre_fautive : 261 adresses, Ecluse.redact seul 143 ; exact 143 ; normalise 143 ; distance1 0
+variante=lettre_omise : 261 adresses, Ecluse.redact seul 141 ; exact 141 ; normalise 141 ; distance1 0
+écritures hors référentiel (cinq variantes) : 1007 adresses, Ecluse.redact seul 284 ; exact 284 ; normalise 284 ; distance1 0
+# table reduite (261 noms)
+variante=reference : 261 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+variante=accents : 80 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+variante=st : 170 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+variante=apostrophe_collee : 69 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+variante=tiret_colle : 246 adresses, Ecluse.redact seul 0 ; exact 0 ; normalise 0 ; distance1 0
+variante=lettre_fautive : 261 adresses, Ecluse.redact seul 143 ; exact 143 ; normalise 143 ; distance1 0
+variante=lettre_omise : 261 adresses, Ecluse.redact seul 141 ; exact 141 ; normalise 141 ; distance1 0
+écritures hors référentiel (cinq variantes) : 1007 adresses, Ecluse.redact seul 284 ; exact 284 ; normalise 284 ; distance1 0
+## courriers en capitales (P2-210) : Ecluse.redact (chemin du produit), masquage en trop et adresses annotées
+courriers : 400 courriers, 3185 lignes, 970 adresses annotées, 0 courrier(s) à adresse en partie en clair (Ecluse.redact)
+masquage en trop : 0 courriers / 400, 0 lignes / 3185
+famille=reference : 0 / 543 lignes masquées en trop
+famille=montant : 0 / 633 lignes masquées en trop
+famille=quantite : 0 / 469 lignes masquées en trop
+famille=texte : 0 / 570 lignes masquées en trop
+famille=adresse : 0 / 837 lignes masquées en trop
+famille=montant_adresse : 0 / 133 lignes masquées en trop
+types en trop : aucun
+## SIREN masqués comme FINESS (P2-223) : Ecluse.redact (chemin du produit)
+SIREN masqués comme FINESS : corpus v3 entier 0 / 42 nombres à clé valide non annotés, témoin SIREN 83 / 400, SIREN voisins du pendant FINESS 50 / 100
+vrais FINESS en clair sans option : corpus v3 0 / 129, pendant FINESS 0 / 400
+témoin libelle=sans_mot : 83 / 100 masqués comme FINESS
+témoin libelle=siren_apres : 0 / 100 masqués comme FINESS
+témoin libelle=siren_immediat : 0 / 100 masqués comme FINESS
+témoin libelle=siren_phrase : 0 / 100 masqués comme FINESS
+témoin ecriture=compact : 33 / 200 masqués comme FINESS
+témoin ecriture=groupe : 50 / 200 masqués comme FINESS
+option=libelle_immediat : SIREN masqués v3 0 / 42, témoin 83 / 400, voisins 24 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
+option=libelle_40 : SIREN masqués v3 0 / 42, témoin 83 / 400, voisins 24 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 26 / 400
+option=libelle_40_sans_mot_finess : SIREN masqués v3 0 / 42, témoin 83 / 400, voisins 50 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
+option=contexte_exige : SIREN masqués v3 0 / 42, témoin 0 / 400, voisins 50 / 100 ; vrais FINESS perdus en plus (en clair) v3 43 / 129, pendant 100 / 400
+option=prefixe : SIREN masqués v3 0 / 42, témoin 81 / 400, voisins 50 / 100 ; vrais FINESS perdus en plus (en clair) v3 0 / 129, pendant 0 / 400
+témoin : SIREN sous une détection de n'importe quel type 400 / 400 (le reste est lu comme FINESS ou comme un autre type, p. ex. une plaque après « immatriculation »)
+option=luhn : SIREN du témoin valides à la clé du FINESS 400 / 400 : aucune distinction possible
+## mots neutres, un mot à la fois (P2-211) : Ecluse.redact (chemin du produit), nombres masqués en adresse
+mots neutres : 78 mots, 31200 phrases, 218 nombre(s) masqué(s) en adresse, 0 sous un autre type, 4 mot(s) touché(s) (Ecluse.redact)
+casse=capitales : 218 / 15600 nombres masqués en adresse
+casse=ordinaire : 0 / 15600 nombres masqués en adresse
+forme=accentuee : 218 / 30200 nombres masqués en adresse
+forme=sans_accent : 0 / 1000 nombres masqués en adresse
+position=debut : 136 / 15932 nombres masqués en adresse
+position=milieu : 82 / 15268 nombres masqués en adresse
+suite=rien : 0 / 10608 nombres masqués en adresse
+suite=neutre : 0 / 10316 nombres masqués en adresse
+suite=nom : 218 / 10276 nombres masqués en adresse
+majuscules=capitales : 218 / 15600 nombres masqués en adresse
+majuscules=phrase : 0 / 7800 nombres masqués en adresse
+majuscules=mixte : 0 / 7800 nombres masqués en adresse
+mot=actes : capitales 0 / 200, ordinaire 0 / 200
+mot=agents : capitales 0 / 200, ordinaire 0 / 200
+mot=ans : capitales 0 / 200, ordinaire 0 / 200
+mot=appels : capitales 0 / 200, ordinaire 0 / 200
+mot=au : capitales 0 / 200, ordinaire 0 / 200
+mot=aux : capitales 0 / 200, ordinaire 0 / 200
+mot=avec : capitales 0 / 200, ordinaire 0 / 200
+mot=ce : capitales 0 / 200, ordinaire 0 / 200
+mot=centimes : capitales 0 / 200, ordinaire 0 / 200
+mot=ces : capitales 0 / 200, ordinaire 0 / 200
+mot=cet : capitales 0 / 200, ordinaire 0 / 200
+mot=cette : capitales 0 / 200, ordinaire 0 / 200
+mot=chez : capitales 0 / 200, ordinaire 0 / 200
+mot=cl : capitales 0 / 200, ordinaire 0 / 200
+mot=cm : capitales 0 / 200, ordinaire 0 / 200
+mot=d : capitales 0 / 200, ordinaire 0 / 200
+mot=dans : capitales 0 / 200, ordinaire 0 / 200
+mot=de : capitales 0 / 200, ordinaire 0 / 200
+mot=des : capitales 0 / 200, ordinaire 0 / 200
+mot=dl : capitales 0 / 200, ordinaire 0 / 200
+mot=dossier : capitales 0 / 200, ordinaire 0 / 200
+mot=dossiers : capitales 0 / 200, ordinaire 0 / 200
+mot=du : capitales 0 / 200, ordinaire 0 / 200
+mot=en : capitales 0 / 200, ordinaire 0 / 200
+mot=est : capitales 0 / 200, ordinaire 0 / 200
+mot=et : capitales 0 / 200, ordinaire 0 / 200
+mot=eur : capitales 0 / 200, ordinaire 0 / 200
+mot=euro : capitales 0 / 200, ordinaire 0 / 200
+mot=euros : capitales 0 / 200, ordinaire 0 / 200
+mot=habitants : capitales 0 / 200, ordinaire 0 / 200
+mot=heures : capitales 0 / 200, ordinaire 0 / 200
+mot=iu : capitales 0 / 200, ordinaire 0 / 200
+mot=jours : capitales 0 / 200, ordinaire 0 / 200
+mot=kcal : capitales 0 / 200, ordinaire 0 / 200
+mot=kg : capitales 0 / 200, ordinaire 0 / 200
+mot=km : capitales 0 / 200, ordinaire 0 / 200
+mot=l : capitales 51 / 200, ordinaire 0 / 200
+mot=la : capitales 57 / 200, ordinaire 0 / 200
+mot=le : capitales 56 / 200, ordinaire 0 / 200
+mot=les : capitales 54 / 200, ordinaire 0 / 200
+mot=leur : capitales 0 / 200, ordinaire 0 / 200
+mot=leurs : capitales 0 / 200, ordinaire 0 / 200
+mot=lits : capitales 0 / 200, ordinaire 0 / 200
+mot=mcg : capitales 0 / 200, ordinaire 0 / 200
+mot=meq : capitales 0 / 200, ordinaire 0 / 200
+mot=mg : capitales 0 / 200, ordinaire 0 / 200
+mot=minutes : capitales 0 / 200, ordinaire 0 / 200
+mot=ml : capitales 0 / 200, ordinaire 0 / 200
+mot=mm : capitales 0 / 200, ordinaire 0 / 200
+mot=mmol : capitales 0 / 200, ordinaire 0 / 200
+mot=mois : capitales 0 / 200, ordinaire 0 / 200
+mot=mol : capitales 0 / 200, ordinaire 0 / 200
+mot=ng : capitales 0 / 200, ordinaire 0 / 200
+mot=numéro : capitales 0 / 100, ordinaire 0 / 100 ; sans accent : capitales 0 / 100, ordinaire 0 / 100
+mot=numéros : capitales 0 / 100, ordinaire 0 / 100 ; sans accent : capitales 0 / 100, ordinaire 0 / 100
+mot=ou : capitales 0 / 200, ordinaire 0 / 200
+mot=par : capitales 0 / 200, ordinaire 0 / 200
+mot=patients : capitales 0 / 200, ordinaire 0 / 200
+mot=personnes : capitales 0 / 200, ordinaire 0 / 200
+mot=pg : capitales 0 / 200, ordinaire 0 / 200
+mot=places : capitales 0 / 200, ordinaire 0 / 200
+mot=pour : capitales 0 / 200, ordinaire 0 / 200
+mot=que : capitales 0 / 200, ordinaire 0 / 200
+mot=qui : capitales 0 / 200, ordinaire 0 / 200
+mot=résidents : capitales 0 / 100, ordinaire 0 / 100 ; sans accent : capitales 0 / 100, ordinaire 0 / 100
+mot=sa : capitales 0 / 200, ordinaire 0 / 200
+mot=salariés : capitales 0 / 100, ordinaire 0 / 100 ; sans accent : capitales 0 / 100, ordinaire 0 / 100
+mot=sans : capitales 0 / 200, ordinaire 0 / 200
+mot=ses : capitales 0 / 200, ordinaire 0 / 200
+mot=son : capitales 0 / 200, ordinaire 0 / 200
+mot=sont : capitales 0 / 200, ordinaire 0 / 200
+mot=sous : capitales 0 / 200, ordinaire 0 / 200
+mot=sur : capitales 0 / 200, ordinaire 0 / 200
+mot=ui : capitales 0 / 200, ordinaire 0 / 200
+mot=un : capitales 0 / 200, ordinaire 0 / 200
+mot=une : capitales 0 / 200, ordinaire 0 / 200
+mot=vers : capitales 0 / 200, ordinaire 0 / 200
+mot=à : capitales 0 / 100, ordinaire 0 / 100 ; sans accent : capitales 0 / 100, ordinaire 0 / 100
+types sur le nombre : adresse 218
+## identifiant suivi d'un nombre (P2-174) : Ecluse.redact (chemin du produit)
+identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) faux, 2 suite(s) avalée(s), 2 document(s) en défaut
+type_id=finess : 1 / 1200 en défaut, 1 non couvert(s)
+type_id=iban : 0 / 1200 en défaut, 0 non couvert(s)
+type_id=nir : 0 / 1200 en défaut, 0 non couvert(s)
+type_id=rpps : 1 / 1200 en défaut, 0 non couvert(s)
+separateur=espace : 1 / 1600 en défaut, 1 non couvert(s)
+separateur=ligne : 1 / 1600 en défaut, 0 non couvert(s)
+separateur=virgule : 0 / 1600 en défaut, 0 non couvert(s)
+défaut : finess lu « rpps », nombre, espace : 1
+défaut : rpps lu « nir », nombre, ligne : 1
+## identifiant derrière un libellé fort (P2-194) : Ecluse.redact (chemin du produit)
+libellé fort : 2000 identifiants positifs, 0 en clair, 0 au type faux ; 1000 documents témoins, 3 masqués à tort (3 prédiction(s))
+variante=cle_juste : 0 / 300 en clair, 0 au type faux
+variante=cle_fausse : 0 / 300 en clair, 0 au type faux
+variante=ocr_zero : 0 / 300 en clair, 0 au type faux
+variante=ocr_un : 0 / 300 en clair, 0 au type faux
+variante=ligne_vide : 0 / 300 en clair, 0 au type faux
+variante=ocr_et_ligne_vide : 0 / 300 en clair, 0 au type faux
+variante=cle_fausse_sans_libelle : 0 / 200 en clair, 0 au type faux
+libellé=NIR : 0 / 300 en clair, 0 au type faux
+libellé=N° de sécurité sociale : 0 / 300 en clair, 0 au type faux
+libellé=numéro SS : 0 / 300 en clair, 0 au type faux
+libellé=IBAN : 0 / 300 en clair, 0 au type faux
+libellé=RPPS : 0 / 300 en clair, 0 au type faux
+libellé=ADELI : 0 / 300 en clair, 0 au type faux
+libellé=sans libellé : 0 / 200 en clair, 0 au type faux
+NIR x cle_juste : 0 / 50 en clair, 0 au type faux
+NIR x cle_fausse : 0 / 50 en clair, 0 au type faux
+NIR x ocr_zero : 0 / 50 en clair, 0 au type faux
+NIR x ocr_un : 0 / 50 en clair, 0 au type faux
+NIR x ligne_vide : 0 / 50 en clair, 0 au type faux
+NIR x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
+N° de sécurité sociale x cle_juste : 0 / 50 en clair, 0 au type faux
+N° de sécurité sociale x cle_fausse : 0 / 50 en clair, 0 au type faux
+N° de sécurité sociale x ocr_zero : 0 / 50 en clair, 0 au type faux
+N° de sécurité sociale x ocr_un : 0 / 50 en clair, 0 au type faux
+N° de sécurité sociale x ligne_vide : 0 / 50 en clair, 0 au type faux
+N° de sécurité sociale x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
+numéro SS x cle_juste : 0 / 50 en clair, 0 au type faux
+numéro SS x cle_fausse : 0 / 50 en clair, 0 au type faux
+numéro SS x ocr_zero : 0 / 50 en clair, 0 au type faux
+numéro SS x ocr_un : 0 / 50 en clair, 0 au type faux
+numéro SS x ligne_vide : 0 / 50 en clair, 0 au type faux
+numéro SS x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
+IBAN x cle_juste : 0 / 50 en clair, 0 au type faux
+IBAN x cle_fausse : 0 / 50 en clair, 0 au type faux
+IBAN x ocr_zero : 0 / 50 en clair, 0 au type faux
+IBAN x ocr_un : 0 / 50 en clair, 0 au type faux
+IBAN x ligne_vide : 0 / 50 en clair, 0 au type faux
+IBAN x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
+RPPS x cle_juste : 0 / 50 en clair, 0 au type faux
+RPPS x cle_fausse : 0 / 50 en clair, 0 au type faux
+RPPS x ocr_zero : 0 / 50 en clair, 0 au type faux
+RPPS x ocr_un : 0 / 50 en clair, 0 au type faux
+RPPS x ligne_vide : 0 / 50 en clair, 0 au type faux
+RPPS x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
+ADELI x cle_juste : 0 / 50 en clair, 0 au type faux
+ADELI x cle_fausse : 0 / 50 en clair, 0 au type faux
+ADELI x ocr_zero : 0 / 50 en clair, 0 au type faux
+ADELI x ocr_un : 0 / 50 en clair, 0 au type faux
+ADELI x ligne_vide : 0 / 50 en clair, 0 au type faux
+ADELI x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
+sans libellé x cle_fausse_sans_libelle : 0 / 200 en clair, 0 au type faux
+témoin négatif=libelle_seul : 0 / 300 masqués à tort (0 prédiction(s))
+témoin négatif=non_communique : 0 / 300 masqués à tort (0 prédiction(s))
+témoin négatif=mot_ordinaire : 0 / 300 masqués à tort (0 prédiction(s))
+témoin négatif=nombre_sans_libelle : 3 / 100 masqués à tort (3 prédiction(s))
+témoin négatif, libellé=NIR : 0 / 150 masqués à tort
+témoin négatif, libellé=N° de sécurité sociale : 0 / 150 masqués à tort
+témoin négatif, libellé=numéro SS : 0 / 150 masqués à tort
+témoin négatif, libellé=IBAN : 0 / 150 masqués à tort
+témoin négatif, libellé=RPPS : 2 / 200 masqués à tort
+témoin négatif, libellé=ADELI : 1 / 200 masqués à tort
+confiance des masquages (chemin : Ecluse.redact) :
+confiance positifs : 0.3=1649, 0.6=50, 0.9=50, 0.95=50, 1=201
+confiance variante=cle_juste : 0.9=50, 0.95=50, 1=200
+confiance variante=cle_fausse : 0.3=250, 0.6=50
+confiance variante=ocr_zero : 0.3=300
+confiance variante=ocr_un : 0.3=300
+confiance variante=ligne_vide : 0.3=300
+confiance variante=ocr_et_ligne_vide : 0.3=300
+confiance variante=cle_fausse_sans_libelle : 0.3=199, 1=1
+confiance détections des négatifs : 0.55=3
+avertissement à vérifier : positifs 1699 / 2000, négatifs 0 / 1000
+à vérifier variante=cle_juste : 0 / 300
+à vérifier variante=cle_fausse : 300 / 300
+à vérifier variante=ocr_zero : 300 / 300
+à vérifier variante=ocr_un : 300 / 300
+à vérifier variante=ligne_vide : 300 / 300
+à vérifier variante=ocr_et_ligne_vide : 300 / 300
+à vérifier variante=cle_fausse_sans_libelle : 199 / 200
+incohérence confiance 0.3 / avertissement : positifs 0, négatifs 0
+exception P2-204 (ADELI clé fausse, confiance 0.6, avec avertissement) : positifs 50
+## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90
+# realiste largeur 60 : 3 refus
+adresse 156 156 100.0% 100.0% 100.0% 100.0% 0.0%
+etablissement 397 397 79.1% 79.1% 79.1% 100.0% 0.0%
+nom 476 476 16.4% 16.4% 16.4% 100.0% 27.6%
+GLOBAL 1662 1646 70.8% 70.1% 70.4% 99.5% 8.2%
+entités coupées par une fin de ligne : adresse 95 coupées (95 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 4 coupées (4 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
+# adversarial largeur 60 : 0 refus
+adresse 155 155 100.0% 100.0% 100.0% 100.0% 0.0%
+etablissement 114 114 100.0% 100.0% 100.0% 100.0% 0.0%
+nom 594 579 73.2% 71.4% 72.3% 98.7% 11.0%
+GLOBAL 1082 1067 85.5% 84.3% 84.9% 99.3% 5.3%
+entités coupées par une fin de ligne : adresse 106 coupées (106 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 0 coupées (0 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
+# temoin largeur 60 : 0 refus
+entites predites 0
+# structurel largeur 60, moteur seul (ecluse_core)
+Ecluse nir 100.0% 92.7% 96.2% 291 0 23
+Ecluse rpps 95.5% 90.4% 92.9% 150 7 16
+Ecluse iban 100.0% 77.9% 87.6% 204 0 58
+Ecluse finess 100.0% 100.0% 100.0% 129 0 0
+Ecluse TOTAL 99.2% 89.7% 94.2% 846 7 97
+# structurel largeur 60, détecteur isolé (appel direct des quatre détecteurs)
+finess 129/129 iban 156/262 nir 247/314 rpps 150/166 siren 72/72 TOTAL 754/943 (80.0 %)
+# structurel largeur 60, Ecluse.redact (chemin du produit)
+finess 129/129 iban 262/262 nir 313/314 rpps 166/166 siren 72/72 TOTAL 942/943 (99.9 %)
+# realiste largeur 90 : 0 refus
+adresse 159 159 100.0% 100.0% 100.0% 100.0% 0.0%
+etablissement 400 400 79.2% 79.2% 79.2% 100.0% 0.0%
+nom 479 479 16.3% 16.3% 16.3% 100.0% 27.7%
+GLOBAL 1677 1677 71.1% 71.1% 71.1% 100.0% 7.5%
+entités coupées par une fin de ligne : adresse 83 coupées (83 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 44 coupées (44 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
+# adversarial largeur 90 : 0 refus
+adresse 155 155 100.0% 100.0% 100.0% 100.0% 0.0%
+etablissement 114 114 100.0% 100.0% 100.0% 100.0% 0.0%
+nom 594 579 73.2% 71.4% 72.3% 98.7% 11.0%
+GLOBAL 1082 1067 85.5% 84.3% 84.9% 99.3% 5.3%
+entités coupées par une fin de ligne : adresse 106 coupées (106 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 0 coupées (0 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
+# temoin largeur 90 : 0 refus
+entites predites 0
+# structurel largeur 90, moteur seul (ecluse_core)
+Ecluse nir 100.0% 100.0% 100.0% 314 0 0
+Ecluse rpps 98.2% 100.0% 99.1% 166 3 0
+Ecluse iban 100.0% 89.7% 94.6% 235 0 27
+Ecluse finess 100.0% 100.0% 100.0% 129 0 0
+Ecluse TOTAL 99.7% 97.1% 98.4% 916 3 27
+# structurel largeur 90, détecteur isolé (appel direct des quatre détecteurs)
+finess 129/129 iban 187/262 nir 269/314 rpps 166/166 siren 72/72 TOTAL 823/943 (87.3 %)
+# structurel largeur 90, Ecluse.redact (chemin du produit)
+finess 129/129 iban 262/262 nir 314/314 rpps 166/166 siren 72/72 TOTAL 943/943 (100.0 %)
+## collage de fin de ligne hors du cœur (P2-166)
+../../bench/flou/structurel_l60.jsonl : 1000 doc., 97 coupures chiffre-fin de ligne-chiffre, 96 détections traversant une coupure (iban 58, nir 22, rpps 16) = 96 attendues + 0 à tort, 0 colonnes de 9/11/13 chiffres
+../../bench/flou/structurel_l90.jsonl : 1000 doc., 27 coupures chiffre-fin de ligne-chiffre, 27 détections traversant une coupure (iban 27) = 27 attendues + 0 à tort, 0 colonnes de 9/11/13 chiffres
+../../bench/flou/corpus_flou_temoin_l60.jsonl : 400 doc., 0 coupures chiffre-fin de ligne-chiffre, 0 détections traversant une coupure (aucune) = 0 attendues + 0 à tort, 0 colonnes de 9/11/13 chiffres
+../../bench/flou/corpus_flou_temoin_l90.jsonl : 400 doc., 0 coupures chiffre-fin de ligne-chiffre, 0 détections traversant une coupure (aucune) = 0 attendues + 0 à tort, 0 colonnes de 9/11/13 chiffres
+Contrôle : 0 détection(s) traversant une coupure dans le texte non recollé (attendu 0).
+cas « Salle 4⏎A2 » : 1 coupure(s), 0 détection(s) traversant une coupure
+cas « Vol 12⏎B7 » : 1 coupure(s), 0 détection(s) traversant une coupure
+cas « le 3⏎C4 du plan » : 1 coupure(s), 0 détection(s) traversant une coupure
+cas « chambres 101⏎102 » : 3 coupure(s), 0 détection(s) traversant une coupure
+cas « tableau de chambres » : 7 coupure(s), 0 détection(s) traversant une coupure
+colonne de 2 nombres de 9 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+colonne de 10 nombres de 9 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+colonne de 2 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+colonne de 10 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+colonne de 2 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+colonne de 10 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+```
+<!-- controle:fin -->
