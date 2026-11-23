@@ -29,6 +29,7 @@ part 'apercu.dart';
 part 'dossier.dart';
 part 'identites_de_noms.dart';
 part 'patronymes_connus.dart';
+part 'nombres_dictes.dart';
 part 'normalisation_du_texte.dart';
 part 'restauration.dart';
 part 'session.dart';
@@ -314,6 +315,19 @@ abstract final class Ecluse {
                 );
               }()
           ];
+    // P2-267 : identifiants dictés en toutes lettres, lus dans une seconde
+    // vue (jamais à la place de la première) ; rien à faire, et rien de
+    // changé, sans suite de mots-nombres.
+    final dictees = await _detecterNombresDictes(text, (vue) async {
+      final ents = (await engine.run(vue)).entities;
+      final cle = const IdentifiantCleInvalideDetector().detect(vue);
+      final fausse = const NirCleInvalideDetector().detect(vue);
+      if (cle.isEmpty && fausse.isEmpty) return ents;
+      return _avecCleInvalide(resolveOverlaps([...ents, ...fausse]), cle);
+    });
+    final surLeTexteEtDictees = dictees.isEmpty
+        ? surLeTexte
+        : resolveOverlaps([...surLeTexte, ...dictees]);
     // P2-188 : identifiant à clé invalide annoncé par un libellé fort, sur
     // [text] directement — jamais sur [vue] (voir le commentaire de
     // `defaultDetectors`).
@@ -323,9 +337,10 @@ abstract final class Ecluse {
     final nirCleFausse = const NirCleInvalideDetector().detect(text);
     if (nirCleFausse.isNotEmpty) {
       return _avecCleInvalide(
-          resolveOverlaps([...surLeTexte, ...nirCleFausse]), cleInvalide);
+          resolveOverlaps([...surLeTexteEtDictees, ...nirCleFausse]),
+          cleInvalide);
     }
-    return _avecCleInvalide(surLeTexte, cleInvalide);
+    return _avecCleInvalide(surLeTexteEtDictees, cleInvalide);
   }
 
   static List<DetectedEntity> _avecCleInvalide(
@@ -503,6 +518,7 @@ abstract final class Ecluse {
         if (cleInvalideCount > 0)
           'identifiant à clé invalide masqué : à vérifier'
               '${cleInvalideCount > 1 ? " ($cleInvalideCount occurrences)" : ""}.',
+        ..._avertissementNombreDicte(text, resolved),
         if (_sansMajuscule(text))
           _avertissementSansMajuscule
         else if (_casseDePhrase(text, resolved))
@@ -516,6 +532,21 @@ abstract final class Ecluse {
           ? null
           : evaluerRisque(riskReference, maskedText),
     );
+  }
+
+  /// Signalement non bloquant d'une suite dictée non reconnue (P2-267, option
+  /// B de la spec P2-155) : positions et compte seulement, jamais de valeur.
+  static List<String> _avertissementNombreDicte(
+      String text, List<DetectedEntity> resolved) {
+    final positions = _suitesNonReconnues(text, resolved);
+    if (positions.isEmpty) return const [];
+    final n = positions.length;
+    final liste = positions.take(5).join(', ');
+    return [
+      'nombre dicté non reconnu, relire avant envoi ($n passage'
+          '${n > 1 ? "s" : ""}, position${n > 1 ? "s" : ""} $liste'
+          '${n > 5 ? ", …" : ""}).'
+    ];
   }
 
   /// Vrai pour un ADELI de neuf chiffres dont la clé Luhn est fausse, masqué à

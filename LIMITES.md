@@ -468,6 +468,52 @@ une coupure au milieu d'un groupe ne l'est pas.
   `identifiant_cle_invalide_ocr_test.dart` (13 cas positifs, 12 négatifs)
   est chiffré.
 
+### Identifiants dictés en toutes lettres (P2-267)
+
+Un identifiant dicté puis transcrit en toutes lettres (« un neuf trois zéro
+huit… ») est lu par `Ecluse.redact` seulement (pas par le moteur seul
+`ecluse_core`), dans une seconde vue qui ne remplace jamais la première : sur un
+texte sans suite de mots-nombres, le résultat est celui d'avant, octet pour
+octet. **Couvert** : NIR, RPPS, IBAN FR, FINESS, SIREN et SIRET nommés, dictés
+chiffre par chiffre, par paires ou par groupes, avec « double » et « triple »,
+« septante », « huitante », « nonante », le zéro dit « o », les traits d'union
+perdus, « fr » collé aux chiffres, les lettres d'un compte d'IBAN et la lettre
+d'un NIR corse. Mesuré sur le banc synthétique (graine 42, 943 identifiants, cinq
+variantes) : fuite au caractère de 97,4 à 98,0 % avant, de 0,0 à 0,1 % après ; au
+pire 1,1 % par type (FINESS). Voir `bench/ETAT.md`.
+
+**Ce qui reste hors périmètre**, à ne pas promettre :
+
+- **Lettres épelées hors de ces cas** (« F R » dit lettre à lettre, « effe erre »),
+  corrections du locuteur (« non, pardon, … »), erreur de transcription d'un
+  chiffre, nombres dits dans une autre langue que le français, vrai audio (la
+  qualité du transcripteur n'est pas mesurée : le banc part d'un texte déjà
+  transcrit).
+- **Pas de mot-nombre isolé** : une suite d'au moins 6 mots-nombres consécutifs (3
+  derrière un mot-clé d'identifiant) est nécessaire. Un identifiant dicté en moins
+  de mots, ou coupé par un mot ordinaire (« un deux trois euh quatre cinq… »), n'est
+  pas lu.
+- **Validation par la clé** : une lecture n'est retenue que si un détecteur la
+  valide (clé mod 97 du NIR et de l'IBAN, Luhn, longueur). Un chiffre mal dicté
+  donne une clé fausse : le NIR et l'IBAN à clé fausse restent masqués par leurs
+  règles propres (P2-188, P2-252, P2-258), mais un RPPS, un FINESS ou un SIREN
+  mal dicté n'est pas masqué.
+- **Mot-clé obligatoire pour RPPS, FINESS, SIREN, ADELI et téléphone** (Luhn seul :
+  un faux accord sur dix) : « rpps », « praticien », « finess », « siren »,
+  « siret », « adeli », « téléphone », « structure », « établissement », « code »… dans
+  les 60 caractères qui précèdent. Sans mot-clé, un RPPS dicté n'est pas masqué.
+- **Au plus 64 lectures** sont essayées par suite (la plus composée d'abord) ; une
+  suite très ambiguë peut dépasser la borne.
+- **Signalement** : une suite d'au moins 9 mots-nombres qu'aucune lecture ne valide
+  est signalée « nombre dicté non reconnu, relire avant envoi » (positions et compte,
+  jamais de valeur) ; ce n'est pas un masquage. Une phrase ordinaire dense en
+  nombres (dates, montants) peut déclencher ce signalement : voir le témoin.
+- **Un FINESS dicté peut rester en partie en clair** (jusqu'à 17 caractères sur 9
+  chiffres dits) quand un nom d'établissement détecté juste avant l'emporte au tri.
+- **Coût** : linéaire ; pour des centaines de milliers de caractères de mots-nombres
+  sans identifiant, compter quelques secondes (la suite est lue par fenêtres de 240
+  mots et un budget de lectures borné).
+
 ## 3. Lieux et quasi-identifiants
 
 Une adresse postale complète (numéro + type de voie + code postal + commune)
