@@ -334,7 +334,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-263 | code | NIR à clé fausse coupé par une fin de ligne, en chiffres pleine chasse ou groupé 3 × 5 : masqué à 0,3 par la vue de détection | P2-258 | à faire |
 | P2-264 | mesure | Fuite par OCR (« O » pour 0, « l » ou « I » pour 1) sans libellé, par type, avec le coût en masquages à tort ; rien corrigé | — | à faire |
 | P2-265 | code | `bench/ETAT.md` contrôlé : un script compare chaque tableau courant à la sortie d'`etat.sh` et échoue au premier écart ; historique à part | — | à faire |
-| P2-266 | code | Machine neuve : le test d'équivalence dit quelle commande génère `bench/corpus.jsonl` au lieu d'échouer seulement sur « introuvable » | — | à faire |
+| P2-266 | code | Machine neuve : le test d'équivalence dit quelle commande génère `bench/corpus.jsonl` au lieu d'échouer seulement sur « introuvable » | — | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
