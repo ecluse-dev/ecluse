@@ -5,8 +5,14 @@ Entités cibles : **NIR**, **RPPS**, **IBAN FR**, **FINESS**.
 
 ## Résultats (corpus v3, seed 42, 1000 documents, 826 entités)
 
-Rejoués le 22 novembre 2026 (Écluse au commit `94749ac`, prédictions Presidio
-`presidio-analyzer` 2.2.366 inchangées). Depuis cette date, les **48 IBAN à clé
+Rejoués le 22 novembre 2026 au commit `91d009c` (Écluse **et Presidio** :
+`presidio-analyzer` 2.2.366, modèle `en_core_web_lg`, seuil 0,35, prédictions
+régénérées) : les chiffres du tableau ci-dessous sont identiques à ceux publiés
+au commit `94749ac`. **Chemin mesuré** : les lignes « Écluse » de ce fichier qui
+portent sur les identifiants (corpus v3 et `extended`) sont celles du **moteur
+seul** (`ecluse_core`, `bin/run_ecluse.dart`) ; ce n'est **pas** ce que reçoit le
+LLM, qui reçoit la sortie d'`Ecluse.redact` (voir les sections « Entités
+floues » et suivantes, qui mesurent `Ecluse.redact`). Depuis le 22 novembre, les **48 IBAN à clé
 invalide** du corpus (« L'IBAN … a été refusé par la banque ») sont **annotés**
 `iban` : un IBAN mal recopié reste le compte de quelqu'un (`DECISIONS.md`,
 22 novembre). Avant : 778 entités, 214 IBAN.
@@ -56,7 +62,7 @@ en plus des styles déjà couverts (`compact`, `spaced`, `dotted`). Motif
 réel de documents copiés-collés depuis Word/PDF, où un séparateur
 simple ne suffit pas à retrouver l'identifiant.
 
-Ce style représente 67 NIR et 67 IBAN sur ce tirage (seed 42 ; ce compte a
+Ce style représente 67 NIR et 67 IBAN valides sur ce tirage (seed 42 ; ce compte a
 changé depuis la v2 — l'ajout des gabarits FINESS/SIREN en v3 déplace la
 séquence aléatoire, donc tout comptage dérivé du générateur doit être
 recalculé à chaque évolution du générateur, pas seulement lu depuis une
@@ -65,7 +71,12 @@ version antérieure de ce document). Rappel sur ce sous-ensemble isolé :
 | Entité | Cas à espacement irrégulier | Détectés | Rappel |
 |---|---:|---:|---:|
 | NIR | 67 | 67 | **100 %** |
-| IBAN FR | 67 | 67 | **100 %** |
+| IBAN FR (valides) | 67 | 67 | **100 %** |
+| IBAN FR (valides, plus les 19 IBAN à clé invalide écrits ainsi, annotés depuis le 22 novembre) | 86 | 86 | **100 %** |
+
+Rejoué le 22 novembre 2026 au commit `91d009c`, **moteur seul** (`run_ecluse.dart`) :
+un span est « à espacement irrégulier » s'il contient une tabulation, une
+espace insécable ou deux espaces consécutifs, d'après le texte du corpus.
 
 Traité par `DigitCompaction` (`packages/ecluse_core/lib/src/digit_compaction.dart`) :
 neutralise les espaces internes à une séquence de chiffres avant
@@ -116,8 +127,11 @@ SIREN sans le mot « SIREN » (RCS, Kbis, TVA intracommunautaire), des
 phrases mêlant FINESS et SIREN, et des ADELI (type annoté `adeli`) avec
 mot-clé, sans mot-clé et à clé invalide.
 
-Mesure de l'état actuel d'Écluse (**avant toute correction**, seed 42,
-1000 documents, 739 entités annotées), appariement strict :
+Mesure **publiée** à P1-13 (« état actuel d'Écluse », **avant toute correction**,
+seed 42, 1000 documents, 739 entités annotées : avant l'annotation des IBAN à
+clé invalide, qui en ajoute 27 dans ce profil, et avant P2-248), appariement
+strict. **Valeurs historiques, conservées** ; l'état d'aujourd'hui est donné
+plus bas (« Rejeu du 22 novembre 2026 ») :
 
 | Entité | Précision | Rappel | TP | FP | FN |
 |---|---:|---:|---:|---:|---:|
@@ -145,7 +159,8 @@ Ces chiffres **ne sont pas comparables** à ceux du corpus v3 ci-dessus
   passent la clé de Luhn du RPPS par coïncidence. Défaut nouveau, révélé
   par ce profil.
 
-**Après P1-14** (`AdeliDetector`, même corpus, seed 42, appariement strict) :
+**Après P1-14** (`AdeliDetector`, même corpus de 739 entités, seed 42, appariement
+strict ; valeurs **publiées**, historiques) :
 
 | Entité | Précision | Rappel | TP | FP | FN |
 |---|---:|---:|---:|---:|---:|
@@ -158,6 +173,31 @@ l'étiquette `finess` (voir la fuite à 0 %). Les 68 ADELI avec mot-clé
 cessent de compter comme faux positifs FINESS (284 → 216) ; NIR, RPPS et
 IBAN sont inchangés. Le rappel `adeli` reste bas par construction (décision
 §3.3 de la spec) : il n'est pas un défaut à corriger.
+
+**Rejeu du 22 novembre 2026** (commit `91d009c`, **moteur seul**, `run_ecluse.dart` ;
+corpus `extended`, seed 42, 1000 documents, **766 entités annotées** : NIR 174,
+RPPS 117, IBAN 178, FINESS 172, ADELI 125), appariement strict :
+
+| Entité | Précision | Rappel | TP | FP | FN | Fuite au caractère |
+|---|---:|---:|---:|---:|---:|---:|
+| NIR | 100 % | 100 % | 174 | 0 | 0 | 0,0 % |
+| RPPS | 95,1 % | 100 % | 117 | 6 | 0 | 0,0 % |
+| IBAN FR | 100 % | 100 % | 178 | 0 | 0 | 0,0 % |
+| FINESS | 53,7 % | 80,2 % | 138 | 119 | 34 | 0,0 % |
+| ADELI | 100 % | 74,4 % | 93 | 0 | 32 | 0,0 % |
+| `siren` (aucun annoté) | 0 % | — | 0 | 131 | 0 | — |
+| **TOTAL** | 73,2 % | 91,4 % | 700 | 256 | 66 | |
+
+Ce qui a changé depuis les tableaux publiés : l'IBAN passe de 151 à 178 annotés
+(27 IBAN à clé invalide annotés), et **P2-248** type `siren` un nombre appelé
+« SIREN » ou « SIRET » : les FP `finess` passent de 216 à 119 (34 + 32 + 17 + 14 + 12 + 10 :
+SIREN du RCS, ADELI sans mot-clé, SIREN du Kbis, SIREN devant « structure FINESS ») et 131 FP
+apparaissent sous `siren`. Les **34 FN `finess`** sont des vrais FINESS
+(« Structure … , gérée par la société SIREN … ») que le mot « SIREN » voisin fait
+typer `siren` : masqués, donc 0,0 % de fuite, seule l'étiquette est fausse
+(`LIMITES.md` § 1). Presidio avec les reconnaisseurs `validated` sur le même
+corpus : NIR 100 % / 100 %, RPPS 95,1 % / 100 % (les mêmes 6 faux positifs de TVA), IBAN
+100 % / 51,7 % (fuite 53,9 %), FINESS et ADELI 0 % ; TOTAL 98,5 % / 50,0 %.
 
 Limites de cette mesure : mêmes que le corpus v3 (synthétique, généré par
 nous, une graine) ; les codes profession des ADELI sont tirés au hasard (la
@@ -197,10 +237,12 @@ configuration Presidio que la note ¹ (modèle `en_core_web_lg`, seuil 0,35) :
 | + reconnaisseurs `validated` | **100 % / 100 %** | **100 % / 100 %** | 100 % / 56,1 % | — / 0 % | 100 % / 70,5 % |
 | Écluse | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 95,2 % / 100 % (42 SIREN) |
 
-Lignes Presidio étendues recalculées le 22 novembre sans rejouer les
-reconnaisseurs : seule l'annotation des 48 IBAN à clé invalide change (non
-détectés par le recognizer IBAN), NIR et RPPS sont identiques. Avant : IBAN
-68,7 %, rappel total 18,9 % et 74,8 %.
+Lignes Presidio rejouées le 22 novembre 2026 (commit `91d009c`, les trois
+configurations, prédictions régénérées) : identiques au tableau ci-dessus. Seule
+l'annotation des 48 IBAN à clé invalide a changé depuis la publication
+(non détectés par le recognizer IBAN), NIR et RPPS sont identiques. Valeurs
+d'**avant** cette annotation, publiées et non rejouées : IBAN 68,7 %, rappel
+total 18,9 % et 74,8 %.
 
 Lecture, sans l'arrondir en faveur d'Écluse :
 
@@ -211,14 +253,15 @@ Lecture, sans l'arrondir en faveur d'Écluse :
   la validation de clé est ce qui compte, pas le moteur.
 - **L'écart restant vient de l'IBAN et du FINESS.** Le recognizer IBAN livré
   par Presidio ne reconnaît ni les 67 IBAN à espacement irrégulier ni les 48
-  à clé invalide (rappel 56,1 %, fuite au caractère de 48,3 % ; avant leur
-  annotation : 68,7 % et 36,6 %), et rien ne couvre le FINESS. Un
+  à clé invalide (rappel 56,1 %, fuite au caractère de 48,3 %, rejoués le
+  22 novembre ; avant leur annotation, valeurs publiées non rejouées : 68,7 % et
+  36,6 %), et rien ne couvre le FINESS. Un
   utilisateur pourrait écrire ces deux reconnaisseurs aussi : ce n'est pas
   mesuré ici (hors de la tâche).
 - **Le même défaut apparaît des deux côtés** : sur le corpus étendu, le RPPS
   validé de Presidio a les mêmes 6 faux positifs que celui d'Écluse (les
   numéros de TVA passent la clé de Luhn par coïncidence), RPPS 95,1 % de
-  précision pour les deux.
+  précision pour les deux (rejoué le 22 novembre 2026).
 - Hors périmètre de cette comparaison : tout ce qu'Écluse fait en plus
   (noms, adresses, restauration réversible, garde-fous d'ingestion) et que
   Presidio fait autrement (reconnaissance d'entités nommées anglophone).
@@ -264,6 +307,10 @@ page, 200 pages, 50 Mo) restent des valeurs de départ à calibrer en P1-17.
 
 `--with-oversize` ajoute `tres_gros.pdf` (51 Mo, non versionné) pour le plafond de taille.
 
+Rejoué le 22 novembre 2026 (commit `91d009c`) : `python3 bench/generate_pdfs.py --out <dossier>`
+écrit 18 PDF, **identiques octet pour octet** à ceux versionnés dans `bench/pdf/`
+(`diff -rq` sans écart).
+
 **Ce que le jeu montre déjà** (lecture avec `pdftotext` de poppler, outil de
 vérification local, pas une dépendance du projet) :
 
@@ -294,8 +341,11 @@ légitimes : toute détection est un faux positif). Le scoreur
 (`score_flou.py`) donne trois mesures : strict (span exact + type), souple
 (recouvrement) et **fuite au caractère** (part des caractères sensibles
 restée en clair, toutes catégories confondues) — la fuite est la mesure de
-référence. Moteur : `Ecluse.redact` complet (détecteurs à clé + heuristiques),
-seed 42, 400 documents par corpus.
+référence. Moteur : `Ecluse.redact` complet (détecteurs à clé + heuristiques) : **c'est le
+chemin du produit, ce que reçoit le LLM**. Seed 42, 400 documents par corpus,
+rejoués le 22 novembre 2026 au commit `91d009c` (`run_redact_bench.dart` puis
+`score_flou.py`). Le corpus réaliste est inchangé depuis la publication ; le
+**corpus adversarial a changé** (valeurs publiées avant : voir la note ³).
 
 | Corpus | Type | Annotés | Détectés | Rappel strict | F1 souple | Fuite |
 |---|---|---:|---:|---:|---:|---:|
@@ -306,13 +356,13 @@ seed 42, 400 documents par corpus.
 | Réaliste | nom | 479 | 479 | 16,3 % | 100 % | 27,7 % ² |
 | Réaliste | téléphone | 233 | 233 | 100 % | 100 % | 0 % |
 | Réaliste | **global** | 1677 | 1677 | 71,1 % | 100 % | **7,5 %** |
-| Adversarial | adresse | 155 | 106 | 34,2 % | 81,2 % | 15,0 % |
+| Adversarial | adresse | 155 | 155 | 100 % | 100 % | 0 % |
 | Adversarial | date de naissance | 53 | 53 | 100 % | 100 % | 0 % |
 | Adversarial | email | 53 | 53 | 100 % | 100 % | 0 % |
 | Adversarial | établissement | 114 | 114 | 100 % | 100 % | 0 % |
-| Adversarial | nom | 594 | 504 | 53,4 % | 83,2 % | 27,2 % |
+| Adversarial | nom | 594 | 579 | 71,4 % | 98,7 % | 11,0 % |
 | Adversarial | téléphone | 113 | 113 | 100 % | 100 % | 0 % |
-| Adversarial | **global** | 1082 | 943 | 65,0 % | 88,5 % | **16,8 %** |
+| Adversarial | **global** | 1082 | 1067 | 84,3 % | 99,3 % | **5,3 %** |
 | Témoin | — | 0 | 0 | — | — | 0 détection (0 faux positif) |
 
 ² La fuite de 27,7 % sur les noms du corpus réaliste est **entièrement** la
@@ -321,15 +371,23 @@ le corpus annote dans le nom alors qu'Écluse la conserve volontairement en
 clair (`LIMITES.md`, point 4). Ce n'est pas une fuite de nom propre ; le
 rappel strict de 16,3 % est le même artefact de convention.
 
-Lecture : sur le corpus réaliste, aucun nom propre, adresse, date, email ni
-téléphone n'échappe. Sur le corpus adversarial, **16,8 % des caractères
-sensibles restent en clair** : surtout des prénoms hors gazetteer
-(Krzysztof, Souleymane, Yaroslav, Mei-Ling, Aïcha…), des initiales
-(« S. Vasseur ») et des adresses atypiques. Un NER local (phase 2) est la
-réponse prévue, pas ces heuristiques.
+³ Valeurs **publiées** du corpus adversarial avant le rejeu du 22 novembre 2026
+(historiques, non rejouées) : adresse 106 détectées sur 155 (rappel strict 34,2 %,
+fuite 15,0 %) ; nom 504 sur 594 (rappel strict 53,4 %, F1 souple 83,2 %, fuite 27,2 %) ;
+global 943 sur 1082 (rappel strict 65,0 %, F1 souple 88,5 %, fuite 16,8 %).
 
-**Restauration.** Le runner signale 61 documents du corpus adversarial dont
-la restauration n'est pas octet pour octet (0 sur le corpus réaliste). Ce
+Lecture : sur le corpus réaliste, aucun nom propre, adresse, date, email ni
+téléphone n'échappe. Sur le corpus adversarial, **5,3 % des caractères
+sensibles restent en clair**, tous des noms (11,0 % des caractères de noms) : d'après
+`leak_hors_civilite.py` (section « Fuite des noms hors civilité »), surtout des prénoms
+hors gazetteer (« Souleymane », « Yaroslav ») et quelques patronymes. Aucune adresse
+n'est en clair sur ce corpus au rejeu du 22 novembre (15,0 % avant, note ³). Le NER
+local est gelé (STOP du 8 novembre, `DECISIONS.md` P2-90) : les heuristiques restent la
+détection des noms et adresses.
+
+**Restauration.** Le runner signale 62 documents du corpus adversarial dont
+la restauration n'est pas octet pour octet (0 sur le corpus réaliste ; 61 à la
+publication, 62 au rejeu du 22 novembre 2026). Ce
 sont les variantes d'ordre ou de casse d'une même personne
 (« PERROT Olivier », « Olivier Perrot », « OLIVIER PERROT »), harmonisées sur
 une seule graphie à la restauration : le compromis documenté en
@@ -409,13 +467,18 @@ done
 ```
 
 Avant : sur combien de documents la chaîne actuelle lève-t-elle une exception ?
-(400 documents par corpus ; graine 42, puis graine 7 entre parenthèses.)
+(400 documents par corpus ; graine 42, puis graine 7 entre parenthèses.) **Rejoué le
+22 novembre 2026** au commit `91d009c`, commande `run_reid_bench.dart --avant` des deux
+graines : réaliste et adversarial inchangés, le témoin **a changé**.
 
 | Corpus | Documents en exception | Cause | Sans QI, classés « risque faible » |
 |---|---:|---|---:|
 | Réaliste | 66 = 16,5 % (48 = 12,0 %) | doublon de type | 0 |
-| Adversarial | 166 = 41,5 % (170 = 42,5 %) | 138 doublons de type, 28 professions sans lieu | 0 |
-| Témoin | 75 = 18,8 % (69 = 17,3 %) | doublon de type | 63 (67) |
+| Adversarial | 166 = 41,5 % (170 = 42,5 %) | 138 doublons de type, 28 professions sans lieu (graine 7 : 144 et 26) | 0 |
+| Témoin | **0** (0) | — | **400** (400) |
+
+Valeurs **publiées** du témoin à P2-03b (historiques, non rejouées) : 75 = 18,8 % (69 =
+17,3 %) en exception, doublon de type, 63 (67) sans QI classés « risque faible ».
 
 Même sur le corpus **réaliste**, où chaque document ne parle que d'une personne,
 des exceptions surviennent : l'extraction actuelle produit des doublons à partir
@@ -423,41 +486,47 @@ d'un seul mot (« médecin généraliste » donne deux professions, « chirurgie
 dentiste » en donne trois, « pharmacienne » deux) et lit un patronyme qui est
 aussi une commune (« Chevrier ») comme un second lieu.
 
-Après : l'évaluation totale n'a **aucune exception** sur les six corpus. Graine 42 :
+Après : l'évaluation totale n'a **aucune exception** sur les trois corpus de la graine 42.
+**Rejoué le 22 novembre 2026** (commit `91d009c`, `run_reid_bench.dart` puis `score_qi.py` ;
+`ecluse_reid` seul, ce n'est pas `Ecluse.redact`). Graine 42 :
 
 | Corpus | évalué | non évaluable | aucun QI |
 |---|---:|---:|---:|
-| Réaliste | 364 | 36 | 0 |
-| Adversarial | 215 | 185 | 0 |
-| Témoin | 262 | 75 | 63 |
+| Réaliste | 400 | 0 | 0 |
+| Adversarial | 228 | 172 | 0 |
+| Témoin | 0 | 0 | 400 |
 
-Extraction (strict, graine 42) :
+Extraction (strict, graine 42, rejouée le 22 novembre 2026) :
 
 | Corpus | Type | Précision | Rappel | Non couverts |
 |---|---|---:|---:|---:|
-| Réaliste | âge / lieu / profession | 100 % / 88,2 % / 100 % | 100 % / 100 % / 100 % | 0 % / 0 % / 0 % |
-| Adversarial | âge | 100 % | 95,5 % | 12,7 % |
-| Adversarial | lieu | 92,3 % | 100 % | 0 % |
-| Adversarial | profession | 100 % | 96,2 % | 2,0 % |
-| Témoin | tous types | 412 extractions, 337 documents sur 400 touchés | | |
+| Réaliste | âge / lieu / profession | 100 % / 100 % / 100 % | 100 % / 100 % / 100 % | 0 % / 0 % / 0 % |
+| Adversarial | âge | 100 % | 100 % | 0 % |
+| Adversarial | lieu | 100 % | 100 % | 0 % |
+| Adversarial | profession | 100 % | 100 % | 0 % |
+| Témoin | tous types | 0 extraction, 0 document sur 400 touché | | |
+
+Valeurs **publiées** à P2-03b (historiques, non rejouées) : évalué / non évaluable / aucun QI
+364 / 36 / 0 (réaliste), 215 / 185 / 0 (adversarial), 262 / 75 / 63 (témoin) ; extraction
+réaliste lieu 88,2 % de précision ; adversarial âge 95,5 % de rappel et 12,7 % non couverts,
+lieu 92,3 % de précision, profession 96,2 % de rappel et 2,0 % non couverts ; témoin 412
+extractions sur 337 documents touchés.
 
 Lecture, sans l'arrondir :
 
-- **Le rappel de 100 % du corpus réaliste ne prouve rien** : ce corpus est écrit avec
-  les mots que l'extraction connaît. Il n'est pas indépendant du vocabulaire.
-  Les manques apparaissent dans l'adversarial : âges en toutes lettres (« trente et
-  un ans », « soixante-douze ans ») et abréviations ou graphies (« pneumo »,
-  « gynéco », « pediatre »). Le vocabulaire n'a **pas** été élargi.
-- **Les faux positifs du réaliste sont tous le même mot** : « Chevrier », un
-  patronyme du corpus qui est aussi une commune (43 sur 43). Distinguer un nom de
-  personne d'un nom de lieu demande le contexte, donc plutôt un NER ; ce n'est pas
-  corrigé ici.
-- **Le témoin est dense en leurres par construction** (un par document) : le taux de
-  337 documents sur 400 n'est pas une fréquence réelle. Il montre quels leurres
-  passent : « Nuits » et « Tours » (« Nuits de garde ») lus comme communes, et des
-  durées (« depuis 7 ans ») lues comme des âges.
-- Un document « évalué » du témoin est une **fausse évaluation** : le statut dit
-  que F est estimé, pas que l'estimation est juste.
+- **Les 100 % du rejeu ne prouvent rien sur des textes réels** : ces corpus sont écrits
+  avec les mots que l'extraction connaît et ne sont pas indépendants de son vocabulaire,
+  sur le réaliste comme sur l'adversarial (23 communes courantes, 16 professions).
+- **L'écart avec la publication est un constat, pas une explication** : à P2-03b,
+  l'adversarial laissait 12,7 % des caractères d'âge non couverts (âges en toutes lettres,
+  abréviations comme « pneumo », « gynéco »), le réaliste lisait « Chevrier » (un
+  patronyme qui est aussi une commune) comme un lieu (43 faux positifs sur 43) et le
+  témoin laissait passer 412 extractions (« Nuits », « Tours », durées lues comme des âges).
+  Rien de cela ne se reproduit sur ces corpus au 22 novembre 2026 ; ce fichier ne dit pas
+  quelles tâches l'ont corrigé, le dépôt (`git log -- packages/ecluse_reid`) le dit.
+- Sur le témoin, le statut « aucun QI » (400 / 400) remplace les 262 documents
+  « évalués » de P2-03b, qui étaient des fausses évaluations (le statut dit que F est
+  estimé, pas que l'estimation est juste).
 
 Limites : corpus synthétique et généré par nous, une graine par exécution (aucune variance mesurée),
 vocabulaire court (23 communes courantes, 16 professions, quelques gabarits de
@@ -471,7 +540,10 @@ d'équivalence** (F) : ce profil mesure l'extraction, pas la justesse de F.
 Mesure seulement, rien n'est corrigé. `run_generalisation_bench.dart` exécute
 `Ecluse.redact` avec référence, puis applique la suggestion retenue
 (`appliquerGeneralisations`, P2-92), à répéter tant qu'une suggestion reste (10
-tours au plus). Corpus de QI, graine 42, 400 documents chacun.
+tours au plus). Corpus de QI, graine 42, 400 documents chacun. Chemin mesuré :
+`Ecluse.redact` avec référence, puis `appliquerGeneralisations`. **Rejoué le
+22 novembre 2026** au commit `91d009c` ; les valeurs publiées à P2-93 sont gardées en
+note après le tableau.
 
 ```bash
 for c in realiste adversarial temoin; do
@@ -482,15 +554,23 @@ done
 
 | Corpus | Avec suggestion | Refus | F médian avant → après 1er tour | Bande après 1er tour |
 |---|---:|---:|---|---|
-| Réaliste | 170 | 0 | 74,0 → 2978,7 | faible 165, moyen 5 |
-| Adversarial | 109 | 0 | 6,0 → 142346,0 | faible 70, élevé 7, non évaluable 32 |
+| Réaliste | 170 | 0 | 74,0 → 2002,0 | faible 170 |
+| Adversarial | 118 | 0 | 7,0 → 2320,0 | faible 110, moyen 7, élevé 1 |
 | Témoin | 0 | 0 | n/a | n/a |
 
-Invariants tenus sur les trois corpus : table et entités inchangées, texte
-inchangé quand il n'y a rien à appliquer, restauration des entités masquées
-exacte (0 écart).
+Valeurs **publiées** à P2-93 (historiques, non rejouées) : réaliste 170 suggestions,
+F 74,0 → 2978,7, faible 165 et moyen 5 ; adversarial 109 suggestions,
+F 6,0 → 142346,0, faible 70, élevé 7, non évaluable 32.
 
-Défauts constatés, **non corrigés** (à traiter par une tâche `code`) :
+Invariants tenus sur les trois corpus (rejoué) : table et entités inchangées, texte
+inchangé quand il n'y a rien à appliquer, restauration des entités masquées
+exacte (0 écart). Au premier tour, F monte dans les 170 documents du réaliste et les
+118 de l'adversarial (0 cas où F ne monte pas) ; plus aucune suggestion après 3 tours au
+plus, aucun document au plafond de 10 tours.
+
+Défauts constatés à P2-93, **non corrigés alors** ; **le rejeu du 22 novembre 2026 ne les
+reproduit plus** (F ne monte pas : 0 / 170 et 0 / 118 ; 3 tours au plus ; aucun « non
+évaluable » parmi les 118 documents à suggestion, bande finale faible 111, moyen 7) :
 
 - **F ne monte pas après une généralisation censée le faire monter** : 6
   documents sur 170 (réaliste) et 7 sur 109 (adversarial) à F **inchangé ou en
@@ -520,10 +600,13 @@ déterministes et applique la suggestion de lieu.
 (cd packages/ecluse_redact && dart run bin/run_generalisation_lieu_bench.dart)
 ```
 
-Résultat : 24 documents (lieu + âge extrême) ont une suggestion de lieu. Après
-application, « département N » n'est pas relu (0 QI lieu sur 24) : F recalculé
-est en médiane 157 fois le F simulé et la bande passe à « faible » dans les 24
-cas, alors que la simulation annonçait « moyen » dans 20. Détails et limites :
+Résultat, **rejoué le 22 novembre 2026** (commit `91d009c`) : 24 documents (lieu + âge
+extrême) ont une suggestion de lieu. Après application, « département N » est relu (un QI
+lieu relu sur 24) : F recalculé = F simulé dans les 24 cas (rapport médian 1,000) et la
+bande recalculée est celle de la simulation (élevé 1, faible 3, moyen 20). **Valeurs
+publiées à P2-103** (historiques) : « département N » n'était pas relu (0 QI lieu sur 24),
+F recalculé valait en médiane 157 fois le F simulé et la bande passait à « faible » dans
+les 24 cas, alors que la simulation annonçait « moyen » dans 20. Détails et limites :
 `agent/specs/P2-103.md`.
 
 ## Dossiers (P2-05a)
@@ -587,11 +670,15 @@ python3 bench/leak_hors_civilite.py \
   --pred bench/flou/pred_redact_adversarial.jsonl
 ```
 
-Résultat (400 documents, `Ecluse.redact` du 25 octobre 2026) : réaliste, **0**
-caractère hors civilité sur 2167 (graine 42) et 2366 (graine 7) ; adversarial,
-**1865 sur 2657** (70,2 %, graine 42) et **1901 sur 2799** (67,9 %, graine 7),
-surtout des prénoms hors gazetteer et des patronymes. Ces valeurs retrouvent
-celles de `agent/specs/P2-02-reference.md`.
+Résultat, **rejoué le 22 novembre 2026** (400 documents, `Ecluse.redact` au commit
+`91d009c`, `leak_hors_civilite.py` sur les corpus `realiste` et `adversarial` des
+graines 42 et 7) : réaliste, **0** caractère hors civilité sur 2167 (graine 42) et
+2366 (graine 7) ; adversarial, **279 sur 1057** (26,4 %, graine 42) et **256 sur 1142**
+(22,4 %, graine 7), surtout les prénoms « Souleymane » et « Yaroslav » (hors
+gazetteer), puis quelques patronymes. **Valeurs publiées** (`Ecluse.redact` du
+25 octobre 2026, historiques, non rejouées) : adversarial 1865 sur 2657 (70,2 %,
+graine 42) et 1901 sur 2799 (67,9 %, graine 7), celles de
+`agent/specs/P2-02-reference.md` ; le réaliste était identique.
 
 ## Patronyme seul (P2-14)
 
@@ -639,7 +726,8 @@ python3 bench/generate_corpus_semantique.py --n 300 --seed 42 --out-dir bench/se
 python3 bench/score_semantique.py --dir bench/semantique --pred-dir bench/semantique/pred
 ```
 
-Graine 42, 300 documents par corpus : `indices` (412 indices annotés),
+Graine 42, 300 documents par corpus (régénérés le 22 novembre 2026 au commit
+`91d009c`, mêmes comptes) : `indices` (412 indices annotés),
 `temoin` (aucun indice : rôles collectifs, faits banals), `injection` (les
 documents de `indices` au même rang, avec une instruction qui demande au
 vérificateur de se taire). Les textes sont des textes **d'origine** (avant
@@ -654,6 +742,31 @@ Limites : gabarits peu nombreux et écrits par nous ; un indice est un
 segment de phrase dont les bornes sont un choix de convention (d'où la règle
 du recouvrement) ; aucun texte réel ; aucune mesure n'a encore été faite
 (elle attend la décision sur le NER, P2-104a).
+
+## Rejeu du 22 novembre 2026 (P2-256)
+
+Chaque mesure citée par ce fichier a été rejouée au commit `91d009c` (`main`), graine 42
+(et 7 là où le fichier cite la graine 7), avec la commande que la section donne. Ce
+tableau dit **quel chemin** chaque section mesure et si le chiffre a changé :
+
+| Section | Chemin mesuré | Commande rejouée | Écart avec la publication |
+|---|---|---|---|
+| Résultats (corpus v3), collision FINESS ↔ SIREN, espacement irrégulier | moteur seul (`ecluse_core`) ; Presidio rejoué | `run_ecluse.dart`, `run_presidio.py` (3 configurations), `score.py` | aucun ; ligne ajoutée (86 IBAN irréguliers, 19 à clé invalide) |
+| Corpus étendu (`extended`) | moteur seul | `generate_corpus.py --profile extended`, `run_ecluse.dart`, `run_presidio.py --recognizers validated`, `score.py` | **état actuel ajouté** (766 entités) ; tableaux de P1-13 / P1-14 gardés comme historiques |
+| Presidio étendu (P1-35) | Presidio | `run_presidio.py` ×3, `score.py` | aucun |
+| PDF synthétiques (P1-18) | — (génération) | `generate_pdfs.py` | aucun (18 PDF identiques) |
+| Entités floues | `Ecluse.redact` | `run_redact_bench.dart`, `score_flou.py` | **adversarial changé** ; réaliste et témoin inchangés |
+| Quasi-identifiants (P2-03a, P2-03b) | `ecluse_reid` seul | `run_reid_bench.dart` (avant et après), `score_qi.py` | **extraction, statuts et témoin changés** ; exceptions « avant » inchangées sauf le témoin |
+| Généralisation (P2-93), du lieu (P2-103) | `Ecluse.redact` + `appliquerGeneralisations` | `run_generalisation_bench.dart`, `run_generalisation_lieu_bench.dart` | **changés** (défauts de P2-93 et P2-103 non reproduits) |
+| Dossiers (P2-05a) | `Ecluse.redact` | `run_dossiers_bench.dart`, `score_dossiers.py` | aucun chiffre cité par le fichier |
+| Fuite des noms hors civilité (P2-12) | `Ecluse.redact` | `run_redact_bench.dart`, `leak_hors_civilite.py` | **adversarial changé** ; réaliste inchangé |
+| Patronyme seul (P2-14) | `Ecluse.redact` avec dossier | — | aucun chiffre cité (renvoi à `LIMITES.md` § 5.4) |
+| Fuites sémantiques (P2-105) | corpus seul (aucune prédiction) | `generate_corpus_semantique.py` | aucun (412 indices) |
+
+Presidio : rejoué avec `presidio-analyzer` 2.2.366 et le modèle `en_core_web_lg`
+(installé par `python3 -m spacy download en_core_web_lg`) ; l'option `--blank` n'a pas
+servi. Les fichiers générés (`bench/*.jsonl`, `bench/flou/`, `bench/qi/`) ne sont pas
+versionnés.
 
 ## Honnêteté méthodologique
 
@@ -670,7 +783,8 @@ du recouvrement) ; aucun texte réel ; aucune mesure n'a encore été faite
 - **Cas RPPS enchâssé dans un IBAN.** Une fenêtre de 11 chiffres passant
   Luhn par hasard à l'intérieur d'un IBAN, valide ou non, est écartée par
   `RppsDetector` (forme d'IBAN) et par `resolveOverlaps` ; sur ce tirage
-  le RPPS ne produit aucun faux positif (166 TP, 0 FP, 0 FN). Une version
+  le RPPS ne produit aucun faux positif (166 TP, 0 FP, 0 FN ; rejoué le 22 novembre 2026,
+  moteur seul). Une version
   antérieure de ce document mentionnait 1 faux positif RPPS : il n'est
   plus reproduit par le code actuel. Le même mécanisme pourrait en théorie
   toucher le FINESS (fenêtre de 9 chiffres) ; aucune occurrence n'apparaît
