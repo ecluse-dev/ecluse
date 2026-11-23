@@ -59,6 +59,7 @@ isolée (un champ de formulaire, une cellule). Voir `LIMITES.md` § 5.2.
 | RPPS (professionnels de santé) | `RppsDetector` | Longueur + clé de Luhn | 0.9 |
 | IBAN français | `IbanFrDetector` | Structure + clé ISO 7064 mod 97 | 1.0 |
 | IBAN français à clé fausse (P2-252) | `IbanCleInvalideDetector` | Même forme, clé fausse : masqué en entier | 0.3 |
+| NIR à clé fausse (P2-258) | `NirCleInvalideDetector` | Même forme (« O » admis pour 0), clé fausse : masqué en entier | 0.3 |
 
 À venir : FINESS, téléphones FR, plaques d'immatriculation, adresses.
 

@@ -153,8 +153,8 @@ def fmt_finess(finess: str, rng: random.Random) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Formes non annotées (l'IBAN à clé invalide l'est depuis le 22/11/2026 : voir
-# build_doc). Les noms `trap_*` sont historiques : téléphone, « dossier n° » et
+# Formes non annotées (l'IBAN à clé invalide l'est depuis le 22/11/2026, le NIR
+# à clé invalide depuis le 23/11/2026 : voir build_doc). Les noms `trap_*` sont historiques : téléphone, « dossier n° » et
 # code postal + ville (trap_phone, trap_misc) sont des données personnelles non
 # annotées, que le produit masque (DECISIONS.md, 23 novembre, point 5)
 # ---------------------------------------------------------------------------
@@ -346,7 +346,12 @@ def build_doc(doc_id: int, rng: random.Random, templates=None) -> dict:
         elif slot == "trap_siren":
             text += trap_siren(rng)
         elif slot == "trap_nir":
-            text += trap_nir_bad_key(rng)
+            # Annoté depuis le 23/11/2026 (décision du mainteneur, DECISIONS.md,
+            # point 1) : un NIR mal recopié reste celui d'un patient. Texte
+            # inchangé (même tirage), seule l'annotation est ajoutée.
+            v = trap_nir_bad_key(rng)
+            entities.append({"type": "nir", "start": len(text), "end": len(text) + len(v)})
+            text += v
         elif slot == "trap_iban":
             # Annoté depuis le 22/11/2026 (décision du mainteneur, DECISIONS.md) :
             # un IBAN mal recopié reste le compte de quelqu'un, c'est une donnée

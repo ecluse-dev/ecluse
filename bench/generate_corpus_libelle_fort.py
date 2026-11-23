@@ -217,12 +217,13 @@ def negatif(libelle, type_id, kind, rng):
         intro = rng.choice(INTRODUCTIONS_NEUTRES)
         valeur = nombre_sans_libelle(type_id, rng)
         texte = f"{intro} {valeur} noté au dossier."
-        if type_id == "iban":
-            # Un IBAN à clé fausse reste une donnée personnelle (22/11/2026) :
-            # annoté et compté comme positif, sans libellé fort devant.
+        if type_id in ("iban", "nir"):
+            # Un IBAN (22/11/2026) ou un NIR (23/11/2026) à clé fausse reste
+            # une donnée personnelle : annoté et compté comme positif, sans
+            # libellé fort devant. Le texte ne change pas.
             return {
                 "text": texte,
-                "entities": [{"type": "iban", "start": len(intro) + 1,
+                "entities": [{"type": type_id, "start": len(intro) + 1,
                               "end": len(intro) + 1 + len(valeur)}],
                 "libelle": LIBELLE_SANS,
                 "type_id": type_id,
