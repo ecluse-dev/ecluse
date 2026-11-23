@@ -930,4 +930,16 @@ graine 42, 1 000 documents par profil.
 7. **ADELI sans mot-clé : l'annotation `adeli` est gardée** (Q7) ; le
    détecteur le type `finess` (32 / 32), rien ne fuit. Écrit dans `LIMITES.md`
    § 2.
+8. **SIREN, SIRET et numéro de TVA : annotés au banc, type `siren`** (même jour,
+   après fusion de P2-258 à P2-260 ; modifie le point 5 pour ces trois formes
+   seulement). Le corpus doit dire ce qui est une donnée personnelle : depuis
+   les points 3 et 4, Écluse les masque à dessein, et les compter comme faux
+   positifs ferait publier une précision que l'on sait fausse (v3 92,4 %,
+   72 « faux positifs » dont 72 masquages voulus). Téléphone, « dossier n° » et
+   code postal + ville restent non annotés (point 5 inchangé). **Présentation
+   des chiffres** : la comparaison principale avec Presidio reste sur les types
+   communs (NIR, RPPS, IBAN, FINESS, ADELI), jugée par la même règle pour les
+   deux outils ; les identifiants d'entreprise ont leur ligne à part. Réserve à
+   garder à côté de tout chiffre proche de 100 % : corpus synthétique construit
+   par le projet. Tâche P2-261.
 

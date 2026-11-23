@@ -328,6 +328,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-258 | code | NIR à clé fausse sans libellé : donnée personnelle (décision du 23 novembre) ; annoter les pièges des corpus et les masquer en entier à 0,3 « à vérifier », coût mesuré d'abord | — | fusionnée |
 | P2-259 | code | SIRET nommé (14 chiffres après « SIRET ») masqué en entier, type `siren` : 30 / 30 en clair aujourd'hui | — | fusionnée |
 | P2-260 | code | Numéro de TVA intracommunautaire masqué en entier (« FR » + clé + SIREN), type `siren` : 29 / 35 en clair aujourd'hui | — | fusionnée |
+| P2-261 | code | SIREN, SIRET et TVA annotés `siren` au banc (texte inchangé) ; comparaison principale sur les types communs, ligne à part pour les identifiants d'entreprise | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1043,4 +1044,44 @@ Coût : nouveaux masquages des témoins, listés (« FR » + onze chiffres peut 
 une référence).
 **Fini quand** : TVA 0 en clair et 0 masqué en partie (extended) ; aucun RPPS du
 corpus ne change de type ; `LIMITES.md` à jour.
+
+### P2-261 — SIREN, SIRET et TVA annotés au banc (code)
+
+Décision du 23 novembre, point 8 (`DECISIONS.md`). Depuis P2-259 et P2-260, Écluse
+masque à dessein SIREN nommé, SIRET nommé et TVA, mais le banc ne les annote pas :
+ils comptent comme faux positifs (v3, moteur seul : 92,4 % / 100 %, 72 FP `siren`,
+871 entités ; extended : 185 FP `siren`, TOTAL 70,6 % / 91,7 %).
+
+Travail :
+1. **Annoter `siren`**, texte inchangé octet pour octet (test d'empreinte SHA-256
+   comme #493/#494), chaque SIREN, SIRET et numéro de TVA que les générateurs
+   écrivent **comme tels** : `trap_siret`, `trap_siren`, `tva` et `siren_plain`
+   de `bench/generate_corpus.py` (v3 et extended), et toute autre occurrence que
+   trouve `bench/recensement_pieges.py`. Le span couvre le numéro entier (« FR » et
+   la clé compris pour la TVA). Les nombres de neuf chiffres que le texte ne
+   présente pas comme un SIREN ne sont pas annotés. Les noms `trap_*` concernés
+   sont renommés ou commentés : ce ne sont plus des pièges.
+2. **Témoin flou** (`bench/generate_corpus_flou.py`, variante « identifiants
+   d'entreprise ») : la ligne « SIRET … TVA … » n'est plus « rien à masquer ».
+   L'annoter `siren` (positifs), ou la remplacer par une ligne sans donnée
+   personnelle **sans changer les autres variantes** ; choisir et le justifier
+   dans la PR. Après la tâche, le témoin « rien à masquer » doit redonner 0.
+3. **Scoreur** : `score.py` et `comparatif.py` gardent un TOTAL tous types, et
+   ajoutent la comparaison principale **sur les types communs** (NIR, RPPS, IBAN,
+   FINESS, ADELI) : gold et prédictions `siren` retirés **pour tous les outils**,
+   même règle. Ligne à part `siren` pour chaque outil (Presidio n'a pas de
+   reconnaisseur français : le dire, ne pas l'interpréter).
+4. Rejouer tout : `bash bench/etat.sh` (0 ÉCHEC), `comparatif.py` (Presidio :
+   rescorer les prédictions existantes si Presidio ne tourne pas, et le dire),
+   puis mettre à jour `bench/COMPARATIF.md`, `bench/README.md`, `bench/ETAT.md`,
+   `bench/etat_attendu.py`, totaux des tests, `LIMITES.md` (§ 2 : les phrases
+   « non annotés au banc » de P2-259 et P2-260). **Ne pas toucher
+   `bench/ARTICLE.md`** : l'article est repris par le pilote.
+
+**Fini quand** : textes des corpus identiques (empreintes) ; v3 et extended,
+`siren` annoté ; le chemin de chaque chiffre est écrit ; la PR donne un tableau
+avant / après pour Écluse et Presidio, tous types **et** types communs, plus la
+ligne `siren` ; toute fuite `siren` révélée par l'annotation (SIREN non masqué par
+`Ecluse.redact`) est listée par gabarit, **sans être corrigée** dans cette tâche ;
+témoin « rien à masquer » à 0.
 
