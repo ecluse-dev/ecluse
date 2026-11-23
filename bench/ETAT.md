@@ -35,7 +35,7 @@ Presidio n'est pas rejoué ici (environnement à part, `bench/README.md`,
 
 | Corpus | Précision | Rappel | F1 | FP | Source |
 |---|---:|---:|---:|---:|---|
-| v3 d'origine | 95,4 % | 100 % | 97,6 % | 42 (SIREN masqués à dessein) | 23/11 : les 45 NIR à clé fausse sont annotés (871 entités ; avant : 95,2 % / 97,5 % sur 826) ; 22/11 : les 48 IBAN à clé fausse sont annotés (826 entités) ; avant : 89,6 % / 94,5 % / 90 sur 778 ; avant P2-252 : 94,9 % / 97,4 % / 42 |
+| v3 d'origine | 92,4 % | 100 % | 96,0 % | 72 (42 SIREN + 30 SIRET, masqués à dessein) | 23/11 (P2-259) : les 30 SIRET pièges sont masqués, non annotés (avant : 95,4 % / 97,6 % / 42) ; 23/11 (P2-258) : les 45 NIR à clé fausse sont annotés (871 entités ; avant : 95,2 % / 97,5 % sur 826) ; 22/11 : les 48 IBAN à clé fausse sont annotés (826 entités) ; avant : 89,6 % / 94,5 % / 90 sur 778 ; avant P2-252 : 94,9 % / 97,4 % / 42 |
 | v3 sans ponctuation, minuscules | 95,2 % | 100 % | 97,5 % | 42 | = P2-98 ; même historique |
 | v3 nombres en lettres | 0 % | **0 %** | 0 % | 0 | = P2-98 |
 
@@ -2231,3 +2231,41 @@ SHA-256 des 1 000 textes v3 identique). Presidio rejoué pour `bench/README.md` 
 d'une autre taille (par exemple 3 × 5), NIR à clé **juste** avec lettres « O » sans
 libellé (comme avant, P2-191), NIR à clé fausse dont les chiffres sont écrits en
 pleine chasse ou séparés par une fin de ligne (le détecteur lit le texte d'origine).
+
+## SIRET nommé masqué en entier (P2-259, 23 novembre 2026)
+
+Décision du 23 novembre (point 3) : quatorze chiffres après le mot « SIRET » sont
+une donnée personnelle (le SIRET contient le SIREN). `FinessDetector` lit en plus
+quatorze chiffres (collés, ou 3-3-3-5) à moins de 40 caractères du mot « SIRET » :
+type `siren`, confiance 0,9 si la clé de Luhn est juste, 0,3 (avertissement « à
+vérifier ») si elle est fausse. Rejeu complet de `bench/etat.sh` après P2-258
+(rebasé sur `main` à la fusion) : 0 ligne « ÉCHEC » ; seules les lignes ci-dessous
+changent.
+
+**Défaut mesuré** (`bench/recensement_pieges.py`, `Ecluse.redact`) : SIRET pièges
+v3 30 en clair → **0** (30 masqués en entier, type `siren`) ; extended 19 → **0**.
+
+**Ce qui change au tableau de bord** (chiffres après P2-258 : 871 entités ; les
+colonnes « Avant » des mises en page ne sont pas citées, elles n'ont pas été
+rejouées entre les deux tâches) : le SIRET n'est pas annoté (décision du
+23 novembre, point 5, pour garder quatre types au banc), donc chaque SIRET masqué
+compte comme un faux positif `siren`, comme les 42 SIREN pièges.
+
+| Ligne | Avant | Après | Chemin |
+|---|---|---|---|
+| v3, précision / F1 / FP | 95,4 % / 97,6 % / 42 | 92,4 % / 96,0 % / 72 | moteur seul |
+| v3 à 60 colonnes, total précision / F1 / FP | — | 90,7 % / 89,8 % / 79 | moteur seul |
+| v3 à 90 colonnes, total précision / F1 / FP | — | 91,8 % / 94,3 % / 75 | moteur seul |
+| extended, FP `siren` / total précision | 131 / 74,0 % | 150 / 72,6 % | moteur seul |
+| témoin flou (400 documents), prédictions | 0 | **108** | `Ecluse.redact` |
+
+Les rappels, la fuite au caractère, le tableau « libellé fort », « identifiant
+suivi » et les autres témoins sont inchangés. **Les 108 prédictions du témoin
+flou** sont toutes de type `siren` et toutes sur la ligne « SIRET 12345678200010 »
+des 108 documents de la variante « identifiants d'entreprise » du générateur
+(`generate_corpus_flou.py`) : ce gabarit était un témoin « rien à masquer » avant
+la décision du 23 novembre ; il est maintenant masqué à dessein. Le témoin n'a pas
+été modifié (cela changerait le texte des 400 documents et tous les chiffres qui
+en dépendent) ; la tâche suivante est à décider par le mainteneur. Sa ligne
+« TVA FR11123456782 » reste en clair (P2-260).
+`comparatif.py --temoin` : 16 / 480 documents masqués avant et après.
