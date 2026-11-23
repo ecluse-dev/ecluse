@@ -308,6 +308,33 @@ une coupure au milieu d'un groupe ne l'est pas.
   placé dans les 30 caractères après « ADELI » (un SIREN voisin) est
   étiqueté ADELI : sur-masquage assumé. Un mot ADELI placé *après* le nombre
   n'est pas reconnu.
+  Mesure (P2-255, `Ecluse.redact`, corpus étendu, graine 42) : 32 ADELI
+  valides sans mot-clé sur 32 masqués en entier **sous le type `finess`**,
+  aucun caractère en clair. Le corpus garde l'annotation `adeli`, qui dit ce
+  qu'est le numéro ; c'est le type prédit qui est faux (décision du
+  23 novembre, Q7). Un scoreur strict au type compte donc un faux négatif
+  `adeli` et un faux positif `finess` par document de ce gabarit.
+- **RPPS à clé de Luhn fausse, sans libellé : en clair (décision du
+  23 novembre, Q2).** Hors libellé (« RPPS », « n° RPPS »…), un nombre de
+  onze chiffres dont la clé de Luhn est fausse n'est pas masqué : 39 sur 39 en
+  clair au corpus v3, 24 sur 24 au corpus étendu (P2-255). C'est un choix :
+  onze chiffres, c'est aussi la longueur de beaucoup de numéros ordinaires
+  (références, téléphones avec indicatif), le risque de masquer à tort serait
+  élevé, et un RPPS désigne un professionnel inscrit dans un annuaire public.
+  Derrière son libellé, un RPPS à clé fausse est masqué (P2-188).
+- **Type faux, sans fuite (décision du 23 novembre, Q6).** Deux gabarits
+  synthétiques sont masqués en entier mais sous un type trompeur : un SIREN
+  après « immatriculation » est pris pour une plaque (`vehicule`, 17 sur 27 au
+  corpus étendu), et « réf. » suivi de dix chiffres pour un téléphone (3 sur 34
+  en v3). Rien ne part en clair ; le LLM reçoit seulement une étiquette fausse.
+  Toléré pour l'instant.
+- **NIR à clé fausse sans libellé, SIRET, numéro de TVA intracommunautaire :
+  en clair aujourd'hui, corrections inscrites.** Mesure P2-255 (`Ecluse.redact`,
+  graine 42) : NIR à clé fausse sans libellé 45 / 45 en clair (v3) ; SIRET
+  après le mot « SIRET » 30 / 30 (v3) ; numéro de TVA 29 / 35 en clair, 6
+  masqués en partie comme RPPS (corpus étendu). Le 23 novembre, le mainteneur
+  les a déclarés données personnelles : tâches P2-258 (NIR), P2-259 (SIRET) et
+  P2-260 (TVA) dans `agent/QUEUE.md`.
 - **INS** (Identité Nationale de Santé) : `InsDetector` masque les marqueurs
   textuels et OID (« Matricule INS »), pas le numéro qui suit ; celui-ci n'est
   masqué que si c'est un NIR à clé valide.

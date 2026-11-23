@@ -890,3 +890,44 @@ patronymes (P2-231).
    clair**, tous avec une lettre « o » d'OCR dans la clé (« FR8o52… »). Défaut
    toléré au tableau de bord par un plafond de 4, correction inscrite (P2-254).
    Témoins négatifs : 53 / 1 200 → 7 / 1 150 masqués à tort.
+
+## 2026-11 — Décisions du 23 novembre (pièges des corpus, P2-255)
+
+Réponses du mainteneur aux sept questions du rapport `agent/specs/P2-255.md`
+(il a suivi l'avis proposé, question par question). Chiffres : `Ecluse.redact`,
+graine 42, 1 000 documents par profil.
+
+1. **NIR à clé fausse sans libellé : donnée personnelle** (Q1), même raison que
+   l'IBAN (point 5 du 22 novembre) : un NIR mal recopié reste celui d'un
+   patient. Masqué en entier, type `nir`, confiance 0,3, avertissement « à
+   vérifier ». La forme du NIR est très contrainte (15 chiffres, sexe, mois et
+   département plausibles), le risque de masquer à tort est jugé faible ; il
+   est **mesuré d'abord** sur les témoins. Les pièges NIR des corpus v3 et
+   « libellé fort » deviennent des positifs annotés `nir`, texte inchangé.
+   Aujourd'hui 45 / 45 en clair (v3). Tâche P2-258. Déroge à « clé validée
+   ou rien » (juin 2026) pour cette seule forme, comme pour l'IBAN.
+2. **RPPS à clé de Luhn fausse sans libellé : reste en clair** (Q2). Onze
+   chiffres sans motif propre : le risque de masquer à tort est trop grand ;
+   identifiant d'un professionnel, inscrit dans un annuaire public. Non annoté.
+   Limite écrite dans `LIMITES.md` § 2.
+3. **SIRET nommé : masqué** (Q3). Quatorze chiffres après le mot « SIRET », type
+   `siren` (il contient le SIREN, qui désigne une personne quand il s'agit d'un
+   entrepreneur individuel : `LIMITES.md` § 1, P2-248). Aujourd'hui 30 / 30 en
+   clair (v3). Pas de nouveau type annoté au banc (voir point 5). Tâche P2-259.
+4. **Numéro de TVA intracommunautaire : masqué en entier** (Q4), y compris
+   « FR » et la clé, qui se vérifie par calcul à partir du SIREN. Aujourd'hui
+   29 / 35 en clair, 6 masqués en partie comme RPPS. Type `siren`. Tâche P2-260.
+5. **Téléphone, « dossier n° », code postal + ville : renommés, pas annotés**
+   (Q5). Ce sont des données personnelles déjà masquées par le produit ; le
+   générateur ne les appelle plus « pièges à ignorer ». Les annoter ferait
+   passer le banc de 4 à 7 types et changerait tous les chiffres comparés à
+   Presidio avant publication. Commentaires de `bench/generate_corpus.py`
+   corrigés le 23 novembre (texte des documents inchangé).
+6. **Type faux sans fuite : toléré pour l'instant** (Q6) : SIREN après
+   « immatriculation » lu comme plaque (17 / 27), « réf. » + 10 chiffres lu
+   comme téléphone (3 / 34). Écrit dans `LIMITES.md` § 2 ; correction non
+   prioritaire, non inscrite.
+7. **ADELI sans mot-clé : l'annotation `adeli` est gardée** (Q7) ; le
+   détecteur le type `finess` (32 / 32), rien ne fuit. Écrit dans `LIMITES.md`
+   § 2.
+
