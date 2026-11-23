@@ -67,47 +67,79 @@ Les FP restants à 60 et 90 colonnes (7 et 3) sont des RPPS lus dans la fin d'un
 
 ## Dictée : identifiants dits en lettres (P2-160)
 
-Corpus v3 (1 000 documents, 826 identifiants depuis le 22 novembre, 778 avant) transcrits sans audio par
+Corpus v3 (1 000 documents, 943 identifiants depuis le 23 novembre, 826 avant, 778 avant le 22) transcrits sans audio par
 `bench/generate_corpus_transcrit.py` : les deux variantes d'origine (sorties
 **identiques octet pour octet** après P2-160) et quatre variantes de dictée
 (`agent/specs/P2-155.md` § 2) : `double_triple` (« double zéro », « triple
 neuf », chiffre par chiffre), `regional` (« septante », « huitante », « nonante »,
 par groupes), `zero_o` (« o six »), `sans_traits_union` (« quatre vingt treize »,
-par groupes). **Aucun détecteur modifié** : c'est le point de départ de la
-future tâche de code (défaut d'abord).
+par groupes). P2-160 : aucun détecteur modifié (défaut d'abord) ; P2-267 : seconde vue
+des nombres dictés (voir plus bas).
+
+**P2-267 (23 novembre 2026, soir)** : seconde vue « lettres → chiffres »
+(`packages/ecluse_redact/lib/src/nombres_dictes.dart`), branchée dans
+`Ecluse.redact` seulement ; le moteur seul (`ecluse_core`, `run_ecluse.dart`) ne la
+connaît pas et reste à 0 % sur ces variantes. Les cinq variantes dictées sont
+lues par `Ecluse.redact` ; la colonne « avant » est la mesure de `main` avant
+P2-267.
 
 Deux chemins, à ne pas confondre. « Rappel » = identifiant entièrement couvert
 par une détection quel qu'en soit le type ; « fuite » = part des caractères
 d'identifiant (blancs exclus) couverts par aucune détection.
 
-| Variante | **`Ecluse.redact`** (ce que reçoit le LLM) : rappel | fuite au caractère | moteur seul (`ecluse_core`) : rappel |
+| Variante | **`Ecluse.redact`** (ce que reçoit le LLM) : rappel avant → après | fuite au caractère avant → après | moteur seul (`ecluse_core`) : rappel |
 |---|---:|---:|---:|
-| sans ponctuation (chiffres) | 943/943 | 0,0 % | 100 % (0 FP depuis P2-261 ; avant : 72 FP `siren`) |
-| en lettres (d'origine) | 23/943 (2,4 %) | 97,8 % | 0 % |
-| double / triple | 18/943 (1,9 %) | 98,0 % | 0 % |
-| septante / huitante / nonante | 32/943 (3,4 %) | 97,4 % | 0 % |
-| zéro dit « o » | 25/943 (2,7 %) | 97,7 % | 0 % |
-| traits d'union perdus | 34/943 (3,6 %) | 97,4 % | 0 % |
+| sans ponctuation (chiffres) | 943/943 → 943/943 | 0,0 % → 0,0 % | 100 % (0 FP depuis P2-261) |
+| en lettres (d'origine) | 23/943 → 934/943 (99,0 %) | 97,8 % → 0,1 % | 0 % |
+| double / triple | 18/943 → 935/943 (99,2 %) | 98,0 % → 0,1 % | 0 % |
+| septante / huitante / nonante | 32/943 → 937/943 (99,4 %) | 97,4 % → 0,0 % | 0 % |
+| zéro dit « o » | 25/943 → 937/943 (99,4 %) | 97,7 % → 0,0 % | 0 % |
+| traits d'union perdus | 34/943 → 937/943 (99,4 %) | 97,4 % → 0,0 % | 0 % |
 
-Depuis le 22 novembre (IBAN à clé fausse annotés), les identifiants couverts ne
-changent pas (ce sont des FINESS) ; seul le dénominateur passe de 778 à 826.
-**P2-261 (23 novembre)** : les 72 SIREN et SIRET entrent au dénominateur (943) ;
-leur fuite au caractère est de **100 %** dans les cinq variantes dictées (0 / 72 couverts, `Ecluse.redact`),
-comme NIR et RPPS : même limite que les autres identifiants dictés, pas un défaut nouveau. Les
-chiffres de cette colonne baissent donc seulement parce que le dénominateur grandit.
+Par type après P2-267 (fuite au caractère, `Ecluse.redact`, pire des cinq
+variantes dictées) : NIR 0,0 %, RPPS 0,0 %, IBAN 0,0 %, SIREN 0,0 %, FINESS 1,1 %
+(6 à 9 FINESS sur 129 ne sont pas couverts en entier : un nom d'établissement
+détecté juste avant (« ch de metz finess ») absorbe les premiers mots dictés et
+l'emporte au tri des chevauchements, de 1 à 17 caractères de l'identifiant restent
+en clair). Plafond de GO des décisions du 23 novembre : 5 % par type et par
+variante, tenu partout. Les lettres épelées d'un IBAN (« fr … h … ») et la lettre
+d'un NIR corse (« douze a ») sont recopiées dans la lecture ; les lettres d'IBAN
+épelées de façon plus libre, les corrections du locuteur et les erreurs de
+transcription restent hors périmètre (`LIMITES.md`). Avant P2-267, les rares
+identifiants « couverts » étaient des FINESS recouverts par une détection de type
+**établissement** (23 sur 23 sur la variante d'origine) : aucune variante n'était
+lue comme identifiant.
 
-Par type (fuite au caractère, `Ecluse.redact`) : NIR 99,9 à 100 %, RPPS 100 %,
-IBAN 99,9 à 100 %, FINESS 68 à 76 % selon la variante. Les rares identifiants
-« couverts » sont des FINESS recouverts par une détection de type
-**établissement** (vérifié sur la variante d'origine : 23 sur 23) ; aucune
-variante n'est lue comme identifiant. **Un identifiant dicté en lettres part donc en clair par
-`Ecluse.redact`, quelle que soit la façon de le dicter.**
+Seuils (point 2 des décisions) : K = 6 mots-nombres consécutifs, K = 3 derrière un
+mot-clé d'identifiant. Mesure faite en faisant varier K sur les cinq variantes
+(fuite au caractère par type, pire variante ; mesuré avant la lecture de la lettre
+du NIR corse, d'où 0,6 % de NIR sur les lignes autres que 6 / 3 ; témoin « mots-nombres » : 0
+prédiction dans chaque cas) :
+
+| K / K derrière mot-clé | FINESS | SIREN | RPPS | NIR | IBAN |
+|---|---:|---:|---:|---:|---:|
+| 4 / 3 | 1,1 % | 0,0 % | 0,0 % | 0,6 % | 0,0 % |
+| **6 / 3 (retenu)** | 1,1 % | 0,0 % | 0,0 % | 0,0 % | 0,0 % |
+| 8 / 3 | 3,2 % | 5,5 % | 0,4 % | 0,6 % | 0,0 % |
+| 10 / 3 | 65,4 % | 46,8 % | 5,3 % | 0,6 % | 0,0 % |
+| 6 / 2 et 6 / 4 | identique à 6 / 3 | | | | |
+
+Le témoin ne départage pas 4 de 6 : le faux accord est écarté par la clé de contrôle
+(NIR, IBAN) ou par le mot-clé (RPPS, FINESS, SIREN : Luhn seul), pas par K. K = 6 suit la spec
+(un « un » ou un « six » isolé ne déclenche rien) ; 8 et 10 perdent des FINESS
+et des SIREN, dont la dictée est courte.
 
 Témoin « mots-nombres » (`bench/generate_corpus_mots_nombres.py`, 300 phrases
 synthétiques sans identifiant, dont 150 avec au moins 6 mots-nombres
-consécutifs, aucune entité annotée) : **0 prédiction** par `Ecluse.redact`.
-Aujourd'hui sans enjeu (aucun détecteur ne lit de nombre en lettres) ; c'est le
-garde-fou du futur GO : une détection à tort sur ce corpus le bloque.
+consécutifs, aucune entité annotée) : **0 prédiction** par `Ecluse.redact`, avant
+comme après P2-267. Un premier essai sans mot-clé pour RPPS et FINESS avait
+donné 7 prédictions à tort (« cinq, six, sept, huit, neuf, dix, onze, douze » lu
+comme un RPPS de Luhn valide ; « huit cent quatre-vingt-dix-neuf mille neuf cents »
+lu comme un FINESS) : c'est pourquoi une validation par Luhn seul ne vaut que
+derrière un mot-clé. Tous les autres corpus du dépôt donnent des prédictions
+**identiques octet pour octet** avant et après (75 fichiers de prédiction
+comparés, dont les moteurs seuls ; seuls les 5 fichiers `pred_redact_*` des
+variantes dictées changent).
 
 ## Entités floues (corpus flous v2, 400 documents chacun)
 
