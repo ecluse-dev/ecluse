@@ -335,6 +335,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-264 | mesure | Fuite par OCR (« O » pour 0, « l » ou « I » pour 1) sans libellé, par type, avec le coût en masquages à tort ; rien corrigé | — | fusionnée |
 | P2-265 | code | `bench/ETAT.md` contrôlé : un script compare chaque tableau courant à la sortie d'`etat.sh` et échoue au premier écart ; historique à part | — | fusionnée |
 | P2-266 | code | Machine neuve : le test d'équivalence dit quelle commande génère `bench/corpus.jsonl` au lieu d'échouer seulement sur « introuvable » | — | fusionnée |
+| P2-268 | code | Identifiants lus par OCR (« O » pour 0, « l »/« I » pour 1) : relus dans une suite candidate, gardés si la clé valide ; clé faible seulement derrière un libellé (décision du 23 novembre, nuit) | P2-264 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1186,4 +1187,41 @@ Travail : le message d'échec donne la commande exacte
 même phrase dans `bench/README.md`. Pas d'appel à Python depuis le test, pas de
 saut silencieux (règle 4). **Fini quand** : sur une VM sans corpus, l'échec affiche
 la commande ; avec le corpus, le test passe comme avant.
+
+### P2-268 — Identifiants lus par OCR (code)
+
+Décision du 23 novembre, nuit (`DECISIONS.md`, six points), sur le rapport
+`agent/specs/P2-264.md` (à lire en entier) et son prototype
+`bench/ocr_proposition.py`. Défaut mesuré par `Ecluse.redact` sur
+`bench/flou/corpus_ocr.jsonl` : sans libellé, fuite au caractère NIR 97,6 %,
+RPPS 98,8 %, IBAN 22,2 %, FINESS 100 %, SIREN 99,1 % ; avec libellé, FINESS
+99,5 % et SIREN 96,3 % (non relus).
+
+Travail :
+1. **Durcir le témoin d'abord** : ajouter à `bench/generate_corpus_ocr.py`
+   (graine 42) un témoin négatif de suites ordinaires denses en O/o/l/I et
+   chiffres (références de commande, lots, codes produits, numéros de pièce,
+   identifiants informatiques), au moins 400 documents ; mesurer le prototype
+   dessus et donner le nombre de faux accords par type **avant** tout code.
+   Plus de 0 faux accord pour une clé forte sans libellé : s'arrêter, PR
+   « bloqué » avec la liste.
+2. Test d'abord (cas synthétiques qui montrent la fuite), puis la règle dans
+   `ecluse_redact` (ou un détecteur pur de `ecluse_core`, comme
+   `IbanCleInvalideDetector`) : suite de l'alphabet `[0-9OolI]`, séparateurs de
+   groupe tolérés, au moins une lettre d'OCR, identifiant valide une fois les
+   lettres relues. NIR et IBAN avec ou sans libellé ; RPPS, FINESS, SIREN, ADELI
+   seulement derrière un libellé ou un mot-clé (même liste que P2-267 si elle
+   convient, sinon la justifier). Masqué en entier, type de l'identifiant,
+   confiance 0,3, avertissement « à vérifier » sans la valeur.
+3. Aucun changement sans lettre d'OCR : prédictions identiques octet pour octet
+   sur tous les autres corpus (`bench/equivalence_predictions.sh`).
+4. Rejouer `bash bench/etat.sh`, `python3 bench/controle_etat.py` (bloc régénéré
+   avec `--propose` si les lignes OCR changent, et seulement elles), mettre à
+   jour `LIMITES.md` et `agent/specs/P2-264.md` (§ résultat après correction).
+
+**Fini quand** : par `Ecluse.redact`, sans libellé, fuite NIR et IBAN ≤ 5 % ;
+avec libellé, fuite ≤ 5 % pour les cinq types ; sans libellé, RPPS, FINESS et
+SIREN inchangés (et le dire) ; **0 masquage à tort** sur le témoin d'origine
+(400), le témoin durci, `corpus_flou_realiste`, `corpus_courriers`, le corpus
+principal et tous les témoins d'`etat.sh` ; tableau avant / après dans la PR.
 
