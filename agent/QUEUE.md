@@ -329,6 +329,12 @@ tâches copiées ici sont prises par l'agent.
 | P2-259 | code | SIRET nommé (14 chiffres après « SIRET ») masqué en entier, type `siren` : 30 / 30 en clair aujourd'hui | — | fusionnée |
 | P2-260 | code | Numéro de TVA intracommunautaire masqué en entier (« FR » + clé + SIREN), type `siren` : 29 / 35 en clair aujourd'hui | — | fusionnée |
 | P2-261 | code | SIREN, SIRET et TVA annotés `siren` au banc (texte inchangé) ; comparaison principale sur les types communs, ligne à part pour les identifiants d'entreprise | — | fusionnée |
+| P2-262 | code | Reproduire le banc sur une machine neuve : séquence exacte (modèles, ordre, durées) validée et écrite dans `bench/README.md` ; aucun changement de code | — | à faire |
+| P2-267 | code | Nombres dictés en lettres : seconde vue « lettres → chiffres » (décisions P2-155 du 23 novembre) ; GO si fuite ≤ 5 % par type et 0 masquage à tort sur les témoins | P2-155 | à faire |
+| P2-263 | code | NIR à clé fausse coupé par une fin de ligne, en chiffres pleine chasse ou groupé 3 × 5 : masqué à 0,3 par la vue de détection | P2-258 | à faire |
+| P2-264 | mesure | Fuite par OCR (« O » pour 0, « l » ou « I » pour 1) sans libellé, par type, avec le coût en masquages à tort ; rien corrigé | — | à faire |
+| P2-265 | code | `bench/ETAT.md` contrôlé : un script compare chaque tableau courant à la sortie d'`etat.sh` et échoue au premier écart ; historique à part | — | à faire |
+| P2-266 | code | Machine neuve : le test d'équivalence dit quelle commande génère `bench/corpus.jsonl` au lieu d'échouer seulement sur « introuvable » | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1084,4 +1090,100 @@ avant / après pour Écluse et Presidio, tous types **et** types communs, plus l
 ligne `siren` ; toute fuite `siren` révélée par l'annotation (SIREN non masqué par
 `Ecluse.redact`) est listée par gabarit, **sans être corrigée** dans cette tâche ;
 témoin « rien à masquer » à 0.
+
+### P2-262 — Reproduire le banc sur une machine neuve (code, documentation seule)
+
+L'article de benchmark invite à « rejouer ces mesures ». Personne n'a vérifié la
+séquence sur une machine vierge : modèles spaCy (`en_core_web_lg`,
+`fr_core_news_lg`), EDS-Pseudo installé depuis GitHub, `bench/corpus.jsonl`
+préalable au test d'équivalence, durée de Presidio. Travail : partir d'une VM sans
+rien d'installé hors Dart et Python, suivre `bench/README.md` à la lettre, noter
+chaque écart (commande manquante, ordre faux, version différente, durée), puis
+réécrire la section « Reproduire » de `bench/README.md` avec la séquence qui
+marche. Rejouer : identifiants sur 1 000 documents (Écluse moteur seul,
+`Ecluse.redact`, Presidio par défaut), `bench/comparatif.py --temoin` ; 200 000
+documents seulement pour Écluse (Presidio : donner la durée mesurée sur 1 000 et
+l'extrapolation, sans le lancer). **Aucun changement de code ni de chiffre** :
+un chiffre rejoué qui diffère de `bench/COMPARATIF.md` ou de `bench/README.md`
+est rapporté dans la PR, pas corrigé. `bench/ARTICLE.md` n'est pas touché.
+**Fini quand** : la PR liste les écarts trouvés et les commandes exactes, avec
+les versions installées et les durées ; `bench/README.md` § « Reproduire » à jour ;
+les chiffres rejoués concordent ou chaque écart est expliqué.
+
+### P2-267 — Nombres dictés en lettres (code)
+
+Décisions du 23 novembre au soir (`DECISIONS.md`, six points) sur la spec
+`agent/specs/P2-155.md`, à lire en entier (§ 3 à § 7). Défaut mesuré
+(`Ecluse.redact`, graine 42) : fuite au caractère 97,4 à 98,0 % sur les cinq
+variantes de `bench/generate_corpus_transcrit.py`.
+
+Travail, dans l'ordre de la spec § 7 :
+1. Test d'équivalence d'abord : tous les corpus existants donnent des prédictions
+   identiques octet pour octet avant et après (seconde vue inactive sans
+   mot-nombre, garde `identical` comme P2-29).
+2. Compléter le générateur de transcrits (graine 42, offsets exacts) avec les
+   variantes absentes : « double / triple », « septante / huitante / nonante »,
+   « o » pour zéro, séparateurs perdus ; mesurer le défaut avant toute correction.
+3. Seconde vue avec table début / fin par caractère ; span ramené aux bornes des
+   mots ; lectures ambiguës bornées (64 au plus) et arbitrées par la clé du
+   détecteur ; K et K après mot-clé fixés par la mesure (tableau dans la PR).
+4. Signalement non bloquant « nombre dicté non reconnu, relire avant envoi »
+   pour une suite d'au moins 9 mots-nombres qu'aucune lecture ne valide :
+   positions et compte seulement, aucune valeur.
+5. Test de coût : 400 000 caractères de mots-nombres, temps linéaire.
+6. `LIMITES.md` mis à jour (ce qui est couvert, ce qui reste hors périmètre).
+
+Hors lot : âge en lettres, lettres d'IBAN épelées, corrections du locuteur.
+**Fini quand** (conditions de GO, décision point 6) : par type et par variante
+dictée, fuite au caractère ≤ 5 % par `Ecluse.redact` (un type dont l'écriture
+dépend d'un hors-lot, comme les lettres d'IBAN, est signalé et exclu, avec la
+raison) ; 0 masquage à tort sur **tous** les témoins (v3, flou, QI, dossiers,
+mots neutres, faux amis, mots-nombres 0 / 300) ; texte restauré identique ;
+`bash bench/etat.sh` sans écart hors des lignes prévues. Une condition manquée :
+PR « bloqué » avec la mesure complète, sans contournement.
+
+### P2-263 — NIR à clé fausse : fin de ligne, pleine chasse, groupes de 3 (code)
+
+Limites notées à la fusion de P2-258 (#502) : un NIR à clé fausse sans libellé
+n'est pas masqué quand il est coupé par une fin de ligne, écrit en chiffres
+pleine chasse, ou groupé 3 × 5. Travail : sonde synthétique qui montre la fuite
+par `Ecluse.redact`, puis lecture sur la vue de détection (P2-29), sans toucher
+au texte ni à `NirDetector` strict ; le NIR à clé nommée à part (P2-42) reste
+identique. **Fini quand** : les trois formes masquées en entier à 0,3 avec
+l'avertissement « à vérifier » ; 0 masquage nouveau sur les témoins (liste
+fournie sinon) ; `etat.sh` inchangé hors lignes prévues.
+
+### P2-264 — Fuite par OCR sans libellé (mesure)
+
+Rien n'est corrigé. P2-191 couvre « O » pour 0 et « l » ou « I » pour 1 derrière
+un libellé fort ; P2-254 l'IBAN à clé fausse avec « O ». Sans libellé, un NIR à
+clé juste écrit avec un « O » part en clair (compte rendu du 23 novembre matin).
+Travail : générateur synthétique (graine 42) qui substitue ces confusions dans
+NIR, RPPS, IBAN, FINESS et `siren`, avec et sans libellé, plus un témoin négatif
+(mots et références ordinaires contenant ces lettres) ; mesurer par
+`Ecluse.redact` la fuite au caractère par type et le nombre de masquages à tort.
+Rapport dans `agent/specs/P2-264.md`. **Fini quand** : tableau fuite / masquage à
+tort par type et par confusion, avec le chemin mesuré ; proposition chiffrée de
+correction (ce qu'elle coûterait sur le témoin), sans code de production.
+
+### P2-265 — `bench/ETAT.md` contrôlé (code)
+
+La session du 23 novembre après-midi a trouvé 3 lignes en retard sur 8 vérifiées
+(tableau « Dictée », « v3 sans ponctuation », titre de section). Travail : un
+script `bench/` (en s'appuyant sur `bench/verifie_etat.py` s'il convient) compare
+chaque valeur courante d'`ETAT.md` à la sortie d'`etat.sh` et sort en erreur au
+premier écart, avec la ligne fautive ; l'historique passe dans une section datée
+que le script ignore ; tests Python. **Fini quand** : le script passe sur `main`
+après mise à jour d'`ETAT.md`, échoue sur une valeur modifiée à la main (test),
+et `bench/README.md` dit quand le lancer.
+
+### P2-266 — Test d'équivalence sur machine neuve (code)
+
+Sur une VM neuve, `melos run test` échoue tant que `bench/corpus.jsonl` (ignoré par
+git) n'est pas généré (`packages/ecluse_bench/test/golden_equivalence_test.dart`).
+Travail : le message d'échec donne la commande exacte
+(`python3 bench/generate_corpus.py --n 1000 --seed 42 --out bench/corpus.jsonl`) ;
+même phrase dans `bench/README.md`. Pas d'appel à Python depuis le test, pas de
+saut silencieux (règle 4). **Fini quand** : sur une VM sans corpus, l'échec affiche
+la commande ; avec le corpus, le test passe comme avant.
 

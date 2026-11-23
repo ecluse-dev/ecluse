@@ -943,3 +943,31 @@ graine 42, 1 000 documents par profil.
    garder à côté de tout chiffre proche de 100 % : corpus synthétique construit
    par le projet. Tâche P2-261.
 
+## 2026-11 — Nombres dictés en lettres : décisions de P2-155 (23 novembre, soir)
+
+Réponses du mainteneur aux six questions de `agent/specs/P2-155.md` § 9 (il a
+suivi l'avis proposé). Contexte mesuré (`Ecluse.redact`, graine 42, compte rendu
+du 23 novembre après-midi) : sur les cinq variantes dictées, 1,9 à 3,6 % des
+identifiants couverts, fuite au caractère 97,4 à 98,0 % ; le témoin
+« mots-nombres » (`bench/generate_corpus_mots_nombres.py`) existe et donne 0
+prédiction sur 300 phrases.
+
+1. **Seconde vue** « lettres → chiffres », à côté de la vue de P2-29, jamais en
+   composition : sans mot-nombre, le résultat reste identique octet pour octet.
+2. **Jamais sur un mot-nombre isolé** : conversion seulement dans une séquence
+   d'au moins K mots-nombres consécutifs ; K (point de départ 6) et le K abaissé
+   après un mot-clé (point de départ 3) sont fixés par la mesure, chiffres à
+   l'appui dans la PR.
+3. **« Septante », « huitante », « nonante » dans le périmètre.**
+4. **Suite dictée non reconnue : signalement non bloquant** (option B), sans
+   valeur, sans texte tiré du document : « nombre dicté non reconnu, relire avant
+   envoi ».
+5. **Âge en lettres : hors de ce lot** (autre famille de détecteurs).
+6. **GO de la tâche de code** à deux conditions : fuite au caractère ≤ 5 % par
+   type et par variante dictée ; 0 masquage à tort sur tous les témoins, dont
+   les 300 phrases « mots-nombres ». Une condition manquée : la PR s'arrête en
+   « bloqué » avec la mesure, et le mainteneur décide. Tâche P2-267.
+
+Hors périmètre maintenu (§ 8 de la spec) : lettres d'IBAN épelées, corrections
+du locuteur, erreurs de transcription, vrai audio.
+
