@@ -12,9 +12,15 @@ import 'package:test/test.dart';
 /// détection, pas seulement une structure — condition d'acceptation avant
 /// de considérer le Jalon 1 terminé.
 void main() {
-  final corpusPath = _findCorpusPath();
+  test('le message d\'un corpus absent donne la commande exacte', () {
+    final message = messageCorpusIntrouvable();
+    expect(message, contains(commandeCorpus));
+    expect(message, contains('--n 1000 --seed 42'));
+    expect(message, contains('bench/corpus.jsonl'));
+  });
 
   test('EcluseEngine ≡ ancien pipeline sur le corpus de benchmark', () async {
+    final corpusPath = _findCorpusPath();
     const legacyDetectors = <EntityDetector>[
       NirDetector(),
       RppsDetector(),
@@ -65,12 +71,25 @@ void main() {
   });
 }
 
+/// La commande qui génère le corpus (déterministe, graine 42) : sur une
+/// machine neuve, `bench/corpus.jsonl` n'existe pas (ignoré par git, P2-266).
+/// Le test n'appelle pas Python lui-même et ne se saute jamais en silence
+/// (règle 4 : un corpus absent est un refus avec son motif).
+const commandeCorpus =
+    'python3 bench/generate_corpus.py --n 1000 --seed 42 --out bench/corpus.jsonl';
+
+/// Message d'échec quand le corpus est absent, avec la commande à lancer
+/// depuis la racine du dépôt.
+String messageCorpusIntrouvable() =>
+    'bench/corpus.jsonl introuvable (ni à la racine, ni depuis '
+    'packages/ecluse_bench). Corpus de benchmark non versionné : générer '
+    'depuis la racine du dépôt avec `$commandeCorpus`, puis relancer les tests.';
+
 /// Le test peut être lancé depuis la racine du repo ou depuis ce package :
 /// résout `bench/corpus.jsonl` dans les deux cas.
 String _findCorpusPath() {
   for (final candidate in ['bench/corpus.jsonl', '../../bench/corpus.jsonl']) {
     if (File(candidate).existsSync()) return candidate;
   }
-  throw StateError(
-      'bench/corpus.jsonl introuvable (ni à la racine, ni depuis packages/ecluse_bench)');
+  throw StateError(messageCorpusIntrouvable());
 }
