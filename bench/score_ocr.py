@@ -30,12 +30,20 @@ def main():
     entiers = collections.Counter()
     chars = collections.Counter()
     perdus = collections.Counter()
-    temoin = temoin_pred = 0
+    # Témoins négatifs : « temoin » (400 d'origine, P2-264) et « temoin_dur »
+    # (450, P2-268). Documents avec au moins une prédiction, et prédictions par
+    # type prédit (jamais de texte).
+    temoin = collections.Counter()
+    temoin_pred = collections.Counter()
+    temoin_types = collections.defaultdict(collections.Counter)
     for doc in corpus:
         pred = preds[doc["id"]].get("entities", [])
-        if doc["presentation"] == "temoin":
-            temoin += 1
-            temoin_pred += bool(pred)
+        if doc["presentation"].startswith("temoin"):
+            pr = doc["presentation"]
+            temoin[pr] += 1
+            temoin_pred[pr] += bool(pred)
+            for e in pred:
+                temoin_types[pr][e["type"]] += 1
             continue
         couvert = set()
         for e in pred:
@@ -67,7 +75,10 @@ def main():
             pp = sum(perdus[k] for k in ks)
             print(f"TOTAL {t:7} {pr:13} couverts {cc:4}/{nn:<4} "
                   f"fuite {100 * pp / ch:5.1f} %")
-    print(f"\ntémoin négatif : {temoin_pred} / {temoin} documents avec une prédiction")
+    for pr in sorted(temoin):
+        types = ", ".join(f"{t} {c}" for t, c in sorted(temoin_types[pr].items()))
+        print(f"\ntémoin négatif {pr} : {temoin_pred[pr]} / {temoin[pr]} documents "
+              f"avec une prédiction ({types or 'aucun type'})")
 
 
 if __name__ == "__main__":

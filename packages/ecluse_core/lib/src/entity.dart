@@ -92,6 +92,11 @@ enum Provenance {
   /// une telle tournure, sans civilité, couple prénom + nom, champ étiqueté ni
   /// patronyme établi ailleurs (autre document du dossier).
   tournure,
+
+  /// Identifiant dont une ou plusieurs lettres d'OCR (« O », « o », « l », « I »)
+  /// ont été relues comme des chiffres pour le valider (P2-268). Masqué à
+  /// confiance basse : la valeur peut être fausse, le masquage tient.
+  lectureOcr,
 }
 
 /// Une entité personnelle détectée dans un texte.

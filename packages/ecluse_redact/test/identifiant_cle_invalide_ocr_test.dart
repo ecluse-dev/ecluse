@@ -153,10 +153,11 @@ void main() {
       'NIR : l\'ordre du jour',
       'NIR : 450 euros',
       'IBAN : le 12/03/2026',
-      // Sans libellé fort, ces formes ne sont jamais acceptées.
-      'Dossier 1 85 05 78 OO6 084 91',
+      // Sans libellé fort, une clé faible (RPPS, neuf chiffres) n'est jamais
+      // acceptée. Le NIR et l'IBAN valides une fois relus (« 1 85 05 78 OO6 084
+      // 91 », « FRl3 3000 … ») ne sont plus ici : P2-268 les masque sans libellé
+      // (`identifiant_ocr_test.dart`).
       'Réf. 10OO1234565',
-      'Compte FRl3 3000 6000 0100 0000 0001 189',
       'Référence interne 81O 012 344 noté au dossier.',
     ];
     for (final texte in phrases) {
@@ -165,6 +166,19 @@ void main() {
         expect(r.maskedText, texte);
         expect(r.mapping, isEmpty);
       });
+    }
+  });
+
+  test('NIR et IBAN valides une fois relus : masqués sans libellé (P2-268)',
+      () async {
+    for (final (texte, type) in [
+      ('Dossier 1 85 05 78 OO6 084 91', EntityType.nir),
+      ('Compte FRl3 3000 6000 0100 0000 0001 189', EntityType.iban),
+    ]) {
+      final r = await Ecluse.redact(texte);
+      expect(r.entities.single.type, type, reason: texte);
+      expect(r.entities.single.confidence, 0.3);
+      expect(Ecluse.restore(r.maskedText, r.mapping), texte);
     }
   });
 

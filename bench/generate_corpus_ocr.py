@@ -21,6 +21,16 @@ Témoin négatif (`entities` vide) : mots et références ordinaires qui contien
 des « O », « l » et « I » (un mot en capitales, un code de lot, une référence
 alphanumérique, une phrase de consigne). Toute prédiction y est un masquage en trop.
 
+**Témoin durci (P2-268)** : 450 documents `temoin_dur` (cinq familles de 90 :
+`commande`, `lot`, `produit`, `piece`, `informatique`), sans identifiant, faits de
+suites denses en « O », « o », « l », « I » et en chiffres, séparées en groupes.
+Les longueurs sont choisies pour ce qui compte : 9, 11 et 15 caractères
+(les longueurs d'un SIREN/FINESS, d'un RPPS et d'un NIR une fois relus), et des
+suites « FR » + 25 caractères (la longueur d'un IBAN français), en plus de
+longueurs ordinaires de 6 à 20. Ajoutés **après** les 1 600 documents d'origine,
+sans changer ceux-ci (mêmes identifiants, même ordre). Toute prédiction y est un
+masquage en trop ; un accord est compté par type.
+
 Usage :
     python3 generate_corpus_ocr.py --n 40 --seed 42 --out flou/corpus_ocr.jsonl
 """
@@ -62,6 +72,59 @@ NEGATIFS = [
     "Bon de commande 110 011 101 : vérifier la ligne 1 et la ligne 0.",
     "Référence de série ILIOOLI à saisir en majuscules.",
 ]
+
+
+ALPHABET_DENSE = "0123456789OolI"
+SEPARATEURS_DENSES = (" ", "-", ".", "/", "\u00a0")
+
+FAMILLES_DURCIES = {
+    "commande": ["Commande {v} expédiée, colis suivi sous la référence indiquée.",
+                 "Bon de commande n° {v} à rapprocher de la facture.",
+                 "Suivi du colis {v} : en cours de livraison."],
+    "lot": ["Lot {v} reçu, contrôle visuel effectué.",
+            "Numéro de lot {v} à reporter sur le registre des réceptions.",
+            "Le lot {v} est mis en quarantaine jusqu'à vérification."],
+    "produit": ["Code produit {v} en rayon, quantité en stock confirmée.",
+                "Article {v} : rupture annoncée pour la semaine prochaine.",
+                "Référence catalogue {v}, conditionnement par dix."],
+    "piece": ["Numéro de pièce {v} gravé sur le capot, côté droit.",
+              "Pièce détachée {v} commandée auprès du fournisseur.",
+              "Plan {v} indice B, à imprimer en format A3."],
+    "informatique": ["Poste {v} redémarré après la mise à jour.",
+                     "Identifiant machine {v} à saisir dans l'inventaire.",
+                     "Étiquette inventaire {v} collée sous le boîtier."],
+}
+
+# (longueur de la suite, poids) : ce qui compte pour les types validés.
+LONGUEURS_CRITIQUES = (9, 11, 15)
+
+
+def suite_dense(rng):
+    """Suite synthétique de l'alphabet [0-9OolI], au moins une lettre d'OCR,
+    groupée par des séparateurs. Retourne (texte, nombre de caractères utiles)."""
+    tirage = rng.random()
+    if tirage < 0.06:
+        prefixe, n = "FR", 25
+    elif tirage < 0.30:
+        prefixe, n = "", rng.choice(LONGUEURS_CRITIQUES)
+    else:
+        prefixe, n = "", rng.randint(6, 20)
+    while True:
+        chars = [rng.choice(ALPHABET_DENSE) for _ in range(n)]
+        if any(c in "OolI" for c in chars):
+            break
+    sep = rng.choice(SEPARATEURS_DENSES)
+    groupe = rng.choice((2, 3, 4, 5))
+    morceaux = ["".join(chars[i:i + groupe]) for i in range(0, n, groupe)]
+    return prefixe + (sep if prefixe and rng.random() < 0.5 else "") \
+        + sep.join(morceaux)
+
+
+def temoin_dur(famille, rng):
+    phrase = rng.choice(FAMILLES_DURCIES[famille])
+    return {"text": phrase.format(v=suite_dense(rng)), "entities": [],
+            "type_id": "", "confusion": "", "presentation": "temoin_dur",
+            "famille": famille}
 
 
 def positions(valeur, car, debut):
@@ -129,6 +192,8 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--n", type=int, default=40,
                    help="documents par (type, confusion, présentation)")
+    p.add_argument("--n-dur", type=int, default=90,
+                   help="documents du témoin durci par famille (5 familles)")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--out", required=True)
     a = p.parse_args()
@@ -142,6 +207,11 @@ def main():
     for _ in range(a.n * 10):
         docs.append({"text": rng.choice(NEGATIFS), "entities": [],
                      "type_id": "", "confusion": "", "presentation": "temoin"})
+    # Témoin durci (P2-268) : après les documents d'origine, pour ne rien
+    # changer à leur contenu ni à leurs identifiants.
+    for famille in FAMILLES_DURCIES:
+        for _ in range(a.n_dur):
+            docs.append(temoin_dur(famille, rng))
     for i, d in enumerate(docs):
         d["id"] = i
     with open(a.out, "w", encoding="utf-8") as f:
