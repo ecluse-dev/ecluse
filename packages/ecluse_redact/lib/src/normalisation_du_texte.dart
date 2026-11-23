@@ -263,3 +263,23 @@ final RegExp _decorations = RegExp(r'(?<![\wÀ-ÿ*_`])[*_`]+(?=[\wÀ-ÿ])'
 final RegExp _cleNommee = RegExp(
     r'(?<=[0-9])[ \t]*(?:\([ \t]*)?(?:[Cc]l[ée]f?|CL[ÉE]F?)[ \t]*(?::[ \t]*)?'
     r'(?=[0-9]{2}(?![0-9]))');
+
+/// Vrai si [valeur] (étendue d'origine d'une détection de la vue) contient une
+/// fin de ligne ou un chiffre pleine chasse, arabe oriental : ce que la vue
+/// de détection a transformé et que la lecture sur le texte ne voit pas
+/// (P2-263).
+bool _coupureOuPleineChasse(String valeur) {
+  for (final c in valeur.codeUnits) {
+    if (c == 0x0A || c == 0x0D) return true;
+    if ((c >= 0xFF10 && c <= 0xFF19) ||
+        (c >= 0x0660 && c <= 0x0669) ||
+        (c >= 0x06F0 && c <= 0x06F9)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// Le mot « clé » (P2-42) dans l'étendue d'une détection de la vue : la vue
+/// l'efface, cette lecture ne doit jamais le recouvrir.
+final RegExp _cleNommeeDansLaValeur = RegExp('cl[eé]', caseSensitive: false);
