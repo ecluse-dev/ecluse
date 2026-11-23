@@ -357,11 +357,11 @@ ATTENDU = [
 # (`verifie_etat.py`). Une case ne figure ici qu'avec le constat d'un défaut
 # déjà connu ; le plafond ne peut que baisser et se retire quand la
 # correction est livrée. Vide depuis P2-199 (ADELI : 50 sur chacune des quatre
-# cases OCR et ligne vide au départ, 0 depuis), jusqu'au 22/11/2026 : les IBAN
-# à clé fausse sans libellé sont annotés depuis cette date, et 4 sur 50 (clé
-# fausse et lettre « o » d'OCR, sans libellé) partent en clair par
-# `Ecluse.redact`. Défaut constaté, correction à décider (agent/QUEUE.md).
-PLAFOND_LIBELLE_FORT = {("sans libellé", "cle_fausse_sans_libelle"): 4}
+# cases OCR et ligne vide au départ, 0 depuis). Il a porté un seul plafond, du
+# 22/11/2026 à P2-254 : 4 IBAN à clé fausse sans libellé (lettre « o » d'OCR
+# dans la clé) sur 50 partaient en clair par `Ecluse.redact` ; ils sont
+# masqués depuis P2-254 et le plafond est retiré.
+PLAFOND_LIBELLE_FORT = {}
 
 # Une ligne qui commence ainsi est un échec en soi.
 LIGNES_ECHEC = ("ÉCHEC", "section vide")
