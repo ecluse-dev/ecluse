@@ -13,6 +13,9 @@ Future<void> main(List<String> args) async {
 
   final engine = EcluseEngine(const [
     LegacyDetectorAdapter(NirDetector(), DetectorTier.structural, name: 'nir'),
+    // P2-258 : NIR à clé fausse ou à lettre « O » d'OCR, masqué en entier.
+    LegacyDetectorAdapter(NirCleInvalideDetector(), DetectorTier.structural,
+        name: 'nir_cle'),
     LegacyDetectorAdapter(RppsDetector(), DetectorTier.structural,
         name: 'rpps'),
     LegacyDetectorAdapter(IbanFrDetector(), DetectorTier.structural,

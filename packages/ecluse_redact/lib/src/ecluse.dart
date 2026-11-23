@@ -318,6 +318,18 @@ abstract final class Ecluse {
     // [text] directement — jamais sur [vue] (voir le commentaire de
     // `defaultDetectors`).
     final cleInvalide = const IdentifiantCleInvalideDetector().detect(text);
+    // P2-258 : NIR à clé fausse sans libellé, lui aussi sur [text] (la vue
+    // neutralise la « clé » nommée à part de P2-42, qui doit rester intacte).
+    final nirCleFausse = const NirCleInvalideDetector().detect(text);
+    if (nirCleFausse.isNotEmpty) {
+      return _avecCleInvalide(
+          resolveOverlaps([...surLeTexte, ...nirCleFausse]), cleInvalide);
+    }
+    return _avecCleInvalide(surLeTexte, cleInvalide);
+  }
+
+  static List<DetectedEntity> _avecCleInvalide(
+      List<DetectedEntity> surLeTexte, List<DetectedEntity> cleInvalide) {
     if (cleInvalide.isEmpty) return surLeTexte;
     // P2-199 : le libellé fort est une preuve plus forte que l'heuristique
     // d'adresse « cinq chiffres + mot ». Sur « ADELI 209l73939 noté », elle

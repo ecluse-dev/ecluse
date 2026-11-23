@@ -3,7 +3,7 @@
 Harnais de comparaison sur corpus synthétique français annoté.
 Entités cibles : **NIR**, **RPPS**, **IBAN FR**, **FINESS**.
 
-## Résultats (corpus v3, seed 42, 1000 documents, 826 entités)
+## Résultats (corpus v3, seed 42, 1000 documents, 871 entités)
 
 Rejoués le 22 novembre 2026 au commit `91d009c` (Écluse **et Presidio** :
 `presidio-analyzer` 2.2.366, modèle `en_core_web_lg`, seuil 0,35, prédictions
@@ -15,7 +15,13 @@ LLM, qui reçoit la sortie d'`Ecluse.redact` (voir les sections « Entités
 floues » et suivantes, qui mesurent `Ecluse.redact`). Depuis le 22 novembre, les **48 IBAN à clé
 invalide** du corpus (« L'IBAN … a été refusé par la banque ») sont **annotés**
 `iban` : un IBAN mal recopié reste le compte de quelqu'un (`DECISIONS.md`,
-22 novembre). Avant : 778 entités, 214 IBAN.
+22 novembre). Depuis le 23 novembre, les **45 NIR à clé invalide** (« saisie
+erronée hier : … a été rejeté ») sont **annotés** `nir` pour la même raison
+(`DECISIONS.md`, 23 novembre, P2-258) : 871 entités, 314 NIR. Avant le 23
+novembre : 826 entités, 269 NIR ; avant le 22 novembre : 778 entités, 214 IBAN.
+Les lignes Presidio et Écluse ci-dessous ont été rejouées le 23 novembre 2026
+(commit de la branche P2-258 ; `presidio-analyzer` 2.2.366, `en_core_web_lg`,
+seuil 0,35, prédictions régénérées).
 
 Appariement strict (span exact + type) :
 
@@ -25,15 +31,15 @@ Appariement strict (span exact + type) :
 | **Écluse** | RPPS | 100 % | 100 % | 100 % |
 | **Écluse** | IBAN FR | 100 % | 100 % | 100 % |
 | **Écluse** | FINESS | 100 % | 100 % | 100 % |
-| **Écluse** | **TOTAL**² | **95,2 %** | **100 %** | **97,5 %** |
+| **Écluse** | **TOTAL**² | **95,4 %** | **100 %** | **97,6 %** |
 | Presidio¹ | NIR | — | 0 % | 0 % |
 | Presidio¹ | RPPS | — | 0 % | 0 % |
 | Presidio¹ | IBAN FR | 100 % | 56,1 % | 71,9 % |
 | Presidio¹ | FINESS | — | 0 % | 0 % |
-| Presidio¹ | **TOTAL** | 100 % | **17,8 %** | **30,2 %** |
+| Presidio¹ | **TOTAL** | 100 % | **16,9 %** | **28,9 %** |
 
 ¹ Presidio rejoué sur le **corpus v3** (seed 42, 1000 documents,
-826 entités), configuration par défaut (`presidio-analyzer` 2.2.366,
+871 entités), configuration par défaut (`presidio-analyzer` 2.2.366,
 modèle spaCy `en_core_web_lg`, seuil 0,35). Le rappel NIR/RPPS/FINESS à
 0 % est structurel (aucun recognizer français ni FINESS livré par
 défaut). Le rappel IBAN de 56,1 % (147/262) vient de deux familles :
@@ -49,8 +55,8 @@ Lecture : en configuration par défaut, Presidio ne couvre **aucun
 identifiant spécifiquement français** (NIR, RPPS, FINESS). Son recognizer
 IBAN, à validation de clé, est précis (aucun faux positif) mais ne
 retrouve ni les IBAN à espacement irrégulier ni ceux à clé invalide (rappel
-56,1 %). Le corpus contient des pièges non annotés (NIR à clé invalide, RPPS à Luhn cassé,
-téléphones, SIRET, SIREN) : aucun moteur n'y est tombé à tort, à
+56,1 %). Le corpus contient des pièges non annotés (RPPS à Luhn cassé,
+téléphones, SIRET, SIREN ; le NIR et l'IBAN à clé invalide sont annotés depuis les 23 et 22 novembre) : aucun moteur n'y est tombé à tort, à
 l'exception du cas de collision FINESS/SIREN — assumé et mesuré, pas un
 bug.
 
@@ -174,6 +180,14 @@ cessent de compter comme faux positifs FINESS (284 → 216) ; NIR, RPPS et
 IBAN sont inchangés. Le rappel `adeli` reste bas par construction (décision
 §3.3 de la spec) : il n'est pas un défaut à corriger.
 
+**Rejeu du 23 novembre 2026 (P2-258, moteur seul, graine 42)** : le profil
+`extended` compte **795 entités** (NIR 203 au lieu de 174 : les 29 NIR à clé
+invalide sont annotés). NIR 100 % / 100 % (203/203, 0 faux positif) ; les autres
+lignes du tableau ci-dessous sont inchangées ; TOTAL 74,0 % / 91,7 % (729 TP,
+256 FP, 66 FN). Presidio `validated` : NIR 100 % / 85,7 % (174/203), RPPS
+95,1 % / 100 %, IBAN 100 % / 51,7 %, FINESS et ADELI 0 % ; TOTAL 98,5 % /
+48,2 %.
+
 **Rejeu du 22 novembre 2026** (commit `91d009c`, **moteur seul**, `run_ecluse.dart` ;
 corpus `extended`, seed 42, 1000 documents, **766 entités annotées** : NIR 174,
 RPPS 117, IBAN 178, FINESS 172, ADELI 125), appariement strict :
@@ -227,15 +241,24 @@ L'objection prévisible : « Presidio est extensible ». `run_presidio.py
   recommandée par Presidio. C'est le **meilleur reconnaisseur raisonnable** :
   je l'ai écrit tolérant, pour ne pas affaiblir artificiellement Presidio.
 
-Corpus v3 (seed 42, 1000 documents, 826 entités depuis le 22 novembre), appariement strict, même
+Corpus v3 (seed 42, 1000 documents, 871 entités depuis le 23 novembre), appariement strict, même
 configuration Presidio que la note ¹ (modèle `en_core_web_lg`, seuil 0,35) :
 
 | Configuration | NIR (préc. / rappel) | RPPS (préc. / rappel) | IBAN FR | FINESS | TOTAL (préc. / rappel) |
 |---|---:|---:|---:|---:|---:|
-| Presidio par défaut | — / 0 % | — / 0 % | 100 % / 56,1 % | — / 0 % | 100 % / 17,8 % |
-| + reconnaisseurs `simple` | 85,7 % / 100 % | 81,0 % / 100 % | 100 % / 56,1 % | — / 0 % | 87,4 % / 70,5 % |
-| + reconnaisseurs `validated` | **100 % / 100 %** | **100 % / 100 %** | 100 % / 56,1 % | — / 0 % | 100 % / 70,5 % |
-| Écluse | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 95,2 % / 100 % (42 SIREN) |
+| Presidio par défaut | — / 0 % | — / 0 % | 100 % / 56,1 % | — / 0 % | 100 % / 16,9 % |
+| + reconnaisseurs `simple` | 100 % / 100 % | 81,0 % / 100 % | 100 % / 56,1 % | — / 0 % | 94,1 % / 72,0 % |
+| + reconnaisseurs `validated` | 100 % / **85,7 %** | **100 % / 100 %** | 100 % / 56,1 % | — / 0 % | 100 % / 66,8 % |
+| Écluse | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 95,4 % / 100 % (42 SIREN) |
+
+**Rejeu du 23 novembre 2026 (P2-258).** L'annotation des 45 NIR à clé invalide
+change la lecture du NIR : le reconnaisseur `validated`, qui écarte la clé
+fausse, **manque ces 45 NIR** (rappel 269/314 = 85,7 %, fuite au caractère 14,7 %,
+précision 100 %), alors que `simple` les trouve (100 % / 100 %, ses 45 « faux
+positifs » de la version précédente sont devenus des vrais positifs). Valeurs
+d'**avant**, publiées au 22 novembre : NIR `simple` 85,7 % / 100 %, `validated`
+100 % / 100 % ; totaux 87,4 % / 70,5 % et 100 % / 70,5 %. Écluse (moteur seul)
+reste à 100 % / 100 % sur le NIR : 314/314.
 
 Lignes Presidio rejouées le 22 novembre 2026 (commit `91d009c`, les trois
 configurations, prédictions régénérées) : identiques au tableau ci-dessus. Seule
@@ -246,11 +269,14 @@ total 18,9 % et 74,8 %.
 
 Lecture, sans l'arrondir en faveur d'Écluse :
 
-- **Sur le NIR et le RPPS, un Presidio étendu et validé égale Écluse** sur ce
-  corpus : la valeur d'Écluse n'est pas dans ces deux détecteurs-là, mais dans
-  le fait de les livrer déjà écrits et testés. Sans la clé, la précision
-  tombe à 85,7 % (NIR, 45 faux positifs) et 81,0 % (RPPS, 39 faux positifs) :
-  la validation de clé est ce qui compte, pas le moteur.
+- **Sur le RPPS, un Presidio étendu et validé égale Écluse** sur ce corpus ;
+  **sur le NIR, il ne l'égale plus depuis le 23 novembre** : un NIR mal recopié
+  reste une donnée personnelle, Écluse le masque (confiance 0,3, « à vérifier »),
+  le reconnaisseur à clé validée le laisse passer (45 sur 314, 85,7 %). Avant
+  l'annotation, ces 45 comptaient comme faux positifs du reconnaisseur sans clé
+  (précision 85,7 %) et la clé semblait « ce qui compte » ; la mesure dépend donc
+  d'une décision de produit (écrite dans `DECISIONS.md`), pas seulement du
+  moteur. Sans la clé, le RPPS garde 81,0 % de précision (39 faux positifs).
 - **L'écart restant vient de l'IBAN et du FINESS.** Le recognizer IBAN livré
   par Presidio ne reconnaît ni les 67 IBAN à espacement irrégulier ni les 48
   à clé invalide (rappel 56,1 %, fuite au caractère de 48,3 %, rejoués le

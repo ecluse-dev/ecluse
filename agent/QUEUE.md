@@ -325,7 +325,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-255 | mesure | Recensement des pièges de tous les générateurs de corpus : lesquels sont des données personnelles d'après DECISIONS.md, comment chacun est annoté et traité aujourd'hui | — | fusionnée |
 | P2-256 | mesure | `bench/README.md` rejoué de bout en bout : chiffres périmés depuis P2-248 (SIREN typé) et l'annotation des IBAN à clé fausse (826 entités) | — | fusionnée |
 | P2-257 | code | `bench/ETAT.md` : 18 sections en double (17 identiques, 1 divergente) fusionnées, sans changer aucun chiffre | — | fusionnée |
-| P2-258 | code | NIR à clé fausse sans libellé : donnée personnelle (décision du 23 novembre) ; annoter les pièges des corpus et les masquer en entier à 0,3 « à vérifier », coût mesuré d'abord | — | à faire |
+| P2-258 | code | NIR à clé fausse sans libellé : donnée personnelle (décision du 23 novembre) ; annoter les pièges des corpus et les masquer en entier à 0,3 « à vérifier », coût mesuré d'abord | — | PR ouverte |
 | P2-259 | code | SIRET nommé (14 chiffres après « SIRET ») masqué en entier, type `siren` : 30 / 30 en clair aujourd'hui | — | à faire |
 | P2-260 | code | Numéro de TVA intracommunautaire masqué en entier (« FR » + clé + SIREN), type `siren` : 29 / 35 en clair aujourd'hui | — | à faire |
 
