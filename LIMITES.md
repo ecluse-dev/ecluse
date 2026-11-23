@@ -338,13 +338,18 @@ une coupure au milieu d'un groupe ne l'est pas.
   NIR pièges 45 / 45 en clair → 0 (v3), 29 / 29 → 0 (extended), « libellé fort »
   `sans libellé` 0 / 200 en clair ; rappel des vrais NIR inchangé ; aucun témoin
   négatif du tableau de bord ne gagne un masquage. **Limites** : (1) les coupures
-  du numéro doivent tomber entre les groupes d'un NIR (1-2-2-2-3-3-2) ou
-  n'exister nulle part, faute de quoi un RPPS suivi d'un nombre de quatre
-  chiffres serait avalé ; un NIR à clé fausse écrit en groupes de cinq ou de trois
-  n'est pas masqué ; (2) un NIR à clé **juste** avec des lettres « O » et sans
-  libellé reste en clair (P2-191, inchangé) ; (3) le détecteur lit le texte
-  d'origine : un NIR à clé fausse en chiffres pleine chasse ou coupé par une fin de
-  ligne n'est pas vu ; (4) la clé nommée à part fausse (« 2550814168025 clé 39 »,
+  du numéro doivent tomber entre les groupes d'un NIR (1-2-2-2-3-3-2), former
+  cinq groupes de trois (3-3-3-3-3, P2-263) ou n'exister nulle part, faute de quoi
+  un RPPS suivi d'un nombre de quatre chiffres serait avalé ; un NIR à clé fausse
+  écrit en groupes d'une autre taille n'est pas masqué ; (2) un NIR à clé **juste**
+  avec des lettres « O » et sans libellé reste en clair (P2-191, inchangé) ; (3)
+  **P2-263** : le NIR à clé fausse coupé par une fin de ligne (n'importe où dans le
+  numéro) ou écrit en chiffres pleine chasse est lu sur la vue de détection (P2-29),
+  masqué en entier à 0,3 comme les autres ; une coupure de ligne juste après neuf
+  ou onze chiffres de Luhn juste (RPPS ou FINESS suivi d'un nombre sur la ligne
+  suivante) n'est pas lue comme un NIR, et un NIR coupé exactement là par hasard
+  reste en clair ; les formes mêlant d'autres altérations de la vue (blancs
+  invisibles, tirets typographiques) ne sont pas reprises ; (4) la clé nommée à part fausse (« 2550814168025 clé 39 »,
   P2-42) reste intacte ; (5) une suite de quinze chiffres de cette forme qui n'est
   pas un NIR (référence, numéro de lot) est masquée à tort, jamais une fuite.
 - **SIRET nommé : masqué en entier (P2-259).** Quatorze chiffres (collés, ou
