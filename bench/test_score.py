@@ -43,5 +43,36 @@ class ScoreTest(unittest.TestCase):
         self.assertEqual(leaked["rpps"], 0)
 
 
+class TypesCommunsTest(unittest.TestCase):
+    """P2-261 : `siren` retiré de l'or et des prédictions, pour tous les moteurs."""
+
+    def test_sans_entreprise_retire_seulement_siren(self):
+        docs = {0: [ent("siren", 0, 9), ent("nir", 20, 35)], 1: [ent("siren", 3, 5)]}
+        self.assertEqual(score.sans_entreprise(docs),
+                         {0: [ent("nir", 20, 35)], 1: []})
+
+    def test_meme_regle_des_deux_cotes(self):
+        gold = {0: [ent("siren", 0, 9), ent("nir", 20, 35)]}
+        pred = {0: [ent("finess", 0, 9), ent("nir", 20, 35)]}
+        # tous types : le `finess` posé sur un SIREN est un faux positif et le
+        # SIREN annoté est manqué
+        types = score.TYPES + ["siren"]
+        tp, fp, fn = score.evaluate(gold, pred, True, types)
+        self.assertEqual((sum(tp.values()), sum(fp.values()), sum(fn.values())),
+                         (1, 1, 1))
+        # types communs : l'or `siren` est retiré ; un `finess` prédit reste
+        # (la règle ne retire que le type `siren`)
+        tp, fp, fn = score.evaluate(score.sans_entreprise(gold),
+                                    score.sans_entreprise(pred), True)
+        self.assertEqual((sum(tp.values()), sum(fp.values()), sum(fn.values())),
+                         (1, 1, 0))
+        # une prédiction `siren` est retirée aussi
+        pred = {0: [ent("siren", 0, 9), ent("nir", 20, 35)]}
+        tp, fp, fn = score.evaluate(score.sans_entreprise(gold),
+                                    score.sans_entreprise(pred), True)
+        self.assertEqual((sum(tp.values()), sum(fp.values()), sum(fn.values())),
+                         (1, 0, 0))
+
+
 if __name__ == "__main__":
     unittest.main()

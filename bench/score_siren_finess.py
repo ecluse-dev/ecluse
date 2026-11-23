@@ -9,7 +9,8 @@ qu'elle coûterait (vrais FINESS qui repartiraient en clair).
 
 Trois jeux :
 - corpus v3 entier (`generate_corpus.py`) : les SIREN pièges sont les nombres
-  de neuf chiffres à clé de Luhn valide non annotés (écriture collée ou 3-3-3) ;
+  de neuf chiffres à clé de Luhn valide non annotés **ou annotés `siren`**
+  depuis P2-261 (écriture collée ou 3-3-3) ;
   les vrais FINESS sont les entités annotées `finess` ;
 - témoin SIREN (`generate_corpus_siren.py`, champ `siren`) ;
 - pendant FINESS (même générateur, entité annotée `finess`).
@@ -73,9 +74,13 @@ def chiffres(texte, debut, fin):
 
 
 def sirens_v3(doc):
-    """Nombres de neuf chiffres à clé valide, hors entités annotées."""
+    """Nombres de neuf chiffres à clé valide, hors entités annotées **autres
+    que `siren`**. Depuis P2-261 le corpus annote ces nombres `siren` : ils
+    restent les SIREN à mesurer ici (même ensemble qu'avant l'annotation)."""
     gold = set()
     for g in doc["entities"]:
+        if g["type"] == "siren":
+            continue
         gold.update(range(g["start"], g["end"]))
     sortie = []
     for m in NEUF.finditer(doc["text"]):

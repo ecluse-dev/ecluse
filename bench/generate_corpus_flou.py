@@ -393,8 +393,13 @@ def doc_temoin(rng):
         d.add("Prochaine ").add(rng.choice(SIGLES_METIER))
         d.add(" le 03/09/2026.\n")
 
-    else:  # identifiants d'entreprise et vocabulaire courant
-        d.add("SIRET 12345678200010, TVA FR11123456782.\n")
+    else:  # vocabulaire courant
+        # P2-261 : la ligne « SIRET … TVA … » est retirée du témoin. Écluse
+        # masque SIREN, SIRET et TVA à dessein (DECISIONS.md, 23 novembre,
+        # point 8) : ce n'est plus « rien à masquer ». Remplacée par une ligne
+        # sans donnée personnelle ; aucun tirage n'est touché, les autres
+        # variantes et les autres corpus sont inchangés.
+        d.add("Le registre du commerce est consultable en ligne.\n")
         d.add("Le loyer et les charges sont dus au 5 de chaque mois.\n")
         d.add("Le boulanger et le berger du village ont été consultés.\n")
         d.add("Réunion ").add(rng.choice(SIGLES_METIER)).add(" à 14 h.\n")

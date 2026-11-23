@@ -328,7 +328,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-258 | code | NIR à clé fausse sans libellé : donnée personnelle (décision du 23 novembre) ; annoter les pièges des corpus et les masquer en entier à 0,3 « à vérifier », coût mesuré d'abord | — | fusionnée |
 | P2-259 | code | SIRET nommé (14 chiffres après « SIRET ») masqué en entier, type `siren` : 30 / 30 en clair aujourd'hui | — | fusionnée |
 | P2-260 | code | Numéro de TVA intracommunautaire masqué en entier (« FR » + clé + SIREN), type `siren` : 29 / 35 en clair aujourd'hui | — | fusionnée |
-| P2-261 | code | SIREN, SIRET et TVA annotés `siren` au banc (texte inchangé) ; comparaison principale sur les types communs, ligne à part pour les identifiants d'entreprise | — | à faire |
+| P2-261 | code | SIREN, SIRET et TVA annotés `siren` au banc (texte inchangé) ; comparaison principale sur les types communs, ligne à part pour les identifiants d'entreprise | — | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
