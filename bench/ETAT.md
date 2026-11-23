@@ -2411,20 +2411,20 @@ Ecluse TOTAL 0.0% 0.0% 0.0% 0 0 943
 finess 129/129 iban 262/262 nir 314/314 rpps 166/166 siren 72/72 TOTAL 943/943 (100.0 %)
 fuite au caractère : finess 0.0 % iban 0.0 % nir 0.0 % rpps 0.0 % siren 0.0 % TOTAL 0.0 %
 # en_lettres : Ecluse.redact (chemin du produit)
-finess 23/129 iban 0/262 nir 0/314 rpps 0/166 siren 0/72 TOTAL 23/943 (2.4 %)
-fuite au caractère : finess 72.5 % iban 99.9 % nir 99.9 % rpps 100.0 % siren 100.0 % TOTAL 97.8 %
+finess 120/129 iban 262/262 nir 314/314 rpps 166/166 siren 72/72 TOTAL 934/943 (99.0 %)
+fuite au caractère : finess 0.8 % iban 0.0 % nir 0.0 % rpps 0.0 % siren 0.0 % TOTAL 0.1 %
 # double_triple : Ecluse.redact (chemin du produit)
-finess 18/129 iban 0/262 nir 0/314 rpps 0/166 siren 0/72 TOTAL 18/943 (1.9 %)
-fuite au caractère : finess 75.7 % iban 99.9 % nir 99.9 % rpps 100.0 % siren 100.0 % TOTAL 98.0 %
+finess 121/129 iban 262/262 nir 314/314 rpps 166/166 siren 72/72 TOTAL 935/943 (99.2 %)
+fuite au caractère : finess 1.1 % iban 0.0 % nir 0.0 % rpps 0.0 % siren 0.0 % TOTAL 0.1 %
 # regional : Ecluse.redact (chemin du produit)
-finess 32/129 iban 0/262 nir 0/314 rpps 0/166 siren 0/72 TOTAL 32/943 (3.4 %)
-fuite au caractère : finess 68.1 % iban 99.9 % nir 100.0 % rpps 100.0 % siren 100.0 % TOTAL 97.4 %
+finess 123/129 iban 262/262 nir 314/314 rpps 166/166 siren 72/72 TOTAL 937/943 (99.4 %)
+fuite au caractère : finess 0.3 % iban 0.0 % nir 0.0 % rpps 0.0 % siren 0.0 % TOTAL 0.0 %
 # zero_o : Ecluse.redact (chemin du produit)
-finess 25/129 iban 0/262 nir 0/314 rpps 0/166 siren 0/72 TOTAL 25/943 (2.7 %)
-fuite au caractère : finess 72.6 % iban 99.9 % nir 100.0 % rpps 100.0 % siren 100.0 % TOTAL 97.7 %
+finess 123/129 iban 262/262 nir 314/314 rpps 166/166 siren 72/72 TOTAL 937/943 (99.4 %)
+fuite au caractère : finess 0.5 % iban 0.0 % nir 0.0 % rpps 0.0 % siren 0.0 % TOTAL 0.0 %
 # sans_traits_union : Ecluse.redact (chemin du produit)
-finess 34/129 iban 0/262 nir 0/314 rpps 0/166 siren 0/72 TOTAL 34/943 (3.6 %)
-fuite au caractère : finess 67.8 % iban 99.9 % nir 100.0 % rpps 100.0 % siren 100.0 % TOTAL 97.4 %
+finess 123/129 iban 262/262 nir 314/314 rpps 166/166 siren 72/72 TOTAL 937/943 (99.4 %)
+fuite au caractère : finess 0.3 % iban 0.0 % nir 0.0 % rpps 0.0 % siren 0.0 % TOTAL 0.0 %
 ## témoin mots-nombres (P2-160) : Ecluse.redact, aucune entité annotée
 témoin mots-nombres : 0 prédictions sur 300 phrases
 ## flou (entités floues) et variantes de casse
@@ -3123,7 +3123,7 @@ Ecluse TOTAL 99.2% 89.7% 94.2% 846 7 97
 # structurel largeur 60, détecteur isolé (appel direct des quatre détecteurs)
 finess 129/129 iban 156/262 nir 247/314 rpps 150/166 siren 72/72 TOTAL 754/943 (80.0 %)
 # structurel largeur 60, Ecluse.redact (chemin du produit)
-finess 129/129 iban 262/262 nir 313/314 rpps 166/166 siren 72/72 TOTAL 942/943 (99.9 %)
+finess 129/129 iban 262/262 nir 314/314 rpps 166/166 siren 72/72 TOTAL 943/943 (100.0 %)
 # realiste largeur 90 : 0 refus
 adresse 159 159 100.0% 100.0% 100.0% 100.0% 0.0%
 etablissement 400 400 79.2% 79.2% 79.2% 100.0% 0.0%
