@@ -1,6 +1,7 @@
 import '../detector.dart';
 import '../digit_compaction.dart';
 import '../entity.dart';
+import '../luhn.dart';
 
 /// Détecteur de NIR — Numéro d'Inscription au Répertoire, plus connu
 /// comme « numéro de sécurité sociale » français.
@@ -172,7 +173,14 @@ final class NirDetector implements EntityDetector {
 /// NIR (référence, numéro de lot) est masqué : sur-masquage possible, jamais
 /// une fuite. Le coût est mesuré sur les témoins négatifs (voir la PR).
 final class NirCleInvalideDetector implements EntityDetector {
-  const NirCleInvalideDetector();
+  /// [coupuresLibres] : n'impose pas que chaque coupure tombe entre deux groupes
+  /// d'un NIR. Réservé à l'appel sur la vue de détection d'`Ecluse.redact`
+  /// (P2-263), où une fin de ligne tombe n'importe où dans le numéro ; l'appelant
+  /// ne garde alors que les détections dont l'étendue d'origine contient cette
+  /// fin de ligne (ou une forme pleine chasse), jamais une coupure ordinaire.
+  const NirCleInvalideDetector({this.coupuresLibres = false});
+
+  final bool coupuresLibres;
 
   /// Confiance du NIR à clé invalide (voir la doc de la classe).
   static const double confidence = 0.3;
@@ -192,6 +200,19 @@ final class NirCleInvalideDetector implements EntityDetector {
     r'(?![0-9Oo])',
   );
 
+  /// NIR en cinq groupes de trois (P2-263) : « 285.057.800.608.446 ». Avec des
+  /// espaces, la compaction des blancs le ramène à la forme collée de
+  /// [_candidate] ; seuls les points, tirets et barres obligent à ce motif.
+  static final RegExp _candidateTroisParCinq = RegExp(
+    r'(?<![0-9Oo])'
+    r'[12][0-9Oo]{2}[.\-/]'
+    r'[0-9Oo]{3}[.\-/]'
+    r'[0-9Oo]{3}[.\-/]'
+    r'[0-9Oo]{3}[.\-/]'
+    r'[0-9Oo]{3}'
+    r'(?![0-9Oo])',
+  );
+
   static final RegExp _separators = RegExp(r'[ .\-/]');
 
   /// Positions (en caractères utiles) entre les groupes d'un NIR : 1 + 2 + 2 +
@@ -203,11 +224,14 @@ final class NirCleInvalideDetector implements EntityDetector {
   /// règle, une clé fausse accepte n'importe quelle coupure, donc un RPPS
   /// valide suivi d'un nombre de quatre chiffres serait avalé en un « NIR »
   /// (P2-174, mesuré : 17 documents sur 4 800 passaient de 2 à 19 défauts).
-  /// Coût assumé : un NIR à clé fausse écrit en groupes d'une autre taille
-  /// (3 × 5 par exemple) n'est pas masqué (`LIMITES.md` § 2).
+  /// Coût assumé : un NIR à clé fausse écrit en groupes d'une autre taille que
+  /// celle d'un NIR ou que cinq groupes de trois (P2-263) n'est pas masqué
+  /// (`LIMITES.md` § 2).
   static bool _coupuresDeNir(String brut) {
     var utiles = 0;
     var dansCoupure = false;
+    final coupures = <int>[];
+    var tailleNir = true;
     for (final unite in brut.runes) {
       final c = String.fromCharCode(unite);
       if (RegExp(r'[0-9A-Za-z]').hasMatch(c)) {
@@ -215,17 +239,57 @@ final class NirCleInvalideDetector implements EntityDetector {
         utiles++;
       } else if (!dansCoupure) {
         dansCoupure = true;
-        if (!_frontieres.contains(utiles)) return false;
+        coupures.add(utiles);
+        if (!_frontieres.contains(utiles)) tailleNir = false;
       }
     }
-    return true;
+    if (tailleNir) return true;
+    // P2-263 : cinq groupes de trois, et seulement cela (les quatre coupures
+    // aux positions 3, 6, 9 et 12) ; un RPPS suivi d'un nombre coupe à 11.
+    return coupures.length == 4 &&
+        coupures[0] == 3 &&
+        coupures[1] == 6 &&
+        coupures[2] == 9 &&
+        coupures[3] == 12;
+  }
+
+  /// Vrai si une coupure de [brut] tombe après neuf ou onze chiffres de clé de
+  /// Luhn juste : un FINESS, un SIREN ou un RPPS suivi d'un nombre (« RPPS
+  /// 10192209566⏎1250 places », P2-174) n'est pas un NIR coupé. Seul garde-fou de
+  /// la lecture à coupures libres (P2-263) : un NIR coupé à cet endroit, dont les
+  /// premiers chiffres sont par hasard de Luhn juste (un sur dix), reste en
+  /// clair.
+  static bool _prefixeIdentifiantCourt(String brut) {
+    final chiffres = StringBuffer();
+    var dansCoupure = false;
+    for (final unite in brut.runes) {
+      final c = String.fromCharCode(unite);
+      if (RegExp(r'[0-9A-Za-z]').hasMatch(c)) {
+        dansCoupure = false;
+        chiffres.write(c);
+      } else if (!dansCoupure) {
+        dansCoupure = true;
+        final avant = chiffres.toString();
+        if ((avant.length == 9 || avant.length == 11) &&
+            RegExp(r'^[0-9]+$').hasMatch(avant) &&
+            isLuhnValid(avant)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @override
   List<DetectedEntity> detect(String text) {
     final compaction = DigitCompaction(text);
     final results = <DetectedEntity>[];
-    for (final match in compaction.candidates(_candidate)) {
+    final vus = <int>{};
+    for (final match in [
+      ...compaction.candidates(_candidate),
+      ...compaction.candidates(_candidateTroisParCinq),
+    ]) {
+      if (!vus.add(match.start)) continue;
       final brut =
           match.text.replaceAll(NirCleInvalideDetector._separators, '');
       final normalise = brut.toUpperCase().replaceAll('O', '0');
@@ -233,7 +297,12 @@ final class NirCleInvalideDetector implements EntityDetector {
       // Un nombre voisin collé à un identifiant plus court (RPPS de onze
       // chiffres + « 1250 » = quinze chiffres) n'est pas un NIR : ses
       // coupures ne tombent pas entre les groupes d'un NIR.
-      if (!_coupuresDeNir(text.substring(match.start, match.end))) continue;
+      final brutAvecCoupures = text.substring(match.start, match.end);
+      if (coupuresLibres
+          ? _prefixeIdentifiantCourt(brutAvecCoupures)
+          : !_coupuresDeNir(brutAvecCoupures)) {
+        continue;
+      }
       // Clé juste : celui de NirDetector s'il est tout en chiffres ; avec des
       // lettres « O », jamais masqué sans libellé (`LIMITES.md` § 2).
       if (NirDetector._cleJuste(normalise)) continue;

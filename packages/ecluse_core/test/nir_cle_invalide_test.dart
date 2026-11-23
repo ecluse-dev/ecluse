@@ -98,5 +98,41 @@ void main() {
       final e = detecteur.detect('2 85 05 78 006 084 46');
       expect(e.single.confidence, 0.3);
     });
+
+    test('P2-263 : cinq groupes de trois, séparateurs . - / ou espaces', () {
+      for (final nir in [
+        '285.057.800.608.446',
+        '285-057-800-608-446',
+        '285/057/800/608/446',
+        '285 057 800 608 446',
+      ]) {
+        final e = detecteur.detect('n° $nir.');
+        expect(e, hasLength(1), reason: nir);
+        expect(e.single.value, nir);
+      }
+    });
+
+    test(
+        'P2-263 : 3 × 5 seulement si les quatre coupures sont aux rangs 3, 6, 9, 12',
+        () {
+      for (final t in [
+        '285.057.800.60.8446', // coupures à 3, 6, 9, 11
+        '285.057800.608.446', // trois coupures
+        '2850.578.006.084.46', // coupure à 4
+      ]) {
+        expect(detecteur.detect('n° $t.'), isEmpty, reason: t);
+      }
+    });
+
+    test(
+        'P2-263 : coupures libres, sauf après un identifiant court de Luhn juste',
+        () {
+      const libre = NirCleInvalideDetector(coupuresLibres: true);
+      // Coupure à 8 chiffres : refusée à coupures strictes, admise ici.
+      expect(detecteur.detect('n° 28505780 0608446.'), isEmpty);
+      expect(libre.detect('n° 28505780 0608446.'), hasLength(1));
+      // RPPS de Luhn juste (onze chiffres) puis quatre chiffres : jamais un NIR.
+      expect(libre.detect('RPPS 10192209566 1250 places'), isEmpty);
+    });
   });
 }

@@ -291,30 +291,27 @@ abstract final class Ecluse {
     final entites = (await engine.run(vue)).entities;
     // Les positions et la valeur sont ramenées au texte d'origine : le texte
     // n'est jamais réécrit, la table garde la valeur exacte (invariant 3).
-    final surLeTexte = identical(vue, text)
-        ? entites
-        : [
-            for (final e in entites)
-              () {
-                final debut = positions == null ? e.start : positions[e.start];
-                var fin = positions == null ? e.end : positions[e.end - 1] + 1;
-                // Les diacritiques qui suivent la dernière lettre en font
-                // partie.
-                while (
-                    fin < text.length && _estCombinant(text.codeUnitAt(fin))) {
-                  fin++;
-                }
-                return DetectedEntity(
-                  type: e.type,
-                  start: debut,
-                  end: fin,
-                  value: text.substring(debut, fin),
-                  confidence: e.confidence,
-                  tier: e.tier,
-                  provenance: e.provenance,
-                );
-              }()
-          ];
+    // Ramène une entité de la vue au texte d'origine.
+    DetectedEntity ramener(DetectedEntity e) {
+      final debut = positions == null ? e.start : positions[e.start];
+      var fin = positions == null ? e.end : positions[e.end - 1] + 1;
+      // Les diacritiques qui suivent la dernière lettre en font partie.
+      while (fin < text.length && _estCombinant(text.codeUnitAt(fin))) {
+        fin++;
+      }
+      return DetectedEntity(
+        type: e.type,
+        start: debut,
+        end: fin,
+        value: text.substring(debut, fin),
+        confidence: e.confidence,
+        tier: e.tier,
+        provenance: e.provenance,
+      );
+    }
+
+    final surLeTexte =
+        identical(vue, text) ? entites : [for (final e in entites) ramener(e)];
     // P2-267 : identifiants dictés en toutes lettres, lus dans une seconde
     // vue (jamais à la place de la première) ; rien à faire, et rien de
     // changé, sans suite de mots-nombres.
@@ -334,7 +331,23 @@ abstract final class Ecluse {
     final cleInvalide = const IdentifiantCleInvalideDetector().detect(text);
     // P2-258 : NIR à clé fausse sans libellé, lui aussi sur [text] (la vue
     // neutralise la « clé » nommée à part de P2-42, qui doit rester intacte).
-    final nirCleFausse = const NirCleInvalideDetector().detect(text);
+    final nirCleFausseTexte = const NirCleInvalideDetector().detect(text);
+    // P2-263 : le même NIR à clé fausse coupé par une fin de ligne ou écrit en
+    // chiffres pleine chasse, lu sur la vue de détection (P2-29). Ne sont gardées
+    // que les détections dont l'étendue d'origine contient cette fin de ligne ou
+    // ces chiffres : une coupure ordinaire reste jugée par la règle stricte sur le
+    // texte (RPPS suivi d'un nombre : jamais un NIR, P2-174), et la clé nommée à
+    // part (P2-42, « … clé 39 ») reste intacte, la vue effaçant le mot « clé ».
+    final nirCleFausse = identical(vue, text)
+        ? nirCleFausseTexte
+        : [
+            ...nirCleFausseTexte,
+            for (final e in const NirCleInvalideDetector(coupuresLibres: true)
+                .detect(vue))
+              if (_coupureOuPleineChasse(ramener(e).value) &&
+                  !_cleNommeeDansLaValeur.hasMatch(ramener(e).value))
+                ramener(e),
+          ];
     if (nirCleFausse.isNotEmpty) {
       return _avecCleInvalide(
           resolveOverlaps([...surLeTexteEtDictees, ...nirCleFausse]),

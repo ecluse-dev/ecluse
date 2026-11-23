@@ -40,6 +40,14 @@ Presidio n'est pas rejoué ici (environnement à part, `bench/README.md`,
 | v3 sans ponctuation, minuscules | 100 % | 100 % | 100 % | 0 | P2-261 (avant : 92,4 % / 100 % / 96,0 % / 72 ; = P2-98 pour le reste de l'historique) |
 | v3 nombres en lettres | 0 % | **0 %** | 0 % | 0 | = P2-98 |
 
+**P2-263 (23 novembre 2026, soir)** : un NIR à clé fausse sans libellé est maintenant
+lu aussi coupé par une fin de ligne, en chiffres pleine chasse ou en cinq groupes de
+trois (`Ecluse.redact`, confiance 0,3, « à vérifier »). Seule ligne du tableau de bord
+qui change : « structurel largeur 60, `Ecluse.redact` », NIR **313/314 → 314/314**
+(total 942/943 → 943/943) ; la lecture du moteur seul (`ecluse_core`) ne change pas,
+ni aucun fichier de prédiction des autres corpus (tous identiques octet pour octet
+avant et après).
+
 ## Identifiants d'entreprise annotés `siren` au banc (P2-261, 23 novembre 2026)
 
 Décision du 23 novembre, point 8 : SIREN, SIRET et numéro de TVA, que Écluse
