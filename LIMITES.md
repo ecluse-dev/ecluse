@@ -356,11 +356,13 @@ une coupure au milieu d'un groupe ne l'est pas.
   clair → 0 (v3), 19 / 19 → 0 (extended). **Limites** : sans le mot « SIRET »,
   quatorze chiffres ne sont pas masqués ; le motif groupé n'accepte que 3-3-3-5
   (un autre groupement est lu seulement s'il se compacte en quatorze chiffres) ;
-  le SIRET n'est pas annoté au banc (décision du 23 novembre, point 5), donc
-  les 30 SIRET du corpus v3 comptent comme faux positifs `siren` du moteur seul
-  (précision 95,4 % → 92,4 % sur 871 entités, 72 faux positifs au lieu de
-  42, tous des masquages voulus) et les 108 documents du témoin flou qui portent la ligne
-  « SIRET 12345678200010 » produisent 108 masquages `siren`, voulus aussi.
+  le SIRET est annoté `siren` au banc depuis le 23 novembre (P2-261, décision
+  du 23 novembre, point 8) : les 30 SIRET du corpus v3 ne comptent plus comme
+  faux positifs (moteur seul, v3 : 72 faux positifs `siren` → 0, précision
+  92,4 % → 100 % sur 943 entités ; sur les types communs seuls, 100 % / 100 %).
+  La ligne « SIRET … TVA … » du témoin flou, qui produisait 108 masquages
+  `siren` par corpus témoin, a été retirée du témoin (remplacée par une ligne
+  sans donnée personnelle) : le témoin « rien à masquer » redonne 0.
 - **Numéro de TVA intracommunautaire : masqué en entier (P2-260).** « FR » + clé
   de deux caractères + SIREN de neuf chiffres, avec au plus un blanc simple entre
   « FR », la clé et chaque groupe de trois chiffres : type `siren`, jeton
@@ -373,11 +375,11 @@ une coupure au milieu d'un groupe ne l'est pas.
   inchangés, les 6 faux positifs RPPS du moteur seul disparaissent (95,1 % → 100 %).
   **Limites** : une TVA à clé fausse sans libellé reste en clair ; « FR » + onze
   chiffres de clé juste qui n'est pas une TVA (1 chance sur 97) est masqué à tort ;
-  les autres pays de l'Union (« DE », « BE »…) ne sont pas traités ; la TVA n'est pas
-  annotée au banc (décision du 23 novembre, point 5), donc ses 35 masquages comptent
-  comme faux positifs `siren` du corpus étendu (185 au lieu de 150 après P2-259) et
-  les 108 documents du témoin flou qui portent « TVA FR11123456782 » (clé juste)
-  produisent 108 masquages `siren` de plus, voulus (216 avec ceux du SIRET).
+  les autres pays de l'Union (« DE », « BE »…) ne sont pas traités ; la TVA est
+  annotée `siren` au banc depuis le 23 novembre (P2-261), en entier (« FR », la
+  clé et le SIREN) : ses 35 masquages du corpus étendu ne comptent plus comme
+  faux positifs. Le témoin flou ne porte plus la ligne « TVA … » (216 masquages
+  par corpus témoin avec celle du SIRET, 0 depuis P2-261).
 - **INS** (Identité Nationale de Santé) : `InsDetector` masque les marqueurs
   textuels et OID (« Matricule INS »), pas le numéro qui suit ; celui-ci n'est
   masqué que si c'est un NIR à clé valide.

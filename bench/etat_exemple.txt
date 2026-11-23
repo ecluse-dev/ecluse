@@ -1,7 +1,11 @@
 ## commit 4d75831
 ## v3 (identifiants structurels)
-Ecluse     TOTAL    95.2%  100.0%   97.5%   826    42     0
-Ecluse     TOTAL    95.2%  100.0%   97.5%   826    42     0
+Ecluse     TOTAL   100.0%  100.0%  100.0%   943     0     0
+Ecluse     TOTAL   100.0%  100.0%  100.0%   943     0     0
+Ecluse (c)   COMMUNS   100.0%  100.0%  100.0%   871     0     0
+Ecluse (c)   COMMUNS   100.0%  100.0%  100.0%   871     0     0
+Ecluse (e)   strict        100.0%  100.0%  100.0%    72     0     0
+Ecluse (e)   souple        100.0%  100.0%  100.0%    72     0     0
 ## v3 transcrit
 # sans_ponctuation
 Ecluse     TOTAL    95.2%  100.0%   97.5%   826    42     0

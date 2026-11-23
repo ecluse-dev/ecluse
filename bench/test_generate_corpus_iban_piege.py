@@ -52,7 +52,9 @@ class IbanPiegeAnnote(unittest.TestCase):
 
     def test_totaux_v3_1000_documents(self):
         types = [e["type"] for d in self.docs for e in d["entities"]]
-        self.assertEqual(len(types), 871)
+        # 871 identifiants structurels + 72 `siren` (P2-261, 23/11/2026).
+        self.assertEqual(len([t for t in types if t != "siren"]), 871)
+        self.assertEqual(types.count("siren"), 72)
         self.assertEqual(types.count("iban"), 262)
 
     def test_texte_inchange_par_l_annotation(self):

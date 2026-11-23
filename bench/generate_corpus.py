@@ -4,17 +4,21 @@
 Produit un fichier JSONL où chaque ligne est un document :
     {"id": 0, "text": "...", "entities": [{"type": "nir", "start": 12, "end": 33}]}
 
-Entités cibles : nir, rpps, iban, finess (français).
+Entités cibles : nir, rpps, iban, finess, adeli (extended) et siren
+(identifiants d'entreprise : SIREN, SIRET, TVA ; ligne à part au banc).
 Le corpus contient aussi des formes non annotées. Deux familles, à ne pas
 confondre (DECISIONS.md, 23 novembre) :
   - des pièges, que la règle de clé tient pour non personnels : RPPS à Luhn
-    cassé, dates ordinaires, « réf. » + chiffres ; SIRET et SIREN (même Luhn
-    que le FINESS -- collision assumée, voir trap_siren ; un SIREN nommé est
-    masqué `siren`, P2-248) ; le NIR à clé invalide, en attente de P2-258 ;
+    cassé, dates ordinaires, « réf. » + chiffres ;
+  - SIREN, SIRET et numéro de TVA : ce ne sont plus des pièges. Écluse les
+    masque à dessein (P2-248, P2-259, P2-260) et le corpus les annote `siren`
+    depuis le 23/11/2026 (DECISIONS.md, point 8, tâche P2-261). Texte inchangé ;
+    le SIREN garde le même Luhn que le FINESS (collision assumée) ;
+  - le NIR et l'IBAN à clé invalide sont annotés (23 et 22/11) ;
   - des données personnelles **non annotées mais masquées par le produit** :
     téléphones, « dossier n° » + chiffres, code postal + ville. Elles ne sont
-    pas annotées pour garder le banc sur quatre types (NIR, RPPS, IBAN,
-    FINESS) ; ce ne sont pas des pièges à ignorer.
+    pas annotées pour garder le banc sur les types ci-dessus (point 5 des
+    décisions du 23/11, inchangé) ; ce ne sont pas des pièges à ignorer.
 
 Profils :
   - v3 (défaut) : corpus de référence du benchmark, inchangé.
@@ -154,9 +158,12 @@ def fmt_finess(finess: str, rng: random.Random) -> str:
 
 # ---------------------------------------------------------------------------
 # Formes non annotées (l'IBAN à clé invalide l'est depuis le 22/11/2026, le NIR
-# à clé invalide depuis le 23/11/2026 : voir build_doc). Les noms `trap_*` sont historiques : téléphone, « dossier n° » et
-# code postal + ville (trap_phone, trap_misc) sont des données personnelles non
-# annotées, que le produit masque (DECISIONS.md, 23 novembre, point 5)
+# à clé invalide depuis le 23/11/2026, SIREN, SIRET et TVA depuis le 23/11/2026
+# sous le type `siren` : voir build_doc). Les noms `trap_*` sont historiques :
+# `trap_siret` et `trap_siren` ne sont plus des pièges (annotés `siren`) ;
+# téléphone, « dossier n° » et code postal + ville (trap_phone, trap_misc) sont
+# des données personnelles non annotées, que le produit masque (DECISIONS.md,
+# 23 novembre, point 5)
 # ---------------------------------------------------------------------------
 
 def trap_nir_bad_key(rng: random.Random) -> str:
@@ -189,9 +196,8 @@ def trap_siret(rng: random.Random) -> str:
 def trap_siren(rng: random.Random) -> str:
     # SIREN : 9 chiffres, même Luhn mod 10 que le FINESS -- collision
     # structurelle assumée (voir docs/Ecluse-FINESS-detecteur-spec.md, §2).
-    # Jamais annoté : un FinessDetector honnête le capte à confiance basse,
-    # ce qui apparaît comme un faux positif "finess" dans score.py -- la
-    # mesure de la collision, pas un bug à corriger.
+    # Annoté `siren` (point 8) ; un FinessDetector honnête le capte parfois à
+    # confiance basse sous le type `finess` : type faux, mesuré, sans fuite.
     return luhn_digit("".join(rng.choice("0123456789") for _ in range(8)))
 
 
@@ -273,8 +279,7 @@ TEMPLATES = [
     # types du banc : voir la docstring)
     ["Contactez le secrétariat au ", ("trap_phone",), " pour toute question."],
     ["Le SIRET de l'établissement est ", ("trap_siret",), "."],
-    # Piège SIREN : même Luhn que le FINESS, jamais annoté -- un
-    # FinessDetector honnête le capte à confiance basse (voir trap_siren).
+    # SIREN nommé : même Luhn que le FINESS, annoté `siren` (voir trap_siren).
     ["Le SIREN de la société est ", ("trap_siren",), "."],
     ["Attention, saisie erronée hier : ", ("trap_nir",), " a été rejeté par le contrôle."],
     ["L'IBAN ", ("trap_iban",), " a été refusé par la banque (clé invalide)."],
@@ -286,7 +291,7 @@ TEMPLATES = [
 
 # Gabarits du profil « extended » (jamais utilisés dans le profil v3).
 EXTENDED_TEMPLATES = [
-    # SIREN sans le mot « SIREN » : pièges non annotés.
+    # SIREN sans le mot « SIREN », numéro de TVA : annotés `siren`.
     ["Société immatriculée au RCS de Metz sous le numéro ", ("siren_plain",), "."],
     ["N° de TVA intracommunautaire : ", ("tva",), "."],
     ["Extrait Kbis : immatriculation ", ("siren_plain",), ", gérant ", ("name",), "."],
@@ -332,9 +337,17 @@ def build_doc(doc_id: int, rng: random.Random, templates=None) -> dict:
             entities.append({"type": "finess", "start": len(text), "end": len(text) + len(v)})
             text += v
         elif slot == "siren_plain":
-            text += fmt_siren(make_siren(rng), rng)
+            # Annoté `siren` depuis le 23/11/2026 (DECISIONS.md, point 8) :
+            # Écluse masque à dessein ce numéro (P2-248, P2-259). Texte inchangé
+            # (même tirage), seule l'annotation est ajoutée.
+            v = fmt_siren(make_siren(rng), rng)
+            entities.append({"type": "siren", "start": len(text), "end": len(text) + len(v)})
+            text += v
         elif slot == "tva":
-            text += tva_from_siren(make_siren(rng))
+            # Le span couvre le numéro entier : « FR », la clé et le SIREN.
+            v = tva_from_siren(make_siren(rng))
+            entities.append({"type": "siren", "start": len(text), "end": len(text) + len(v)})
+            text += v
         elif slot in ("adeli", "adeli_nctx", "adeli_bad"):
             v = make_adeli_bad_key(rng) if slot == "adeli_bad" else make_adeli(rng)
             entities.append({"type": "adeli", "start": len(text), "end": len(text) + len(v)})
@@ -342,9 +355,15 @@ def build_doc(doc_id: int, rng: random.Random, templates=None) -> dict:
         elif slot == "trap_phone":
             text += trap_phone(rng)
         elif slot == "trap_siret":
-            text += trap_siret(rng)
+            # SIRET nommé : annoté `siren` (point 8), texte inchangé.
+            v = trap_siret(rng)
+            entities.append({"type": "siren", "start": len(text), "end": len(text) + len(v)})
+            text += v
         elif slot == "trap_siren":
-            text += trap_siren(rng)
+            # SIREN nommé : annoté `siren` (point 8), texte inchangé.
+            v = trap_siren(rng)
+            entities.append({"type": "siren", "start": len(text), "end": len(text) + len(v)})
+            text += v
         elif slot == "trap_nir":
             # Annoté depuis le 23/11/2026 (décision du mainteneur, DECISIONS.md,
             # point 1) : un NIR mal recopié reste celui d'un patient. Texte
@@ -378,7 +397,7 @@ def main() -> None:
     templates = TEMPLATES + EXTENDED_TEMPLATES if args.profile == "extended" else TEMPLATES
 
     rng = random.Random(args.seed)
-    counts = {"nir": 0, "rpps": 0, "iban": 0, "finess": 0, "adeli": 0}
+    counts = {"nir": 0, "rpps": 0, "iban": 0, "finess": 0, "adeli": 0, "siren": 0}
     with open(args.out, "w", encoding="utf-8") as f:
         for i in range(args.n):
             doc = build_doc(i, rng, templates)

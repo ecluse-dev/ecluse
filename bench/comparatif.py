@@ -133,20 +133,34 @@ def couverte(texte, ent, spans):
     return all(texte[i].isspace() or i in sous for i in range(debut, fin))
 
 
-def score(docs, spans_par_doc):
+# Identifiants d'entreprise (SIREN, SIRET, TVA), annotés `siren` par le corpus
+# depuis le 23/11/2026 (DECISIONS.md, point 8, P2-261). La comparaison
+# principale se fait sans eux : même règle pour tous les outils (voir `score`).
+ENTREPRISE = ("siren",)
+
+
+def score(docs, spans_par_doc, sans_types=()):
     """Renvoie (par_type, faux) : par_type[type] = [couvertes, total] ;
     faux = [documents sans entité portant une prédiction, documents sans
-    entité]."""
+    entité].
+
+    `sans_types` retire des deux côtés, **pour tous les outils**, les entités
+    annotées de ces types (l'or) et les prédictions de ces types (le type
+    prédit est le 3e élément du span ; un span sans type n'est jamais
+    retiré). Un document dont toutes les entités sont retirées devient un
+    document sans entité."""
     par_type = {}
     faux = [0, 0]
     for d in docs:
-        spans = spans_par_doc.get(d["id"], [])
-        if not d["entities"]:
+        spans = [sp for sp in spans_par_doc.get(d["id"], [])
+                 if not (len(sp) > 2 and sp[2] in sans_types)]
+        entites = [e for e in d["entities"] if e["type"] not in sans_types]
+        if not entites:
             faux[1] += 1
             if spans:
                 faux[0] += 1
             continue
-        for e in d["entities"]:
+        for e in entites:
             c = par_type.setdefault(e["type"], [0, 0])
             c[1] += 1
             if couverte(d["text"], e, spans):
@@ -156,8 +170,8 @@ def score(docs, spans_par_doc):
 
 # --- annotation complémentaire (P2-247) -------------------------------------
 #
-# Le corpus v3 n'annote que les identifiants structurels (NIR, RPPS, IBAN,
-# FINESS) : ses phrases contiennent aussi des noms, des téléphones et des
+# Le corpus v3 n'annote que les identifiants (NIR, RPPS, IBAN, FINESS, et
+# depuis P2-261 les identifiants d'entreprise `siren`) : ses phrases contiennent aussi des noms, des téléphones et des
 # numéros de dossier que personne n'annote. Sans cela, un outil qui les masque
 # est compté « à tort ». Cette annotation est propre au comparatif : elle ne
 # modifie ni `generate_corpus.py` ni les corpus, elle ajoute des entités sur la
@@ -170,11 +184,11 @@ def score(docs, spans_par_doc):
 #   deux, séparés par espace, point ou espace insécable ;
 # - **dossier** : le nombre qui suit « dossier n° » ou « dossier numéro ».
 #
-# Un ajout qui recouvre une entité déjà annotée est ignoré. Les numéros que le
-# corpus pose comme pièges (SIREN, SIRET, numéros de praticien inconnus) ne
-# sont **pas** annotés : ce ne sont pas des données personnelles au sens de
-# cette règle (le SIREN est traité par P2-248). L'IBAN à clé invalide n'est pas
-# ajouté ici : le corpus l'annote lui-même `iban` depuis le 22/11/2026.
+# Un ajout qui recouvre une entité déjà annotée est ignoré. Les numéros de
+# praticien inconnus (RPPS à Luhn cassé) restent **non** annotés. SIREN, SIRET
+# et TVA sont annotés `siren` par le corpus lui-même depuis le 23/11/2026
+# (P2-261), comme l'IBAN à clé invalide (`iban`, 22/11/2026) et le NIR à clé
+# invalide (`nir`, 23/11/2026) : ils ne sont pas ajoutés ici.
 
 RE_TEL = re.compile(r"(?<!\d)(?:0|\+33[ .\u00a0]?)[1-9](?:[ .\u00a0]?\d{2}){4}(?!\d)")
 RE_DOSSIER = re.compile(r"dossier\s+(?:n°|numéro)\s*(\d+)", re.IGNORECASE)
@@ -442,7 +456,7 @@ LIMITES = """## Ce que ce comparatif ne dit pas
   ligne « masqués à tort » qui le retient, et elle ne compte que les documents
   **sans** entité annotée.
 - **« Masqués à tort » n'est pas toujours une erreur** : le corpus v3 n'annote que
-  les identifiants structurels, alors que ses phrases contiennent aussi des noms,
+  les identifiants (structurels et d'entreprise), alors que ses phrases contiennent aussi des noms,
   des téléphones et des numéros de dossier non annotés ; un outil qui les masque y
   est compté « à tort » à cause de l'annotation, pas du texte. Les types prédits
   par Écluse sur ces documents sont donnés sous le tableau ; les autres outils
@@ -515,10 +529,10 @@ def section_annotation(resultats, resultats_a, docs_a, comptes):
         "sont dans `PRENOMS` et `NOMS` de `generate_corpus.py`, civilité exclue.",
         "Téléphones : numéro français à dix chiffres groupés par deux (`0X`, ou `+33 X`).",
         "Numéros de dossier : le nombre qui suit « dossier n° ». Un ajout qui recouvre une",
-        "entité déjà annotée est ignoré. **Non annotés** : SIREN, SIRET et numéros de",
-        "praticien inconnus (pièges du corpus, pas des données personnelles au sens de",
-        "cette règle ; le SIREN relève de P2-248). L'IBAN à clé invalide est annoté",
-        "`iban` par le corpus lui-même depuis le 22/11/2026.",
+        "entité déjà annotée est ignoré. **Non annotés** : les numéros de praticien",
+        "inconnus (RPPS à Luhn cassé). SIREN, SIRET et TVA sont annotés `siren` par le",
+        "corpus lui-même depuis le 23/11/2026 (P2-261), l'IBAN à clé invalide `iban`",
+        "depuis le 22/11/2026, le NIR à clé invalide `nir` depuis le 23/11/2026.",
         "",
         "Entités ajoutées (source, type : nombre) : "
         + ", ".join(f"{s} {t} : {n}" for (s, t), n in sorted(comptes.items()))
@@ -580,7 +594,23 @@ def section_temoin(docs, mesures, spans_ecluse):
     return "\n".join(lignes)
 
 
-def rapport(resultats, docs, commande):
+def tableau_communs(resultats_c, resultats):
+    """Comparaison principale : types communs (`siren` retiré de l'or et des
+    prédictions de tous les outils), puis la ligne `siren` à part, sur la
+    prédiction brute."""
+    outils = [o for o in OUTILS if o in resultats_c]
+    return "\n".join([
+        tableau(resultats_c, None), "",
+        "Identifiants d'entreprise (type annoté `siren`), ligne à part, "
+        "sur les prédictions brutes :", "",
+        "| | " + " | ".join(LIBELLES[o] for o in outils) + " |",
+        "|---|" + "---:|" * len(outils),
+        "| `siren` entièrement couvert | " + " | ".join(
+            pct(*resultats[o][0].get("siren", [0, 0])) for o in outils) + " |",
+    ])
+
+
+def rapport(resultats, docs, commande, resultats_c=None):
     comptes = {}
     for d in docs:
         comptes[d["source"]] = comptes.get(d["source"], 0) + 1
@@ -622,6 +652,24 @@ def rapport(resultats, docs, commande):
         "",
         tableau(resultats, docs),
         "",
+    ]
+    if resultats_c is not None:
+        lignes += [
+            "## Comparaison principale : types communs (P2-261)",
+            "",
+            "Mêmes prédictions, **`siren` retiré** de l'or et des prédictions pour",
+            "**tous les outils** (même règle). Une ligne « Toutes entités » ci-dessus",
+            "compte les identifiants d'entreprise, qu'Écluse masque à dessein",
+            "(DECISIONS.md, 23 novembre, point 8) : à citer seulement avec cette",
+            "précision. Presidio, spaCy et EDS-Pseudo n'ont pas de reconnaisseur",
+            "français pour SIREN, SIRET ou TVA : ce que leur ligne `siren` couvre vient",
+            "de prédictions d'un **autre type** (la règle de score ne regarde pas le",
+            "type) ; elle n'est pas interprétée.",
+            "",
+            tableau_communs(resultats_c, resultats),
+            "",
+        ]
+    lignes += [
         detail_ecluse(docs),
         "",
         "Règle de score : voir l'en-tête de `bench/comparatif.py`. Entité couverte =",
@@ -668,12 +716,13 @@ def main():
     docs = echantillon(_lire(chemins["v3"]), _lire(chemins["dossiers"]),
                        _lire(chemins["flou"]))
     ecrit_corpus(docs)
-    resultats, resultats_a = {}, {}
+    resultats, resultats_a, resultats_c = {}, {}, {}
     docs_a, comptes_a = annote_complement(docs)
     for outil in choisis:
         spans = lance(outil, docs)
         resultats[outil] = score(docs, spans)
         resultats_a[outil] = score(docs_a, spans)
+        resultats_c[outil] = score(docs, spans, ENTREPRISE)
         print(f"{LIBELLES[outil]} : {sum(v[0] for v in resultats[outil][0].values())}"
               f" / {sum(v[1] for v in resultats[outil][0].values())} entités couvertes",
               file=sys.stderr)
@@ -696,7 +745,7 @@ def main():
         temoin = (docs_t, mesures, spans_ecluse)
     commande = "python3 bench/comparatif.py --md bench/COMPARATIF.md" + (
         " --temoin" if a.temoin else "")
-    texte = rapport(resultats, docs, commande)
+    texte = rapport(resultats, docs, commande, resultats_c)
     texte += "\n" + section_annotation(resultats, resultats_a, docs_a, comptes_a)
     if temoin:
         texte += "\n" + section_temoin(*temoin)
