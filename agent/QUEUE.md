@@ -332,7 +332,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-262 | code | Reproduire le banc sur une machine neuve : séquence exacte (modèles, ordre, durées) validée et écrite dans `bench/README.md` ; aucun changement de code | — | à faire |
 | P2-267 | code | Nombres dictés en lettres : seconde vue « lettres → chiffres » (décisions P2-155 du 23 novembre) ; GO si fuite ≤ 5 % par type et 0 masquage à tort sur les témoins | P2-155 | à faire |
 | P2-263 | code | NIR à clé fausse coupé par une fin de ligne, en chiffres pleine chasse ou groupé 3 × 5 : masqué à 0,3 par la vue de détection | P2-258 | à faire |
-| P2-264 | mesure | Fuite par OCR (« O » pour 0, « l » ou « I » pour 1) sans libellé, par type, avec le coût en masquages à tort ; rien corrigé | — | à faire |
+| P2-264 | mesure | Fuite par OCR (« O » pour 0, « l » ou « I » pour 1) sans libellé, par type, avec le coût en masquages à tort ; rien corrigé | — | PR ouverte |
 | P2-265 | code | `bench/ETAT.md` contrôlé : un script compare chaque tableau courant à la sortie d'`etat.sh` et échoue au premier écart ; historique à part | — | à faire |
 | P2-266 | code | Machine neuve : le test d'équivalence dit quelle commande génère `bench/corpus.jsonl` au lieu d'échouer seulement sur « introuvable » | — | à faire |
 
