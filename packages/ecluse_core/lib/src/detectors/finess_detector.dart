@@ -49,6 +49,20 @@ import '../luhn.dart';
 /// mot « SIRET », quatorze chiffres ne sont jamais masqués (aucun gabarit
 /// propre) : le coût est un sur-masquage de quatorze chiffres que le texte
 /// appelle « SIRET », jamais une fuite.
+///
+/// **Numéro de TVA intracommunautaire (P2-260).** « FR » + clé de deux
+/// caractères + SIREN de neuf chiffres (blancs simples admis entre les
+/// groupes) : masqué en entier, type [EntityType.siren], pour la même raison
+/// que le SIREN nommé. La clé se vérifie par calcul, `(12 + 3 × (SIREN mod 97))
+/// mod 97` : clé juste (deux chiffres) → confiance haute, sans libellé exigé ;
+/// clé fausse ou à lettre → seulement si « TVA » ou « intracommunautaire » est
+/// à moins de 40 caractères, confiance [confianceTvaCleFausse] (0,3) avec
+/// l'avertissement « à vérifier » de `Ecluse.redact`. L'entité (treize
+/// caractères) l'emporte dans `resolveOverlaps` sur le RPPS de onze chiffres
+/// qu'une clé et un SIREN formaient par hasard (6 cas sur 35 au corpus étendu,
+/// « FR » restait en clair). Coût : « FR » + onze chiffres dont la clé est
+/// juste (1 chance sur 97) qui n'est pas une TVA est masqué : sur-masquage,
+/// jamais une fuite.
 final class FinessDetector implements Detector {
   const FinessDetector();
 
@@ -113,6 +127,21 @@ final class FinessDetector implements Detector {
   /// même que les autres identifiants à clé invalide masqués à tort permis.
   static const double confianceSiretCleFausse = 0.3;
 
+  /// « FR » + clé (deux caractères) + SIREN, avec au plus un blanc simple (espace
+  /// ou insécable) entre « FR », la clé et chaque groupe de trois chiffres
+  /// (P2-260). Lu sur le texte d'origine, hors compaction.
+  static final RegExp _tvaCandidate = RegExp(
+    r'(?<![0-9A-Za-z])[Ff][Rr][ \u00A0\u202F]?[0-9A-Za-z]{2}'
+    r'[ \u00A0\u202F]?[0-9]{3}[ \u00A0\u202F]?[0-9]{3}[ \u00A0\u202F]?[0-9]{3}'
+    r'(?![0-9A-Za-z])',
+  );
+
+  /// Libellé qui annonce une TVA : le mot « TVA » entier ou « intracommunautaire ».
+  static final RegExp _tvaLibelle = RegExp(r'\btva\b|intracommunautaire');
+
+  /// Confiance d'une TVA à clé fausse derrière son libellé (P2-260).
+  static const double confianceTvaCleFausse = 0.3;
+
   /// Luhn OK + indice de contexte à proximité.
   static const double _highConfidence = 0.9;
 
@@ -163,6 +192,27 @@ final class FinessDetector implements Detector {
           end: match.end,
           value: raw.substring(match.start, match.end),
           confidence: juste ? _highConfidence : confianceSiretCleFausse,
+        ),
+      );
+    }
+    for (final m in _tvaCandidate.allMatches(raw)) {
+      final compact = m.group(0)!.replaceAll(RegExp(r'[ \u00A0\u202F]'), '');
+      final cle = compact.substring(2, 4);
+      final siren = compact.substring(4);
+      final cleNumerique = int.tryParse(cle);
+      final juste = cleNumerique != null &&
+          RegExp(r'^[0-9]{2}$').hasMatch(cle) &&
+          cleNumerique == (12 + 3 * (int.parse(siren) % 97)) % 97;
+      if (!juste && !_tvaLibelle.hasMatch(_fenetre(raw, m.start, m.end))) {
+        continue;
+      }
+      results.add(
+        DetectedEntity(
+          type: EntityType.siren,
+          start: m.start,
+          end: m.end,
+          value: raw.substring(m.start, m.end),
+          confidence: juste ? _highConfidence : confianceTvaCleFausse,
         ),
       );
     }
