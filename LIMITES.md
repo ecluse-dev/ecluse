@@ -328,13 +328,31 @@ une coupure au milieu d'un groupe ne l'est pas.
   corpus étendu), et « réf. » suivi de dix chiffres pour un téléphone (3 sur 34
   en v3). Rien ne part en clair ; le LLM reçoit seulement une étiquette fausse.
   Toléré pour l'instant.
-- **NIR à clé fausse sans libellé, SIRET, numéro de TVA intracommunautaire :
-  en clair aujourd'hui, corrections inscrites.** Mesure P2-255 (`Ecluse.redact`,
-  graine 42) : NIR à clé fausse sans libellé 45 / 45 en clair (v3) ; SIRET
-  après le mot « SIRET » 30 / 30 (v3) ; numéro de TVA 29 / 35 en clair, 6
-  masqués en partie comme RPPS (corpus étendu). Le 23 novembre, le mainteneur
-  les a déclarés données personnelles : tâches P2-258 (NIR), P2-259 (SIRET) et
-  P2-260 (TVA) dans `agent/QUEUE.md`.
+- **SIRET, numéro de TVA intracommunautaire : en clair aujourd'hui, corrections
+  inscrites.** Mesure P2-255 (`Ecluse.redact`, graine 42) : SIRET après le mot
+  « SIRET » 30 / 30 en clair (v3) ; numéro de TVA 29 / 35 en clair, 6 masqués en
+  partie comme RPPS (corpus étendu). Le 23 novembre, le mainteneur les a déclarés
+  données personnelles : tâches P2-259 (SIRET) et P2-260 (TVA) dans
+  `agent/QUEUE.md`.
+- **NIR à clé fausse, sans libellé : masqué en entier (P2-258).** Un NIR mal
+  recopié reste celui d'un patient (décision du 23 novembre). `NirCleInvalideDetector`,
+  appelé par `Ecluse.redact` sur le texte d'origine, masque quinze caractères de
+  la forme d'un NIR (sexe 1 ou 2, mois et département plausibles, ordre non nul,
+  « 2A »/« 2B » admis, lettre « O » ou « o » admise à la place d'un zéro) dont la
+  clé est fausse : type `nir`, **confiance 0,3**, avertissement « identifiant à clé
+  invalide masqué : à vérifier » (sans valeur). Mesure (`Ecluse.redact`, graine 42) :
+  NIR pièges 45 / 45 en clair → 0 (v3), 29 / 29 → 0 (extended), « libellé fort »
+  `sans libellé` 0 / 200 en clair ; rappel des vrais NIR inchangé ; aucun témoin
+  négatif du tableau de bord ne gagne un masquage. **Limites** : (1) les coupures
+  du numéro doivent tomber entre les groupes d'un NIR (1-2-2-2-3-3-2) ou
+  n'exister nulle part, faute de quoi un RPPS suivi d'un nombre de quatre
+  chiffres serait avalé ; un NIR à clé fausse écrit en groupes de cinq ou de trois
+  n'est pas masqué ; (2) un NIR à clé **juste** avec des lettres « O » et sans
+  libellé reste en clair (P2-191, inchangé) ; (3) le détecteur lit le texte
+  d'origine : un NIR à clé fausse en chiffres pleine chasse ou coupé par une fin de
+  ligne n'est pas vu ; (4) la clé nommée à part fausse (« 2550814168025 clé 39 »,
+  P2-42) reste intacte ; (5) une suite de quinze chiffres de cette forme qui n'est
+  pas un NIR (référence, numéro de lot) est masquée à tort, jamais une fuite.
 - **INS** (Identité Nationale de Santé) : `InsDetector` masque les marqueurs
   textuels et OID (« Matricule INS »), pas le numéro qui suit ; celui-ci n'est
   masqué que si c'est un NIR à clé valide.

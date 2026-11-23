@@ -35,7 +35,7 @@ Presidio n'est pas rejoué ici (environnement à part, `bench/README.md`,
 
 | Corpus | Précision | Rappel | F1 | FP | Source |
 |---|---:|---:|---:|---:|---|
-| v3 d'origine | 95,2 % | 100 % | 97,5 % | 42 (SIREN masqués à dessein) | 22/11 : les 48 IBAN à clé fausse sont annotés (826 entités) ; avant : 89,6 % / 94,5 % / 90 sur 778 ; avant P2-252 : 94,9 % / 97,4 % / 42 |
+| v3 d'origine | 95,4 % | 100 % | 97,6 % | 42 (SIREN masqués à dessein) | 23/11 : les 45 NIR à clé fausse sont annotés (871 entités ; avant : 95,2 % / 97,5 % sur 826) ; 22/11 : les 48 IBAN à clé fausse sont annotés (826 entités) ; avant : 89,6 % / 94,5 % / 90 sur 778 ; avant P2-252 : 94,9 % / 97,4 % / 42 |
 | v3 sans ponctuation, minuscules | 95,2 % | 100 % | 97,5 % | 42 | = P2-98 ; même historique |
 | v3 nombres en lettres | 0 % | **0 %** | 0 % | 0 | = P2-98 |
 
@@ -2188,3 +2188,46 @@ Les 12 autres lignes qui changent entre les deux rejeux sont les conséquences
 directes des 4 identifiants désormais masqués (confiance 0,3 : 1 495 → 1 499 ;
 avertissement : 1 545 → 1 549 ; variante : 45 → 49 sur 50). Aucune autre ligne du
 tableau de bord ne bouge. `PLAFOND_LIBELLE_FORT` est retiré (vide).
+
+## NIR à clé fausse sans libellé masqué en entier (P2-258, 23 novembre 2026)
+
+Décision du 23 novembre (point 1) : un NIR mal recopié reste celui d'un patient.
+`NirCleInvalideDetector` : quinze caractères de la forme d'un NIR (sexe 1 ou 2,
+mois, département et ordre plausibles, lettre « O » admise à la place d'un zéro),
+**clé fausse**, masqué en entier, type `nir`, confiance 0,3, avertissement « à
+vérifier ». Appelé par `Ecluse.redact` sur le **texte d'origine** (comme
+`IdentifiantCleInvalideDetector`), pas sur la vue de détection : la clé nommée à
+part fausse de P2-42 (« 2550814168025 clé 39 ») reste intacte. Les coupures du
+numéro doivent tomber entre les groupes d'un NIR (1-2-2-2-3-3-2) ; sans cette règle,
+un RPPS suivi d'un nombre de quatre chiffres (« 10192209566 1250 places ») était
+avalé en « NIR » (première version : `identifiant suivi` 2 → 19 défauts, corrigé
+avant la PR). Rejeu complet de `bench/etat.sh` sur `main` (`21764b2`) puis sur la
+branche : seules les lignes ci-dessous changent, toutes attendues ; 0 ligne
+« ÉCHEC ».
+
+**Coût mesuré sur les témoins** : aucun témoin négatif du tableau de bord ne gagne
+un masquage (libellé fort : les 3 témoins masqués restants sont les mêmes
+collisions de hasard qu'avant, confiance 0,55 ; `comparatif.py --temoin` :
+16 / 480 avant et après, `Ecluse.redact`). Les quatre négatifs « NIR sans libellé »
+qui comptaient dans les 7 d'avant sont devenus des positifs annotés.
+
+| Ligne | Avant | Après | Chemin |
+|---|---|---|---|
+| v3, entités / précision / F1 | 826 / 95,2 % / 97,5 % | 871 / 95,4 % / 97,6 % | moteur seul |
+| v3, NIR rappel `Ecluse.redact` | 269 / 269 | 314 / 314 | `Ecluse.redact` |
+| v3, mise en page 60 colonnes, NIR manqués | 22 sur 269 | 23 sur 314 | moteur seul |
+| v3, mise en page 90 colonnes, NIR | 269 TP | 314 TP | moteur seul |
+| libellé fort, positifs / témoins | 1 850 / 1 150 | 2 000 / 1 000 | `Ecluse.redact` |
+| libellé fort, `sans libellé` × `cle_fausse_sans_libelle` | 0 / 50 en clair | 0 / 200 en clair | `Ecluse.redact` |
+| libellé fort, témoins masqués à tort | 7 / 1 150 | 3 / 1 000 | `Ecluse.redact` |
+| identifiant suivi, défauts | 2 / 4 800 | 2 / 4 800 (inchangé) | `Ecluse.redact` |
+
+Les NIR pièges de v3 (45) et d'extended (29), et les 150 NIR « sans libellé » du
+corpus libellé fort sont annotés `nir`, texte inchangé octet pour octet (empreinte
+SHA-256 des 1 000 textes v3 identique). Presidio rejoué pour `bench/README.md` : NIR
+`validated` 100 % / 100 % → 100 % / 85,7 % (voir ce fichier).
+
+**Non couvert** (écrit dans `LIMITES.md` § 2) : NIR à clé fausse écrit en groupes
+d'une autre taille (par exemple 3 × 5), NIR à clé **juste** avec lettres « O » sans
+libellé (comme avant, P2-191), NIR à clé fausse dont les chiffres sont écrits en
+pleine chasse ou séparés par une fin de ligne (le détecteur lit le texte d'origine).

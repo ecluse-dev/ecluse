@@ -25,10 +25,11 @@ class Generateur(unittest.TestCase):
     def test_effectifs(self):
         pos = [d for d in self.docs if d["entities"]]
         neg = [d for d in self.docs if not d["entities"]]
-        # Les 6 « nombre sans libellé » tirés pour l'IBAN sont des positifs
-        # depuis le 22/11/2026 (IBAN à clé fausse annoté).
-        self.assertEqual(len(pos), 6 * len(LIBELLES) * len(VARIANTES) + 6)
-        self.assertEqual(len(neg), 6 * len(LIBELLES) * len(NEGATIFS) - 6)
+        # Les « nombre sans libellé » tirés pour l'IBAN (6) sont des positifs
+        # depuis le 22/11/2026, ceux des trois libellés de NIR (18) depuis le
+        # 23/11/2026 (clé fausse annotée).
+        self.assertEqual(len(pos), 6 * len(LIBELLES) * len(VARIANTES) + 24)
+        self.assertEqual(len(neg), 6 * len(LIBELLES) * len(NEGATIFS) - 24)
         self.assertEqual([d["id"] for d in self.docs],
                          list(range(len(self.docs))))
 
@@ -99,7 +100,8 @@ class Generateur(unittest.TestCase):
         """22/11/2026 : l'IBAN à clé fausse sans libellé est une donnée
         personnelle : une entité `iban` qui couvre exactement le numéro,
         sans libellé fort devant, et dont la clé reste fausse."""
-        sans = [d for d in self.docs if d.get("variante") == VARIANTE_SANS]
+        sans = [d for d in self.docs if d.get("variante") == VARIANTE_SANS
+                and d["type_id"] == "iban"]
         self.assertEqual(len(sans), 6)
         for d in sans:
             self.assertEqual(d["libelle"], LIBELLE_SANS)
@@ -115,10 +117,30 @@ class Generateur(unittest.TestCase):
             if not re.search("[Oo]", compact[2:]):
                 self.assertFalse(self.cle_juste("iban", compact), d["text"])
 
-    def test_plus_aucun_negatif_iban_sans_libelle(self):
+    def test_nir_a_cle_fausse_sans_libelle_annote_nir(self):
+        """23/11/2026 : comme l'IBAN, le NIR à clé fausse sans libellé est
+        une donnée personnelle : une entité `nir` qui couvre exactement le
+        numéro (lettres d'OCR comprises), sans libellé fort devant."""
+        sans = [d for d in self.docs if d.get("variante") == VARIANTE_SANS
+                and d["type_id"] == "nir"]
+        self.assertEqual(len(sans), 18)
+        for d in sans:
+            self.assertEqual(d["libelle"], LIBELLE_SANS)
+            self.assertNotIn("temoin_negatif", d)
+            (e,) = d["entities"]
+            self.assertEqual(e["type"], "nir")
+            v = d["text"][e["start"]:e["end"]]
+            self.assertEqual(d["text"][e["end"]:], " noté au dossier.")
+            self.assertNotRegex(d["text"], r"NIR|IBAN|RPPS|ADELI|SS\b")
+            compact = re.sub(r"\s", "", v)
+            self.assertEqual(len(compact), 15)
+            if not re.search("[Oo]", compact):
+                self.assertFalse(self.cle_juste("nir", compact), d["text"])
+
+    def test_plus_aucun_negatif_iban_ni_nir_sans_libelle(self):
         self.assertFalse([d for d in self.docs
                           if d.get("temoin_negatif") == "nombre_sans_libelle"
-                          and d["type_id"] == "iban"])
+                          and d["type_id"] in ("iban", "nir")])
 
     def test_le_nombre_sans_libelle_n_a_pas_de_libelle_fort(self):
         for d in (d for d in self.docs

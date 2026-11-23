@@ -95,7 +95,11 @@ final class NirDetector implements EntityDetector {
       (month >= 50 && month <= 99);
 
   /// Valide un NIR normalisé (15 caractères, sans séparateurs, majuscules).
-  static bool _isValidNir(String nir) {
+  static bool _isValidNir(String nir) => _aLaForme(nir) && _cleJuste(nir);
+
+  /// Tout sauf la clé : longueur, mois, département, numéro d'ordre. Partagé
+  /// avec [NirCleInvalideDetector], qui exige la même forme.
+  static bool _aLaForme(String nir) {
     if (nir.length != 15) return false;
 
     // Mois de naissance : 01 à 12, ou mois fictif attribué quand la date est
@@ -118,8 +122,11 @@ final class NirDetector implements EntityDetector {
     // Numéro d'ordre : 001 à 999.
     final order = int.tryParse(nir.substring(10, 13));
     if (order == null || order < 1) return false;
+    return true;
+  }
 
-    // Clé de contrôle.
+  /// Clé de contrôle (les 13 premiers caractères et les deux derniers).
+  static bool _cleJuste(String nir) {
     final body = nir
         .substring(0, 13)
         .replaceFirst('2A', '19', 5)
@@ -130,5 +137,116 @@ final class NirDetector implements EntityDetector {
     final expectedKey = 97 - (number % 97);
     final actualKey = int.tryParse(nir.substring(13, 15));
     return actualKey == expectedKey;
+  }
+}
+
+/// NIR de forme complète mais à **clé de contrôle fausse** (P2-258), la lettre
+/// « O » / « o » étant admise à la place d'un zéro, masqué en entier à
+/// confiance basse.
+///
+/// Pourquoi : un numéro de sécurité sociale mal recopié reste celui d'un
+/// patient (décision du 23 novembre, `DECISIONS.md`, comme l'IBAN de
+/// P2-252). [NirDetector] l'ignore (« clé validée ou rien ») ; avant cette
+/// tâche, par `Ecluse.redact`, les NIR à clé fausse du corpus partaient en
+/// clair.
+///
+/// **Forme** : celle de [NirDetector] (15 caractères, mêmes séparateurs,
+/// même compaction des blancs), avec sexe 1 ou 2, mois et département
+/// plausibles comme [NirDetector], numéro d'ordre non nul, et la lettre
+/// « O » ou « o » admise à la place d'un zéro dans toute position de
+/// chiffre (confusion d'OCR ou de frappe, comme P2-254 pour l'IBAN). N'est
+/// émis qu'un NIR dont la clé (« O » lu comme 0) est **fausse** : un NIR à clé
+/// juste n'est jamais émis ici (tout en chiffres, c'est [NirDetector], à
+/// confiance 1,0 ; avec des lettres « O » et sans libellé, il reste en clair,
+/// comme avant : P2-191, `LIMITES.md` § 2).
+///
+/// **Où il tourne** : `Ecluse.redact` l'appelle sur le texte d'origine, pas sur
+/// la vue de détection, comme `IdentifiantCleInvalideDetector` : la vue
+/// neutralise le mot « clé » de « 2550814168025 clé 39 » (P2-42), et une clé
+/// nommée à part fausse doit rester intacte (`DECISIONS.md`, P2-188).
+///
+/// **Type et confiance** : [EntityType.nir], confiance [confidence] (0,3),
+/// avec le même avertissement « identifiant à clé invalide masqué : à
+/// vérifier » que les autres identifiants à clé invalide, sans valeur dans le
+/// message. Coût : un nombre de 15 chiffres de cette forme qui n'est pas un
+/// NIR (référence, numéro de lot) est masqué : sur-masquage possible, jamais
+/// une fuite. Le coût est mesuré sur les témoins négatifs (voir la PR).
+final class NirCleInvalideDetector implements EntityDetector {
+  const NirCleInvalideDetector();
+
+  /// Confiance du NIR à clé invalide (voir la doc de la classe).
+  static const double confidence = 0.3;
+
+  @override
+  EntityType get type => EntityType.nir;
+
+  static final RegExp _candidate = RegExp(
+    r'(?<![0-9Oo])'
+    r'[12][ .\-/]?'
+    r'[0-9Oo]{2}[ .\-/]?'
+    r'[0-9Oo]{2}[ .\-/]?'
+    r'(?:[0-9Oo]{2}|2[ABab])[ .\-/]?'
+    r'[0-9Oo]{3}[ .\-/]?'
+    r'[0-9Oo]{3}[ .\-/]?'
+    r'[0-9Oo]{2}'
+    r'(?![0-9Oo])',
+  );
+
+  static final RegExp _separators = RegExp(r'[ .\-/]');
+
+  /// Positions (en caractères utiles) entre les groupes d'un NIR : 1 + 2 + 2 +
+  /// 2 + 3 + 3 + 2.
+  static const Set<int> _frontieres = {1, 3, 5, 7, 10, 13};
+
+  /// Vrai si chaque coupure de [brut] (suite de blancs ou de séparateurs)
+  /// tombe entre deux groupes d'un NIR. Sans coupure : vrai. Sans cette
+  /// règle, une clé fausse accepte n'importe quelle coupure, donc un RPPS
+  /// valide suivi d'un nombre de quatre chiffres serait avalé en un « NIR »
+  /// (P2-174, mesuré : 17 documents sur 4 800 passaient de 2 à 19 défauts).
+  /// Coût assumé : un NIR à clé fausse écrit en groupes d'une autre taille
+  /// (3 × 5 par exemple) n'est pas masqué (`LIMITES.md` § 2).
+  static bool _coupuresDeNir(String brut) {
+    var utiles = 0;
+    var dansCoupure = false;
+    for (final unite in brut.runes) {
+      final c = String.fromCharCode(unite);
+      if (RegExp(r'[0-9A-Za-z]').hasMatch(c)) {
+        dansCoupure = false;
+        utiles++;
+      } else if (!dansCoupure) {
+        dansCoupure = true;
+        if (!_frontieres.contains(utiles)) return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  List<DetectedEntity> detect(String text) {
+    final compaction = DigitCompaction(text);
+    final results = <DetectedEntity>[];
+    for (final match in compaction.candidates(_candidate)) {
+      final brut =
+          match.text.replaceAll(NirCleInvalideDetector._separators, '');
+      final normalise = brut.toUpperCase().replaceAll('O', '0');
+      if (!NirDetector._aLaForme(normalise)) continue;
+      // Un nombre voisin collé à un identifiant plus court (RPPS de onze
+      // chiffres + « 1250 » = quinze chiffres) n'est pas un NIR : ses
+      // coupures ne tombent pas entre les groupes d'un NIR.
+      if (!_coupuresDeNir(text.substring(match.start, match.end))) continue;
+      // Clé juste : celui de NirDetector s'il est tout en chiffres ; avec des
+      // lettres « O », jamais masqué sans libellé (`LIMITES.md` § 2).
+      if (NirDetector._cleJuste(normalise)) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.nir,
+          start: match.start,
+          end: match.end,
+          value: text.substring(match.start, match.end),
+          confidence: confidence,
+        ),
+      );
+    }
+    return results;
   }
 }
