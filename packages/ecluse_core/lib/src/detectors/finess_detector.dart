@@ -38,6 +38,17 @@ import '../luhn.dart';
 /// contradictoires : la lecture « établissement de santé » garde son type
 /// d'avant). Sans aucun des deux mots, rien ne change : FINESS à confiance
 /// basse.
+///
+/// **SIRET nommé (P2-259).** Quatorze chiffres (collés, ou groupés « 3 3 3 5 »)
+/// à moins de 40 caractères du mot « SIRET » sont masqués en entier, type
+/// [EntityType.siren] : le SIRET contient le SIREN, qui désigne une personne
+/// quand il s'agit d'un entrepreneur individuel (décision du 23 novembre).
+/// Clé de Luhn sur les quatorze chiffres juste : confiance haute ; fausse :
+/// confiance [confianceSiretCleFausse] (0,3), que `Ecluse.redact` accompagne de
+/// l'avertissement « identifiant à clé invalide masqué : à vérifier ». Sans le
+/// mot « SIRET », quatorze chiffres ne sont jamais masqués (aucun gabarit
+/// propre) : le coût est un sur-masquage de quatorze chiffres que le texte
+/// appelle « SIRET », jamais une fuite.
 final class FinessDetector implements Detector {
   const FinessDetector();
 
@@ -89,6 +100,19 @@ final class FinessDetector implements Detector {
   /// Mots qui nomment un SIREN (« SIRET » : son préfixe de neuf chiffres).
   static final RegExp _sirenKeyword = RegExp('siren|siret');
 
+  /// Quatorze chiffres d'un SIRET, collés après compaction (P2-259).
+  static final RegExp _siretCandidate = RegExp(r'(?<![0-9])[0-9]{14}(?![0-9])');
+
+  /// Écriture groupée « 732 829 320 00124 » (3-3-3-5), espace simple : comme
+  /// [_candidateGroupe], pour qu'un nombre voisin soudé par la compaction ne
+  /// fasse pas rejeter le SIRET.
+  static final RegExp _siretGroupe =
+      RegExp(r'(?<![0-9])[0-9]{3} [0-9]{3} [0-9]{3} [0-9]{5}(?![0-9])');
+
+  /// Confiance d'un SIRET nommé dont la clé de Luhn est fausse (P2-259) : la
+  /// même que les autres identifiants à clé invalide masqués à tort permis.
+  static const double confianceSiretCleFausse = 0.3;
+
   /// Luhn OK + indice de contexte à proximité.
   static const double _highConfidence = 0.9;
 
@@ -120,6 +144,25 @@ final class FinessDetector implements Detector {
           end: end,
           value: raw.substring(start, end),
           confidence: (hasContext || siren) ? _highConfidence : _lowConfidence,
+        ),
+      );
+    }
+    final siretVus = <(int, int)>{};
+    final siret = [
+      ...compaction.candidates(_siretCandidate),
+      ...compaction.candidates(_siretGroupe),
+    ]..sort((a, b) => a.start - b.start);
+    for (final match in siret) {
+      if (!siretVus.add((match.start, match.end))) continue;
+      if (!_fenetre(raw, match.start, match.end).contains('siret')) continue;
+      final juste = isLuhnValid(match.text.replaceAll(' ', ''));
+      results.add(
+        DetectedEntity(
+          type: EntityType.siren,
+          start: match.start,
+          end: match.end,
+          value: raw.substring(match.start, match.end),
+          confidence: juste ? _highConfidence : confianceSiretCleFausse,
         ),
       );
     }
