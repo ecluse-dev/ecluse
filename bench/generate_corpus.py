@@ -5,11 +5,16 @@ Produit un fichier JSONL où chaque ligne est un document :
     {"id": 0, "text": "...", "entities": [{"type": "nir", "start": 12, "end": 33}]}
 
 Entités cibles : nir, rpps, iban, finess (français).
-Le corpus contient aussi des pièges non annotés : NIR à clé invalide,
-RPPS à Luhn cassé, téléphones, SIRET, SIREN (même
-Luhn que le FINESS -- collision assumée, voir trap_siren), dates, codes
-postaux. Un bon détecteur doit les ignorer (sauf FINESS/SIREN, capté à
-confiance basse par construction -- voir docs/Ecluse-FINESS-detecteur-spec.md).
+Le corpus contient aussi des formes non annotées. Deux familles, à ne pas
+confondre (DECISIONS.md, 23 novembre) :
+  - des pièges, que la règle de clé tient pour non personnels : RPPS à Luhn
+    cassé, dates ordinaires, « réf. » + chiffres ; SIRET et SIREN (même Luhn
+    que le FINESS -- collision assumée, voir trap_siren ; un SIREN nommé est
+    masqué `siren`, P2-248) ; le NIR à clé invalide, en attente de P2-258 ;
+  - des données personnelles **non annotées mais masquées par le produit** :
+    téléphones, « dossier n° » + chiffres, code postal + ville. Elles ne sont
+    pas annotées pour garder le banc sur quatre types (NIR, RPPS, IBAN,
+    FINESS) ; ce ne sont pas des pièges à ignorer.
 
 Profils :
   - v3 (défaut) : corpus de référence du benchmark, inchangé.
@@ -148,8 +153,10 @@ def fmt_finess(finess: str, rng: random.Random) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Pièges (non annotés, sauf l'IBAN à clé invalide depuis le 22/11/2026 : voir
-# build_doc) : un détecteur correct doit ignorer les autres
+# Formes non annotées (l'IBAN à clé invalide l'est depuis le 22/11/2026 : voir
+# build_doc). Les noms `trap_*` sont historiques : téléphone, « dossier n° » et
+# code postal + ville (trap_phone, trap_misc) sont des données personnelles non
+# annotées, que le produit masque (DECISIONS.md, 23 novembre, point 5)
 # ---------------------------------------------------------------------------
 
 def trap_nir_bad_key(rng: random.Random) -> str:
@@ -262,7 +269,8 @@ TEMPLATES = [
     # (indistinguable d'un SIREN par la structure seule) -- toujours annoté
     # en or, puisque c'est bien un FINESS, mais démontre le cas sans indice.
     ["La structure porte le code ", ("finess_nctx",), " dans le tableur RH."],
-    # Phrases pièges (aucune entité annotée)
+    # Formes non annotées (pièges et données personnelles hors des quatre
+    # types du banc : voir la docstring)
     ["Contactez le secrétariat au ", ("trap_phone",), " pour toute question."],
     ["Le SIRET de l'établissement est ", ("trap_siret",), "."],
     # Piège SIREN : même Luhn que le FINESS, jamais annoté -- un
