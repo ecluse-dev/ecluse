@@ -196,6 +196,12 @@ est masqué (non annoté) : les FP `siren` passent de 131 à 150 (+19 SIRET du
 profil), TOTAL 74,0 % / 91,7 % → 72,6 % / 91,7 % (729 TP, 275 FP, 66 FN) ; les
 autres lignes du tableau ci-dessous sont inchangées.
 
+**Rejeu du 23 novembre 2026 (P2-260, moteur seul, graine 42)** : le numéro de TVA
+intracommunautaire est masqué en entier sous le type `siren` (non annoté) : RPPS
+95,1 % → **100 %** (les 6 faux positifs de TVA disparaissent, 117 TP inchangés),
+FP `siren` 150 → 185 (+35), TOTAL 72,6 % / 91,7 % → 70,6 % / 91,7 % (729 TP, 304 FP,
+66 FN) ; les autres lignes du tableau ci-dessous sont inchangées.
+
 **Rejeu du 22 novembre 2026** (commit `91d009c`, **moteur seul**, `run_ecluse.dart` ;
 corpus `extended`, seed 42, 1000 documents, **766 entités annotées** : NIR 174,
 RPPS 117, IBAN 178, FINESS 172, ADELI 125), appariement strict :
@@ -292,10 +298,12 @@ Lecture, sans l'arrondir en faveur d'Écluse :
   36,6 %), et rien ne couvre le FINESS. Un
   utilisateur pourrait écrire ces deux reconnaisseurs aussi : ce n'est pas
   mesuré ici (hors de la tâche).
-- **Le même défaut apparaît des deux côtés** : sur le corpus étendu, le RPPS
-  validé de Presidio a les mêmes 6 faux positifs que celui d'Écluse (les
-  numéros de TVA passent la clé de Luhn par coïncidence), RPPS 95,1 % de
-  précision pour les deux (rejoué le 22 novembre 2026).
+- **Le même défaut apparaissait des deux côtés** : sur le corpus étendu, le RPPS
+  validé de Presidio a 6 faux positifs (les numéros de TVA passent la clé de
+  Luhn par coïncidence), RPPS 95,1 % de précision ; celui d'Écluse avait les
+  mêmes (rejoué le 22 novembre 2026). Depuis P2-260 (23 novembre), Écluse masque
+  la TVA en entier sous son propre type et son RPPS est à 100 % de précision ;
+  celui de Presidio reste à 95,1 %.
 - Hors périmètre de cette comparaison : tout ce qu'Écluse fait en plus
   (noms, adresses, restauration réversible, garde-fous d'ingestion) et que
   Presidio fait autrement (reconnaissance d'entités nommées anglophone).

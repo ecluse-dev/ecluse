@@ -328,12 +328,6 @@ une coupure au milieu d'un groupe ne l'est pas.
   corpus étendu), et « réf. » suivi de dix chiffres pour un téléphone (3 sur 34
   en v3). Rien ne part en clair ; le LLM reçoit seulement une étiquette fausse.
   Toléré pour l'instant.
-- **Numéro de TVA intracommunautaire : en clair aujourd'hui, correction
-  inscrite.** (SIRET : corrigé par P2-259, ci-dessous.) Mesure P2-255 (`Ecluse.redact`, graine 42) : SIRET après le mot
-  « SIRET » 30 / 30 en clair (v3) ; numéro de TVA 29 / 35 en clair, 6 masqués en
-  partie comme RPPS (corpus étendu). Le 23 novembre, le mainteneur les a déclarés
-  données personnelles : tâches P2-259 (SIRET) et P2-260 (TVA) dans
-  `agent/QUEUE.md`.
 - **NIR à clé fausse, sans libellé : masqué en entier (P2-258).** Un NIR mal
   recopié reste celui d'un patient (décision du 23 novembre). `NirCleInvalideDetector`,
   appelé par `Ecluse.redact` sur le texte d'origine, masque quinze caractères de
@@ -367,6 +361,23 @@ une coupure au milieu d'un groupe ne l'est pas.
   (précision 95,4 % → 92,4 % sur 871 entités, 72 faux positifs au lieu de
   42, tous des masquages voulus) et les 108 documents du témoin flou qui portent la ligne
   « SIRET 12345678200010 » produisent 108 masquages `siren`, voulus aussi.
+- **Numéro de TVA intracommunautaire : masqué en entier (P2-260).** « FR » + clé
+  de deux caractères + SIREN de neuf chiffres, avec au plus un blanc simple entre
+  « FR », la clé et chaque groupe de trois chiffres : type `siren`, jeton
+  `[SIREN_n]`. Clé vérifiée par `(12 + 3 × (SIREN mod 97)) mod 97` : clé juste
+  (deux chiffres) → confiance 0,9, sans libellé exigé ; clé fausse ou à lettre →
+  seulement si « TVA » (mot entier) ou « intracommunautaire » est à moins de 40
+  caractères, confiance 0,3 et avertissement « à vérifier ». Mesure
+  (`Ecluse.redact`, corpus étendu, graine 42) : 29 / 35 en clair et 6 / 35 masqués
+  en partie comme RPPS → **35 / 35 en entier**, type `siren` ; RPPS du corpus : 117 / 117
+  inchangés, les 6 faux positifs RPPS du moteur seul disparaissent (95,1 % → 100 %).
+  **Limites** : une TVA à clé fausse sans libellé reste en clair ; « FR » + onze
+  chiffres de clé juste qui n'est pas une TVA (1 chance sur 97) est masqué à tort ;
+  les autres pays de l'Union (« DE », « BE »…) ne sont pas traités ; la TVA n'est pas
+  annotée au banc (décision du 23 novembre, point 5), donc ses 35 masquages comptent
+  comme faux positifs `siren` du corpus étendu (185 au lieu de 150 après P2-259) et
+  les 108 documents du témoin flou qui portent « TVA FR11123456782 » (clé juste)
+  produisent 108 masquages `siren` de plus, voulus (216 avec ceux du SIRET).
 - **INS** (Identité Nationale de Santé) : `InsDetector` masque les marqueurs
   textuels et OID (« Matricule INS »), pas le numéro qui suit ; celui-ci n'est
   masqué que si c'est un NIR à clé valide.

@@ -430,7 +430,9 @@ abstract final class Ecluse {
                     e.type == EntityType.iban ||
                     e.type == EntityType.rpps ||
                     e.type == EntityType.adeli ||
-                    // SIRET nommé à clé de Luhn fausse (P2-259).
+                    // SIRET nommé à clé de Luhn fausse (P2-259), TVA
+                    // intracommunautaire à clé fausse derrière son libellé
+                    // (P2-260).
                     e.type == EntityType.siren) &&
                 e.confidence == 0.3)
             .length +
