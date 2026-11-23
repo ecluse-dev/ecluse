@@ -322,7 +322,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-252 | code | IBAN à clé invalide masqué en entier : ne plus masquer 9 de ses chiffres comme FINESS en laissant le reste en clair (10 cas sur 200 000) | — | fusionnée |
 | P2-253 | code | Liste de patronymes fournie (P2-243) : un nom écrit avec une majuscule initiale (« Eva ») n'est pas refusé parce que sa forme en capitales est un sigle exclu | P2-243 | fusionnée |
 | P2-254 | code | IBAN FR à clé fausse sans libellé dont la clé porte une lettre « o » d'OCR (« FR8o52… ») : 4 sur 50 en clair au corpus libellé fort | — | à faire |
-| P2-255 | mesure | Recensement des pièges de tous les générateurs de corpus : lesquels sont des données personnelles d'après DECISIONS.md, comment chacun est annoté et traité aujourd'hui | — | à faire |
+| P2-255 | mesure | Recensement des pièges de tous les générateurs de corpus : lesquels sont des données personnelles d'après DECISIONS.md, comment chacun est annoté et traité aujourd'hui | — | fusionnée |
 | P2-256 | mesure | `bench/README.md` rejoué de bout en bout : chiffres périmés depuis P2-248 (SIREN typé) et l'annotation des IBAN à clé fausse (826 entités) | — | à faire |
 | P2-257 | code | `bench/ETAT.md` : 18 sections en double (17 identiques, 1 divergente) fusionnées, sans changer aucun chiffre | — | fusionnée |
 
