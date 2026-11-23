@@ -881,36 +881,98 @@ versionnés.
 
 ## Reproduire
 
+Séquence **rejouée le 23 novembre 2026** (P2-262) sur une machine virtuelle
+neuve : Linux, 2 cœurs, 7 Go de mémoire, Python 3.13.18, Dart 3.14.1
+(`agent/setup-cloud-env.sh`), Melos 8.10.1, rien d'autre d'installé. Les versions
+Python installées : `presidio-analyzer` 2.2.366, `spacy` 3.8.18,
+`en_core_web_lg` 3.8.0, `fr_core_news_lg` 3.8.0, `edsnlp` 0.24.0, `eds-pseudo`
+0.4.0 (commit épinglé), `torch` 2.15.0, `numpy` 2.4.6. Les durées sont celles de
+cette machine (réseau compris) ; elles servent d'ordre de grandeur.
+
 Toutes les commandes se lancent **depuis la racine du dépôt**.
 
+### A. Identifiants (Écluse contre Presidio) : environ 15 minutes
+
 ```bash
-# 1. Dépendances Python
-pip install -r bench/requirements.txt   # épingle cymem/preshed/murmurhash
-python3 -m spacy download en_core_web_lg   # config Presidio standard
+# 1. Outillage Dart (une fois) : voir agent/setup-cloud-env.sh
+export PATH="$PATH:/opt/dart-sdk/bin:$HOME/.pub-cache/bin"
+melos bootstrap
 
-# 2. Générer le corpus (déterministe)
+# 2. Corpus, AVANT `melos run test` : le test d'équivalence
+#    (packages/ecluse_bench/test/golden_equivalence_test.dart) échoue sur
+#    « bench/corpus.jsonl introuvable » tant qu'il n'existe pas. Le fichier n'est
+#    pas versionné (.gitignore). Déterministe, 3 s.
+pip install -r bench/requirements.txt
 python3 bench/generate_corpus.py --n 1000 --seed 42 --out bench/corpus.jsonl
+melos run test
 
-# 3. Prédictions Écluse (runner Dart officiel : NIR, RPPS, IBAN, FINESS)
+# 3. Presidio : modèle spaCy anglais (11 s)
+python3 -m spacy download en_core_web_lg
+
+# 4. Prédictions d'Écluse. Deux chemins différents, à ne pas confondre :
+#    - moteur seul (ecluse_core), 1 s : ce que mesurent les tableaux
+#      « Résultats » de ce fichier pour les identifiants ;
+#    - Ecluse.redact (chemin du produit : ce que reçoit le LLM), 2 s.
 (cd packages/ecluse_bench && dart run bin/run_ecluse.dart \
   ../../bench/corpus.jsonl ../../bench/predictions_ecluse.jsonl)
+(cd packages/ecluse_redact && dart run bin/run_redact_bench.dart \
+  ../../bench/corpus.jsonl ../../bench/predictions_redact.jsonl)
 #    Sans SDK Dart : python3 bench/ecluse_sim.py — port de contrôle
 #    approximatif (voir son en-tête : il diverge du moteur Dart).
 
-# 4. Prédictions Presidio (ajouter --blank si le modèle est indisponible)
+# 5. Prédictions de Presidio par défaut : 9 s pour 1 000 documents
 (cd bench && python3 run_presidio.py --corpus corpus.jsonl)
 
-# 5. Scores
+# 6. Scores (< 1 s) et tests du scoreur
 (cd bench && python3 score.py --corpus corpus.jsonl \
     --pred "Ecluse=predictions_ecluse.jsonl" \
     --pred "Presidio=predictions_presidio.jsonl")
-
-# 6. Tests du scoreur
 (cd bench && python3 test_score.py)
 ```
 
-Les fichiers générés (`corpus.jsonl`, `predictions_*.jsonl`) ne sont
-pas versionnés : ils se régénèrent à l'identique.
+Notes d'après le rejeu :
+
+- Sur Python 3.13 les épinglages de `bench/requirements.txt` (cymem, preshed,
+  murmurhash) ne s'appliquent pas (`python_version < "3.13"`) : les versions
+  courantes fonctionnent.
+- `score.py` sur `predictions_redact.jsonl` donne un rappel de 100 % et une
+  précision de 61,1 % : les 601 « faux positifs » sont des noms, adresses,
+  établissements, identifiants et téléphones que `Ecluse.redact` masque dans des
+  documents où ces types ne sont pas annotés. Ce n'est pas une mesure de
+  précision ; la précision des types annotés se lit sur la ligne du moteur seul.
+- Le rejeu sur 200 000 documents ne demande que `--n 200000` aux deux
+  commandes (génération 3 s, moteur seul 27 s, `Ecluse.redact` 1 min 38 s,
+  score 4 à 7 s). Presidio : 9 s pour 1 000 documents, donc environ 30 minutes
+  extrapolées pour 200 000 (non lancé).
+
+### B. Tableau de bord complet (`etat.sh`) : environ 7 minutes
+
+```bash
+bash bench/etat.sh > etat.log 2>&1   # corpus et prédictions dans bench/{flou,qi,dossiers,patho,transcrit,patronymes}/
+```
+
+`etat.sh` génère lui-même tous les corpus de la section (graine 42) ; il sort
+avec un code non nul au premier « ÉCHEC ». Sur la machine neuve : 7 min 18 s,
+780 lignes, 0 échec. Il ne rejoue pas Presidio.
+
+### C. Comparatif (Presidio, spaCy, EDS-Pseudo) : environ 5 minutes
+
+À lancer **après** B : `comparatif.py` lit les corpus flou et dossiers générés
+par `etat.sh`.
+
+```bash
+pip install -r bench/requirements-comparatif.txt   # 3 min 13 s, voir l'avertissement
+python3 bench/comparatif.py --md bench/COMPARATIF.md --temoin   # 1 min 31 s
+```
+
+Avertissements relevés : l'installation tire PyTorch et ses roues CUDA (une
+vingtaine de paquets `nvidia-*`, 4,3 Go de cache pip) alors que rien ne tourne
+sur GPU ; prévoir de la place. `comparatif.py` imprime une longue trace
+`publicsuffix.org … 403` quand le réseau bloque ce domaine (Presidio, via
+`tldextract`) : elle est sans effet sur les chiffres.
+
+Les fichiers générés (`corpus.jsonl`, `predictions_*.jsonl`, sous-dossiers de
+`bench/`) ne sont pas versionnés : ils se régénèrent à l'identique.
 
 PDF synthétiques :
 
