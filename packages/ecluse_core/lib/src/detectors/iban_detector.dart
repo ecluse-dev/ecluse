@@ -117,8 +117,9 @@ final class IbanFrDetector implements EntityDetector {
 /// de forme `FR` + 2 chiffres + 23 caractères qui n'est pas un IBAN, jamais
 /// une fuite.
 ///
-/// **Périmètre** : la forme exacte de [IbanFrDetector] (27 caractères, mêmes
-/// séparateurs, même compaction des blancs). Un IBAN valide n'est jamais émis
+/// **Périmètre** : la forme de [IbanFrDetector] (27 caractères, mêmes
+/// séparateurs, même compaction des blancs), la clé pouvant porter la lettre
+/// « o » ou « O » à la place d'un chiffre (P2-254). Un IBAN valide n'est jamais émis
 /// ici (confiance 1,0 par [IbanFrDetector] / [IbanDetector]). Les IBAN
 /// d'autres pays à clé invalide ne sont pas traités.
 final class IbanCleInvalideDetector implements EntityDetector {
@@ -130,14 +131,32 @@ final class IbanCleInvalideDetector implements EntityDetector {
   @override
   EntityType get type => EntityType.iban;
 
+  /// Même forme que [IbanFrDetector], mais la clé admet la lettre « o » ou
+  /// « O » à la place d'un chiffre (P2-254) : confusion d'OCR ou de frappe
+  /// (zéro / lettre). Sans libellé pour l'annoncer, 4 IBAN sur 50 du corpus
+  /// « libellé fort » à clé fausse partaient en clair (`Ecluse.redact`), tous
+  /// avec cette lettre dans la clé. Seule la clé est élargie : le reste de
+  /// l'IBAN accepte déjà les lettres. Coût : une suite `FR` + `o` + 24
+  /// caractères alphanumériques qui n'est pas un IBAN (référence, code) est
+  /// masquée à confiance 0,3, jamais une fuite.
+  static final RegExp _candidate = RegExp(
+    r'(?<![A-Za-z0-9])[Ff][Rr][0-9Oo]{2}(?:[ \-./]?[0-9A-Za-z]){23}(?![0-9A-Za-z])',
+  );
+
+  static final RegExp _cleEnChiffres = RegExp(r'^FR[0-9]{2}');
+
   @override
   List<DetectedEntity> detect(String text) {
     final compaction = DigitCompaction(text);
     final results = <DetectedEntity>[];
-    for (final match in compaction.candidates(IbanFrDetector._candidate)) {
+    for (final match in compaction.candidates(_candidate)) {
       final normalized =
           match.text.replaceAll(IbanFrDetector._separators, '').toUpperCase();
-      if (IbanFrDetector._isValidIban(normalized)) continue;
+      // Un IBAN valide est émis par IbanFrDetector, à condition que sa clé
+      // soit faite de chiffres : avec un « o » dans la clé il ne l'est jamais,
+      // et « O » vaudrait 24 au calcul mod 97, sans signification ici.
+      final cleChiffres = _cleEnChiffres.hasMatch(normalized);
+      if (cleChiffres && IbanFrDetector._isValidIban(normalized)) continue;
       results.add(
         DetectedEntity(
           type: EntityType.iban,

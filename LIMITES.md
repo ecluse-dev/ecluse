@@ -341,6 +341,16 @@ une coupure au milieu d'un groupe ne l'est pas.
   totale 95,2 %, les 42 faux positifs restants sont les SIREN). C'est un
   masquage voulu ; il ne vaut que pour une suite de la forme exacte
   d'un IBAN français. Les IBAN d'autres pays à clé fausse ne sont pas traités.
+  **Lettre « o » dans la clé (P2-254).** La clé peut porter la lettre « o » ou
+  « O » à la place d'un chiffre (confusion zéro / lettre d'OCR ou de frappe :
+  « FR8o52… », « FRo6… ») : l'IBAN est masqué en entier à la même confiance 0,3.
+  Avant, 4 des 50 IBAN à clé fausse sans libellé du corpus « libellé fort »
+  partaient en clair par `Ecluse.redact` (tous avec cette lettre) ; après, 0 / 50
+  (même chemin, graine 42). Coût : une suite `FR` + `o` + 24 caractères
+  alphanumériques qui n'est pas un IBAN (référence, code article) est masquée à
+  tort ; aucun des témoins négatifs du tableau de bord n'en gagne (voir la PR).
+  Seule la clé est élargie : les lettres autres que « o » (« FRa4… ») et un « o »
+  hors de la clé restent traités comme avant.
 - **NIR, IBAN FR ou RPPS à clé fausse, annoncé par un libellé fort (P2-188).**
   `Ecluse.redact` masque quand même, à confiance 0,3, avec l'avertissement
   « identifiant à clé invalide masqué : à vérifier », un NIR précédé de
