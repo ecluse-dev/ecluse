@@ -328,8 +328,8 @@ une coupure au milieu d'un groupe ne l'est pas.
   corpus étendu), et « réf. » suivi de dix chiffres pour un téléphone (3 sur 34
   en v3). Rien ne part en clair ; le LLM reçoit seulement une étiquette fausse.
   Toléré pour l'instant.
-- **SIRET, numéro de TVA intracommunautaire : en clair aujourd'hui, corrections
-  inscrites.** Mesure P2-255 (`Ecluse.redact`, graine 42) : SIRET après le mot
+- **Numéro de TVA intracommunautaire : en clair aujourd'hui, correction
+  inscrite.** (SIRET : corrigé par P2-259, ci-dessous.) Mesure P2-255 (`Ecluse.redact`, graine 42) : SIRET après le mot
   « SIRET » 30 / 30 en clair (v3) ; numéro de TVA 29 / 35 en clair, 6 masqués en
   partie comme RPPS (corpus étendu). Le 23 novembre, le mainteneur les a déclarés
   données personnelles : tâches P2-259 (SIRET) et P2-260 (TVA) dans
@@ -353,6 +353,20 @@ une coupure au milieu d'un groupe ne l'est pas.
   ligne n'est pas vu ; (4) la clé nommée à part fausse (« 2550814168025 clé 39 »,
   P2-42) reste intacte ; (5) une suite de quinze chiffres de cette forme qui n'est
   pas un NIR (référence, numéro de lot) est masquée à tort, jamais une fuite.
+- **SIRET nommé : masqué en entier (P2-259).** Quatorze chiffres (collés, ou
+  groupés 3-3-3-5 avec une espace) à moins de 40 caractères du mot « SIRET »
+  (casse indifférente, avant ou après) : type `siren`, jeton `[SIREN_n]`.
+  Clé de Luhn sur les quatorze chiffres juste : confiance 0,9 ; fausse :
+  confiance 0,3 avec l'avertissement « identifiant à clé invalide masqué : à
+  vérifier ». Mesure (`Ecluse.redact`, graine 42) : SIRET pièges 30 / 30 en
+  clair → 0 (v3), 19 / 19 → 0 (extended). **Limites** : sans le mot « SIRET »,
+  quatorze chiffres ne sont pas masqués ; le motif groupé n'accepte que 3-3-3-5
+  (un autre groupement est lu seulement s'il se compacte en quatorze chiffres) ;
+  le SIRET n'est pas annoté au banc (décision du 23 novembre, point 5), donc
+  les 30 SIRET du corpus v3 comptent comme faux positifs `siren` du moteur seul
+  (précision 95,4 % → 92,4 % sur 871 entités, 72 faux positifs au lieu de
+  42, tous des masquages voulus) et les 108 documents du témoin flou qui portent la ligne
+  « SIRET 12345678200010 » produisent 108 masquages `siren`, voulus aussi.
 - **INS** (Identité Nationale de Santé) : `InsDetector` masque les marqueurs
   textuels et OID (« Matricule INS »), pas le numéro qui suit ; celui-ci n'est
   masqué que si c'est un NIR à clé valide.

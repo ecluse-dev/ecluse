@@ -31,7 +31,7 @@ Appariement strict (span exact + type) :
 | **Écluse** | RPPS | 100 % | 100 % | 100 % |
 | **Écluse** | IBAN FR | 100 % | 100 % | 100 % |
 | **Écluse** | FINESS | 100 % | 100 % | 100 % |
-| **Écluse** | **TOTAL**² | **95,4 %** | **100 %** | **97,6 %** |
+| **Écluse** | **TOTAL**² | **92,4 %** | **100 %** | **96,0 %** |
 | Presidio¹ | NIR | — | 0 % | 0 % |
 | Presidio¹ | RPPS | — | 0 % | 0 % |
 | Presidio¹ | IBAN FR | 100 % | 56,1 % | 71,9 % |
@@ -47,9 +47,12 @@ les 67 IBAN à espacement irrégulier (style `irregular`, voir plus bas) et
 les 48 IBAN à clé invalide, que son recognizer écarte par la clé (avant
 leur annotation : 68,7 %, 147/214).
 
-² Les 42 faux positifs d'Écluse sont les 42 SIREN pièges, nommés `siren` et
+² Les 72 faux positifs d'Écluse sont les 42 SIREN pièges, nommés `siren` et
 masqués à dessein depuis P2-248 (un SIREN d'entrepreneur individuel désigne
-une personne) ; ils ne sont plus comptés comme FINESS. Commande exacte de reproduction : voir *Reproduire*.
+une personne), et, depuis le 23 novembre (P2-259), les 30 SIRET pièges (« Le
+SIRET de l'établissement est … »), masqués à dessein aussi et non annotés
+(décision du 23 novembre, point 5) ; ils ne sont plus comptés comme FINESS.
+Avant P2-259 : 42 faux positifs, 95,2 % / 97,5 %. Commande exacte de reproduction : voir *Reproduire*.
 
 Lecture : en configuration par défaut, Presidio ne couvre **aucun
 identifiant spécifiquement français** (NIR, RPPS, FINESS). Son recognizer
@@ -188,6 +191,11 @@ lignes du tableau ci-dessous sont inchangées ; TOTAL 74,0 % / 91,7 % (729 TP,
 95,1 % / 100 %, IBAN 100 % / 51,7 %, FINESS et ADELI 0 % ; TOTAL 98,5 % /
 48,2 %.
 
+**Rejeu du 23 novembre 2026 (P2-259, moteur seul, graine 42)** : le SIRET nommé
+est masqué (non annoté) : les FP `siren` passent de 131 à 150 (+19 SIRET du
+profil), TOTAL 74,0 % / 91,7 % → 72,6 % / 91,7 % (729 TP, 275 FP, 66 FN) ; les
+autres lignes du tableau ci-dessous sont inchangées.
+
 **Rejeu du 22 novembre 2026** (commit `91d009c`, **moteur seul**, `run_ecluse.dart` ;
 corpus `extended`, seed 42, 1000 documents, **766 entités annotées** : NIR 174,
 RPPS 117, IBAN 178, FINESS 172, ADELI 125), appariement strict :
@@ -249,7 +257,7 @@ configuration Presidio que la note ¹ (modèle `en_core_web_lg`, seuil 0,35) :
 | Presidio par défaut | — / 0 % | — / 0 % | 100 % / 56,1 % | — / 0 % | 100 % / 16,9 % |
 | + reconnaisseurs `simple` | 100 % / 100 % | 81,0 % / 100 % | 100 % / 56,1 % | — / 0 % | 94,1 % / 72,0 % |
 | + reconnaisseurs `validated` | 100 % / **85,7 %** | **100 % / 100 %** | 100 % / 56,1 % | — / 0 % | 100 % / 66,8 % |
-| Écluse | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 95,4 % / 100 % (42 SIREN) |
+| Écluse | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 92,4 % / 100 % (42 SIREN, 30 SIRET) |
 
 **Rejeu du 23 novembre 2026 (P2-258).** L'annotation des 45 NIR à clé invalide
 change la lecture du NIR : le reconnaisseur `validated`, qui écarte la clé
