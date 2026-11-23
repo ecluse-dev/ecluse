@@ -971,3 +971,25 @@ prédiction sur 300 phrases.
 Hors périmètre maintenu (§ 8 de la spec) : lettres d'IBAN épelées, corrections
 du locuteur, erreurs de transcription, vrai audio.
 
+## 2026-11 — Identifiants lus par OCR (P2-264, 23 novembre, nuit)
+
+Décision du mainteneur sur le rapport `agent/specs/P2-264.md` (chemin
+`Ecluse.redact`, graine 42) : sans libellé, un identifiant écrit avec « O » pour 0
+ou « l »/« I » pour 1 part en clair à ≈ 98 % (IBAN : 22 %) ; FINESS et SIREN ne
+sont pas relus même derrière leur libellé. Une règle simulée couvrirait ≈ 88 %
+des documents, 0 masquage à tort sur 2 200 documents sans identifiant OCR.
+
+1. **Corriger.** Relecture des lettres d'OCR (O/o → 0, l/I → 1) dans une suite
+   candidate qui en contient au moins une, gardée seulement si elle devient un
+   identifiant valide une fois relue. Texte jamais réécrit ; masqué en entier.
+2. **Clé forte (NIR mod 97, IBAN mod 97) : avec ou sans libellé.**
+3. **Clé faible (Luhn seul : RPPS, FINESS, SIREN, ADELI) : seulement derrière un
+   libellé ou un mot-clé**, même règle que les nombres dictés (P2-267) : la
+   simulation laisse en théorie ≈ 1 chance sur 10 de faux accord.
+4. **FINESS et SIREN relus derrière leur libellé**, comme le RPPS depuis P2-191 :
+   un SIREN peut désigner un entrepreneur individuel.
+5. **Confiance 0,3 et avertissement « à vérifier »** quand une lettre a été
+   relue : le masquage tient, la valeur peut être fausse.
+6. GO : 0 masquage à tort sur tous les témoins, dont un témoin durci de suites
+   O/l/I ordinaires (références, lots, codes). Tâche P2-268.
+
