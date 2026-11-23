@@ -984,3 +984,19 @@ PDF synthétiques :
 ```bash
 python3 bench/generate_pdfs.py --out bench/pdf
 ```
+
+## Contrôler `bench/ETAT.md` (P2-265)
+
+`bench/ETAT.md` garde l'historique par section ; seul le bloc de la section
+« Valeurs courantes contrôlées » est comparé à la sortie d'`etat.sh`. À lancer
+**après chaque rejeu d'`etat.sh`** et avant d'ouvrir une PR qui change une
+mesure :
+
+```bash
+bash bench/etat.sh > etat.log 2>&1
+python3 bench/controle_etat.py etat.log          # code 1 au premier écart
+python3 bench/controle_etat.py --propose etat.log  # bloc à recoller si écart voulu
+```
+
+Le script montre la ligne d'`ETAT.md` périmée et la ligne de la sortie qui lui
+ressemble. Il ne vérifie pas le texte d'historique au-dessus du bloc.
