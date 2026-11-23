@@ -2269,3 +2269,34 @@ la décision du 23 novembre ; il est maintenant masqué à dessein. Le témoin n
 en dépendent) ; la tâche suivante est à décider par le mainteneur. Sa ligne
 « TVA FR11123456782 » reste en clair (P2-260).
 `comparatif.py --temoin` : 16 / 480 documents masqués avant et après.
+
+## Numéro de TVA intracommunautaire masqué en entier (P2-260, 23 novembre 2026)
+
+Décision du 23 novembre (point 4) : « FR » + clé + SIREN est une donnée personnelle.
+`FinessDetector` lit « FR » + clé de deux caractères + neuf chiffres (blancs simples
+admis) : type `siren`, clé calculée `(12 + 3 × (SIREN mod 97)) mod 97` juste →
+confiance 0,9 ; fausse ou à lettre → seulement avec « TVA » ou « intracommunautaire »
+à moins de 40 caractères, 0,3 et avertissement « à vérifier ». L'entité (13
+caractères) l'emporte sur le RPPS de onze chiffres. Rejeu complet de `bench/etat.sh`
+après P2-258 et P2-259 (rebasé sur `main` à la fusion) : 0 ligne « ÉCHEC » ; seules les lignes
+ci-dessous changent.
+
+**Défaut mesuré** (`bench/recensement_pieges.py`, `Ecluse.redact`, extended) : TVA
+29 en clair + 6 masqués en partie (RPPS) → **35 en entier**, type `siren`. Aucun
+RPPS du corpus ne change de type (117 / 117).
+
+| Ligne | Avant | Après | Chemin |
+|---|---|---|---|
+| extended, RPPS précision / FP | 95,1 % / 6 | **100 % / 0** | moteur seul |
+| extended, FP `siren` | 150 | 185 | moteur seul |
+| extended, total précision / F1 | 72,6 % / 81,0 % | 70,6 % / 79,8 % | moteur seul |
+| témoin flou (400 documents), prédictions | 108 (SIRET) | **216** | `Ecluse.redact` |
+| `comparatif.py --temoin` | 16 / 480 | 16 / 480 | `Ecluse.redact` |
+
+Le corpus v3 ne contient aucune TVA : ses lignes sont inchangées, de même que
+« libellé fort », « identifiant suivi » et les autres témoins. **Les 108 prédictions
+du témoin flou** sont toutes de type `siren`, toutes sur « TVA FR11123456782 »
+(clé juste), ligne du gabarit « identifiants d'entreprise » de
+`generate_corpus_flou.py` : ancien témoin « rien à masquer », masqué à dessein
+depuis la décision du 23 novembre (P2-259 y masque aussi « SIRET 12345678200010 » :
+216 prédictions si les deux sont fusionnées). Le témoin n'a pas été modifié.
