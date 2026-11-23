@@ -79,6 +79,61 @@ void main() {
       expect(detecteur.detect('Frais 2714 2872 6996, FRANCE entière'), isEmpty);
     });
 
+    group('lettre « o » d\'OCR à la place d\'un chiffre de la clé (P2-254)',
+        () {
+      // Les quatre formes du corpus « libellé fort » (graine 42) qui partaient
+      // en clair, recopiées comme cas synthétiques.
+      const cas = [
+        'FR6o 9985 o869 322o 2599 9193 826',
+        'FRo6 7040 O361 3385 8o52 6321 151',
+        'FRo869388277O34456622952163',
+        'FR8o52148569804693656183391',
+      ];
+      for (final iban in cas) {
+        test('« $iban » : une entité iban à 0,3, empan entier', () {
+          final texte = 'Bordereau $iban noté au dossier.';
+          final e = detecteur.detect(texte);
+          expect(e, hasLength(1));
+          expect(e.single.type, EntityType.iban);
+          expect(e.single.confidence, IbanCleInvalideDetector.confidence);
+          expect(texte.substring(e.single.start, e.single.end), iban);
+        });
+      }
+
+      test('le « o » n\'est admis que dans les deux caractères de la clé', () {
+        // Pays : « Fo » n'est pas « FR » ; clé à une seule lettre acceptée.
+        expect(detecteur.detect('Fo24271428726996 4N17 7449 410'), isEmpty);
+        // Longueur inchangée : 26 caractères, 28 caractères.
+        expect(detecteur.detect('FRo4 2714 2872 6996 4N17 7449 41'), isEmpty);
+        expect(detecteur.detect('FRo4 2714 2872 6996 4N17 7449 4101'), isEmpty);
+        // Une lettre autre que o/O dans la clé n'est pas admise.
+        expect(detecteur.detect('FRa4 2714 2872 6996 4N17 7449 410'), isEmpty);
+        expect(detecteur.detect('FR2a 2714 2872 6996 4N17 7449 410'), isEmpty);
+      });
+
+      test('enchâssé dans une séquence plus longue : rien', () {
+        expect(detecteur.detect('xFRo4271428726996 4N17 7449 410'), isEmpty);
+        expect(detecteur.detect('FRo427142872699 64N177449410x'), isEmpty);
+      });
+
+      test('clé en chiffres : comportement inchangé, valide jamais émis', () {
+        expect(detecteur.detect('FR7630006000011234567890189'), isEmpty);
+        expect(detecteur.detect('FR24 2714 2872 6996 4N17 7449 410'),
+            hasLength(1));
+      });
+
+      test('moteur : masqué en entier, aucun FINESS partiel', () async {
+        for (final iban in cas) {
+          final texte = 'Bordereau $iban noté au dossier.';
+          final r = (await apres.run(texte)).entities;
+          expect(r, hasLength(1), reason: 'un seul empan');
+          expect(r.single.type, EntityType.iban);
+          expect(r.single.start, texte.indexOf(iban));
+          expect(r.single.end, texte.indexOf(iban) + iban.length);
+        }
+      });
+    });
+
     test('aucune valeur du texte dans le toString d\'une entité', () {
       final e = detecteur.detect(groupe).single;
       expect(e.toString(), isNot(contains('2714')));

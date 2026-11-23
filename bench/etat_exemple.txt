@@ -626,21 +626,21 @@ identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) f
   défaut : finess lu « rpps », nombre, espace : 1
   défaut : rpps lu « nir », nombre, ligne : 1
 ## identifiant derrière un libellé fort (P2-194) : Ecluse.redact (chemin du produit)
-libellé fort : 1850 identifiants positifs, 4 en clair, 0 au type faux ; 1150 documents témoins, 7 masqués à tort (7 prédiction(s))
+libellé fort : 1850 identifiants positifs, 0 en clair, 0 au type faux ; 1150 documents témoins, 7 masqués à tort (7 prédiction(s))
   variante=cle_juste : 0 / 300 en clair, 0 au type faux
   variante=cle_fausse : 0 / 300 en clair, 0 au type faux
   variante=ocr_zero : 0 / 300 en clair, 0 au type faux
   variante=ocr_un : 0 / 300 en clair, 0 au type faux
   variante=ligne_vide : 0 / 300 en clair, 0 au type faux
   variante=ocr_et_ligne_vide : 0 / 300 en clair, 0 au type faux
-  variante=cle_fausse_sans_libelle : 4 / 50 en clair, 0 au type faux
+  variante=cle_fausse_sans_libelle : 0 / 50 en clair, 0 au type faux
   libellé=NIR : 0 / 300 en clair, 0 au type faux
   libellé=N° de sécurité sociale : 0 / 300 en clair, 0 au type faux
   libellé=numéro SS : 0 / 300 en clair, 0 au type faux
   libellé=IBAN : 0 / 300 en clair, 0 au type faux
   libellé=RPPS : 0 / 300 en clair, 0 au type faux
   libellé=ADELI : 0 / 300 en clair, 0 au type faux
-  libellé=sans libellé : 4 / 50 en clair, 0 au type faux
+  libellé=sans libellé : 0 / 50 en clair, 0 au type faux
   NIR x cle_juste : 0 / 50 en clair, 0 au type faux
   NIR x cle_fausse : 0 / 50 en clair, 0 au type faux
   NIR x ocr_zero : 0 / 50 en clair, 0 au type faux
@@ -677,7 +677,7 @@ libellé fort : 1850 identifiants positifs, 4 en clair, 0 au type faux ; 1150 do
   ADELI x ocr_un : 0 / 50 en clair, 0 au type faux
   ADELI x ligne_vide : 0 / 50 en clair, 0 au type faux
   ADELI x ocr_et_ligne_vide : 0 / 50 en clair, 0 au type faux
-  sans libellé x cle_fausse_sans_libelle : 4 / 50 en clair, 0 au type faux
+  sans libellé x cle_fausse_sans_libelle : 0 / 50 en clair, 0 au type faux
   témoin négatif=libelle_seul : 0 / 300 masqués à tort (0 prédiction(s))
   témoin négatif=non_communique : 0 / 300 masqués à tort (0 prédiction(s))
   témoin négatif=mot_ordinaire : 0 / 300 masqués à tort (0 prédiction(s))
@@ -689,23 +689,23 @@ libellé fort : 1850 identifiants positifs, 4 en clair, 0 au type faux ; 1150 do
   témoin négatif, libellé=RPPS : 2 / 200 masqués à tort
   témoin négatif, libellé=ADELI : 1 / 200 masqués à tort
 confiance des masquages (chemin : Ecluse.redact) :
-  confiance positifs : 0.3=1495, 0.6=50, 0.9=50, 0.95=50, 1=201, aucune=4
+  confiance positifs : 0.3=1499, 0.6=50, 0.9=50, 0.95=50, 1=201
   confiance variante=cle_juste : 0.9=50, 0.95=50, 1=200
   confiance variante=cle_fausse : 0.3=250, 0.6=50
   confiance variante=ocr_zero : 0.3=300
   confiance variante=ocr_un : 0.3=300
   confiance variante=ligne_vide : 0.3=300
   confiance variante=ocr_et_ligne_vide : 0.3=300
-  confiance variante=cle_fausse_sans_libelle : 0.3=45, 1=1, aucune=4
+  confiance variante=cle_fausse_sans_libelle : 0.3=49, 1=1
   confiance détections des négatifs : 0.5=1, 0.55=4, 0.9=2
-  avertissement à vérifier : positifs 1545 / 1850, négatifs 0 / 1150
+  avertissement à vérifier : positifs 1549 / 1850, négatifs 0 / 1150
   à vérifier variante=cle_juste : 0 / 300
   à vérifier variante=cle_fausse : 300 / 300
   à vérifier variante=ocr_zero : 300 / 300
   à vérifier variante=ocr_un : 300 / 300
   à vérifier variante=ligne_vide : 300 / 300
   à vérifier variante=ocr_et_ligne_vide : 300 / 300
-  à vérifier variante=cle_fausse_sans_libelle : 45 / 50
+  à vérifier variante=cle_fausse_sans_libelle : 49 / 50
   incohérence confiance 0.3 / avertissement : positifs 0, négatifs 0
   exception P2-204 (ADELI clé fausse, confiance 0.6, avec avertissement) : positifs 50
 ## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90

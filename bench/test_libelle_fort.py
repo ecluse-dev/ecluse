@@ -190,11 +190,10 @@ class Plafond(unittest.TestCase):
         self.assertEqual(p, [])
 
     def test_le_defaut_connu_est_toleree_jusqu_a_son_plafond_et_pas_au_dela(self):
-        # Depuis le 22/11/2026, un seul défaut connu : 4 IBAN à clé fausse
-        # sans libellé (lettre « o » d'OCR) en clair. Le mécanisme reste
+        # Plus aucun défaut connu depuis P2-254 (les 4 IBAN à clé fausse et
+        # lettre « o » d'OCR, sans libellé, sont masqués). Le mécanisme reste
         # testé avec un plafond injecté.
-        self.assertEqual(etat_attendu.PLAFOND_LIBELLE_FORT,
-                         {(LIBELLE_SANS, VARIANTE_SANS): 4})
+        self.assertEqual(etat_attendu.PLAFOND_LIBELLE_FORT, {})
         sauve = dict(verifie_etat.PLAFOND_LIBELLE_FORT)
         verifie_etat.PLAFOND_LIBELLE_FORT.update({("ADELI", "ocr_zero"): 5})
         try:
@@ -208,9 +207,10 @@ class Plafond(unittest.TestCase):
             verifie_etat.PLAFOND_LIBELLE_FORT.clear()
             verifie_etat.PLAFOND_LIBELLE_FORT.update(sauve)
 
-    def test_iban_sans_libelle_tolere_a_4_echoue_a_5(self):
+    def test_iban_sans_libelle_zero_en_clair_exige(self):
+        # P2-254 : plafond retiré, la moindre fuite fait échouer le tableau.
         ligne = "  sans libellé x cle_fausse_sans_libelle : {} / 50 en clair, 0 au type faux"
-        for n, attendu in ((4, 0), (5, 1)):
+        for n, attendu in ((0, 0), (1, 1)):
             p = verifie_etat.plafonds_libelle_fort(verifie_etat.sections(
                 self.section(ligne.format(n)).splitlines()))
             self.assertEqual(len(p), attendu, n)

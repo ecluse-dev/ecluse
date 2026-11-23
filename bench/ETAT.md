@@ -2168,3 +2168,23 @@ exige deux chiffres après `FR`, et sans libellé fort la tolérance d'OCR de
 P2-191 ne s'applique pas. Toléré par un plafond de 4 dans
 `PLAFOND_LIBELLE_FORT` (`bench/etat_attendu.py`), correction inscrite en P2-254.
 Le scoreur n'imprime plus les cases vides (libellé × variante sans positif).
+
+## IBAN à clé fausse, lettre « o » dans la clé, sans libellé (P2-254)
+
+Chemin mesuré : `Ecluse.redact` (chemin du produit), corpus « libellé fort »,
+graine 42, 50 documents par case ; `bash bench/etat.sh` rejoué en entier avant
+(`main`, 4b8458d) et après la correction. Seule la clé de `IbanCleInvalideDetector`
+admet désormais « o » / « O » à la place d'un chiffre.
+
+| mesure | avant | après |
+|---|---|---|
+| `sans libellé x cle_fausse_sans_libelle` en clair | 4 / 50 | 0 / 50 |
+| identifiants positifs en clair (libellé fort) | 4 / 1 850 | 0 / 1 850 |
+| `nombre_sans_libelle` masqués à tort (témoins) | 7 / 250 | 7 / 250 |
+| avertissement « à vérifier » sur les négatifs | 0 / 1 150 | 0 / 1 150 |
+| témoin sans donnée personnelle (480 documents, `comparatif.py --temoin`, `Écluse document par document`) | 16 / 480 masqués | 16 / 480 masqués |
+
+Les 12 autres lignes qui changent entre les deux rejeux sont les conséquences
+directes des 4 identifiants désormais masqués (confiance 0,3 : 1 495 → 1 499 ;
+avertissement : 1 545 → 1 549 ; variante : 45 → 49 sur 50). Aucune autre ligne du
+tableau de bord ne bouge. `PLAFOND_LIBELLE_FORT` est retiré (vide).
