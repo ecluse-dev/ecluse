@@ -94,7 +94,9 @@ echo "## commit $(git rev-parse --short HEAD)"
 echo "## v3 (identifiants structurels)"
 produit "générateur v3" "$B/corpus.jsonl" python3 "$B/generate_corpus.py" --n 1000 --seed 42 --out "$B/corpus.jsonl" || true
 if produit "v3, moteur seul" "$B/predictions_ecluse.jsonl" bench_pkg run_ecluse.dart ../../bench/corpus.jsonl ../../bench/predictions_ecluse.jsonl; then
-  montre "v3, score" -E "TOTAL|FINESS" 2 non dans_B python3 score.py --corpus corpus.jsonl --pred "Ecluse=predictions_ecluse.jsonl" || true
+  # TOTAL = tous types (siren compris) ; COMMUNS = types communs, siren retiré
+  # de l'or et des prédictions (P2-261) ; « (e) » = ligne siren à part.
+  montre "v3, score" -E "TOTAL|FINESS|COMMUNS|^Ecluse \(e\)" 6 non dans_B python3 score.py --corpus corpus.jsonl --pred "Ecluse=predictions_ecluse.jsonl" || true
 fi
 
 echo "## v3 transcrit"

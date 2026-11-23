@@ -8,6 +8,7 @@ import unittest
 
 import generate_corpus_siren as gs
 import score_siren_finess as sf
+from generate_corpus import luhn_digit
 
 
 class Generateur(unittest.TestCase):
@@ -46,6 +47,23 @@ class Generateur(unittest.TestCase):
                 self.assertTrue(immediat, d["text"])
             if d["libelle"] in ("siren_phrase", "siren_apres", "sans_mot"):
                 self.assertFalse(immediat, d["text"])
+
+
+class SirensV3(unittest.TestCase):
+    """P2-261 : les SIREN annotés `siren` restent mesurés comme avant."""
+
+    def test_siren_annote_reste_un_siren_a_mesurer(self):
+        siren = luhn_digit("40817263")  # clé de Luhn calculée, jamais copiée
+        debut = len("Le SIREN de la société est ")
+        doc = {"text": f"Le SIREN de la société est {siren}.", "entities": [
+            {"type": "siren", "start": debut, "end": debut + 9}]}
+        self.assertEqual(sf.sirens_v3(doc), [(debut, debut + 9)])
+
+    def test_un_autre_type_annote_est_toujours_exclu(self):
+        texte = f"Le code {luhn_digit('40817263')} figure au dossier."
+        doc = {"text": texte, "entities": [
+            {"type": "finess", "start": 8, "end": 17}]}
+        self.assertEqual(sf.sirens_v3(doc), [])
 
 
 class Options(unittest.TestCase):

@@ -19,7 +19,11 @@ ATTENDU = [
         (r"^## commit [0-9a-f]+$", 1, "numéro de commit"),
     ]),
     ("## v3 (identifiants structurels)", [
-        (r"^Ecluse +TOTAL ", 1, "score v3 du moteur seul"),
+        (r"^Ecluse +TOTAL ", 1, "score v3 du moteur seul, tous types (siren compris)"),
+        (r"^Ecluse \(c\) +COMMUNS ", 2,
+         "score v3 du moteur seul, types communs (strict, souple ; P2-261)"),
+        (r"^Ecluse \(e\) +(strict|souple) ", 2,
+         "ligne siren à part (strict, souple ; P2-261)"),
     ]),
     ("## v3 transcrit", [
         (r"^# (sans_ponctuation|en_lettres)$", 2, "deux variantes"),

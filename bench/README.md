@@ -1,9 +1,11 @@
 # Benchmark Écluse vs Microsoft Presidio
 
 Harnais de comparaison sur corpus synthétique français annoté.
-Entités cibles : **NIR**, **RPPS**, **IBAN FR**, **FINESS**.
+Entités cibles : **NIR**, **RPPS**, **IBAN FR**, **FINESS** (types communs), plus,
+depuis le 23 novembre (P2-261), les identifiants d'entreprise **SIREN, SIRET et TVA**,
+annotés `siren` et présentés **à part**.
 
-## Résultats (corpus v3, seed 42, 1000 documents, 871 entités)
+## Résultats (corpus v3, seed 42, 1000 documents, 943 entités : 871 sur les types communs + 72 `siren`)
 
 Rejoués le 22 novembre 2026 au commit `91d009c` (Écluse **et Presidio** :
 `presidio-analyzer` 2.2.366, modèle `en_core_web_lg`, seuil 0,35, prédictions
@@ -31,12 +33,16 @@ Appariement strict (span exact + type) :
 | **Écluse** | RPPS | 100 % | 100 % | 100 % |
 | **Écluse** | IBAN FR | 100 % | 100 % | 100 % |
 | **Écluse** | FINESS | 100 % | 100 % | 100 % |
-| **Écluse** | **TOTAL**² | **92,4 %** | **100 %** | **96,0 %** |
+| **Écluse** | **COMMUNS** (comparaison principale)² | **100 %** | **100 %** | **100 %** |
+| Écluse | `siren` (ligne à part : 42 SIREN + 30 SIRET) | 100 % | 100 % | 100 % |
+| Écluse | TOTAL tous types | 100 % | 100 % | 100 % |
 | Presidio¹ | NIR | — | 0 % | 0 % |
 | Presidio¹ | RPPS | — | 0 % | 0 % |
 | Presidio¹ | IBAN FR | 100 % | 56,1 % | 71,9 % |
 | Presidio¹ | FINESS | — | 0 % | 0 % |
-| Presidio¹ | **TOTAL** | 100 % | **16,9 %** | **28,9 %** |
+| Presidio¹ | **COMMUNS** (comparaison principale)² | 100 % | **16,9 %** | **28,9 %** |
+| Presidio¹ | `siren` (aucun reconnaisseur français : absence de détecteur, pas une qualité) | — | 0 % | 0 % |
+| Presidio¹ | TOTAL tous types | 100 % | 15,6 % | 27,0 % |
 
 ¹ Presidio rejoué sur le **corpus v3** (seed 42, 1000 documents,
 871 entités), configuration par défaut (`presidio-analyzer` 2.2.366,
@@ -47,19 +53,25 @@ les 67 IBAN à espacement irrégulier (style `irregular`, voir plus bas) et
 les 48 IBAN à clé invalide, que son recognizer écarte par la clé (avant
 leur annotation : 68,7 %, 147/214).
 
-² Les 72 faux positifs d'Écluse sont les 42 SIREN pièges, nommés `siren` et
-masqués à dessein depuis P2-248 (un SIREN d'entrepreneur individuel désigne
-une personne), et, depuis le 23 novembre (P2-259), les 30 SIRET pièges (« Le
-SIRET de l'établissement est … »), masqués à dessein aussi et non annotés
-(décision du 23 novembre, point 5) ; ils ne sont plus comptés comme FINESS.
-Avant P2-259 : 42 faux positifs, 95,2 % / 97,5 %. Commande exacte de reproduction : voir *Reproduire*.
+² **Types communs** = NIR, RPPS, IBAN, FINESS (ADELI aussi sur le profil `extended`) :
+`siren` est retiré de l'or **et des prédictions pour les deux moteurs** (même règle,
+`score.py`, sections « Types communs »). Depuis le 23 novembre (P2-261, `DECISIONS.md`,
+point 8), les 42 SIREN nommés et les 30 SIRET nommés du corpus sont **annotés** `siren` :
+Écluse les masque à dessein (P2-248, P2-259), et les compter comme faux positifs ferait
+publier une précision que l'on sait fausse. Le texte du corpus n'a pas changé (empreinte
+SHA-256 identique) ; seule l'annotation est ajoutée, 72 entités. **Avant P2-261**
+(moteur seul) : TOTAL 92,4 % / 100 % / 96,0 % (871 TP, 72 FP `siren`). **Chemin
+mesuré** : moteur seul (`ecluse_core`, `run_ecluse.dart`), pas `Ecluse.redact`.
+**Réserve** : un chiffre proche de 100 % vient d'un corpus synthétique construit par
+le projet, avec des gabarits que les détecteurs ont vus ; il ne vaut pas taux réel.
+Commande exacte de reproduction : voir *Reproduire*.
 
 Lecture : en configuration par défaut, Presidio ne couvre **aucun
 identifiant spécifiquement français** (NIR, RPPS, FINESS). Son recognizer
 IBAN, à validation de clé, est précis (aucun faux positif) mais ne
 retrouve ni les IBAN à espacement irrégulier ni ceux à clé invalide (rappel
 56,1 %). Le corpus contient des pièges non annotés (RPPS à Luhn cassé,
-téléphones, SIRET, SIREN ; le NIR et l'IBAN à clé invalide sont annotés depuis les 23 et 22 novembre) : aucun moteur n'y est tombé à tort, à
+téléphones ; le NIR et l'IBAN à clé invalide sont annotés depuis les 23 et 22 novembre, et SIREN, SIRET et TVA le sont `siren` depuis le 23 novembre) : aucun moteur n'y est tombé à tort, à
 l'exception du cas de collision FINESS/SIREN — assumé et mesuré, pas un
 bug.
 
@@ -202,6 +214,29 @@ intracommunautaire est masqué en entier sous le type `siren` (non annoté) : RP
 FP `siren` 150 → 185 (+35), TOTAL 72,6 % / 91,7 % → 70,6 % / 91,7 % (729 TP, 304 FP,
 66 FN) ; les autres lignes du tableau ci-dessous sont inchangées.
 
+**Rejeu du 23 novembre 2026 (P2-261, moteur seul, graine 42)** : SIREN, SIRET et TVA
+sont annotés `siren` (238 entités : le profil compte **1 033 entités** ; texte inchangé,
+empreinte identique). **Chemin mesuré : moteur seul** (`run_ecluse.dart`). Appariement
+strict, avant → après :
+
+| Mesure (extended) | Avant | Après |
+|---|---|---|
+| Écluse, tous types | 70,6 % / 91,7 % (729 TP, 304 FP, 66 FN) | 85,2 % / 85,2 % (880 TP, 153 FP, 153 FN) |
+| Écluse, **types communs** | 86,0 % / 91,7 % (729 TP, 119 FP, 66 FN)³ | 86,0 % / 91,7 % (inchangé) |
+| Écluse, `siren` (ligne à part) | 0 TP, 185 FP | 151 TP, 34 FP, 87 FN (81,6 % / 63,4 %) ; **fuite au caractère 0,0 %** |
+| Presidio par défaut, tous types / communs | 100 % / 11,6 % | 100 % / 8,9 % ; communs 100 % / 11,6 % (inchangé) |
+| Presidio `simple`, tous types / communs | 87,5 % / 51,8 % | 87,5 % / 39,9 % ; communs 87,5 % / 51,8 % (inchangé) |
+| Presidio `validated`, tous types / communs | 98,5 % / 48,2 % | 98,5 % / 37,1 % ; communs 98,5 % / 48,2 % (inchangé) |
+
+³ Le « avant » types communs est la même mesure appliquée à l'ancien or (identique aux
+chiffres publiés : seule la ligne `siren` en était absente). Les 34 FN et 87 manques
+stricts `siren` sont des **types faux, sans fuite** : le détecteur type `finess`
+ou `vehicule` un numéro qu'il masque en entier (voir `LIMITES.md` § 2 et
+`DECISIONS.md`, point 6). Presidio n'a pas de reconnaisseur français pour ces
+identifiants : son 0 % `siren` est l'absence du détecteur, pas une mesure de qualité.
+Presidio a été **rejoué** (modèle `en_core_web_lg`, seuil 0,35, `presidio-analyzer`
+2.2.366) pour ce rejeu.
+
 **Rejeu du 22 novembre 2026** (commit `91d009c`, **moteur seul**, `run_ecluse.dart` ;
 corpus `extended`, seed 42, 1000 documents, **766 entités annotées** : NIR 174,
 RPPS 117, IBAN 178, FINESS 172, ADELI 125), appariement strict :
@@ -258,12 +293,14 @@ L'objection prévisible : « Presidio est extensible ». `run_presidio.py
 Corpus v3 (seed 42, 1000 documents, 871 entités depuis le 23 novembre), appariement strict, même
 configuration Presidio que la note ¹ (modèle `en_core_web_lg`, seuil 0,35) :
 
-| Configuration | NIR (préc. / rappel) | RPPS (préc. / rappel) | IBAN FR | FINESS | TOTAL (préc. / rappel) |
-|---|---:|---:|---:|---:|---:|
-| Presidio par défaut | — / 0 % | — / 0 % | 100 % / 56,1 % | — / 0 % | 100 % / 16,9 % |
-| + reconnaisseurs `simple` | 100 % / 100 % | 81,0 % / 100 % | 100 % / 56,1 % | — / 0 % | 94,1 % / 72,0 % |
-| + reconnaisseurs `validated` | 100 % / **85,7 %** | **100 % / 100 %** | 100 % / 56,1 % | — / 0 % | 100 % / 66,8 % |
-| Écluse | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 92,4 % / 100 % (42 SIREN, 30 SIRET) |
+| Configuration | NIR (préc. / rappel) | RPPS (préc. / rappel) | IBAN FR | FINESS | **COMMUNS** (préc. / rappel) | TOTAL tous types (siren compris) |
+|---|---:|---:|---:|---:|---:|---:|
+| Presidio par défaut | — / 0 % | — / 0 % | 100 % / 56,1 % | — / 0 % | 100 % / 16,9 % | 100 % / 15,6 % |
+| + reconnaisseurs `simple` | 100 % / 100 % | 81,0 % / 100 % | 100 % / 56,1 % | — / 0 % | 94,1 % / 72,0 % | 94,1 % / 66,5 % |
+| + reconnaisseurs `validated` | 100 % / **85,7 %** | **100 % / 100 %** | 100 % / 56,1 % | — / 0 % | 100 % / 66,8 % | 100 % / 61,7 % |
+| Écluse | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % | 100 % / 100 % (dont `siren` 72 / 72) |
+
+**Rejeu du 23 novembre 2026 (P2-261).** Les 72 SIREN et SIRET sont annotés `siren` ; la colonne COMMUNS (comparaison principale, `siren` retiré pour les deux moteurs) est **identique** aux totaux publiés avant (aucun reconnaisseur Presidio ne les lit : la colonne tous types baisse seulement parce que l'or grandit de 72 entités). Les trois configurations Presidio ont été rejouées ce jour (`en_core_web_lg`, seuil 0,35). Moteur seul pour Écluse. **Avant P2-261**, Écluse : 92,4 % / 100 %.
 
 **Rejeu du 23 novembre 2026 (P2-258).** L'annotation des 45 NIR à clé invalide
 change la lecture du NIR : le reconnaisseur `validated`, qui écarte la clé

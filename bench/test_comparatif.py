@@ -49,6 +49,47 @@ class TestScore(unittest.TestCase):
         self.assertEqual(faux, [1, 2])
 
 
+class TestTypesCommuns(unittest.TestCase):
+    """P2-261 : `siren` retiré de l'or et des prédictions, pour tous les outils."""
+
+    DOCS = [
+        {"id": 0, "text": "SIREN 123456789 et NIR x", "entities":
+         [ent("siren", 6, 15), ent("nir", 21, 22)]},
+        {"id": 1, "text": "Le SIRET est 12345678901234.", "entities":
+         [ent("siren", 13, 27)]},
+        {"id": 2, "text": "Rien ici.", "entities": []},
+    ]
+
+    def test_sans_retrait_le_siren_compte(self):
+        spans = {0: [(6, 15, "siren"), (21, 22, "nir")], 1: [(13, 27, "siren")]}
+        par_type, faux = c.score(self.DOCS, spans)
+        self.assertEqual(par_type, {"siren": [2, 2], "nir": [1, 1]})
+        self.assertEqual(faux, [0, 1])
+
+    def test_retrait_de_l_or_et_des_predictions_siren(self):
+        spans = {0: [(6, 15, "siren"), (21, 22, "nir")], 1: [(13, 27, "siren")]}
+        par_type, faux = c.score(self.DOCS, spans, c.ENTREPRISE)
+        self.assertEqual(par_type, {"nir": [1, 1]})
+        # le document 1 n'a plus d'entité ; sa prédiction `siren` est retirée
+        # aussi : il n'est pas masqué à tort. Le document 2 non plus.
+        self.assertEqual(faux, [0, 2])
+
+    def test_meme_regle_pour_un_outil_sans_reconnaisseur(self):
+        # Presidio ne prédit rien sur le SIRET : le retrait ne lui donne ni ne
+        # lui enlève rien ; une prédiction d'un autre type reste comptée.
+        sans = {0: [(21, 22, "NIR")], 1: []}
+        par_type, faux = c.score(self.DOCS, sans, c.ENTREPRISE)
+        self.assertEqual(par_type, {"nir": [1, 1]})
+        self.assertEqual(faux, [0, 2])
+        autre = {1: [(13, 27, "PHONE_NUMBER")]}
+        _, faux = c.score(self.DOCS, autre, c.ENTREPRISE)
+        self.assertEqual(faux, [1, 2])  # type non retiré : masqué à tort
+
+    def test_span_sans_type_jamais_retire(self):
+        _, faux = c.score(self.DOCS, {1: [(13, 27)]}, c.ENTREPRISE)
+        self.assertEqual(faux, [1, 2])
+
+
 class TestEchantillon(unittest.TestCase):
     def corpus(self):
         v3 = [{"id": i, "text": f"v3 {i}", "entities": []} for i in range(100)]

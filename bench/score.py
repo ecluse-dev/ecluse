@@ -17,6 +17,14 @@ from collections import defaultdict
 
 TYPES = ["nir", "rpps", "iban", "finess"]
 
+# Identifiants d'entreprise (SIREN, SIRET, TVA) : annotés `siren` depuis le
+# 23/11/2026 (DECISIONS.md, point 8, P2-261). Écluse les masque à dessein ;
+# les autres outils n'ont pas de reconnaisseur français pour eux. La
+# comparaison principale se fait donc **sans** ce type, ni dans l'or ni dans
+# les prédictions, pour tous les moteurs (même règle) ; `siren` a sa ligne à
+# part. Le TOTAL tous types est gardé tel quel.
+ENTREPRISE = {"siren"}
+
 
 def load(path):
     docs = {}
@@ -81,6 +89,12 @@ def evaluate(gold_docs, pred_docs, strict, types=None):
             tot_fp[t] += fp[t]
             tot_fn[t] += fn[t]
     return tot_tp, tot_fp, tot_fn
+
+
+def sans_entreprise(docs):
+    """Copie de `docs` (id -> entités) sans les entités de type `siren`."""
+    return {i: [e for e in ents if e["type"] not in ENTREPRISE]
+            for i, ents in docs.items()}
 
 
 def leakage(gold_docs, pred_docs, types):
@@ -159,6 +173,48 @@ def main() -> None:
                 p, r, f = prf(a, b, c)
                 print(f"{name:<10} {t:<6} {p:>7.1%} {r:>7.1%} {f:>7.1%} {a:>5} {b:>5} {c:>5}")
             print()
+
+    # Comparaison principale : types communs, `siren` retiré de l'or et des
+    # prédictions de tous les moteurs. Les libellés évitent « TOTAL » et le nom
+    # du moteur porte « (c) » ou « (e) » : les filtres existants d'etat.sh
+    # (`^Ecluse +TOTAL`, `^Ecluse +(nir|…)`) ne les prennent pas pour le
+    # total tous types.
+    communs = [t for t in types if t not in ENTREPRISE]
+    gold_c = sans_entreprise(gold)
+    preds_c = {name: sans_entreprise(p) for name, p in all_preds.items()}
+    for mode_name, strict in [("STRICT", True), ("SOUPLE", False)]:
+        print(f"\n=== Types communs, appariement {mode_name} "
+              "(siren retiré de l'or et des prédictions, tous moteurs) ===")
+        header = f"{'Moteur':<12} {'Type':<8} {'Préc.':>7} {'Rappel':>7} {'F1':>7} {'TP':>5} {'FP':>5} {'FN':>5}"
+        print(header)
+        print("-" * len(header))
+        for name, preds in preds_c.items():
+            tp, fp, fn = evaluate(gold_c, preds, strict, communs)
+            for t in communs + ["COMMUNS"]:
+                if t == "COMMUNS":
+                    a = sum(tp[x] for x in communs)
+                    b = sum(fp[x] for x in communs)
+                    c = sum(fn[x] for x in communs)
+                else:
+                    a, b, c = tp[t], fp[t], fn[t]
+                p, r, f = prf(a, b, c)
+                print(f"{name + ' (c)':<12} {t:<8} {p:>7.1%} {r:>7.1%} {f:>7.1%} {a:>5} {b:>5} {c:>5}")
+            print()
+
+    # Ligne à part : identifiants d'entreprise (type `siren`). Presidio n'a pas
+    # de reconnaisseur français pour eux : un 0 n'est pas une mesure de
+    # qualité, seulement l'absence de ce détecteur.
+    print("=== Identifiants d'entreprise (type siren), ligne à part ===")
+    header = f"{'Moteur':<12} {'Mode':<12} {'Préc.':>7} {'Rappel':>7} {'F1':>7} {'TP':>5} {'FP':>5} {'FN':>5}"
+    print(header)
+    print("-" * len(header))
+    for name, preds in all_preds.items():
+        for mode_name, strict in [("strict", True), ("souple", False)]:
+            tp, fp, fn = evaluate(gold, preds, strict, types)
+            a, b, c = tp["siren"], fp["siren"], fn["siren"]
+            p, r, f = prf(a, b, c)
+            print(f"{name + ' (e)':<12} {mode_name:<12} {p:>7.1%} {r:>7.1%} {f:>7.1%} {a:>5} {b:>5} {c:>5}")
+    print()
 
     print("=== FUITE au caractère (caractères annotés restés en clair) ===")
     header = f"{'Moteur':<10} {'Type':<6} {'Annotés':>8} {'En clair':>9} {'Fuite':>7}"

@@ -31,13 +31,39 @@ Corpus **synthétiques** uniquement ; aucun chiffre ne vaut fréquence réelle.
 Presidio n'est pas rejoué ici (environnement à part, `bench/README.md`,
 « Reproduire ») ; ses chiffres de référence datent de la relecture P1-12.
 
-## Identifiants structurels (corpus v3, 1 000 documents, 826 entités)
+## Identifiants structurels (corpus v3, 1 000 documents, 943 entités dont 72 `siren`)
 
 | Corpus | Précision | Rappel | F1 | FP | Source |
 |---|---:|---:|---:|---:|---|
-| v3 d'origine | 92,4 % | 100 % | 96,0 % | 72 (42 SIREN + 30 SIRET, masqués à dessein) | 23/11 (P2-259) : les 30 SIRET pièges sont masqués, non annotés (avant : 95,4 % / 97,6 % / 42) ; 23/11 (P2-258) : les 45 NIR à clé fausse sont annotés (871 entités ; avant : 95,2 % / 97,5 % sur 826) ; 22/11 : les 48 IBAN à clé fausse sont annotés (826 entités) ; avant : 89,6 % / 94,5 % / 90 sur 778 ; avant P2-252 : 94,9 % / 97,4 % / 42 |
-| v3 sans ponctuation, minuscules | 95,2 % | 100 % | 97,5 % | 42 | = P2-98 ; même historique |
+| v3 d'origine, **tous types** (moteur seul) | **100 %** | 100 % | **100 %** | **0** | 23/11 (P2-261) : les 42 SIREN et 30 SIRET sont annotés `siren` (943 entités ; texte inchangé, empreinte SHA-256 identique) ; avant : 92,4 % / 100 % / 96,0 % / 72 ; 23/11 (P2-259) : les 30 SIRET pièges sont masqués, non annotés (avant : 95,4 % / 97,6 % / 42) ; 23/11 (P2-258) : les 45 NIR à clé fausse sont annotés (871 entités ; avant : 95,2 % / 97,5 % sur 826) ; 22/11 : les 48 IBAN à clé fausse sont annotés (826 entités) ; avant : 89,6 % / 94,5 % / 90 sur 778 ; avant P2-252 : 94,9 % / 97,4 % / 42 |
+| v3 d'origine, **types communs** (NIR, RPPS, IBAN, FINESS ; `siren` retiré de l'or et des prédictions) | 100 % | 100 % | 100 % | 0 | P2-261 ; 871 entités ; identique à l'ancien total (la ligne `siren` : 72 TP, 0 FP, 0 FN, à part) |
+| v3 sans ponctuation, minuscules | 100 % | 100 % | 100 % | 0 | P2-261 (avant : 92,4 % / 100 % / 96,0 % / 72 ; = P2-98 pour le reste de l'historique) |
 | v3 nombres en lettres | 0 % | **0 %** | 0 % | 0 | = P2-98 |
+
+## Identifiants d'entreprise annotés `siren` au banc (P2-261, 23 novembre 2026)
+
+Décision du 23 novembre, point 8 : SIREN, SIRET et numéro de TVA, que Écluse
+masque à dessein, sont annotés `siren` ; le texte des corpus ne change pas
+(empreinte SHA-256 des 1 000 textes identique, v3 `7405d819…` et extended
+`3e5dcc37…`). Corpus v3 : 943 entités (871 + 72 `siren`) ; extended : 1 033
+(795 + 238). **Ce qui change dans ce fichier** : les totaux « tous types » du
+**moteur seul** (`run_ecluse.dart`, ce n'est pas ce que reçoit le LLM) ; la
+ligne « types communs » est la comparaison principale avec Presidio.
+
+| Mesure (moteur seul, graine 42) | Avant | Après |
+|---|---|---|
+| v3, tous types, strict | 92,4 % / 100 % / 96,0 % (871 TP, 72 FP) | 100 % / 100 % / 100 % (943 TP, 0 FP) |
+| v3, types communs | — | 100 % / 100 % / 100 % (871 TP) |
+| v3, ligne `siren` | 0 TP, 72 FP | 72 TP, 0 FP, 0 FN |
+| témoin flou, `entites predites` (`Ecluse.redact` ; 216 sur chacun des corpus témoins de 400 documents : ligne « SIRET … TVA … » seule) | 216 | **0** |
+| v3 à 60 colonnes, tous types, précision / F1 / FP | 90,7 % / 89,8 % / 79 | 99,2 % / 94,2 % / 7 |
+| v3 à 90 colonnes, tous types, précision / F1 / FP | 91,8 % / 94,3 % / 75 | 99,7 % / 98,4 % / 3 |
+
+Les FP restants à 60 et 90 colonnes (7 et 3) sont des RPPS lus dans la fin d'un IBAN coupé (cause connue, inchangée). Le témoin flou « rien à masquer » perdait 216 prédictions sur la seule ligne
+« SIRET … TVA … » ; elle est remplacée par une ligne sans donnée personnelle
+(aucun tirage touché, les autres variantes sont inchangées). Les chiffres de
+`## SIREN masqués comme FINESS` (42 / 42, 383 / 400, etc.) sont inchangés :
+`score_siren_finess.py` continue de mesurer les 42 SIREN, désormais annotés.
 
 ## Dictée : identifiants dits en lettres (P2-160)
 
@@ -56,15 +82,19 @@ d'identifiant (blancs exclus) couverts par aucune détection.
 
 | Variante | **`Ecluse.redact`** (ce que reçoit le LLM) : rappel | fuite au caractère | moteur seul (`ecluse_core`) : rappel |
 |---|---:|---:|---:|
-| sans ponctuation (chiffres) | 826/826 | 0,0 % | 100 % (42 FP SIREN) |
-| en lettres (d'origine) | 23/826 (2,8 %) | 97,6 % | 0 % |
-| double / triple | 18/826 (2,2 %) | 97,8 % | 0 % |
-| septante / huitante / nonante | 32/826 (3,9 %) | 97,1 % | 0 % |
-| zéro dit « o » | 25/826 (3,0 %) | 97,5 % | 0 % |
-| traits d'union perdus | 34/826 (4,1 %) | 97,1 % | 0 % |
+| sans ponctuation (chiffres) | 943/943 | 0,0 % | 100 % (0 FP depuis P2-261 ; avant : 72 FP `siren`) |
+| en lettres (d'origine) | 23/943 (2,4 %) | 97,8 % | 0 % |
+| double / triple | 18/943 (1,9 %) | 98,0 % | 0 % |
+| septante / huitante / nonante | 32/943 (3,4 %) | 97,4 % | 0 % |
+| zéro dit « o » | 25/943 (2,7 %) | 97,7 % | 0 % |
+| traits d'union perdus | 34/943 (3,6 %) | 97,4 % | 0 % |
 
 Depuis le 22 novembre (IBAN à clé fausse annotés), les identifiants couverts ne
 changent pas (ce sont des FINESS) ; seul le dénominateur passe de 778 à 826.
+**P2-261 (23 novembre)** : les 72 SIREN et SIRET entrent au dénominateur (943) ;
+leur fuite au caractère est de **100 %** dans les cinq variantes dictées (0 / 72 couverts, `Ecluse.redact`),
+comme NIR et RPPS : même limite que les autres identifiants dictés, pas un défaut nouveau. Les
+chiffres de cette colonne baissent donc seulement parce que le dénominateur grandit.
 
 Par type (fuite au caractère, `Ecluse.redact`) : NIR 99,9 à 100 %, RPPS 100 %,
 IBAN 99,9 à 100 %, FINESS 68 à 76 % selon la variante. Les rares identifiants
