@@ -336,6 +336,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-265 | code | `bench/ETAT.md` contrôlé : un script compare chaque tableau courant à la sortie d'`etat.sh` et échoue au premier écart ; historique à part | — | fusionnée |
 | P2-266 | code | Machine neuve : le test d'équivalence dit quelle commande génère `bench/corpus.jsonl` au lieu d'échouer seulement sur « introuvable » | — | fusionnée |
 | P2-268 | code | Identifiants lus par OCR (« O » pour 0, « l »/« I » pour 1) : relus dans une suite candidate, gardés si la clé valide ; clé faible seulement derrière un libellé (décision du 23 novembre, nuit) | P2-264 | à faire |
+| P2-269 | mesure | Presidio rejoué sur les 200 000 documents (au lieu d'être rescoré sur ses prédictions du 21 novembre) ; écarts rapportés, rien corrigé | — | à faire |
+| P2-270 | mesure | Nombres dictés : témoin durci de phrases ordinaires denses en nombres (montants, horaires, adresses, consignes avec « code ») ; masquages et signalements à tort comptés, rien corrigé | P2-267 | à faire |
+| P2-271 | code | Nombres dictés : FINESS non couvert en entier quand un nom d'établissement chevauche la lecture (6 à 9 sur 129) | P2-267 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1224,4 +1227,49 @@ avec libellé, fuite ≤ 5 % pour les cinq types ; sans libellé, RPPS, FINESS e
 SIREN inchangés (et le dire) ; **0 masquage à tort** sur le témoin d'origine
 (400), le témoin durci, `corpus_flou_realiste`, `corpus_courriers`, le corpus
 principal et tous les témoins d'`etat.sh` ; tableau avant / après dans la PR.
+
+### P2-269 — Presidio rejoué sur 200 000 documents (mesure)
+
+L'article de benchmark cite Presidio sur 200 000 documents à partir de ses
+prédictions du 21 novembre (commit `c3de6a8`), **rescorées** sur l'annotation du
+23 novembre, pas rejouées. P2-262 a mesuré ≈ 30 minutes extrapolées. Travail :
+générer le corpus de 200 000 documents (graine 42), lancer `bench/run_presidio.py`
+tel que livré (seuil 0,35, `en_core_web_lg`), scorer avec `bench/score.py`
+(tous types, types communs, ligne `siren`, fuite au caractère). Comparer au
+rescorage : P 100 %, rappel types communs 16,7 %, tous types 15,2 %, IBAN
+27 820 vrais positifs. Rapport dans `agent/specs/P2-269.md`, avec versions et
+durée. **Rien n'est corrigé** ; `bench/ARTICLE.md` non touché. **Fini quand** :
+chiffres rejoués donnés avec leur chemin, et chaque écart au rescorage expliqué
+(ou « aucun écart »).
+
+### P2-270 — Nombres dictés : témoin durci (mesure)
+
+Le témoin « mots-nombres » (300 phrases) donne 0 prédiction après P2-267, mais
+la PR #511 signale trois incertitudes : mots-clés de validation faible tirés des
+corpus synthétiques (« code » est large), signalement « nombre dicté non
+reconnu » possible sur une phrase ordinaire dense en nombres, K = 6 que le témoin
+ne départage pas de 4. Travail : générateur synthétique (graine 42) d'au moins
+600 phrases ordinaires dictées, sans identifiant : montants et prix, horaires et
+durées, dates, adresses en lettres, posologies et quantités, consignes et
+digicodes avec le mot « code », numéros de chambre ou de poste. Mesurer par
+`Ecluse.redact` : masquages à tort par type, signalements à tort, et le même
+tableau pour K = 4, 6 et 8. Rapport dans `agent/specs/P2-270.md`. **Rien n'est
+corrigé.** **Fini quand** : tableau par famille de phrases et par type prédit,
+exemples synthétiques des cas à tort, et proposition chiffrée (mot-clé à retirer,
+K à changer) avec son effet sur les variantes dictées de P2-267.
+
+### P2-271 — Nombres dictés : FINESS chevauché par un établissement (code)
+
+Après P2-267, par `Ecluse.redact`, 6 à 9 FINESS dictés sur 129 ne sont pas
+couverts en entier (1 à 17 caractères en clair) : un nom d'établissement détecté
+avant (« ch de metz finess … ») l'emporte au tri des chevauchements (PR #511,
+« ce qui reste incertain »). Travail : d'abord la mesure des cas exacts sur les
+cinq variantes dictées (liste par gabarit) ; puis test qui montre la fuite ; puis
+correction de la résolution des chevauchements pour qu'un identifiant validé
+venu de la seconde vue soit couvert en entier (étendre l'établissement ou garder
+les deux étendues), sans rien changer hors des passages dictés. **Fini quand** :
+FINESS dicté 129 / 129 couverts en entier sur chaque variante ; prédictions
+identiques octet pour octet sur tous les autres corpus
+(`bench/equivalence_predictions.sh`) ; `python3 bench/controle_etat.py` conforme
+(bloc régénéré pour les seules lignes dictées) ; témoins à 0.
 
