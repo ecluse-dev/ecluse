@@ -912,6 +912,11 @@ python3 bench/generate_corpus.py --n 1000 --seed 42 --out bench/corpus.jsonl
 Les fichiers générés (`corpus.jsonl`, `predictions_*.jsonl`) ne sont
 pas versionnés : ils se régénèrent à l'identique.
 
+Sur une machine neuve, `melos run test` échoue tant que `bench/corpus.jsonl`
+n'existe pas (test d'équivalence de `packages/ecluse_bench`, P2-266) ; le
+message d'échec donne la commande, à lancer depuis la racine du dépôt :
+`python3 bench/generate_corpus.py --n 1000 --seed 42 --out bench/corpus.jsonl`.
+
 PDF synthétiques :
 
 ```bash
