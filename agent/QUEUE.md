@@ -325,6 +325,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-255 | mesure | Recensement des pièges de tous les générateurs de corpus : lesquels sont des données personnelles d'après DECISIONS.md, comment chacun est annoté et traité aujourd'hui | — | fusionnée |
 | P2-256 | mesure | `bench/README.md` rejoué de bout en bout : chiffres périmés depuis P2-248 (SIREN typé) et l'annotation des IBAN à clé fausse (826 entités) | — | fusionnée |
 | P2-257 | code | `bench/ETAT.md` : 18 sections en double (17 identiques, 1 divergente) fusionnées, sans changer aucun chiffre | — | fusionnée |
+| P2-258 | code | NIR à clé fausse sans libellé : donnée personnelle (décision du 23 novembre) ; annoter les pièges des corpus et les masquer en entier à 0,3 « à vérifier », coût mesuré d'abord | — | à faire |
+| P2-259 | code | SIRET nommé (14 chiffres après « SIRET ») masqué en entier, type `siren` : 30 / 30 en clair aujourd'hui | — | à faire |
+| P2-260 | code | Numéro de TVA intracommunautaire masqué en entier (« FR » + clé + SIREN), type `siren` : 29 / 35 en clair aujourd'hui | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -962,3 +965,82 @@ fichier après est inclus dans l'ensemble des lignes d'avant, plus les seules
 lignes de fusion listées. **Fini quand** : aucun titre `## ` en double ;
 `bash bench/etat.sh` inchangé (le fichier n'est pas lu par le script, à
 vérifier) ; diff relu ligne à ligne pour la section divergente.
+
+### P2-258 — NIR à clé fausse sans libellé (code)
+
+Décision du 23 novembre (`DECISIONS.md`, point 1) : comme l'IBAN (P2-252), un NIR
+mal recopié reste celui d'un patient. Aujourd'hui, par `Ecluse.redact`, les NIR
+pièges de `bench/generate_corpus.py` (« saisie erronée hier : … a été rejeté »)
+partent en clair : 45 / 45 en v3, 29 / 29 en extended (`agent/specs/P2-255.md`,
+§ 3, script `bench/recensement_pieges.py`).
+
+Travail, dans cet ordre :
+1. **Mesurer le coût avant tout masquage.** Prototype de détection (même place et
+   même schéma que `IbanCleInvalideDetector`, P2-252 : détecteur pur dans
+   `ecluse_core`) : quinze chiffres (mêmes séparateurs que `NirDetector`), sexe
+   1 ou 2, mois 01-12 ou plages admises par `NirDetector`, département plausible,
+   **clé fausse**. Compter les nouveaux masquages sur tous les témoins négatifs
+   du tableau de bord (`bash bench/etat.sh`) et sur `comparatif.py --temoin`.
+   Si un témoin gagne plus de 5 masquages, s'arrêter et ouvrir une PR « bloqué »
+   avec la liste.
+2. Test d'abord (cas synthétique qui reproduit la fuite), puis le détecteur :
+   type `nir`, masqué en entier, confiance 0,3, avertissement « identifiant à clé
+   invalide masqué : à vérifier » sans la valeur. Activé dans
+   `Ecluse.defaultDetectors` ; `NirDetector` strict inchangé.
+3. Annoter `nir` les NIR pièges de `generate_corpus.py` (v3 et extended) et les
+   NIR `nombre_sans_libelle` de `generate_corpus_libelle_fort.py` (tous les
+   types qui sont un NIR, numéro de sécurité sociale compris ; une fois sur deux
+   ils portent une lettre « O »/« o » d'OCR : la détection doit l'admettre à la
+   place d'un zéro, comme P2-254 pour l'IBAN), **texte
+   inchangé octet pour octet** (comme P2-252 et #493/#494 : test d'empreinte
+   SHA-256 des textes, totaux d'entités mis à jour dans les tests).
+4. Rejouer : tableau de bord, `bench/comparatif.py` (Presidio : rescorer les
+   prédictions existantes si Presidio ne tourne pas, et le dire), mettre à jour
+   `bench/COMPARATIF.md`, `bench/README.md`, `bench/etat_attendu.py`,
+   `LIMITES.md` (§ 2, retirer le NIR de la ligne « corrections inscrites »).
+
+**Fini quand** : NIR pièges 0 en clair (v3 et extended) ; libellé fort
+`sans libellé` NIR 0 en clair ; rappel NIR des vrais NIR inchangé ; chaque
+nouveau masquage d'un témoin listé et justifié dans la PR ; la PR donne les
+chiffres avant / après du comparatif (entités v3 826 → 871 attendu, à vérifier),
+car l'article de benchmark les cite.
+
+### P2-259 — SIRET nommé (code)
+
+Décision du 23 novembre (point 3). « Le SIRET de l'établissement est … » :
+quatorze chiffres après le mot « SIRET », en clair 30 / 30 (v3) et 19 / 19
+(extended) par `Ecluse.redact` (P2-255). `FinessDetector` type déjà `siren` un
+nombre de **neuf** chiffres proche de « SIREN » ou « SIRET » (P2-248) ; le SIRET
+de quatorze chiffres n'est pas vu.
+
+Travail : test d'abord ; puis masquer en entier quatorze chiffres (groupés
+3 3 3 5 ou collés) **dans la même fenêtre de 40 caractères** après ou avant le
+mot « SIRET » (casse indifférente), type `siren`, confiance haute ; clé de Luhn
+sur 14 chiffres vérifiée : clé fausse → confiance 0,3 avec avertissement « à
+vérifier » (même règle que le libellé fort, P2-188). Sans le mot « SIRET »,
+rien ne change. **Aucune annotation nouvelle au banc** (le SIRET n'est pas l'un
+des quatre types, décision du 23 novembre point 5) : la mesure se fait par
+`bench/recensement_pieges.py`. Coût : nouveaux masquages sur les témoins du
+tableau de bord et `comparatif.py --temoin`, listés.
+**Fini quand** : SIRET pièges 0 en clair (v3 et extended) ; aucun chiffre du
+tableau principal ne change (sinon, expliquer) ; `LIMITES.md` à jour (§ 1 SIREN
+et § 2).
+
+### P2-260 — Numéro de TVA intracommunautaire (code)
+
+Décision du 23 novembre (point 4). « N° de TVA intracommunautaire : FR… » :
+29 / 35 en clair, 6 / 35 masqués en partie comme RPPS (onze chiffres valides
+par hasard, « FR » en clair) par `Ecluse.redact`, corpus extended (P2-255).
+
+Travail : test d'abord ; puis masquer en entier « FR » + deux caractères de clé
++ neuf chiffres (blancs admis comme dans le générateur et dans les formes
+usuelles), type `siren`. Clé vérifiée par calcul (`(12 + 3 × (SIREN mod 97))
+mod 97`) : clé juste → confiance haute ; clé fausse → seulement derrière un
+libellé (« TVA », « n° TVA », « intracommunautaire » dans la fenêtre), confiance
+0,3 et avertissement. Le résolveur doit préférer cette entité au RPPS partiel.
+Pas de nouvelle annotation au banc ; mesure par `bench/recensement_pieges.py`.
+Coût : nouveaux masquages des témoins, listés (« FR » + onze chiffres peut être
+une référence).
+**Fini quand** : TVA 0 en clair et 0 masqué en partie (extended) ; aucun RPPS du
+corpus ne change de type ; `LIMITES.md` à jour.
+
