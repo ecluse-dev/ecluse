@@ -335,7 +335,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-264 | mesure | Fuite par OCR (« O » pour 0, « l » ou « I » pour 1) sans libellé, par type, avec le coût en masquages à tort ; rien corrigé | — | fusionnée |
 | P2-265 | code | `bench/ETAT.md` contrôlé : un script compare chaque tableau courant à la sortie d'`etat.sh` et échoue au premier écart ; historique à part | — | fusionnée |
 | P2-266 | code | Machine neuve : le test d'équivalence dit quelle commande génère `bench/corpus.jsonl` au lieu d'échouer seulement sur « introuvable » | — | fusionnée |
-| P2-268 | code | Identifiants lus par OCR (« O » pour 0, « l »/« I » pour 1) : relus dans une suite candidate, gardés si la clé valide ; clé faible seulement derrière un libellé (décision du 23 novembre, nuit) | P2-264 | à faire |
+| P2-268 | code | Identifiants lus par OCR (« O » pour 0, « l »/« I » pour 1) : relus dans une suite candidate, gardés si la clé valide ; clé faible seulement derrière un libellé (décision du 23 novembre, nuit) | P2-264 | fusionnée |
 | P2-269 | mesure | Presidio rejoué sur les 200 000 documents (au lieu d'être rescoré sur ses prédictions du 21 novembre) ; écarts rapportés, rien corrigé | — | fusionnée |
 | P2-270 | mesure | Nombres dictés : témoin durci de phrases ordinaires denses en nombres (montants, horaires, adresses, consignes avec « code ») ; masquages et signalements à tort comptés, rien corrigé | P2-267 | fusionnée |
 | P2-271 | code | Nombres dictés : FINESS non couvert en entier quand un nom d'établissement chevauche la lecture (6 à 9 sur 129) | P2-267 | à faire |

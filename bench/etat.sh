@@ -128,6 +128,14 @@ if produit "témoin mots-nombres, Ecluse.redact" "$B/transcrit/pred_temoin_mots_
   python3 -c "import json,sys;print('témoin mots-nombres :',sum(len(json.loads(l)['entities']) for l in open(sys.argv[1])),'prédictions sur',sum(1 for _ in open(sys.argv[1])),'phrases')" "$B/transcrit/pred_temoin_mots_nombres.jsonl"
 fi
 
+echo "## fuite par OCR (P2-264, P2-268) : Ecluse.redact (chemin du produit)"
+# « O »/« o » pour 0, « l »/« I » pour 1 : 1 200 positifs (5 types x 3 confusions
+# x avec/sans libellé x 40), 400 témoins d'origine et 450 témoins durcis.
+produit "générateur OCR" "$B/flou/corpus_ocr.jsonl" python3 "$B/generate_corpus_ocr.py" --n 40 --seed 42 --out "$B/flou/corpus_ocr.jsonl" || true
+if produit "OCR, Ecluse.redact" "$B/flou/pred_ocr.jsonl" redact run_redact_bench.dart "../../bench/flou/corpus_ocr.jsonl" "../../bench/flou/pred_ocr.jsonl"; then
+  montre "OCR, score" -E "^(TOTAL|témoin négatif)" 0 non dans_B python3 score_ocr.py --corpus flou/corpus_ocr.jsonl --pred flou/pred_ocr.jsonl || true
+fi
+
 echo "## flou (entités floues) et variantes de casse"
 produit "générateur flou" "$B/flou/corpus_flou_realiste.jsonl" python3 "$B/generate_corpus_flou.py" --n 400 --seed 42 --out-dir "$B/flou" || true
 produit "variantes de casse (flou)" "$B/flou/corpus_flou_temoin_phrase.jsonl" python3 "$B/variantes_casse.py" "$B"/flou/corpus_flou_{realiste,adversarial,temoin}.jsonl || true

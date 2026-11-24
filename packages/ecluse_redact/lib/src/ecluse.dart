@@ -11,6 +11,7 @@ import 'heuristics/email_detector.dart';
 import 'heuristics/etablissement_detector.dart';
 import 'heuristics/identifiant_cle_invalide_detector.dart';
 import 'heuristics/identifiant_detector.dart';
+import 'heuristics/identifiant_ocr_detector.dart';
 import 'heuristics/initiale_libelle_detector.dart';
 import 'heuristics/maladie_rare_detector.dart';
 import 'heuristics/prenom_insee_detector.dart';
@@ -328,7 +329,12 @@ abstract final class Ecluse {
     // P2-188 : identifiant à clé invalide annoncé par un libellé fort, sur
     // [text] directement — jamais sur [vue] (voir le commentaire de
     // `defaultDetectors`).
-    final cleInvalide = const IdentifiantCleInvalideDetector().detect(text);
+    // P2-268 : identifiants lus avec des lettres d'OCR (« O » pour 0, « l » pour
+    // 1), relus pour être validés ; texte d'origine, jamais la vue.
+    final cleInvalide = [
+      ...const IdentifiantCleInvalideDetector().detect(text),
+      ...const IdentifiantOcrDetector().detect(text),
+    ];
     // P2-258 : NIR à clé fausse sans libellé, lui aussi sur [text] (la vue
     // neutralise la « clé » nommée à part de P2-42, qui doit rester intacte).
     final nirCleFausseTexte = const NirCleInvalideDetector().detect(text);
@@ -398,6 +404,7 @@ abstract final class Ecluse {
           value: e.value,
           confidence: e.confidence,
           tier: DetectorTier.pattern,
+          provenance: e.provenance,
         ),
     ]);
   }
@@ -462,12 +469,18 @@ abstract final class Ecluse {
                     // intracommunautaire à clé fausse derrière son libellé
                     // (P2-260).
                     e.type == EntityType.siren) &&
-                e.confidence == 0.3)
+                e.confidence == 0.3 &&
+                e.provenance != Provenance.lectureOcr)
             .length +
         // ADELI à clé fausse derrière son libellé (P2-204) : masqué par
         // `AdeliDetector` à confiance 0,6 (inchangée, `LIMITES.md` § 2), donc
         // hors du compte ci-dessus. Le message ne porte jamais la valeur.
         resolved.where(_adeliCleFausse).length;
+
+    // Identifiants relus après des lettres d'OCR (P2-268) : masqués à confiance
+    // 0,3, avertissement distinct, jamais la valeur dans le message.
+    final ocrCount =
+        resolved.where((e) => e.provenance == Provenance.lectureOcr).length;
 
     // Jetons déjà attribués dans le dossier qui figurent en clair dans ce
     // texte : ils seront remplacés à la restauration (relevé avant tout
@@ -531,6 +544,9 @@ abstract final class Ecluse {
         if (cleInvalideCount > 0)
           'identifiant à clé invalide masqué : à vérifier'
               '${cleInvalideCount > 1 ? " ($cleInvalideCount occurrences)" : ""}.',
+        if (ocrCount > 0)
+          "identifiant lu avec des lettres d'OCR masqué : à vérifier"
+              '${ocrCount > 1 ? " ($ocrCount occurrences)" : ""}.',
         ..._avertissementNombreDicte(text, resolved),
         if (_sansMajuscule(text))
           _avertissementSansMajuscule

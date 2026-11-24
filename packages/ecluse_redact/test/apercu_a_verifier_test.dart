@@ -218,7 +218,7 @@ void main() {
     });
 
     test('Provenance est une énumération fermée', () {
-      expect(Provenance.values.map((v) => v.name), ['tournure']);
+      expect(Provenance.values.map((v) => v.name), ['tournure', 'lectureOcr']);
     });
   });
 }
