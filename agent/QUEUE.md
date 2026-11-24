@@ -352,7 +352,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-282 | code | Signalement de la dictée coupé par un mot voisin (« code », « digicode », « mot de passe ») à 100 caractères, levé par un libellé d'identifiant (mesure P2-280 : 49 → 0 à tort) | P2-281 | à faire |
 | P2-283 | code | IBAN de clé juste écrit en paires après « FR » (`FR 24 30 00 …`) : mesure à la sonde puis correction d'`IbanFrDetector` | P2-277 | fusionnée |
 | P2-284 | code | Tableau de bord : faux accords par détecteur de P2-279 (5 000 + 5 600 documents) suivis par `etat.sh` | P2-279 | fusionnée |
-| P2-285 | mesure | Établissement masqué dans des phrases sans personne (3,98 % sur 200 000 : « SSIAD à Angers ») : décompte par forme, rien corrigé | P2-279 | à faire |
+| P2-285 | mesure | Établissement masqué dans des phrases sans personne (3,98 % sur 200 000 : « SSIAD à Angers ») : décompte par forme, rien corrigé | P2-279 | fusionnée |
 | P2-286 | code | Démo `ecluse_demo` : encart « ce que disent les mesures » (chiffres de l'article v2, avec leurs réserves) et troisième exemple « note de liaison » (NIR à clé fausse, IBAN aux espacements irréguliers, sigles sans personne) | — | à faire |
 | P2-287 | mesure | Rapport de risque : un mot courant en tête de phrase lu comme commune (« Son numéro… » → lieu « Son », F = 89) ; décompte sur les corpus, rien corrigé | — | à faire |
 
