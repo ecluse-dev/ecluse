@@ -343,6 +343,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-273 | code | Nombres dictés : retirer « code » des mots-clés de validation faible (3 → 0 masquage à tort sur le témoin durci de P2-270, aucun effet mesuré sur les variantes dictées) | P2-270 | fusionnée |
 | P2-274 | mesure | Nombres dictés : seuil du signalement « non reconnu » (9, 11, 13 mots) : signalements à tort sur le témoin durci contre identifiants dictés non validés signalés ; rien corrigé | P2-270 | fusionnée |
 | P2-275 | code | OCR : trous restants de P2-268 (NIR corse « 2A »/« 2B » relu sans libellé, libellé + clé fausse + séparateurs multiples) et témoin durci des mots-nombres dans `etat.sh` | P2-268 | fusionnée |
+| P2-276 | code | Gardes à coût nul de P2-272 : `nir_suitelettre`, `finess_suitelettre`, `adr_confusables` (pas `iban_g45`, qui attend le mainteneur) | P2-272 | à faire |
+| P2-277 | code | IBAN à clé fausse écrit en paires (0 / 40 à la sonde) et adresse « code postal + commune avec arrondissement » (0 / 140) | P2-272 | à faire |
+| P2-278 | code | Tableau de bord : sonde de P2-272 et identifiants dictés abîmés de P2-274 suivis par `etat.sh` | P2-272, P2-274 | à faire |
+| P2-279 | mesure | Faux accords par détecteur sur un témoin durci élargi (≥ 5 000 documents) et sur 200 000 documents sans identifiant, avec intervalle ; rien corrigé | P2-272 | à faire |
+| P2-280 | mesure | Signalement « nombre dicté non reconnu » : critères autres que le nombre de mots (mot voisin « code », « digicode »…) ; rien corrigé | P2-274 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1329,4 +1334,62 @@ bloc de `ETAT.md` régénéré par `controle_etat.py --propose`). Garder la règ
 masqués à 0,3 avec l'avertissement OCR ; le cas libellé + clé fausse + séparateurs
 multiples masqué ; 0 masquage à tort nouveau sur tous les témoins (dont le témoin
 durci de P2-268) ; prédictions identiques ailleurs ; `controle_etat.py` conforme.
+
+### P2-276 — Gardes à coût nul contre les masquages à tort hérités (code)
+
+Mesure de P2-272 (`agent/specs/P2-272.md`, chemin `Ecluse.redact`) : les gardes
+`nir_suitelettre`, `finess_suitelettre` et `adr_confusables` (prototype
+`bench/gardes_faux_accords_patch.py`) retirent des masquages à tort du témoin
+durci sans perdre un seul identifiant sur v3, libellé fort, OCR, la sonde et les
+200 000 documents. `iban_g45` est **hors de cette tâche** : il perd 40 / 520 IBAN
+en groupes de trois à la sonde, le mainteneur doit trancher. Travail : test qui
+montre chaque masquage à tort, puis les trois gardes dans le produit, puis rejeu.
+**Fini quand** : masquages à tort du témoin durci réduits du nombre que la mesure
+de P2-272 prévoit pour ces trois gardes seules (le donner) ; 0 identifiant perdu
+sur v3, libellé fort, OCR, sonde et 200 000 documents ; prédictions identiques
+ailleurs (`bench/equivalence_predictions.sh`) ; `python3 bench/controle_etat.py`
+conforme (bloc régénéré pour les seules lignes prévues).
+
+### P2-277 — IBAN à clé fausse en paires, adresse avec arrondissement (code)
+
+Trous vus par la sonde de P2-272 (`bench/generate_sonde_gardes.py`), par
+`Ecluse.redact` : IBAN de forme française à clé fausse écrit en paires de
+chiffres, 0 / 40 couverts ; adresse « code postal + commune avec arrondissement »
+(« … Lyon 3e »), 0 / 140 couverts en entier. Travail : test d'abord, puis
+correction, sans toucher les autres formes. **Fini quand** : 40 / 40 et
+140 / 140 couverts en entier ; 0 masquage à tort nouveau sur tous les témoins
+(dont le témoin durci de P2-268) ; prédictions identiques ailleurs ;
+`controle_etat.py` conforme.
+
+### P2-278 — Sonde et dictée abîmée suivies par le tableau de bord (code)
+
+La sonde de P2-272 et les corpus d'identifiants dictés abîmés de P2-274
+(`bench/generate_corpus_dicte_non_valide.py`) ne sont pas dans `bench/etat.sh` :
+leurs trous ne sont pas suivis. Travail : les ajouter à `etat.sh`,
+`etat_attendu.py`, `etat_exemple.txt`, et régénérer le bloc d'`ETAT.md` par
+`controle_etat.py --propose`. **Fini quand** : lignes ajoutées ; aucun chiffre
+existant ne change ; `controle_etat.py` conforme ; tests Python verts.
+
+### P2-279 — Faux accords par détecteur, avec intervalle (mesure)
+
+14 / 450 au témoin durci de P2-268 est trop petit pour une barre d'erreur.
+Travail : témoin durci élargi (au moins 5 000 documents, mêmes familles que
+P2-268, graine 42) et 200 000 documents sans identifiant (gabarits de
+`bench/generate_corpus_temoin.py` ou équivalent) ; par `Ecluse.redact`, taux de
+masquages à tort par détecteur (IBAN à clé fausse P2-252, NIR à clé fausse P2-258,
+OCR P2-268, adresse, FINESS, nombres dictés) avec un intervalle de confiance à
+95 %. Rapport dans `agent/specs/P2-279.md`. **Rien n'est corrigé.** **Fini
+quand** : tableau détecteur × (taux, intervalle, exemples synthétiques), chemin
+mesuré écrit.
+
+### P2-280 — Signalement de la dictée : autres critères (mesure)
+
+P2-274 : en jouant seulement sur le nombre de mots, 46 / 24 / 0 signalements à
+tort (seuils 9 / 11 / 13) contre 11 / 18 / 41 identifiants abîmés passés sans
+avertissement. Travail : mesurer d'autres critères, seuls ou combinés au seuil
+9 (mot voisin « code », « digicode », « mot de passe » qui coupe le signalement ;
+forme d'un identifiant connu, comme 15 ou 27 positions ; présence d'un libellé
+d'identifiant). Mêmes corpus que P2-274. Rapport dans `agent/specs/P2-280.md`.
+**Rien n'est corrigé.** **Fini quand** : tableau critère × (signalements à tort,
+identifiants abîmés sans avertissement) et recommandation chiffrée.
 
