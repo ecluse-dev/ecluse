@@ -355,6 +355,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-285 | mesure | Établissement masqué dans des phrases sans personne (3,98 % sur 200 000 : « SSIAD à Angers ») : décompte par forme, rien corrigé | P2-279 | fusionnée |
 | P2-286 | code | Démo `ecluse_demo` : encart « ce que disent les mesures » (chiffres de l'article v2, avec leurs réserves) et troisième exemple « note de liaison » (NIR à clé fausse, IBAN aux espacements irréguliers, sigles sans personne) | — | fusionnée |
 | P2-287 | mesure | Rapport de risque : un mot courant en tête de phrase lu comme commune (« Son numéro… » → lieu « Son », F = 89) ; décompte sur les corpus, rien corrigé | — | fusionnée |
+| P2-288 | mesure | Faux accords IBAN à clé fausse 89 → 102 sur le témoin élargi de P2-279 : rejouer avant et après P2-277 et P2-283, cause par gabarit ; rien corrigé | P2-284 | à faire |
+| P2-289 | code | Établissements : la classe `[A-ZÀ-Ÿ]` contient les minuscules accentuées, « à » est absorbé (« CHU à Lille ») ; majuscules seulement (mesure P2-285 : 5 902 → 0) | P2-285 | à faire |
+| P2-290 | mesure | Détecteur d'établissements corrigé (P2-289) sur les variantes de casse et de mise en page du corpus flou ; rien corrigé | P2-289 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1492,3 +1495,46 @@ synthétiques. Rapport dans `agent/specs/P2-287.md`. **Rien n'est corrigé.**
 **Fini quand** : tableau mot × occurrences × effet sur la bande de risque ;
 recommandation chiffrée (liste d'exclusion, exigence d'une préposition « à »,
 « de », ou statu quo).
+
+### P2-288 — Faux accords IBAN : 89 → 102 (mesure)
+
+Le témoin élargi de P2-279 (5 000 documents) donnait 89 documents à tort pour
+l'IBAN à clé fausse (P2-252) à la mesure de P2-279 ; le tableau de bord de P2-284
+en donne 102. Cause probable : P2-277 (IBAN en paires), peut-être P2-283 (paires à
+clé juste) ; non rejoué. Travail : par `Ecluse.redact`, rejouer le témoin élargi
+aux commits avant P2-277, après P2-277 et après P2-283 (`git worktree`, sans rien
+changer sur `main`) ; lister par gabarit et par forme les documents qui changent,
+avec exemples synthétiques. Rapport dans `agent/specs/P2-288.md`. **Rien n'est
+corrigé.** **Fini quand** : la hausse est attribuée commit par commit et forme par
+forme ; pour chaque forme, ce qu'une garde coûterait en IBAN perdus sur la sonde et
+les corpus à clé fausse.
+
+### P2-289 — Établissements : « à » absorbé dans le nom (code)
+
+Mesure de P2-285 (`agent/specs/P2-285.md`, « Constat qui change la question ») :
+dans `etablissement_detector.dart`, `_word = "[A-ZÀ-Ÿ]…"` ; l'intervalle `À-Ÿ`
+(U+00C0–U+0178) contient les minuscules accentuées U+00E0–U+00FF, dont « à », qui
+passe pour un mot en casse de titre : « CHU à Lille » est absorbé. Variante
+mesurée `[A-ZÀ-ÖØ-ÞŒ]` : documents sans personne masqués à tort 7 965 → 2 063
+(sigle + « à » + ville 5 902 → 0) ; réaliste, bornes exactes 317 → 400 / 400 ;
+aucun établissement annoté manqué. Travail : test d'abord ; correction ; vérifier
+et corriger de même les trois classes `[A-ZÀ-Ÿ]` de `coupures_de_nom.dart` (avec
+la mesure de chacune) ; **ne pas toucher** « type + mot générique » (« Résidence
+Autonomie », décision du mainteneur en attente). **Fini quand** : chiffres de la
+variante retrouvés par `Ecluse.redact` ; 0 établissement ni nom annoté manqué sur
+tous les corpus ; `controle_etat.py` conforme (bloc régénéré pour les seules
+lignes prévues, chaque écart expliqué dans la PR) ; prédictions identiques sur les
+corpus sans établissement.
+
+### P2-290 — Établissements corrigés : casse et mise en page (mesure)
+
+P2-285 n'a pas rejoué les variantes de casse et de mise en page. Après P2-289,
+mesurer par `Ecluse.redact` les établissements annotés (couverts en entier, bornes
+exactes) et les masquages à tort sur les variantes de `generate_corpus_flou.py`
+(tout en majuscules, tout en minuscules, 60 et 90 colonnes, titres) et sur le
+témoin de 480 documents de l'article (`comparatif.py --temoin`, ligne Écluse :
+16 / 480 avant). Rapport dans `agent/specs/P2-290.md`. **Rien n'est corrigé.**
+**Fini quand** : tableau variante × (couverts, bornes exactes, à tort) avant /
+après P2-289, et le nouveau chiffre Écluse du témoin de 480 documents, pour
+l'article.
+
