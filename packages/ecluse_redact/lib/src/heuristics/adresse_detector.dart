@@ -773,6 +773,12 @@ final class AdresseDetector implements EntityDetector {
       final start = match.start;
       final end = _finRetenue(match, exact, neutre);
       if (_estIntroduitParQuantite(text, start)) continue;
+      // Mot de commune fait seulement de chiffres et de confusions d'OCR,
+      // avec au moins un chiffre (« 05214 oo1l », « 43751 o8669 ») : un code
+      // de pièce, pas une commune (P2-276). Sans chiffre, le mot peut être un
+      // vrai nom (« OO », « O DE SELLE » au balayage CEDEX) : la garde ne
+      // s'applique pas.
+      if (_communeFaiteDeConfusables(text.substring(start, end))) continue;
       // Déjà couvert par une adresse complète (numéro + voie) ci-dessus :
       // ne pas ajouter un doublon pour le seul suffixe "code postal +
       // commune" de cette même adresse.
@@ -871,4 +877,14 @@ final class _Retenues {
     }
     return false;
   }
+}
+
+final RegExp _motConfusables = RegExp(r'^(?=[oOlI]*[0-9])[0-9oOlI]+$');
+
+/// Vrai si le premier mot après le code postal n'est fait que de chiffres et
+/// de lettres de confusion d'OCR, avec au moins un chiffre (P2-276).
+bool _communeFaiteDeConfusables(String valeur) {
+  final reste = valeur.length > 5 ? valeur.substring(5).trim() : '';
+  if (reste.isEmpty) return false;
+  return _motConfusables.hasMatch(reste.split(RegExp(r'\s+')).first);
 }
