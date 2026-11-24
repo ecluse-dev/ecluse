@@ -507,6 +507,53 @@
     font-size: 0.82rem;
     max-width: 68ch;
   }
+
+  /* Ce que disent les mesures (P2-286) : encart statique, chiffres de
+     bench/COMPARATIF.md et de l'article de benchmark, jamais saisis ici à la
+     main au fil de l'eau. Chaque barre porte sa réserve et sa date. */
+  .mesures {
+    margin-top: 1.75rem;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem 1.25rem;
+  }
+  .mesures h2 { margin: 0 0 0.35rem; font-size: 1.1rem; }
+  .mesures .mesures-intro { margin: 0 0 1rem; font-size: 0.88rem; color: var(--muted); }
+  .mesures-grille { display: grid; gap: 1.1rem; grid-template-columns: 1fr; }
+  .mesure { margin: 0; }
+  .mesure h3 { margin: 0 0 0.15rem; font-size: 0.95rem; }
+  .mesure .mesure-sous { margin: 0 0 0.5rem; font-size: 0.8rem; color: var(--muted); }
+  .barres { list-style: none; margin: 0; padding: 0; }
+  .barres li {
+    display: grid;
+    grid-template-columns: minmax(7.5rem, 11rem) 1fr 3.4rem;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+    font-size: 0.82rem;
+  }
+  .barres .piste {
+    height: 0.8rem;
+    background: color-mix(in srgb, var(--text) 10%, var(--panel-bg) 90%);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .barres .piste span {
+    display: block;
+    height: 100%;
+    width: var(--w);
+    background: var(--c-teal);
+    border-radius: 4px;
+    min-width: 2px;
+  }
+  .barres li.ecluse .piste span { background: var(--c-vert); }
+  .barres .valeur { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .mesure .reserve { margin: 0.5rem 0 0; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+  .mesure .reserve strong { color: var(--text); }
+  @media (min-width: 1101px) {
+    .mesures-grille { grid-template-columns: repeat(3, 1fr); }
+  }
 </style>
 
 <header class="site-header">
@@ -542,6 +589,7 @@
     <button id="sample-0-btn" type="button">Charger : contrat de travail</button>
     <button id="sample-1-btn" type="button">Charger : compte rendu de réunion</button>
     <button id="sample-2-btn" type="button">Charger : compte rendu ESAT</button>
+    <button id="sample-3-btn" type="button">Charger : note de liaison (pièges)</button>
   </div>
 
   <div class="dropzone" id="dropzone">
@@ -626,6 +674,75 @@
       </div>
     </section>
   </div>
+
+  <section class="mesures" id="mesures" aria-labelledby="mesures-titre">
+    <h2 id="mesures-titre">Ce que disent les mesures</h2>
+    <p class="mesures-intro">
+      Chiffres du dépôt (<code>bench/COMPARATIF.md</code> et article de
+      benchmark), mesurés sur des corpus <strong>synthétiques produits par le
+      projet</strong> : ils disent ce que fait chaque outil sur ces textes,
+      pas sur les vôtres. Pour Écluse, c'est <code>Ecluse.redact</code>, ce
+      que reçoit l'IA ; pour les autres outils, leur propre détection, sans IA
+      branchée. Écluse réduit le risque, il ne l'annule pas.
+    </p>
+    <div class="mesures-grille">
+      <figure class="mesure" id="mesure-identifiants">
+        <h3>Identifiants entièrement masqués</h3>
+        <p class="mesure-sous">200 000 documents, 166 970 identifiants (NIR, RPPS, IBAN, FINESS). Plus haut est mieux.</p>
+        <ul class="barres">
+          <li class="ecluse"><span>Écluse</span><span class="piste"><span style="--w:100%"></span></span><span class="valeur">100 %</span></li>
+          <li><span>Presidio, par défaut</span><span class="piste"><span style="--w:16.7%"></span></span><span class="valeur">16,7 %</span></li>
+        </ul>
+        <figcaption class="reserve">
+          <strong>Réserve.</strong> Presidio est mesuré tel que livré, sans
+          reconnaisseur écrit pour le français ; avec deux reconnaisseurs NIR
+          et RPPS écrits à la main, il atteint aussi 100 % sur ces deux types.
+          Même générateur et mêmes gabarits répétés : 200 000 documents rendent
+          la mesure stable, pas plus réaliste. <strong>Mesuré</strong> le 23
+          novembre 2026 (Écluse) et le 24 novembre 2026 (Presidio).
+        </figcaption>
+      </figure>
+
+      <figure class="mesure" id="mesure-couverture">
+        <h3>Données personnelles couvertes</h3>
+        <p class="mesure-sous">397 entités, 148 documents (graine 42). Plus haut est mieux.</p>
+        <ul class="barres">
+          <li class="ecluse"><span>Écluse</span><span class="piste"><span style="--w:100%"></span></span><span class="valeur">100 %</span></li>
+          <li><span>Presidio, en français</span><span class="piste"><span style="--w:70%"></span></span><span class="valeur">70 %</span></li>
+          <li><span>Presidio, par défaut</span><span class="piste"><span style="--w:53%"></span></span><span class="valeur">53 %</span></li>
+          <li><span>EDS-Pseudo (règles)</span><span class="piste"><span style="--w:52%"></span></span><span class="valeur">52 %</span></li>
+          <li><span>spaCy, français seul</span><span class="piste"><span style="--w:47%"></span></span><span class="valeur">47 %</span></li>
+        </ul>
+        <figcaption class="reserve">
+          <strong>Réserve.</strong> Petit échantillon, annoté par le projet
+          (annotation complétée) ; une entité est « couverte » quand tous ses
+          caractères sont sous une détection, quel que soit le type. Les
+          détecteurs d'Écluse ont été écrits en regardant ces gabarits : sur
+          des textes réels, les écarts seraient différents.
+          <strong>Mesuré</strong> le 23 novembre 2026.
+        </figcaption>
+      </figure>
+
+      <figure class="mesure" id="mesure-a-tort">
+        <h3>Documents sans donnée personnelle masqués à tort</h3>
+        <p class="mesure-sous">480 documents du soin et du social, aucune donnée personnelle. Plus bas est mieux.</p>
+        <ul class="barres">
+          <li class="ecluse"><span>Écluse</span><span class="piste"><span style="--w:3%"></span></span><span class="valeur">3 %</span></li>
+          <li><span>EDS-Pseudo (règles)</span><span class="piste"><span style="--w:54%"></span></span><span class="valeur">54 %</span></li>
+          <li><span>Presidio, par défaut</span><span class="piste"><span style="--w:93%"></span></span><span class="valeur">93 %</span></li>
+          <li><span>Presidio, en français</span><span class="piste"><span style="--w:95%"></span></span><span class="valeur">95 %</span></li>
+          <li><span>spaCy, français seul</span><span class="piste"><span style="--w:100%"></span></span><span class="valeur">100 %</span></li>
+        </ul>
+        <figcaption class="reserve">
+          <strong>Réserve.</strong> 3 % n'est pas 0 : Écluse masque encore à
+          tort des noms d'établissements (16 documents sur 480) et, sur 200 000
+          documents du même type, 3,98 % des documents. Corpus fabriqué par le
+          projet. <strong>Mesuré</strong> le 23 novembre 2026 (480 documents) et
+          le 24 novembre 2026 (200 000).
+        </figcaption>
+      </figure>
+    </div>
+  </section>
 </main>
 
 <footer class="site-footer">
@@ -682,6 +799,7 @@
     document.getElementById('sample-0-btn').disabled = busy;
     document.getElementById('sample-1-btn').disabled = busy;
     document.getElementById('sample-2-btn').disabled = busy;
+    document.getElementById('sample-3-btn').disabled = busy;
     document.getElementById('browse-btn').disabled = busy;
   }
 
@@ -689,6 +807,19 @@
     const el = document.getElementById(id);
     el.innerHTML = html;
     el.classList.toggle('empty', Boolean(isEmpty));
+  }
+
+
+  // Réponse de l'IA : le gras markdown (**texte**) est rendu en <strong> au lieu
+  // d'apparaître en astérisques bruts (P2-286). Appelé sur du HTML déjà échappé
+  // (aucun texte du LLM n'est inséré tel quel) ; une paire dont le contenu
+  // couperait une balise <mark> en deux est laissée telle quelle.
+  function rendreGras(html) {
+    return html.replace(/\*\*([^*\n][^\n]*?)\*\*/g, (m, inner) => {
+      const ouvertes = (inner.match(/<mark/g) || []).length;
+      const fermees = (inner.match(/<\/mark>/g) || []).length;
+      return ouvertes === fermees ? '<strong>' + inner + '</strong>' : m;
+    });
   }
 
   function highlightByOffsets(text, entities) {
@@ -767,8 +898,8 @@
   function renderResult(data) {
     setPanel('panel-original', highlightByOffsets(data.originalText, data.entities), false);
     setPanel('panel-masked', highlightTokens(data.maskedText), false);
-    setPanel('panel-llm', highlightTokens(data.llmResponse), false);
-    setPanel('panel-restored', highlightByValues(data.restoredText, data.entities), false);
+    setPanel('panel-llm', rendreGras(highlightTokens(data.llmResponse)), false);
+    setPanel('panel-restored', rendreGras(highlightByValues(data.restoredText, data.entities)), false);
     document.getElementById('counter').textContent =
       data.entities.length > 0 ? countsSentence(data.entities) : 'Aucun élément détecté.';
     const warnings = document.getElementById('warnings');
@@ -939,6 +1070,7 @@
   document.getElementById('sample-0-btn').addEventListener('click', () => loadSample(0));
   document.getElementById('sample-1-btn').addEventListener('click', () => loadSample(1));
   document.getElementById('sample-2-btn').addEventListener('click', () => loadSample(2));
+  document.getElementById('sample-3-btn').addEventListener('click', () => loadSample(3));
   document.getElementById('send-btn').addEventListener('click', sendToAi);
   setupDropzone();
 
