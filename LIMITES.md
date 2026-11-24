@@ -546,8 +546,11 @@ pire 1,1 % par type (FINESS). Voir `bench/ETAT.md`.
   mal dicté n'est pas masqué.
 - **Mot-clé obligatoire pour RPPS, FINESS, SIREN, ADELI et téléphone** (Luhn seul :
   un faux accord sur dix) : « rpps », « praticien », « finess », « siren »,
-  « siret », « adeli », « téléphone », « structure », « établissement », « code »… dans
-  les 60 caractères qui précèdent. Sans mot-clé, un RPPS dicté n'est pas masqué.
+  « siret », « adeli », « téléphone », « structure », « établissement »… dans
+  les 60 caractères qui précèdent (« code » n'en fait plus partie depuis P2-273 : 3 masquages
+  à tort sur 630 phrases ordinaires du témoin durci → 0, mesuré par `Ecluse.redact` ; un code
+  d'accès dit de neuf chiffres ou plus reste signalé « non reconnu », 46 → 49 signalements).
+  Sans mot-clé, un RPPS dicté n'est pas masqué.
 - **Au plus 64 lectures** sont essayées par suite (la plus composée d'abord) ; une
   suite très ambiguë peut dépasser la borne.
 - **Signalement** : une suite d'au moins 9 mots-nombres qu'aucune lecture ne valide
