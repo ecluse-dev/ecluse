@@ -349,7 +349,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-279 | mesure | Faux accords par détecteur sur un témoin durci élargi (≥ 5 000 documents) et sur 200 000 documents sans identifiant, avec intervalle ; rien corrigé | P2-272 | fusionnée |
 | P2-280 | mesure | Signalement « nombre dicté non reconnu » : critères autres que le nombre de mots (mot voisin « code », « digicode »…) ; rien corrigé | P2-274 | fusionnée |
 | P2-281 | code | Régression de P2-275 : 5 IBAN dictés abîmés, recouverts en partie par une entité, ne sont plus signalés « nombre dicté non reconnu » | P2-275 | fusionnée |
-| P2-282 | code | Signalement de la dictée coupé par un mot voisin (« code », « digicode », « mot de passe ») à 100 caractères, levé par un libellé d'identifiant (mesure P2-280 : 49 → 0 à tort) | P2-281 | PR ouverte |
+| P2-282 | code | Signalement de la dictée coupé par un mot voisin (« code », « digicode », « mot de passe ») à 100 caractères, levé par un libellé d'identifiant (mesure P2-280 : 49 → 0 à tort) | P2-281 | fusionnée |
 | P2-283 | code | IBAN de clé juste écrit en paires après « FR » (`FR 24 30 00 …`) : mesure à la sonde puis correction d'`IbanFrDetector` | P2-277 | fusionnée |
 | P2-284 | code | Tableau de bord : faux accords par détecteur de P2-279 (5 000 + 5 600 documents) suivis par `etat.sh` | P2-279 | fusionnée |
 | P2-285 | mesure | Établissement masqué dans des phrases sans personne (3,98 % sur 200 000 : « SSIAD à Angers ») : décompte par forme, rien corrigé | P2-279 | fusionnée |
@@ -358,6 +358,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-288 | mesure | Faux accords IBAN à clé fausse 89 → 102 sur le témoin élargi de P2-279 : rejouer avant et après P2-277 et P2-283, cause par gabarit ; rien corrigé | P2-284 | fusionnée |
 | P2-289 | code | Établissements : la classe `[A-ZÀ-Ÿ]` contient les minuscules accentuées, « à » est absorbé (« CHU à Lille ») ; majuscules seulement (mesure P2-285 : 5 902 → 0) | P2-285 | fusionnée |
 | P2-290 | mesure | Détecteur d'établissements corrigé (P2-289) sur les variantes de casse et de mise en page du corpus flou ; rien corrigé | P2-289 | à faire |
+| P2-291 | code | Tableau de bord : signalements « nombre dicté non reconnu » à tort suivis par `etat.sh` (durci 630, neuf graine 43, origine 300) | P2-282 | à faire |
+| P2-292 | mesure | Coût réel de la garde du mot voisin (P2-282) : identifiants dictés abîmés précédés de « code » sans libellé ; rien corrigé | P2-282 | à faire |
+| P2-293 | mesure | IBAN en paires : sonde élargie aux séparateurs point, tiret, barre et aux confusions d'OCR ; coût des gardes de P2-288 ; rien corrigé | P2-288 | à faire |
+| P2-294 | code | Établissements en 60 colonnes : « IME La Source », « CH de Vesoul », « SSIAD de Gray » non couverts en entier sur le flou réaliste | P2-289 | à faire |
+| P2-295 | spec | « Type + mot générique » (« Résidence Autonomie », 2 063 / 200 000) : options chiffrées pour la décision du mainteneur | P2-289 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1537,4 +1542,63 @@ témoin de 480 documents de l'article (`comparatif.py --temoin`, ligne Écluse :
 **Fini quand** : tableau variante × (couverts, bornes exactes, à tort) avant /
 après P2-289, et le nouveau chiffre Écluse du témoin de 480 documents, pour
 l'article.
+
+### P2-291 — Signalements à tort suivis par le tableau de bord (code)
+
+P2-282 (#543) a ramené les signalements « nombre dicté non reconnu » à tort de 49
+à 0 (témoin durci, graine 42) et de 41 à 0 (témoin neuf, graine 43), mais
+`bench/etat.sh` n'a pas bougé : ces signalements ne sont pas suivis. Travail :
+lignes « signalements à tort » pour le témoin durci (630), le témoin neuf (630,
+graine 43, générateur versionné) et le témoin d'origine (300), par
+`Ecluse.redact`, dans `etat.sh`, `etat_attendu.py`, `etat_exemple.txt`, bloc
+d'`ETAT.md` régénéré par `controle_etat.py --propose`. **Fini quand** : lignes
+ajoutées, aucun chiffre existant ne change, `controle_etat.py` conforme, tests
+Python verts.
+
+### P2-292 — Coût réel de la garde du mot voisin (mesure)
+
+Réserve de P2-282 : son coût n'est pas mesurable, parce qu'aucun corpus ne place
+« code », « digicode », « mot de passe », « mdp » ou « pin » devant un
+identifiant. Travail : corpus synthétique (graine 42) d'identifiants dictés
+abîmés (mot perdu, clé fausse : mêmes familles que P2-274), précédés à 0 à 100
+caractères d'un mot voisin, avec et sans libellé d'identifiant dans la fenêtre ;
+mesurer par `Ecluse.redact` les identifiants passés sans masquage ni
+avertissement. Rapport dans `agent/specs/P2-292.md`. **Rien n'est corrigé.**
+**Fini quand** : tableau mot voisin × distance × (avec / sans libellé) des
+identifiants passés sans avertissement, et recommandation chiffrée (garder,
+raccourcir la fenêtre, retirer un mot).
+
+### P2-293 — IBAN en paires : sonde élargie (mesure)
+
+P2-288 (`agent/specs/P2-288.md`) a chiffré cinq gardes contre les 13 faux accords
+« FR + séparateur + 11 paires + 1 », mais sur une sonde à espaces seuls. Travail :
+élargir `bench/generate_sonde_gardes.py` (ou une sonde dédiée, graine 42) aux
+séparateurs point, tiret et barre, et aux corps avec confusions d'OCR (O/o, l/I),
+clé juste et clé fausse ; mesurer par `Ecluse.redact` le coût de chaque garde de
+P2-288 (IBAN perdus) et son gain (faux accords évités au témoin élargi de
+P2-279). Rapport dans `agent/specs/P2-293.md`. **Rien n'est corrigé.** **Fini
+quand** : tableau garde × écriture (perdus, évités) et recommandation chiffrée.
+
+### P2-294 — Établissements en 60 colonnes (code)
+
+Après P2-289, trois établissements du corpus flou réaliste coupé à 60 colonnes
+restent couverts en partie par `Ecluse.redact` (« IME La Source », « CH de
+Vesoul », « SSIAD de Gray », identiques avant et après P2-289). Travail : test
+qui montre chaque cas, puis correction (recollage de fin de ligne ou portée du
+nom d'établissement), sans changer les prédictions ailleurs. **Fini quand** :
+400 / 400 couverts en entier sur le réaliste à 60 colonnes ; prédictions
+identiques sur les autres corpus (`bench/equivalence_predictions.sh`) ;
+`controle_etat.py` conforme (bloc régénéré pour les seules lignes prévues).
+
+### P2-295 — « Type + mot générique » (spec)
+
+P2-285 et P2-289 : sur 200 000 documents sans personne, 2 063 voient masqué un
+établissement générique (« Résidence Autonomie », « Foyer d'accueil »…). La
+décision est au mainteneur. Travail : spec dans `agent/specs/P2-295.md`, avec au
+moins trois options chiffrées par mesure (laisser ; liste fermée de mots
+génériques ; exiger un nom propre après le type), chacune avec ses masquages à
+tort évités et ses établissements annotés perdus sur les corpus flou réaliste,
+adversarial et principal, et une recommandation. **Aucune ligne de code de
+production.** **Fini quand** : tableau option × (évités, perdus) et questions
+fermées pour le mainteneur.
 
