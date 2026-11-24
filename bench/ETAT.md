@@ -73,6 +73,24 @@ Les FP restants à 60 et 90 colonnes (7 et 3) sont des RPPS lus dans la fin d'un
 `## SIREN masqués comme FINESS` (42 / 42, 383 / 400, etc.) sont inchangés :
 `score_siren_finess.py` continue de mesurer les 42 SIREN, désormais annotés.
 
+## Signalement des identifiants dictés recouverts en partie (P2-281, 24 novembre 2026)
+
+Chemin mesuré : **`Ecluse.redact`** (ce que reçoit le LLM), par
+`bench/mesure_seuil_signalement.sh` au seuil 9 (inchangé). Défaut : une suite
+dictée touchée par une entité (souvent un `iban` posé sur le début d'un IBAN
+abîmé) était jugée traitée en entier ; le reste partait en clair sans
+avertissement. Correction : la suite n'est « recouverte » que si les entités
+couvrent toutes ses lettres (`_suitesNonReconnues`).
+
+| Identifiants dictés abîmés (2 420 par façon) | « rien » avant | « rien » après |
+|---|---:|---:|
+| mot perdu (NIR 6 / IBAN 3) → (NIR 4 / IBAN 0) | 9 | 4 |
+| clé fausse (NIR 1 / IBAN 6) → (NIR 0 / IBAN 0) | 7 | 0 |
+
+Masqués : inchangés (1 433 et 2 034). Témoin durci (630) : 0 masquée, 49
+signalées à tort avant et après ; témoin d'origine (300) : 0 / 0. Rien n'est
+masqué de plus ou de moins : seul l'avertissement change.
+
 ## Dictée : identifiants dits en lettres (P2-160)
 
 Corpus v3 (1 000 documents, 943 identifiants depuis le 23 novembre, 826 avant, 778 avant le 22) transcrits sans audio par
@@ -2477,13 +2495,13 @@ sonde nir cle_non_calculable nir_cle_fausse/une_lettre : couverts 39/39
 sonde TOTAL : couverts 820/820
 ## identifiants dictés abîmés (P2-274, P2-278) : Ecluse.redact (chemin du produit)
 # mot_perdu
-nir n= 1570 masqués= 769 (dont signalés 0) signalés seulement= 795 rien= 6
-iban n= 850 masqués= 664 (dont signalés 0) signalés seulement= 183 rien= 3
-TOTAL n= 2420 masqués= 1433 (dont signalés 0) signalés seulement= 978 rien= 9
+nir n= 1570 masqués= 769 (dont signalés 0) signalés seulement= 797 rien= 4
+iban n= 850 masqués= 664 (dont signalés 0) signalés seulement= 186 rien= 0
+TOTAL n= 2420 masqués= 1433 (dont signalés 0) signalés seulement= 983 rien= 4
 # cle_fausse
-nir n= 1570 masqués= 1253 (dont signalés 0) signalés seulement= 316 rien= 1
-iban n= 850 masqués= 781 (dont signalés 0) signalés seulement= 63 rien= 6
-TOTAL n= 2420 masqués= 2034 (dont signalés 0) signalés seulement= 379 rien= 7
+nir n= 1570 masqués= 1253 (dont signalés 0) signalés seulement= 317 rien= 0
+iban n= 850 masqués= 781 (dont signalés 0) signalés seulement= 69 rien= 0
+TOTAL n= 2420 masqués= 2034 (dont signalés 0) signalés seulement= 386 rien= 0
 ## flou (entités floues) et variantes de casse
 # realiste
 restaurations non identiques (harmonisation, LIMITES 5.3) : 0
