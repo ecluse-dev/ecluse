@@ -238,6 +238,26 @@ void main() {
     });
   });
 
+  group('le mot « code » n\'annonce pas un identifiant (P2-273)', () {
+    // Mesuré par P2-270 : avec « code » parmi les mots-clés de validation
+    // faible, un code d'accès dicté chiffre par chiffre est pris pour un
+    // FINESS ou un RPPS dès que sa clé tombe juste par hasard (un faux accord
+    // sur dix). Phrases ordinaires **synthétiques**, sans identifiant.
+    for (final t in [
+      'Le code du coffre est cinq un six cinq un sept zéro deux six.',
+      'Le code d\'accès de l\'alarme a changé, c\'est maintenant six quatre '
+          'huit cinq neuf six huit neuf sept zéro un.',
+      'Le code du digicode est quatre trois quatre cinq six cinq un sept '
+          'trois zéro neuf.',
+    ]) {
+      test(t, () async {
+        final r = await masque(t);
+        expect(r.entities, isEmpty);
+        expect(r.maskedText, t);
+      });
+    }
+  });
+
   group('jamais sur un mot isolé ni sur une suite courte', () {
     test('« un », « six », « cent » dans une phrase', () async {
       for (final t in [
