@@ -795,8 +795,58 @@ final class AdresseDetector implements EntityDetector {
       claimed.add(_Range(start, end));
     }
 
+    // Arrondissement de Paris, Lyon ou Marseille (P2-277) : « 69003 Lyon 3e ».
+    for (var i = 0; i < results.length; i++) {
+      final e = results[i];
+      if (e.type != EntityType.adresse) continue;
+      final fin = _finAvecArrondissement(text, e.end);
+      if (fin == e.end) continue;
+      results[i] = DetectedEntity(
+        type: e.type,
+        start: e.start,
+        end: fin,
+        value: text.substring(e.start, fin),
+        confidence: e.confidence,
+      );
+    }
+
     results.sort((a, b) => a.start - b.start);
     return results;
+  }
+
+  /// Nombre d'arrondissements des trois communes qui en ont, par nom en
+  /// minuscules.
+  static const Map<String, int> _arrondissements = {
+    'paris': 20,
+    'lyon': 9,
+    'marseille': 16,
+  };
+
+  /// Commune finale d'une adresse, puis numéro d'arrondissement : « 3e »,
+  /// « 1er », « 8ème » (suffixe), ou un nombre seul qui termine la phrase.
+  static final RegExp _communeFinale = RegExp(
+    r'(?:^|[\s\u00A0\u202F-])(paris|lyon|marseille)$',
+    caseSensitive: false,
+  );
+  static final RegExp _numeroArrondissement = RegExp(
+    r'[ \u00A0\u202F]?(\d{1,2})(?:(?:er|ère|e|ème|eme)(?![A-Za-zÀ-ÿ0-9])|'
+    r'(?=$|[.,;:!?)\n\r]))',
+  );
+
+  /// Fin de l'adresse prolongée du numéro d'arrondissement qui la suit, ou
+  /// [fin] si la commune n'en a pas, si le numéro dépasse le nombre
+  /// d'arrondissements de la ville, ou si c'est un nombre ordinaire (« Lyon 3
+  /// fois par an » : un nombre seul n'est pris que s'il clôt la phrase).
+  static int _finAvecArrondissement(String text, int fin) {
+    final avant = text.substring(fin > 40 ? fin - 40 : 0, fin);
+    final commune = _communeFinale.firstMatch(avant);
+    if (commune == null) return fin;
+    final m = _numeroArrondissement.matchAsPrefix(text, fin);
+    if (m == null) return fin;
+    final n = int.parse(m.group(1)!);
+    final max = _arrondissements[commune.group(1)!.toLowerCase()]!;
+    if (n < 1 || n > max) return fin;
+    return fin + m.group(0)!.length;
   }
 }
 

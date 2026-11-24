@@ -139,8 +139,22 @@ final class IbanCleInvalideDetector implements EntityDetector {
   /// l'IBAN accepte déjà les lettres. Coût : une suite `FR` + `o` + 24
   /// caractères alphanumériques qui n'est pas un IBAN (référence, code) est
   /// masquée à confiance 0,3, jamais une fuite.
+  ///
+  /// **Paires (P2-277).** Un séparateur peut suivre « FR » quand l'IBAN est
+  /// écrit en paires de chiffres (« FR 07 76 41 … ») : la sonde de P2-272 ne
+  /// couvrait aucun des 40 cas. La forme est **strictement** celle-là : clé en
+  /// chiffres, onze paires, un dernier caractère, un séparateur (espace, tiret,
+  /// point ou barre) entre chaque groupe. Une version plus large (n'importe quel groupement derrière
+  /// « FR » + séparateur) masquait 9 codes de pièce de plus au témoin durci de
+  /// P2-268 (14 → 23 documents à tort). Un IBAN dont la clé est **juste**,
+  /// écrit ainsi, reste hors de ce détecteur (voir plus bas).
   static final RegExp _candidate = RegExp(
     r'(?<![A-Za-z0-9])[Ff][Rr][0-9Oo]{2}(?:[ \-./]?[0-9A-Za-z]){23}(?![0-9A-Za-z])',
+  );
+
+  static final RegExp _candidatePaires = RegExp(
+    r'(?<![A-Za-z0-9])[Ff][Rr][ \-./][0-9]{2}(?:[ \-./][0-9A-Za-z]{2}){11}'
+    r'[ \-./][0-9A-Za-z](?![0-9A-Za-z])',
   );
 
   static final RegExp _cleEnChiffres = RegExp(r'^FR[0-9]{2}');
@@ -149,13 +163,18 @@ final class IbanCleInvalideDetector implements EntityDetector {
   List<DetectedEntity> detect(String text) {
     final compaction = DigitCompaction(text);
     final results = <DetectedEntity>[];
-    for (final match in compaction.candidates(_candidate)) {
+    for (final match in [
+      ...compaction.candidates(_candidate),
+      ...compaction.candidates(_candidatePaires),
+    ]) {
       final normalized =
           match.text.replaceAll(IbanFrDetector._separators, '').toUpperCase();
       // Un IBAN valide est émis par IbanFrDetector, à condition que sa clé
       // soit faite de chiffres : avec un « o » dans la clé il ne l'est jamais,
       // et « O » vaudrait 24 au calcul mod 97, sans signification ici.
       final cleChiffres = _cleEnChiffres.hasMatch(normalized);
+      // (Écrit avec un séparateur après « FR », un IBAN valide n'est pas non
+      // plus émis par IbanFrDetector : trou mesuré, hors de P2-277.)
       if (cleChiffres && IbanFrDetector._isValidIban(normalized)) continue;
       results.add(
         DetectedEntity(
