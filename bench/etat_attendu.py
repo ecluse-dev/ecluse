@@ -41,11 +41,19 @@ ATTENDU = [
         (r"^témoin mots-nombres : \d+ prédictions sur \d+ phrases$", 1,
          "témoin mots-nombres"),
     ]),
+    ("## mots-nombres durci", [
+        (r"^mots-nombres durci : \d+ prédictions sur \d+ phrases$", 1,
+         "témoin mots-nombres durci (P2-270, P2-275)"),
+    ]),
     ("## fuite par OCR", [
         (r"^TOTAL (nir|rpps|iban|finess|siren) +(libelle|sans_libelle) ", 10,
          "5 types, avec et sans libellé (P2-264, P2-268)"),
         (r"^témoin négatif (temoin|temoin_dur) : \d+ / \d+ documents", 2,
          "témoin d'origine et témoin durci"),
+    ]),
+    ("## OCR derrière un libellé", [
+        (r"^TOTAL (nir|rpps|iban) +libelle_cle_fausse ", 3,
+         "NIR, RPPS, IBAN à clé fausse derrière un libellé (P2-275)"),
     ]),
     ("## flou", [
         (r"^# \w+$", 13, "13 corpus flous"),

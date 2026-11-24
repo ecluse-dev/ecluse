@@ -76,7 +76,13 @@ void main() {
 
     test('libellé seul, ou suite qui n\'est pas un identifiant : rien', () {
       expect(detecteur.detect('RPPS : non communiqué'), isEmpty);
-      expect(detecteur.detect('RPPS : 1139O996O39'), isEmpty); // Luhn faux
+      // Luhn faux derrière « RPPS » : depuis P2-275, masqué quand même comme un
+      // RPPS à clé invalide (confiance 0,3, sans `Provenance.lectureOcr`, donc
+      // avec l'avertissement « clé invalide ») ; avant, rien à ce niveau, et
+      // `IdentifiantCleInvalideDetector` ne couvrait que les séparateurs simples.
+      final rppsFaux = detecteur.detect('RPPS : 1139O996O39');
+      expect(rppsFaux, hasLength(1));
+      expect(rppsFaux.single.provenance, isNull);
       expect(detecteur.detect('SIREN : l94821998'), isEmpty);
     });
 
