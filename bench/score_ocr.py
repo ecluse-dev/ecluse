@@ -66,10 +66,12 @@ def main():
               f"{entiers[cle]:4}/{n[cle]:<4} {100 * perdus[cle] / chars[cle]:9.1f} %")
         tot[(t, pr)] += n[cle]
     print()
-    for pr in ("libelle", "sans_libelle"):
+    for pr in ("libelle", "sans_libelle", "libelle_cle_fausse"):
         for t in ("nir", "rpps", "iban", "finess", "siren"):
             ks = [k for k in n if k[0] == t and k[2] == pr]
             nn = sum(n[k] for k in ks)
+            if nn == 0:  # présentation absente de ce corpus (P2-275)
+                continue
             cc = sum(entiers[k] for k in ks)
             ch = sum(chars[k] for k in ks)
             pp = sum(perdus[k] for k in ks)

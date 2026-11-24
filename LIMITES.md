@@ -496,13 +496,21 @@ dont les détecteurs restent stricts.
 
 **Mesuré** (graine 42, synthétique, par `Ecluse.redact`, 120 documents par
 type et par présentation) : fuite au caractère de 0,0 % pour les cinq types avec
-libellé ; sans libellé, NIR 3,3 % (les 4 documents non couverts sont des NIR
-corses), IBAN 0,0 %, RPPS 98,8 %, FINESS 100 %, SIREN 99,1 % (inchangés, voulu).
+libellé ; sans libellé, NIR 0,0 % depuis P2-275 (3,3 % avant : les 4 documents
+non couverts étaient des NIR corses, « 2A »/« 2B » désormais relus, clé calculée
+comme `NirDetector`), IBAN 0,0 %, RPPS 98,8 %, FINESS 100 %, SIREN 99,1 %
+(inchangés, voulu). **Clé fausse derrière un libellé (P2-275)** : un NIR, un RPPS
+ou un IBAN lu avec des lettres d'OCR, dont la clé reste fausse une fois relu, écrit
+avec des séparateurs multiples (360 documents synthétiques, graine 42, par
+`Ecluse.redact`) : couverts NIR 20 → 120 / 120, RPPS 0 → 120 / 120, IBAN 63 →
+120 / 120, avec l'avertissement « identifiant à clé invalide masqué : à vérifier »
+(confiance 0,3). FINESS et SIREN gardent « clé juste ou rien » ; ADELI suit la règle
+du NIR et du RPPS. Aucun masquage à tort nouveau : témoin d'origine 0 / 400, témoin
+durci 14 / 450 (les mêmes 14).
 
-**Pas couvert** : le NIR corse (« 2A »/« 2B ») lu avec une lettre d'OCR, sans
-libellé ; un libellé derrière lequel la clé reste fausse une fois relue et dont
-les séparateurs sont multiples (le détecteur de P2-188 ne couvre que les
-séparateurs simples) ; toute autre confusion que O/o/l/I ; un identifiant faible
+**Pas couvert** : un NIR corse relu derrière un libellé avec une clé fausse n'est
+pas mesuré à part (un cas du banc, couvert) ; un libellé derrière lequel l'identifiant
+est de longueur fausse après relecture ; toute autre confusion que O/o/l/I ; un identifiant faible
 sans libellé ; un IBAN dont une lettre légitime du corps est elle-même un « O »
 ou un « I » et dont une autre lettre est mal lue. **Faux accords** : le témoin
 durci (450 documents de suites ordinaires denses en O/l/I, dont 24 % de longueur
