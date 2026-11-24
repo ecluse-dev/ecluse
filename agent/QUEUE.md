@@ -355,8 +355,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-285 | mesure | Établissement masqué dans des phrases sans personne (3,98 % sur 200 000 : « SSIAD à Angers ») : décompte par forme, rien corrigé | P2-279 | fusionnée |
 | P2-286 | code | Démo `ecluse_demo` : encart « ce que disent les mesures » (chiffres de l'article v2, avec leurs réserves) et troisième exemple « note de liaison » (NIR à clé fausse, IBAN aux espacements irréguliers, sigles sans personne) | — | fusionnée |
 | P2-287 | mesure | Rapport de risque : un mot courant en tête de phrase lu comme commune (« Son numéro… » → lieu « Son », F = 89) ; décompte sur les corpus, rien corrigé | — | fusionnée |
-| P2-288 | mesure | Faux accords IBAN à clé fausse 89 → 102 sur le témoin élargi de P2-279 : rejouer avant et après P2-277 et P2-283, cause par gabarit ; rien corrigé | P2-284 | à faire |
-| P2-289 | code | Établissements : la classe `[A-ZÀ-Ÿ]` contient les minuscules accentuées, « à » est absorbé (« CHU à Lille ») ; majuscules seulement (mesure P2-285 : 5 902 → 0) | P2-285 | PR ouverte |
+| P2-288 | mesure | Faux accords IBAN à clé fausse 89 → 102 sur le témoin élargi de P2-279 : rejouer avant et après P2-277 et P2-283, cause par gabarit ; rien corrigé | P2-284 | fusionnée |
+| P2-289 | code | Établissements : la classe `[A-ZÀ-Ÿ]` contient les minuscules accentuées, « à » est absorbé (« CHU à Lille ») ; majuscules seulement (mesure P2-285 : 5 902 → 0) | P2-285 | fusionnée |
 | P2-290 | mesure | Détecteur d'établissements corrigé (P2-289) sur les variantes de casse et de mise en page du corpus flou ; rien corrigé | P2-289 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
