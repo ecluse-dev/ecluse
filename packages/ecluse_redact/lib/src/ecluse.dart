@@ -325,7 +325,10 @@ abstract final class Ecluse {
     });
     final surLeTexteEtDictees = dictees.isEmpty
         ? surLeTexte
-        : resolveOverlaps([...surLeTexte, ...dictees]);
+        : resolveOverlaps([
+            ..._etablissementsRognesParDictees(surLeTexte, dictees, text),
+            ...dictees
+          ]);
     // P2-188 : identifiant à clé invalide annoncé par un libellé fort, sur
     // [text] directement — jamais sur [vue] (voir le commentaire de
     // `defaultDetectors`).
@@ -360,6 +363,63 @@ abstract final class Ecluse {
           cleInvalide);
     }
     return _avecCleInvalide(surLeTexteEtDictees, cleInvalide);
+  }
+
+  /// P2-271 : un nom d'établissement qui chevauche un identifiant **dicté**
+  /// validé (seconde vue de P2-267) est rogné autour de lui. Sans cela, le nom
+  /// d'établissement, plus long (« établissement ch de metz finess » avale les
+  /// premiers mots-nombres du numéro), l'emportait au tri des chevauchements et
+  /// laissait la fin du FINESS dicté en clair (6 à 9 sur 129 selon la variante).
+  /// Les deux étendues sont gardées : l'établissement avant (et après) le
+  /// numéro, le numéro en entier. Sans identifiant dicté, cette fonction n'est
+  /// jamais appelée : le texte sans mot-nombre garde exactement son résultat.
+  static List<DetectedEntity> _etablissementsRognesParDictees(
+    List<DetectedEntity> base,
+    List<DetectedEntity> dictees,
+    String text,
+  ) {
+    final sortie = <DetectedEntity>[];
+    for (final e in base) {
+      if (e.type != EntityType.etablissement) {
+        sortie.add(e);
+        continue;
+      }
+      var segments = <(int, int)>[(e.start, e.end)];
+      var touche = false;
+      for (final d in dictees) {
+        if (d.start >= e.end || d.end <= e.start) continue;
+        touche = true;
+        segments = [
+          for (final (a, b) in segments) ...[
+            if (a < d.start) (a, b < d.start ? b : d.start),
+            if (b > d.end) (a > d.end ? a : d.end, b),
+          ],
+        ];
+      }
+      if (!touche) {
+        sortie.add(e);
+        continue;
+      }
+      for (var (a, b) in segments) {
+        while (a < b && text[a].trim().isEmpty) {
+          a++;
+        }
+        while (b > a && text[b - 1].trim().isEmpty) {
+          b--;
+        }
+        if (a >= b) continue;
+        sortie.add(DetectedEntity(
+          type: e.type,
+          start: a,
+          end: b,
+          value: text.substring(a, b),
+          confidence: e.confidence,
+          tier: e.tier,
+          provenance: e.provenance,
+        ));
+      }
+    }
+    return sortie;
   }
 
   static List<DetectedEntity> _avecCleInvalide(
