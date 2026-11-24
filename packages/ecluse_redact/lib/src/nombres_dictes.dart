@@ -695,9 +695,15 @@ Future<List<DetectedEntity>> _lireFenetre(
 }
 
 /// Positions de départ des suites d'au moins [_kSuiteNonReconnue]
-/// mots-nombres qu'aucune entité de [entites] ne recouvre : « nombre dicté non
-/// reconnu ». Ne renvoie que des positions, jamais de texte (point 4 des
-/// décisions du 23 novembre).
+/// mots-nombres qu'aucune entité de [entites] ne recouvre **en entier** :
+/// « nombre dicté non reconnu ». Ne renvoie que des positions, jamais de texte
+/// (point 4 des décisions du 23 novembre).
+///
+/// P2-281 : une entité qui ne recouvre qu'une partie de la suite (par exemple
+/// un `iban` posé sur le début d'un IBAN dicté abîmé) ne dispense pas du
+/// signalement : le reste de la suite part en clair. Seules comptent les
+/// lettres non recouvertes : un séparateur laissé entre deux entités
+/// contiguës (espace, trait d'union) n'est pas un passage non lu.
 List<int> _suitesNonReconnues(String text, List<DetectedEntity> entites) {
   final suites = _suitesDeMotsNombres(text,
       kMin: _kSuiteNonReconnue, kMotCle: _kSuiteNonReconnue);
@@ -708,8 +714,29 @@ List<int> _suitesNonReconnues(String text, List<DetectedEntity> entites) {
     while (k < entites.length && entites[k].end <= s.debut) {
       k++;
     }
-    final recouvert = k < entites.length && entites[k].start < s.fin;
-    if (!recouvert) r.add(s.debut);
+    // Les entités sont triées par début et disjointes (résolues) : on marche
+    // de s.debut à s.fin en cherchant une lettre qu'aucune ne recouvre.
+    var pos = s.debut;
+    var nonLu = false;
+    var i = k;
+    while (pos < s.fin && !nonLu) {
+      if (i < entites.length && entites[i].start <= pos) {
+        if (entites[i].end > pos) pos = entites[i].end;
+        i++;
+        continue;
+      }
+      final limite = i < entites.length && entites[i].start < s.fin
+          ? entites[i].start
+          : s.fin;
+      if (_contientLettre(text, pos, limite)) nonLu = true;
+      pos = limite;
+    }
+    if (nonLu) r.add(s.debut);
   }
   return r;
 }
+
+final RegExp _lettre = RegExp(r'\p{L}', unicode: true);
+
+bool _contientLettre(String text, int debut, int fin) =>
+    _lettre.hasMatch(text.substring(debut, fin));
