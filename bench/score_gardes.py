@@ -53,6 +53,9 @@ def main():
     ap.add_argument("--sous-ensemble", default=None)
     ap.add_argument("--par", default=None,
                     help="champs du corpus ajoutés à la clé, séparés par des virgules")
+    ap.add_argument("--lignes", action="store_true",
+                    help="une ligne lisible par clé (tableau de bord, P2-278) "
+                         "au lieu du JSON")
     a = ap.parse_args()
     corpus = [json.loads(l) for l in open(a.corpus, encoding="utf-8")]
     pred = {}
@@ -89,6 +92,17 @@ def main():
             tot[k] += 1
             if couvert(e["start"], e["end"], inter):
                 pos[k] += 1
+    if a.lignes:
+        # Une ligne par clé : « sonde <type> <clé> <écriture> : couverts a/b ».
+        for k in sorted(tot):
+            type_, cle, sep = k.split("|", 2)
+            print(f"sonde {type_} {cle or 'cle_non_calculable'} {sep} : "
+                  f"couverts {pos[k]}/{tot[k]}")
+        print(f"sonde TOTAL : couverts {sum(pos.values())}/{sum(tot.values())}")
+        if n_neg:
+            print(f"sonde témoins : {neg_docs} / {n_neg} documents avec une "
+                  f"prédiction")
+        return
     print(json.dumps({"positifs": {k: [pos[k], tot[k]] for k in sorted(tot)},
                       "negatifs": {"documents": n_neg, "avec_prediction": neg_docs,
                                    "types": dict(neg_types)}},
