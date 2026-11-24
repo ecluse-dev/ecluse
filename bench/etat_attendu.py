@@ -55,6 +55,17 @@ ATTENDU = [
         (r"^TOTAL (nir|rpps|iban) +libelle_cle_fausse ", 3,
          "NIR, RPPS, IBAN à clé fausse derrière un libellé (P2-275)"),
     ]),
+    ("## sonde des gardes", [
+        (r"^sonde (adresse|finess|iban|nir) \S+ .+ : couverts \d+/\d+$", 26,
+         "identifiants de la sonde, par type, clé et écriture (P2-278)"),
+        (r"^sonde TOTAL : couverts \d+/\d+$", 1, "total de la sonde"),
+    ]),
+    ("## identifiants dictés abîmés", [
+        (r"^# (mot_perdu|cle_fausse)$", 2, "deux abîmements (P2-274, P2-278)"),
+        (r"^(nir|iban|TOTAL) +n= *\d+ +masqués= *\d+ \(dont signalés +\d+\) +"
+         r"signalés seulement= *\d+ +rien= *\d+$", 6,
+         "NIR, IBAN et total, pour chaque abîmement"),
+    ]),
     ("## flou", [
         (r"^# \w+$", 13, "13 corpus flous"),
         (r"^  restaurations non identiques .* : \d+$", 13,
