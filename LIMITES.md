@@ -554,8 +554,13 @@ pire 1,1 % par type (FINESS). Voir `bench/ETAT.md`.
   est signalée « nombre dicté non reconnu, relire avant envoi » (positions et compte,
   jamais de valeur) ; ce n'est pas un masquage. Une phrase ordinaire dense en
   nombres (dates, montants) peut déclencher ce signalement : voir le témoin.
-- **Un FINESS dicté peut rester en partie en clair** (jusqu'à 17 caractères sur 9
-  chiffres dits) quand un nom d'établissement détecté juste avant l'emporte au tri.
+- **FINESS dicté derrière un nom d'établissement (P2-271)** : le nom d'établissement
+  qui chevauche un identifiant dicté validé est rogné autour de lui, les deux
+  étendues sont gardées (avant P2-271, 6 à 9 FINESS sur 129 restaient en partie en
+  clair, jusqu'à 17 caractères). Mesuré par `Ecluse.redact` : 129 / 129 couverts en
+  entier sur chacune des cinq variantes dictées. Seul le nom d'établissement est
+  rogné ; un autre type qui chevaucherait un identifiant dicté (adresse, nom)
+  garde la règle du plus long.
 - **Coût** : linéaire ; pour des centaines de milliers de caractères de mots-nombres
   sans identifiant, compter quelques secondes (la suite est lue par fenêtres de 240
   mots et un budget de lectures borné).
