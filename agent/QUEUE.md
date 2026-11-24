@@ -348,7 +348,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-278 | code | Tableau de bord : sonde de P2-272 et identifiants dictés abîmés de P2-274 suivis par `etat.sh` | P2-272, P2-274 | fusionnée |
 | P2-279 | mesure | Faux accords par détecteur sur un témoin durci élargi (≥ 5 000 documents) et sur 200 000 documents sans identifiant, avec intervalle ; rien corrigé | P2-272 | fusionnée |
 | P2-280 | mesure | Signalement « nombre dicté non reconnu » : critères autres que le nombre de mots (mot voisin « code », « digicode »…) ; rien corrigé | P2-274 | fusionnée |
-| P2-281 | code | Régression de P2-275 : 5 IBAN dictés abîmés, recouverts en partie par une entité, ne sont plus signalés « nombre dicté non reconnu » | P2-275 | à faire |
+| P2-281 | code | Régression de P2-275 : 5 IBAN dictés abîmés, recouverts en partie par une entité, ne sont plus signalés « nombre dicté non reconnu » | P2-275 | PR ouverte |
 | P2-282 | code | Signalement de la dictée coupé par un mot voisin (« code », « digicode », « mot de passe ») à 100 caractères, levé par un libellé d'identifiant (mesure P2-280 : 49 → 0 à tort) | P2-281 | à faire |
 | P2-283 | code | IBAN de clé juste écrit en paires après « FR » (`FR 24 30 00 …`) : mesure à la sonde puis correction d'`IbanFrDetector` | P2-277 | à faire |
 | P2-284 | code | Tableau de bord : faux accords par détecteur de P2-279 (5 000 + 5 600 documents) suivis par `etat.sh` | P2-279 | à faire |
