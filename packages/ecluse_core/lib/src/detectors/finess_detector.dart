@@ -152,7 +152,7 @@ final class FinessDetector implements Detector {
   /// chiffres et confusions d'OCR (o, O, l, I) dont au moins une lettre, collé
   /// à la suite d'un FINESS sans contexte (P2-276).
   static final RegExp _suiteAbimee = RegExp(
-    r'^[\s\u00A0\u202F.\-/]?(?=[0-9oOlI]{0,2}[oOlI])[0-9oOlI]{1,3}'
+    r'[\s\u00A0\u202F.\-/]?(?=[0-9oOlI]{0,2}[oOlI])[0-9oOlI]{1,3}'
     r'(?![0-9A-Za-z])',
   );
 
@@ -177,7 +177,9 @@ final class FinessDetector implements Detector {
       // Sans contexte, neuf chiffres suivis d'un groupe court à lettre de
       // confusion d'OCR (« 697 296 556 I1 ») sont un identifiant plus long
       // (P2-276). Avec contexte ou mot SIREN, la suite ne compte pas.
-      if (!hasContext && !siren && _suiteAbimee.hasMatch(raw.substring(end))) {
+      if (!hasContext &&
+          !siren &&
+          _suiteAbimee.matchAsPrefix(raw, end) != null) {
         continue;
       }
       results.add(
