@@ -163,7 +163,7 @@ const Set<String> _liaisonsEnCapitales = {
 // casse de titre), pour ne recoller que ce que le détecteur saura lire.
 
 const String _connecteur = '(?:de|du|des|le|la|les|sur|en|aux|au)';
-const String _mot = "[A-ZÀ-Ÿ][\\wÀ-ÿ'’\\-]*";
+const String _mot = "[A-ZÀ-ÖØ-ÞŒ][\\wÀ-ÿ'’\\-]*";
 const String _segment = "(?:(?:$_connecteur[ \\t]+|[dl]['’]))?$_mot";
 
 String _alternative(Iterable<String> motsCles) =>
@@ -185,12 +185,12 @@ final RegExp _etablissementPuisLiaison = RegExp(
 
 final RegExp _debutMot = RegExp('^$_mot');
 final RegExp _liaisonPuisMot = RegExp("^(?:$_connecteur[ \\t]+|[dl]['’])$_mot");
-final RegExp _premierMot = RegExp('^[A-ZÀ-Ÿ][\\wÀ-ÿ\\-]*');
+final RegExp _premierMot = RegExp('^[A-ZÀ-ÖØ-ÞŒ][\\wÀ-ÿ\\-]*');
 final RegExp _articlePuisNomPropre = RegExp('^(?:Le|La|Les)[ \\t]+$_mot');
 
 /// « Contact : », « Tél. : » : une étiquette de champ en tête de ligne n'est
 /// pas la suite d'un nom.
-final RegExp _etiquette = RegExp("^[A-ZÀ-Ÿ][\\wÀ-ÿ'’. \\-]{0,30}:");
+final RegExp _etiquette = RegExp("^[A-ZÀ-ÖØ-ÞŒ][\\wÀ-ÿ'’. \\-]{0,30}:");
 
 const Set<String> _articles = {'Le', 'La', 'Les'};
 
