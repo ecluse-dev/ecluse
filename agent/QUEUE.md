@@ -353,6 +353,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-283 | code | IBAN de clé juste écrit en paires après « FR » (`FR 24 30 00 …`) : mesure à la sonde puis correction d'`IbanFrDetector` | P2-277 | à faire |
 | P2-284 | code | Tableau de bord : faux accords par détecteur de P2-279 (5 000 + 5 600 documents) suivis par `etat.sh` | P2-279 | à faire |
 | P2-285 | mesure | Établissement masqué dans des phrases sans personne (3,98 % sur 200 000 : « SSIAD à Angers ») : décompte par forme, rien corrigé | P2-279 | à faire |
+| P2-286 | code | Démo `ecluse_demo` : encart « ce que disent les mesures » (chiffres de l'article v2, avec leurs réserves) et troisième exemple « note de liaison » (NIR à clé fausse, IBAN aux espacements irréguliers, sigles sans personne) | — | à faire |
+| P2-287 | mesure | Rapport de risque : un mot courant en tête de phrase lu comme commune (« Son numéro… » → lieu « Son », F = 89) ; décompte sur les corpus, rien corrigé | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1456,3 +1458,37 @@ corrigé.** **Fini quand** : tableau forme × taux ; pour chaque forme, garder,
 restreindre ou signaler, avec ce que chaque choix coûterait en établissements
 nommés manqués sur les corpus annotés.
 
+### P2-286 — Démo : chiffres des mesures et exemple « pièges » (code)
+
+La démo locale (`packages/ecluse_demo`) montre le trajet en quatre panneaux mais
+aucun chiffre de mesure. Travail : (1) un encart statique sous les panneaux,
+trois barres : identifiants entièrement masqués sur 200 000 documents (Écluse
+100 %, Presidio 16,7 %), données personnelles couvertes sur 397 entités
+(Écluse 100 %, Presidio fr 70 %, Presidio par défaut 53 %, EDS-Pseudo 52 %,
+spaCy 47 %), documents sans donnée personnelle masqués à tort sur 480 (Écluse
+3 %, EDS-Pseudo 54 %, Presidio par défaut 93 %, Presidio fr 95 %, spaCy
+100 %), chacune avec sa réserve (corpus du projet, petits échantillons) et la
+date de mesure ; les chiffres viennent de `bench/COMPARATIF.md` et de l'article,
+pas d'une saisie libre. (2) Un exemple de plus dans
+`ecluse_redact/lib/src/samples.dart`, entièrement fictif : note de liaison
+avec un NIR à clé fausse (avertissement « à vérifier » attendu), un IBAN écrit
+avec espaces multiples, insécable et tabulation, et des phrases sans personne
+(salle, page, article de loi, sigles CHU, CPAM, HAD) ; bouton de chargement
+dans `web/index.html`. (3) Les réponses de démonstration ne s'affichent pas en
+markdown brut : `**gras**` du LLM rendu ou retiré à l'affichage.
+**Fini quand** : encart et exemple visibles ; test du nouvel exemple (5 entités,
+avertissement de clé, 0 masquage dans les deux dernières phrases) ; tests de la
+démo verts ; aucun nom de structure réelle.
+
+### P2-287 — Mot courant lu comme commune dans le rapport de risque (mesure)
+
+Constaté le 24 novembre sur un texte fictif passé par la démo : « Son numéro de
+sécurité sociale… » en tête de phrase donne un quasi-identifiant `lieu` « Son »
+(commune homonyme), F = 89, et le rapport l'affiche. Travail : vérifier si
+`LIMITES.md` ou P1-31 couvrent déjà ce cas ; compter, sur les corpus du dépôt et
+le témoin sans donnée personnelle, les QI `lieu` qui sont des mots outils ou
+courants en tête de phrase (« Son », « Sept », « Bourg »…), avec exemples
+synthétiques. Rapport dans `agent/specs/P2-287.md`. **Rien n'est corrigé.**
+**Fini quand** : tableau mot × occurrences × effet sur la bande de risque ;
+recommandation chiffrée (liste d'exclusion, exigence d'une préposition « à »,
+« de », ou statu quo).
