@@ -280,6 +280,14 @@ final class NirCleInvalideDetector implements EntityDetector {
     return false;
   }
 
+  /// Séparateur puis groupe de un à quatre caractères parmi chiffres et
+  /// confusions d'OCR (o, O, l, I), dont au moins une lettre, collé à la suite
+  /// d'un candidat (P2-276). Mesuré sur `Ecluse.redact` : 1 masquage à tort du
+  /// témoin durci de P2-268 en moins, 0 identifiant perdu sur v3, libellé fort,
+  /// OCR, la sonde et 200 000 documents.
+  static final RegExp _suiteAbimee =
+      RegExp(r'^[ .\-/](?=[0-9oOlI]{0,3}[oOlI])[0-9oOlI]{1,4}(?![0-9A-Za-z])');
+
   @override
   List<DetectedEntity> detect(String text) {
     final compaction = DigitCompaction(text);
@@ -306,6 +314,11 @@ final class NirCleInvalideDetector implements EntityDetector {
       // Clé juste : celui de NirDetector s'il est tout en chiffres ; avec des
       // lettres « O », jamais masqué sans libellé (`LIMITES.md` § 2).
       if (NirDetector._cleJuste(normalise)) continue;
+      // Suite abîmée (P2-276) : un groupe court collé à la suite, qui porte
+      // une lettre de confusion d'OCR (« 19226.71o31.753o6.26I »), montre un
+      // numéro de pièce plus long, pas un NIR coupé. Une suite faite de
+      // chiffres seuls (« … 12 pièces ») ne compte pas : le NIR reste masqué.
+      if (_suiteAbimee.hasMatch(text.substring(match.end))) continue;
       results.add(
         DetectedEntity(
           type: EntityType.nir,

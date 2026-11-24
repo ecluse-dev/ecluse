@@ -2442,7 +2442,7 @@ TOTAL iban sans_libelle couverts 120/120 fuite 0.0 %
 TOTAL finess sans_libelle couverts 0/120 fuite 100.0 %
 TOTAL siren sans_libelle couverts 0/120 fuite 99.1 %
 témoin négatif temoin : 0 / 400 documents avec une prédiction (aucun type)
-témoin négatif temoin_dur : 14 / 450 documents avec une prédiction (adresse 2, finess 1, iban 10, nir 1)
+témoin négatif temoin_dur : 10 / 450 documents avec une prédiction (iban 10)
 ## OCR derrière un libellé, clé fausse (P2-275) : Ecluse.redact (chemin du produit)
 TOTAL nir libelle_cle_fausse couverts 120/120 fuite 0.0 %
 TOTAL rpps libelle_cle_fausse couverts 120/120 fuite 0.0 %
@@ -3037,7 +3037,7 @@ separateur=virgule : 0 / 1600 en défaut, 0 non couvert(s)
 défaut : finess lu « rpps », nombre, espace : 1
 défaut : rpps lu « nir », nombre, ligne : 1
 ## identifiant derrière un libellé fort (P2-194) : Ecluse.redact (chemin du produit)
-libellé fort : 2000 identifiants positifs, 0 en clair, 0 au type faux ; 1000 documents témoins, 3 masqués à tort (3 prédiction(s))
+libellé fort : 2000 identifiants positifs, 0 en clair, 0 au type faux ; 1000 documents témoins, 2 masqués à tort (2 prédiction(s))
 variante=cle_juste : 0 / 300 en clair, 0 au type faux
 variante=cle_fausse : 0 / 300 en clair, 0 au type faux
 variante=ocr_zero : 0 / 300 en clair, 0 au type faux
@@ -3092,12 +3092,12 @@ sans libellé x cle_fausse_sans_libelle : 0 / 200 en clair, 0 au type faux
 témoin négatif=libelle_seul : 0 / 300 masqués à tort (0 prédiction(s))
 témoin négatif=non_communique : 0 / 300 masqués à tort (0 prédiction(s))
 témoin négatif=mot_ordinaire : 0 / 300 masqués à tort (0 prédiction(s))
-témoin négatif=nombre_sans_libelle : 3 / 100 masqués à tort (3 prédiction(s))
+témoin négatif=nombre_sans_libelle : 2 / 100 masqués à tort (2 prédiction(s))
 témoin négatif, libellé=NIR : 0 / 150 masqués à tort
 témoin négatif, libellé=N° de sécurité sociale : 0 / 150 masqués à tort
 témoin négatif, libellé=numéro SS : 0 / 150 masqués à tort
 témoin négatif, libellé=IBAN : 0 / 150 masqués à tort
-témoin négatif, libellé=RPPS : 2 / 200 masqués à tort
+témoin négatif, libellé=RPPS : 1 / 200 masqués à tort
 témoin négatif, libellé=ADELI : 1 / 200 masqués à tort
 confiance des masquages (chemin : Ecluse.redact) :
 confiance positifs : 0.3=1649, 0.6=50, 0.9=50, 0.95=50, 1=201
@@ -3108,7 +3108,7 @@ confiance variante=ocr_un : 0.3=300
 confiance variante=ligne_vide : 0.3=300
 confiance variante=ocr_et_ligne_vide : 0.3=300
 confiance variante=cle_fausse_sans_libelle : 0.3=199, 1=1
-confiance détections des négatifs : 0.55=3
+confiance détections des négatifs : 0.55=2
 avertissement à vérifier : positifs 1699 / 2000, négatifs 0 / 1000
 à vérifier variante=cle_juste : 0 / 300
 à vérifier variante=cle_fausse : 300 / 300

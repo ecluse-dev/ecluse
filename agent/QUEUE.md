@@ -343,7 +343,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-273 | code | Nombres dictés : retirer « code » des mots-clés de validation faible (3 → 0 masquage à tort sur le témoin durci de P2-270, aucun effet mesuré sur les variantes dictées) | P2-270 | fusionnée |
 | P2-274 | mesure | Nombres dictés : seuil du signalement « non reconnu » (9, 11, 13 mots) : signalements à tort sur le témoin durci contre identifiants dictés non validés signalés ; rien corrigé | P2-270 | fusionnée |
 | P2-275 | code | OCR : trous restants de P2-268 (NIR corse « 2A »/« 2B » relu sans libellé, libellé + clé fausse + séparateurs multiples) et témoin durci des mots-nombres dans `etat.sh` | P2-268 | fusionnée |
-| P2-276 | code | Gardes à coût nul de P2-272 : `nir_suitelettre`, `finess_suitelettre`, `adr_confusables` (pas `iban_g45`, qui attend le mainteneur) | P2-272 | à faire |
+| P2-276 | code | Gardes à coût nul de P2-272 : `nir_suitelettre`, `finess_suitelettre`, `adr_confusables` (pas `iban_g45`, qui attend le mainteneur) | P2-272 | PR ouverte |
 | P2-277 | code | IBAN à clé fausse écrit en paires (0 / 40 à la sonde) et adresse « code postal + commune avec arrondissement » (0 / 140) | P2-272 | à faire |
 | P2-278 | code | Tableau de bord : sonde de P2-272 et identifiants dictés abîmés de P2-274 suivis par `etat.sh` | P2-272, P2-274 | à faire |
 | P2-279 | mesure | Faux accords par détecteur sur un témoin durci élargi (≥ 5 000 documents) et sur 200 000 documents sans identifiant, avec intervalle ; rien corrigé | P2-272 | à faire |
