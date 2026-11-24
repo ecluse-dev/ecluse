@@ -348,6 +348,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-278 | code | Tableau de bord : sonde de P2-272 et identifiants dictés abîmés de P2-274 suivis par `etat.sh` | P2-272, P2-274 | fusionnée |
 | P2-279 | mesure | Faux accords par détecteur sur un témoin durci élargi (≥ 5 000 documents) et sur 200 000 documents sans identifiant, avec intervalle ; rien corrigé | P2-272 | fusionnée |
 | P2-280 | mesure | Signalement « nombre dicté non reconnu » : critères autres que le nombre de mots (mot voisin « code », « digicode »…) ; rien corrigé | P2-274 | fusionnée |
+| P2-281 | code | Régression de P2-275 : 5 IBAN dictés abîmés, recouverts en partie par une entité, ne sont plus signalés « nombre dicté non reconnu » | P2-275 | à faire |
+| P2-282 | code | Signalement de la dictée coupé par un mot voisin (« code », « digicode », « mot de passe ») à 100 caractères, levé par un libellé d'identifiant (mesure P2-280 : 49 → 0 à tort) | P2-281 | à faire |
+| P2-283 | code | IBAN de clé juste écrit en paires après « FR » (`FR 24 30 00 …`) : mesure à la sonde puis correction d'`IbanFrDetector` | P2-277 | à faire |
+| P2-284 | code | Tableau de bord : faux accords par détecteur de P2-279 (5 000 + 5 600 documents) suivis par `etat.sh` | P2-279 | à faire |
+| P2-285 | mesure | Établissement masqué dans des phrases sans personne (3,98 % sur 200 000 : « SSIAD à Angers ») : décompte par forme, rien corrigé | P2-279 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1392,4 +1397,62 @@ forme d'un identifiant connu, comme 15 ou 27 positions ; présence d'un libellé
 d'identifiant). Mêmes corpus que P2-274. Rapport dans `agent/specs/P2-280.md`.
 **Rien n'est corrigé.** **Fini quand** : tableau critère × (signalements à tort,
 identifiants abîmés sans avertissement) et recommandation chiffrée.
+
+### P2-281 — Signalement perdu sur les IBAN dictés recouverts (code)
+
+Régression trouvée par la session du 24 novembre (matin, 2), bissectée sur le
+commit de P2-275 (`34f4ca8`) : par `Ecluse.redact`, sur les corpus d'identifiants
+dictés abîmés de P2-274, 5 IBAN signalés « nombre dicté non reconnu » ne le sont
+plus, parce qu'une entité `iban` les recouvre en partie. « Rien » (identifiant
+abîmé passé sans masquage ni avertissement) : 8 / 3 au rapport de P2-274, 9 / 7
+sur `main`. Travail : test d'abord sur ces 5 documents ; puis le signalement
+porte aussi une suite dictée **recouverte en partie** par une entité. **Fini
+quand** : « rien » ≤ 8 / 3 sur les deux corpus abîmés ; 0 masquage à tort de plus
+sur les témoins mots-nombres (300) et durci (630) ; prédictions identiques
+ailleurs ; `python3 bench/controle_etat.py` conforme (bloc régénéré pour les
+seules lignes de dictée abîmée).
+
+### P2-282 — Signalement coupé par un mot voisin (code)
+
+Mesure de P2-280 (`agent/specs/P2-280.md`) : un mot voisin (« code »,
+« digicode », « mot de passe ») à 100 caractères au plus, sauf libellé
+d'identifiant dans la même fenêtre, ramène les signalements à tort de 49 à 0 sur
+le témoin durci (630), sans silence de plus. Réserve de la mesure : critère choisi
+après lecture du témoin. Travail : test d'abord, dont un « code IBAN … » qui doit
+rester signalé ; puis la règle ; puis un **témoin neuf** (graine 43, mêmes
+familles que P2-270, jamais lu avant) pour vérifier que le gain tient. **Fini
+quand** : 0 signalement à tort sur le témoin durci ; sur le témoin neuf, résultat
+donné avant / après ; silences ≤ base de P2-281 ; `controle_etat.py` conforme.
+
+### P2-283 — IBAN de clé juste écrit en paires (code)
+
+Après P2-277 (#529), un IBAN de clé **juste** écrit en paires avec séparateur après
+« FR » n'est pas pris par `IbanFrDetector` : sonde manuelle, seul un morceau est
+masqué comme téléphone. Travail : ajouter à la sonde de P2-272 40 cas par
+écriture (paires, clé juste), mesurer par `Ecluse.redact`, puis corriger. Ne pas
+couvrir les clés à lettre en paires (9 faux accords de plus au témoin, #529).
+**Fini quand** : 40 / 40 couverts en entier ; 0 masquage à tort nouveau sur tous
+les témoins (dont le témoin durci de P2-268) ; prédictions identiques ailleurs ;
+`controle_etat.py` conforme.
+
+### P2-284 — Faux accords suivis par le tableau de bord (code)
+
+P2-279 (`agent/specs/P2-279.md`) mesure les faux accords par détecteur sur un
+témoin durci de 5 000 documents et 5 600 phrases ordinaires (162 / 5 000 avant
+P2-276, 129 après). Travail : ces deux jeux (pas les 200 000, trop longs) dans
+`etat.sh`, `etat_attendu.py`, `etat_exemple.txt`, bloc d'`ETAT.md` régénéré.
+**Fini quand** : lignes par détecteur ajoutées ; aucun chiffre existant ne
+change ; `controle_etat.py` conforme ; tests Python verts.
+
+### P2-285 — Établissement masqué sans personne (mesure)
+
+P2-279 : sur 200 000 documents du soin sans donnée personnelle, 7 965 (3,98 %)
+voient un établissement générique masqué (« SSIAD à Angers », « Résidence
+Autonomie »). `DECISIONS.md` et `LIMITES.md` assument déjà « CHU à Lille ».
+Travail : décompte par forme (sigle seul, sigle + ville, nom générique en
+majuscules de titre, autre), avec exemples synthétiques, et comparaison avec ce
+que les décisions assument. Rapport dans `agent/specs/P2-285.md`. **Rien n'est
+corrigé.** **Fini quand** : tableau forme × taux ; pour chaque forme, garder,
+restreindre ou signaler, avec ce que chaque choix coûterait en établissements
+nommés manqués sur les corpus annotés.
 

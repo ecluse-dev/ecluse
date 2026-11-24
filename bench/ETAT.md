@@ -2449,18 +2449,18 @@ TOTAL rpps libelle_cle_fausse couverts 120/120 fuite 0.0 %
 TOTAL iban libelle_cle_fausse couverts 120/120 fuite 0.0 %
 ## sonde des gardes (P2-272, P2-278) : Ecluse.redact (chemin du produit)
 sonde adresse cle_non_calculable adresse_cp_commune/Lyon : couverts 20/20
-sonde adresse cle_non_calculable adresse_cp_commune/Lyon 2 : couverts 0/20
-sonde adresse cle_non_calculable adresse_cp_commune/Lyon 3e : couverts 0/20
-sonde adresse cle_non_calculable adresse_cp_commune/Marseille 1er : couverts 0/20
+sonde adresse cle_non_calculable adresse_cp_commune/Lyon 2 : couverts 20/20
+sonde adresse cle_non_calculable adresse_cp_commune/Lyon 3e : couverts 20/20
+sonde adresse cle_non_calculable adresse_cp_commune/Marseille 1er : couverts 20/20
 sonde adresse cle_non_calculable adresse_cp_commune/Paris : couverts 20/20
-sonde adresse cle_non_calculable adresse_cp_commune/Paris 15 : couverts 0/20
-sonde adresse cle_non_calculable adresse_cp_commune/Paris 8e : couverts 0/20
+sonde adresse cle_non_calculable adresse_cp_commune/Paris 15 : couverts 20/20
+sonde adresse cle_non_calculable adresse_cp_commune/Paris 8e : couverts 20/20
 sonde finess cle_non_calculable finess_sans_contexte/seul : couverts 40/40
 sonde finess cle_non_calculable finess_sans_contexte/suivi_nombre : couverts 40/40
 sonde iban fausse iban_cle_fausse/cinq : couverts 40/40
 sonde iban fausse iban_cle_fausse/compact : couverts 40/40
 sonde iban fausse iban_cle_fausse/corps_ocr5 : couverts 40/40
-sonde iban fausse iban_cle_fausse/paires : couverts 0/40
+sonde iban fausse iban_cle_fausse/paires : couverts 40/40
 sonde iban fausse iban_cle_fausse/quatre : couverts 40/40
 sonde iban fausse iban_cle_fausse/quatre_points : couverts 40/40
 sonde iban fausse iban_cle_fausse/rib : couverts 40/40
@@ -2474,7 +2474,7 @@ sonde nir fausse nir_cle_fausse/suivi_nombre : couverts 40/40
 sonde nir fausse nir_cle_fausse/une_lettre : couverts 1/1
 sonde nir cle_non_calculable nir_cle_fausse/deux_lettres : couverts 38/38
 sonde nir cle_non_calculable nir_cle_fausse/une_lettre : couverts 39/39
-sonde TOTAL : couverts 680/820
+sonde TOTAL : couverts 820/820
 ## identifiants dictés abîmés (P2-274, P2-278) : Ecluse.redact (chemin du produit)
 # mot_perdu
 nir n= 1570 masqués= 769 (dont signalés 0) signalés seulement= 795 rien= 6
