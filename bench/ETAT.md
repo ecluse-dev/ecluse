@@ -2428,19 +2428,25 @@ finess 129/129 iban 262/262 nir 314/314 rpps 166/166 siren 72/72 TOTAL 943/943 (
 fuite au caractère : finess 0.0 % iban 0.0 % nir 0.0 % rpps 0.0 % siren 0.0 % TOTAL 0.0 %
 ## témoin mots-nombres (P2-160) : Ecluse.redact, aucune entité annotée
 témoin mots-nombres : 0 prédictions sur 300 phrases
+## mots-nombres durci (P2-270, P2-275) : Ecluse.redact, aucune entité annotée
+mots-nombres durci : 3 prédictions sur 630 phrases
 ## fuite par OCR (P2-264, P2-268) : Ecluse.redact (chemin du produit)
 TOTAL nir libelle couverts 120/120 fuite 0.0 %
 TOTAL rpps libelle couverts 120/120 fuite 0.0 %
 TOTAL iban libelle couverts 120/120 fuite 0.0 %
 TOTAL finess libelle couverts 120/120 fuite 0.0 %
 TOTAL siren libelle couverts 120/120 fuite 0.0 %
-TOTAL nir sans_libelle couverts 116/120 fuite 3.3 %
+TOTAL nir sans_libelle couverts 120/120 fuite 0.0 %
 TOTAL rpps sans_libelle couverts 0/120 fuite 98.8 %
 TOTAL iban sans_libelle couverts 120/120 fuite 0.0 %
 TOTAL finess sans_libelle couverts 0/120 fuite 100.0 %
 TOTAL siren sans_libelle couverts 0/120 fuite 99.1 %
 témoin négatif temoin : 0 / 400 documents avec une prédiction (aucun type)
 témoin négatif temoin_dur : 14 / 450 documents avec une prédiction (adresse 2, finess 1, iban 10, nir 1)
+## OCR derrière un libellé, clé fausse (P2-275) : Ecluse.redact (chemin du produit)
+TOTAL nir libelle_cle_fausse couverts 120/120 fuite 0.0 %
+TOTAL rpps libelle_cle_fausse couverts 120/120 fuite 0.0 %
+TOTAL iban libelle_cle_fausse couverts 120/120 fuite 0.0 %
 ## flou (entités floues) et variantes de casse
 # realiste
 restaurations non identiques (harmonisation, LIMITES 5.3) : 0

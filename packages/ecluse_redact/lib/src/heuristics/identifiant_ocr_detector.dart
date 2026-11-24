@@ -43,9 +43,22 @@ import 'package:ecluse_core/ecluse_core.dart';
 ///
 /// **Séparateurs** : un à quatre blancs (espace, tabulation, espace insécable,
 /// espace fine) ou un seul point, tiret ou barre oblique entre deux groupes. Les
-/// fins de ligne ne sont pas franchies. Le NIR corse (« 2A »/« 2B ») n'est pas
-/// relu ici (une lettre qui n'est pas d'OCR dans la suite l'écarte) ; limite
-/// consignée dans `LIMITES.md`.
+/// fins de ligne ne sont pas franchies.
+///
+/// **NIR corse sans libellé (P2-275)** : « 2A » ou « 2B » est accepté à la place
+/// du département (une seule fois, derrière le « 2 »), la clé étant calculée
+/// comme pour `NirDetector` (2A lu 19, 2B lu 18). La règle « sexe 1 ou 2 » et
+/// l'exigence d'au moins une lettre d'OCR restent entières. Avant : 4 NIR
+/// corses sur 120 lus avec une lettre d'OCR restaient en clair.
+///
+/// **Clé fausse derrière un libellé fort (P2-275)** : un NIR, un RPPS ou un
+/// ADELI annoncé par son libellé, lu avec des lettres d'OCR, de la bonne
+/// longueur et fait de chiffres une fois relu, est masqué même si sa clé est
+/// fausse : confiance 0,3, **sans** [Provenance.lectureOcr], donc avec
+/// l'avertissement « identifiant à clé invalide masqué : à vérifier » de
+/// `IdentifiantCleInvalideDetector`, qui ne couvre que les séparateurs simples.
+/// Même règle pour l'IBAN derrière « IBAN ». Un libellé seul ou une suite de
+/// longueur fausse ne masque rien. FINESS et SIREN restent « clé juste ou rien ».
 ///
 /// **Sortie** : confiance 0,3, [Provenance.lectureOcr] (l'avertissement
 /// « à vérifier » et l'aperçu en dépendent), jamais de valeur dans un message.
@@ -119,6 +132,26 @@ final class IdentifiantOcrDetector implements EntityDetector {
     return true;
   }
 
+  /// Jeton d'un NIR : l'alphabet des lettres d'OCR et, une fois au plus, « A »
+  /// ou « B » juste derrière un « 2 » (département corse, P2-275).
+  static bool _estPurNir(String jeton) {
+    var corse = 0;
+    for (var i = 0; i < jeton.length; i++) {
+      final c = jeton.codeUnitAt(i);
+      final chiffre = c >= 0x30 && c <= 0x39;
+      if (chiffre || c == 0x4F || c == 0x6F || c == 0x6C || c == 0x49) continue;
+      if ((c == 0x41 || c == 0x42) &&
+          i > 0 &&
+          jeton.codeUnitAt(i - 1) == 0x32) {
+        corse++;
+        if (corse > 1) return false;
+        continue;
+      }
+      return false;
+    }
+    return true;
+  }
+
   static bool _aUneLettreOcr(String s) => RegExp('[OolI]').hasMatch(s);
 
   /// O/o → 0, l/I → 1.
@@ -148,6 +181,14 @@ final class IdentifiantOcrDetector implements EntityDetector {
   /// preuve (NIR provisoires et d'étrangers : sexe 3 à 8).
   static bool _nirValide(String d, {required bool sexeLarge}) {
     if (d.length != 15) return false;
+    // Département corse (P2-275) : 2A lu 19, 2B lu 18 pour le calcul de la clé
+    // (soustraction de 1 000 000 / 2 000 000), comme `NirDetector`.
+    final dept = d.substring(5, 7);
+    if (dept == '2A') {
+      d = '${d.substring(0, 5)}19${d.substring(7)}';
+    } else if (dept == '2B') {
+      d = '${d.substring(0, 5)}18${d.substring(7)}';
+    }
     for (final c in d.codeUnits) {
       if (c < 0x30 || c > 0x39) return false;
     }
@@ -162,6 +203,30 @@ final class IdentifiantOcrDetector implements EntityDetector {
     final attendue = 97 - (int.parse(d.substring(0, 13)) % 97);
     return int.parse(d.substring(13, 15)) == attendue;
   }
+
+  /// Forme seule (clé non jugée) d'un NIR relu : 15 chiffres, sexe 1 à 8.
+  static bool _nirForme(String d) {
+    if (d.length != 15) return false;
+    final dept = d.substring(5, 7);
+    if (dept == '2A' || dept == '2B') {
+      d = '${d.substring(0, 5)}19${d.substring(7)}';
+    }
+    for (final c in d.codeUnits) {
+      if (c < 0x30 || c > 0x39) return false;
+    }
+    final sexe = d.codeUnitAt(0) - 0x30;
+    return sexe >= 1 && sexe <= 8;
+  }
+
+  static bool _chiffres(String d, int n) {
+    if (d.length != n) return false;
+    for (final c in d.codeUnits) {
+      if (c < 0x30 || c > 0x39) return false;
+    }
+    return true;
+  }
+
+  static final RegExp _etiquetteIban = _etiquette('IBAN');
 
   static bool _luhn9(String d) =>
       d.length == 9 && isLuhnValid(d.padLeft(11, '0'));
@@ -182,11 +247,12 @@ final class IdentifiantOcrDetector implements EntityDetector {
           text.substring(jetons[i].end, jetons[i + 1].start));
     }
     final purs = [for (final j in jetons) _estPur(j.group(0)!)];
+    final pursNir = [for (final j in jetons) _estPurNir(j.group(0)!)];
 
     final resultats = <DetectedEntity>[];
     final vus = <(int, int)>{};
 
-    void emet(EntityType t, int debut, int fin) {
+    void emet(EntityType t, int debut, int fin, {bool relue = true}) {
       if (!vus.add((debut, fin))) return;
       resultats.add(DetectedEntity(
         type: t,
@@ -195,14 +261,14 @@ final class IdentifiantOcrDetector implements EntityDetector {
         value: text.substring(debut, fin),
         confidence: confidence,
         tier: DetectorTier.pattern,
-        provenance: Provenance.lectureOcr,
+        provenance: relue ? Provenance.lectureOcr : null,
       ));
     }
 
     // Sans libellé : NIR, seulement une suite entière de 15 caractères.
     var i = 0;
     while (i < jetons.length) {
-      if (!purs[i]) {
+      if (!pursNir[i]) {
         i++;
         continue;
       }
@@ -211,7 +277,7 @@ final class IdentifiantOcrDetector implements EntityDetector {
       var nombre = 1;
       while (j + 1 < jetons.length &&
           lies[j] &&
-          purs[j + 1] &&
+          pursNir[j + 1] &&
           nombre < _maxJetons) {
         j++;
         nombre++;
@@ -228,6 +294,9 @@ final class IdentifiantOcrDetector implements EntityDetector {
     }
 
     // IBAN français, avec ou sans libellé : « FR » + 25 caractères.
+    final apresLibelleIban = {
+      for (final e in _etiquetteIban.allMatches(text)) e.end
+    };
     for (var k = 0; k < jetons.length; k++) {
       final premier = jetons[k].group(0)!;
       if (premier.length < 2 || premier.substring(0, 2).toUpperCase() != 'FR') {
@@ -243,33 +312,44 @@ final class IdentifiantOcrDetector implements EntityDetector {
       if (_ibanValide(majuscules)) continue;
       if (_ibanValide('FR${_relue(corps)}'.toUpperCase())) {
         emet(EntityType.iban, jetons[k].start, jetons[fin].end);
+      } else if (apresLibelleIban.contains(jetons[k].start)) {
+        // P2-275 : derrière « IBAN », la forme suffit (clé fausse relue).
+        emet(EntityType.iban, jetons[k].start, jetons[fin].end, relue: false);
       }
     }
 
     // Derrière un libellé : NIR (suite lue depuis le libellé), puis RPPS,
     // FINESS, SIREN, ADELI.
-    void derriere(RegExp etiquette, int cible, EntityType t,
-        bool Function(String) valide) {
+    void derriere(
+        RegExp etiquette, int cible, EntityType t, bool Function(String) valide,
+        {bool Function(String)? forme, bool nir = false}) {
       for (final e in etiquette.allMatches(text)) {
         final k = _jetonA(jetons, e.end);
-        if (k < 0 || !purs[k]) continue;
-        final fin = _fenetre(jetons, lies, k, cible, pur: true);
+        if (k < 0 || !(nir ? pursNir : purs)[k]) continue;
+        final fin = _fenetre(jetons, lies, k, cible, pur: true, nir: nir);
         if (fin < 0) continue;
         final brut =
             [for (var m = k; m <= fin; m++) jetons[m].group(0)!].join();
         if (!_aUneLettreOcr(brut)) continue;
-        if (valide(_relue(brut))) {
+        final relue = _relue(brut);
+        if (valide(relue)) {
           emet(t, jetons[k].start, jetons[fin].end);
+        } else if (forme != null && forme(relue)) {
+          // P2-275 : clé fausse une fois relu, derrière un libellé fort.
+          emet(t, jetons[k].start, jetons[fin].end, relue: false);
         }
       }
     }
 
     derriere(_etiquetteNir, 15, EntityType.nir,
-        (d) => _nirValide(d, sexeLarge: true));
-    derriere(_etiquetteRpps, 11, EntityType.rpps, _luhn11);
+        (d) => _nirValide(d, sexeLarge: true),
+        forme: _nirForme, nir: true);
+    derriere(_etiquetteRpps, 11, EntityType.rpps, _luhn11,
+        forme: (d) => _chiffres(d, 11));
     derriere(_etiquetteFiness, 9, EntityType.finess, _luhn9);
     derriere(_etiquetteSiren, 9, EntityType.siren, _luhn9);
-    derriere(_etiquetteAdeli, 9, EntityType.adeli, _luhn9);
+    derriere(_etiquetteAdeli, 9, EntityType.adeli, _luhn9,
+        forme: (d) => _chiffres(d, 9));
 
     resultats.sort((a, b) => a.start - b.start);
     return resultats;
@@ -299,11 +379,12 @@ final class IdentifiantOcrDetector implements EntityDetector {
     int debut,
     int cible, {
     required bool pur,
+    bool nir = false,
   }) {
     var longueur = 0;
     for (var k = debut; k < jetons.length && k - debut < _maxJetons; k++) {
       final jeton = jetons[k].group(0)!;
-      if (pur && !_estPur(jeton)) return -1;
+      if (pur && !(nir ? _estPurNir(jeton) : _estPur(jeton))) return -1;
       longueur += jeton.length;
       if (longueur == cible) return k;
       if (longueur > cible) return -1;
