@@ -565,6 +565,17 @@ pire 1,1 % par type (FINESS). Voir `bench/ETAT.md`.
   est signalée « nombre dicté non reconnu, relire avant envoi » (positions et compte,
   jamais de valeur) ; ce n'est pas un masquage. Une phrase ordinaire dense en
   nombres (dates, montants) peut déclencher ce signalement : voir le témoin.
+- **Mot voisin qui coupe le signalement (P2-282)** : si « code », « digicode »,
+  « mot de passe », « mdp » ou « pin » figure dans les 100 caractères qui précèdent
+  la suite, sans libellé d'identifiant (nir, sécu, iban, rib, compte, banque,
+  virement, rpps, finess, siren, adeli, identifiant…) dans la même fenêtre, la suite
+  n'est pas signalée. Mesuré par `Ecluse.redact` : signalements à tort sur le témoin
+  durci 49 → 0 (graine 42, critère choisi après lecture de ce témoin) et 41 → 0 sur
+  un témoin neuf (graine 43) ; 0 → 0 sur le témoin d'origine (300) ; identifiants
+  abîmés sans avertissement inchangés (aucun des corpus abîmés ne place « code »
+  devant l'identifiant, le coût n'y est donc pas mesurable). **Réserve** : un
+  identifiant dicté abîmé précédé de « code » sans libellé passe désormais sans
+  avertissement ; la part de tels textes dans de la dictée réelle n'est pas connue.
 - **FINESS dicté derrière un nom d'établissement (P2-271)** : le nom d'établissement
   qui chevauche un identifiant dicté validé est rogné autour de lui, les deux
   étendues sont gardées (avant P2-271, 6 à 9 FINESS sur 129 restaient en partie en

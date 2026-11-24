@@ -731,9 +731,47 @@ List<int> _suitesNonReconnues(String text, List<DetectedEntity> entites) {
       if (_contientLettre(text, pos, limite)) nonLu = true;
       pos = limite;
     }
-    if (nonLu) r.add(s.debut);
+    if (nonLu && !_motVoisinCoupe(text, s.debut)) r.add(s.debut);
   }
   return r;
+}
+
+/// Nombre de caractères avant une suite où l'on cherche un mot voisin
+/// (P2-282, mesure P2-280 : 30 → 25 signalements à tort restants, 60 → 2,
+/// 100 → 0 sur le témoin durci).
+const int _kFenetreMotVoisin = 100;
+
+/// Mot qui annonce un code d'accès plutôt qu'un identifiant : « code »,
+/// « digicode », « mot de passe », « mdp », « pin ». Mot entier seulement
+/// (« épinards » ne compte pas), sans tenir compte de la casse.
+final RegExp _motVoisin = RegExp(
+    r'(?<!\p{L})(?:code|digicode|mot de passe|mdp|pin)(?!\p{L})',
+    caseSensitive: false,
+    unicode: true);
+
+/// Libellé d'un identifiant : s'il accompagne le mot voisin dans la même
+/// fenêtre (« code IBAN », « code de sécurité sociale »), la suite reste
+/// signalée : un identifiant ne passe jamais sans avertissement (règle 4).
+final RegExp _libelleIdentifiant = RegExp(
+    r'(?<!\p{L})(?:nir|s[ée]cu|s[ée]curit[ée] sociale|ss|assur[ée]e?|iban|rib|'
+    r'compte|bancaire|banque|virement|rpps|finess|siren|adeli|identifiant)'
+    r'(?!\p{L})',
+    caseSensitive: false,
+    unicode: true);
+
+/// Vrai si un mot voisin sans libellé d'identifiant précède la suite qui
+/// commence en [debut], dans les [_kFenetreMotVoisin] caractères avant.
+///
+/// Pourquoi : un code d'accès dicté chiffre par chiffre a, mot à mot, la forme
+/// d'un identifiant abîmé ; sans cette garde, 49 phrases ordinaires sur 630
+/// étaient signalées à tort (mesure P2-280), et un seuil plus haut aurait fait
+/// taire des identifiants abîmés (23 à 46 de plus). Réserve : la liste des mots
+/// a été choisie après lecture du témoin durci ; un identifiant dicté précédé
+/// de « code » sans libellé ne serait plus signalé (`LIMITES.md`).
+bool _motVoisinCoupe(String text, int debut) {
+  final fenetre = text.substring(
+      debut > _kFenetreMotVoisin ? debut - _kFenetreMotVoisin : 0, debut);
+  return _motVoisin.hasMatch(fenetre) && !_libelleIdentifiant.hasMatch(fenetre);
 }
 
 final RegExp _lettre = RegExp(r'\p{L}', unicode: true);
