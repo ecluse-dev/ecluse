@@ -784,6 +784,16 @@ introduit une phrase). C'est du sur-masquage, jamais une fuite : le nom de
 l'établissement, lui, est bien protégé. Distinguer un mot appartenant au
 nom d'un mot qui le suit relève du NER de la phase 2.
 
+**Un mot de nom d'établissement commence par une majuscule (P2-289).** La classe
+de caractères du détecteur (`[A-ZÀ-Ÿ]`) contenait les minuscules accentuées, « à »
+compris : « CHU à Lille » était masqué en entier. Corrigé (`[A-ZÀ-ÖØ-ÞŒ]`, comme
+dans `coupures_de_nom.dart`). Mesuré par `Ecluse.redact`, graine 42 : sur
+200 000 phrases sans personne, documents avec un établissement masqué 7 965 → 2 063
+(« sigle + à + ville » 5 902 → 0) ; corpus flou réaliste, bornes exactes
+317 → 400 / 400 ; adversarial 114 / 114 inchangé. Reste : « type + mot
+générique » (« Résidence Autonomie », 2 063 documents) masqué, décision du
+mainteneur en attente ; le « Ÿ » capital (U+0178) n'est plus un début de mot.
+
 ### 5.2 Entités coupées par la mise en forme
 
 #### 5.2.1 Coupures de ligne : adresses et établissements

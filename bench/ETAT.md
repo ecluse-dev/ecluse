@@ -2519,9 +2519,9 @@ aucun détecteur : 0 / 5600 documents (IC 95 % [0.000 ; 0.0686] %)
 # realiste
 restaurations non identiques (harmonisation, LIMITES 5.3) : 0
 adresse 159 159 100.0% 100.0% 100.0% 100.0% 0.0%
-etablissement 400 400 79.2% 79.2% 79.2% 100.0% 0.0%
+etablissement 400 400 100.0% 100.0% 100.0% 100.0% 0.0%
 nom 479 479 16.3% 16.3% 16.3% 100.0% 27.7%
-GLOBAL 1677 1677 71.1% 71.1% 71.1% 100.0% 7.5%
+GLOBAL 1677 1677 76.1% 76.1% 76.1% 100.0% 7.5%
 entites predites 1677
 # adversarial
 restaurations non identiques (harmonisation, LIMITES 5.3) : 62
@@ -2536,9 +2536,9 @@ entites predites 0
 # realiste_minuscules
 restaurations non identiques (harmonisation, LIMITES 5.3) : 0
 adresse 159 159 100.0% 100.0% 100.0% 100.0% 0.0%
-etablissement 400 400 79.2% 79.2% 79.2% 100.0% 0.0%
+etablissement 400 400 100.0% 100.0% 100.0% 100.0% 0.0%
 nom 479 458 12.4% 11.9% 12.2% 97.8% 30.0%
-GLOBAL 1677 1656 70.8% 69.9% 70.3% 99.4% 8.1%
+GLOBAL 1677 1656 75.8% 74.8% 75.3% 99.4% 8.1%
 entites predites 1656
 # adversarial_minuscules
 restaurations non identiques (harmonisation, LIMITES 5.3) : 61
@@ -2553,9 +2553,9 @@ entites predites 0
 # realiste_majuscules
 restaurations non identiques (harmonisation, LIMITES 5.3) : 0
 adresse 159 159 100.0% 100.0% 100.0% 100.0% 0.0%
-etablissement 400 331 74.9% 62.0% 67.9% 90.6% 0.0%
+etablissement 400 331 82.8% 68.5% 75.0% 90.6% 0.0%
 nom 479 527 9.9% 10.9% 10.3% 91.1% 30.0%
-GLOBAL 1677 1656 66.3% 65.5% 65.9% 95.2% 8.1%
+GLOBAL 1677 1656 67.9% 67.0% 67.4% 95.2% 8.1%
 entites predites 1656
 # adversarial_majuscules
 restaurations non identiques (harmonisation, LIMITES 5.3) : 55
@@ -2570,9 +2570,9 @@ entites predites 0
 # realiste_phrase
 restaurations non identiques (harmonisation, LIMITES 5.3) : 0
 adresse 159 159 100.0% 100.0% 100.0% 100.0% 0.0%
-etablissement 400 400 79.2% 79.2% 79.2% 100.0% 0.0%
+etablissement 400 400 100.0% 100.0% 100.0% 100.0% 0.0%
 nom 479 458 12.4% 11.9% 12.2% 97.8% 30.0%
-GLOBAL 1677 1656 70.8% 69.9% 70.3% 99.4% 8.1%
+GLOBAL 1677 1656 75.8% 74.8% 75.3% 99.4% 8.1%
 entites predites 1656
 # adversarial_phrase
 restaurations non identiques (harmonisation, LIMITES 5.3) : 61
@@ -3190,9 +3190,9 @@ exception P2-204 (ADELI clé fausse, confiance 0.6, avec avertissement) : positi
 ## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90
 # realiste largeur 60 : 3 refus
 adresse 156 156 100.0% 100.0% 100.0% 100.0% 0.0%
-etablissement 397 397 79.1% 79.1% 79.1% 100.0% 0.0%
+etablissement 397 397 100.0% 100.0% 100.0% 100.0% 0.0%
 nom 476 476 16.4% 16.4% 16.4% 100.0% 27.6%
-GLOBAL 1662 1646 70.8% 70.1% 70.4% 99.5% 8.2%
+GLOBAL 1662 1646 75.8% 75.1% 75.5% 99.5% 8.2%
 entités coupées par une fin de ligne : adresse 95 coupées (95 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 4 coupées (4 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
 # adversarial largeur 60 : 0 refus
 adresse 155 155 100.0% 100.0% 100.0% 100.0% 0.0%
@@ -3214,9 +3214,9 @@ finess 129/129 iban 156/262 nir 247/314 rpps 150/166 siren 72/72 TOTAL 754/943 (
 finess 129/129 iban 262/262 nir 314/314 rpps 166/166 siren 72/72 TOTAL 943/943 (100.0 %)
 # realiste largeur 90 : 0 refus
 adresse 159 159 100.0% 100.0% 100.0% 100.0% 0.0%
-etablissement 400 400 79.2% 79.2% 79.2% 100.0% 0.0%
+etablissement 400 400 100.0% 100.0% 100.0% 100.0% 0.0%
 nom 479 479 16.3% 16.3% 16.3% 100.0% 27.7%
-GLOBAL 1677 1677 71.1% 71.1% 71.1% 100.0% 7.5%
+GLOBAL 1677 1677 76.1% 76.1% 76.1% 100.0% 7.5%
 entités coupées par une fin de ligne : adresse 83 coupées (83 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.) ; etablissement 44 coupées (44 couvertes, 0 en partie en clair, 0 entièrement en clair, 0 car.)
 # adversarial largeur 90 : 0 refus
 adresse 155 155 100.0% 100.0% 100.0% 100.0% 0.0%
