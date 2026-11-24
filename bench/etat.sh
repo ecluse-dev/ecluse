@@ -151,6 +151,27 @@ if produit "OCR clé fausse, Ecluse.redact" "$B/flou/pred_ocr_cle_fausse.jsonl" 
   montre "OCR clé fausse, score" -E "^TOTAL" 0 non dans_B python3 score_ocr.py --corpus flou/corpus_ocr_cle_fausse.jsonl --pred flou/pred_ocr_cle_fausse.jsonl || true
 fi
 
+echo "## sonde des gardes (P2-272, P2-278) : Ecluse.redact (chemin du produit)"
+# 820 documents synthétiques d'identifiants à clé fausse (IBAN, NIR), de FINESS sans
+# contexte et d'adresses avec arrondissement, par écriture : « couverts a/b » = identifiants
+# entièrement masqués. Les trous connus (IBAN en paires, arrondissement) y sont suivis.
+produit "générateur sonde" "$B/flou/corpus_sonde_gardes.jsonl" python3 "$B/generate_sonde_gardes.py" --n 40 --seed 42 --out "$B/flou/corpus_sonde_gardes.jsonl" || true
+if produit "sonde, Ecluse.redact" "$B/flou/pred_sonde_gardes.jsonl" redact run_redact_bench.dart "../../bench/flou/corpus_sonde_gardes.jsonl" "../../bench/flou/pred_sonde_gardes.jsonl"; then
+  montre "sonde, score" -E "^sonde " 0 non python3 "$B/score_gardes.py" --corpus "$B/flou/corpus_sonde_gardes.jsonl" --pred "$B/flou/pred_sonde_gardes.jsonl" --par famille,ecriture --lignes || true
+fi
+
+echo "## identifiants dictés abîmés (P2-274, P2-278) : Ecluse.redact (chemin du produit)"
+# NIR et IBAN dictés dont un mot est perdu ou dont la clé est fausse (2 420 documents
+# par variante) : « masqués » = entièrement masqués, « signalés seulement » = avertis sans
+# être masqués, « rien » = en clair sans avertissement (le chiffre à suivre).
+produit "générateur dictée abîmée" "$B/transcrit/corpus_dicte_non_valide_mot_perdu.jsonl" python3 "$B/generate_corpus_dicte_non_valide.py" --in-dir "$B/transcrit" --out-dir "$B/transcrit" --seed 42 || true
+for v in mot_perdu cle_fausse; do
+  echo "# $v"
+  if produit "dictée abîmée $v, Ecluse.redact" "$B/transcrit/pred_dicte_non_valide_$v.jsonl" redact run_temoin_nombres_dictes.dart "../../bench/transcrit/corpus_dicte_non_valide_$v.jsonl" "../../bench/transcrit/pred_dicte_non_valide_$v.jsonl"; then
+    montre "dictée abîmée $v, score" -E "^(nir|iban|TOTAL)" 0 non python3 "$B/score_dicte_non_valide.py" --corpus "$B/transcrit/corpus_dicte_non_valide_$v.jsonl" --pred "$B/transcrit/pred_dicte_non_valide_$v.jsonl" || true
+  fi
+done
+
 echo "## flou (entités floues) et variantes de casse"
 produit "générateur flou" "$B/flou/corpus_flou_realiste.jsonl" python3 "$B/generate_corpus_flou.py" --n 400 --seed 42 --out-dir "$B/flou" || true
 produit "variantes de casse (flou)" "$B/flou/corpus_flou_temoin_phrase.jsonl" python3 "$B/variantes_casse.py" "$B"/flou/corpus_flou_{realiste,adversarial,temoin}.jsonl || true
