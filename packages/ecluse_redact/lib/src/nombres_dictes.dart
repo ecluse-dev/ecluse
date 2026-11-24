@@ -307,10 +307,14 @@ bool _gapSeparateur(String text, int de, int a) {
 
 /// Mots qui annoncent un identifiant à validation faible (Luhn seul), dans les
 /// 60 caractères qui précèdent la suite, comparés sans accent. Pas de « numéro »
-/// ni de « nombre » seuls : ils précèdent aussi bien un montant.
+/// ni de « nombre » seuls : ils précèdent aussi bien un montant. Pas de « code »
+/// non plus (P2-273) : « le code du coffre est… » annonce un code d'accès, et un
+/// faux accord de Luhn sur dix suffisait à le masquer comme FINESS ou RPPS
+/// (3 cas sur 630 phrases du témoin durci de P2-270, aucun effet sur les
+/// variantes dictées).
 final RegExp _motCleFaible = RegExp(
     r'\b(?:rpps|praticien|medecin|finess|structure|etablissement|siren|siret|'
-    r'societe|entreprise|adeli|telephone|portable|code)\b');
+    r'societe|entreprise|adeli|telephone|portable)\b');
 
 bool _precedeParMotCleFaible(String text, int debut) {
   final from = debut > 60 ? debut - 60 : 0;
