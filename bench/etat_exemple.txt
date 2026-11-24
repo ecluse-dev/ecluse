@@ -97,6 +97,18 @@ TOTAL  n= 2420  masqués= 1433 (dont signalés    0)  signalés seulement=  978 
 nir    n= 1570  masqués= 1253 (dont signalés    0)  signalés seulement=  316  rien=    1
 iban   n=  850  masqués=  781 (dont signalés    0)  signalés seulement=   63  rien=    6
 TOTAL  n= 2420  masqués= 2034 (dont signalés    0)  signalés seulement=  379  rien=    7
+## faux accords par détecteur (P2-279, P2-284) : Ecluse.redact (chemin du produit)
+faux accords : témoin durci de P2-268, élargi : 5000 documents, 141 avec au moins une entité
+IBAN à clé fausse (P2-252) : 102 / 5000 documents (2.040 %, IC 95 % [1.683 ; 2.470] %), 102 entité(s)
+NIR à clé fausse (P2-258) : 14 / 5000 documents (0.280 %, IC 95 % [0.167 ; 0.469] %), 14 entité(s)
+adresse : 8 / 5000 documents (0.160 %, IC 95 % [0.081 ; 0.315] %), 8 entité(s)
+autre : rpps : 7 / 5000 documents (0.140 %, IC 95 % [0.068 ; 0.289] %), 7 entité(s)
+autre : telephone : 5 / 5000 documents (0.100 %, IC 95 % [0.043 ; 0.234] %), 5 entité(s)
+OCR (P2-268) : 2 / 5000 documents (0.040 %, IC 95 % [0.011 ; 0.146] %), 2 entité(s)
+finess : 2 / 5000 documents (0.040 %, IC 95 % [0.011 ; 0.146] %), 2 entité(s)
+IBAN à clé juste par hasard (P2-252 absent, 1 chance sur 97) : 1 / 5000 documents (0.020 %, IC 95 % [0.004 ; 0.113] %), 1 entité(s)
+faux accords : mots-nombres durci, élargi : 5600 documents, 0 avec au moins une entité
+aucun détecteur : 0 / 5600 documents (IC 95 % [0.000 ; 0.0686] %)
 ## flou (entités floues) et variantes de casse
 # realiste
   restaurations non identiques (harmonisation, LIMITES 5.3) : 0

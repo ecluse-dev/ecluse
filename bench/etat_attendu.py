@@ -60,6 +60,14 @@ ATTENDU = [
          "identifiants de la sonde, par type, clé et écriture (P2-278, P2-283)"),
         (r"^sonde TOTAL : couverts \d+/\d+$", 1, "total de la sonde"),
     ]),
+    ("## faux accords par détecteur", [
+        (r"^faux accords : .+ : \d+ documents, \d+ avec au moins une entité$", 2,
+         "deux corpus sans donnée personnelle (P2-279, P2-284)"),
+        (r"^(.+ : \d+ / \d+ documents \(\d+\.\d+ %, IC 95 % \[\d+\.\d+ ; \d+\.\d+\] %\), "
+         r"\d+ entité\(s\)|aucun détecteur : 0 / \d+ documents \(IC 95 % "
+         r"\[0\.000 ; \d+\.\d+\] %\))$", 2,
+         "taux de documents à tort par détecteur, avec intervalle de Wilson"),
+    ]),
     ("## identifiants dictés abîmés", [
         (r"^# (mot_perdu|cle_fausse)$", 2, "deux abîmements (P2-274, P2-278)"),
         (r"^(nir|iban|TOTAL) +n= *\d+ +masqués= *\d+ \(dont signalés +\d+\) +"
