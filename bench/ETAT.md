@@ -2429,7 +2429,7 @@ fuite au caractère : finess 0.0 % iban 0.0 % nir 0.0 % rpps 0.0 % siren 0.0 % T
 ## témoin mots-nombres (P2-160) : Ecluse.redact, aucune entité annotée
 témoin mots-nombres : 0 prédictions sur 300 phrases
 ## mots-nombres durci (P2-270, P2-275) : Ecluse.redact, aucune entité annotée
-mots-nombres durci : 3 prédictions sur 630 phrases
+mots-nombres durci : 0 prédictions sur 630 phrases
 ## fuite par OCR (P2-264, P2-268) : Ecluse.redact (chemin du produit)
 TOTAL nir libelle couverts 120/120 fuite 0.0 %
 TOTAL rpps libelle couverts 120/120 fuite 0.0 %
