@@ -41,7 +41,7 @@ final class EtablissementDetector implements EntityDetector {
   static const String _connector =
       "(?:de|du|des|le|la|les|sur|en|aux|au|d['’]|l['’])";
 
-  static const String _word = "[A-ZÀ-Ÿ][\\wÀ-ÿ'’\\-]*";
+  static const String _word = "[A-ZÀ-ÖØ-ÞŒ][\\wÀ-ÿ'’\\-]*";
 
   /// Un connecteur optionnel obligatoirement suivi d'un mot. Si un
   /// connecteur est présent mais qu'aucun mot valide ne suit (mot en
