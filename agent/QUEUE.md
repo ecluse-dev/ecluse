@@ -339,7 +339,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-269 | mesure | Presidio rejoué sur les 200 000 documents (au lieu d'être rescoré sur ses prédictions du 21 novembre) ; écarts rapportés, rien corrigé | — | fusionnée |
 | P2-270 | mesure | Nombres dictés : témoin durci de phrases ordinaires denses en nombres (montants, horaires, adresses, consignes avec « code ») ; masquages et signalements à tort comptés, rien corrigé | P2-267 | fusionnée |
 | P2-271 | code | Nombres dictés : FINESS non couvert en entier quand un nom d'établissement chevauche la lecture (6 à 9 sur 129) | P2-267 | fusionnée |
-| P2-272 | mesure | Masquages à tort hérités sur suites denses (14 / 450 au témoin durci de P2-268, dont 10 IBAN « FR » à clé fausse) : coût par détecteur et perte de rappel de chaque garde possible ; rien corrigé | P2-268 | à faire |
+| P2-272 | mesure | Masquages à tort hérités sur suites denses (14 / 450 au témoin durci de P2-268, dont 10 IBAN « FR » à clé fausse) : coût par détecteur et perte de rappel de chaque garde possible ; rien corrigé | P2-268 | PR ouverte |
 | P2-273 | code | Nombres dictés : retirer « code » des mots-clés de validation faible (3 → 0 masquage à tort sur le témoin durci de P2-270, aucun effet mesuré sur les variantes dictées) | P2-270 | à faire |
 | P2-274 | mesure | Nombres dictés : seuil du signalement « non reconnu » (9, 11, 13 mots) : signalements à tort sur le témoin durci contre identifiants dictés non validés signalés ; rien corrigé | P2-270 | à faire |
 | P2-275 | code | OCR : trous restants de P2-268 (NIR corse « 2A »/« 2B » relu sans libellé, libellé + clé fausse + séparateurs multiples) et témoin durci des mots-nombres dans `etat.sh` | P2-268 | à faire |
