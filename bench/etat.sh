@@ -128,12 +128,27 @@ if produit "témoin mots-nombres, Ecluse.redact" "$B/transcrit/pred_temoin_mots_
   python3 -c "import json,sys;print('témoin mots-nombres :',sum(len(json.loads(l)['entities']) for l in open(sys.argv[1])),'prédictions sur',sum(1 for _ in open(sys.argv[1])),'phrases')" "$B/transcrit/pred_temoin_mots_nombres.jsonl"
 fi
 
+echo "## mots-nombres durci (P2-270, P2-275) : Ecluse.redact, aucune entité annotée"
+# 630 phrases ordinaires denses en nombres (montants, horaires, adresses, codes) :
+# toute prédiction est un masquage en trop (3 avant P2-273 pour « code »).
+produit "générateur mots-nombres durci" "$B/transcrit/corpus_temoin_mots_nombres_dur.jsonl" python3 "$B/generate_corpus_mots_nombres_dur.py" --n 90 --seed 42 --out "$B/transcrit/corpus_temoin_mots_nombres_dur.jsonl" || true
+if produit "mots-nombres durci, Ecluse.redact" "$B/transcrit/pred_temoin_mots_nombres_dur.jsonl" redact run_redact_bench.dart "../../bench/transcrit/corpus_temoin_mots_nombres_dur.jsonl" "../../bench/transcrit/pred_temoin_mots_nombres_dur.jsonl"; then
+  python3 -c "import json,sys;print('mots-nombres durci :',sum(len(json.loads(l)['entities']) for l in open(sys.argv[1])),'prédictions sur',sum(1 for _ in open(sys.argv[1])),'phrases')" "$B/transcrit/pred_temoin_mots_nombres_dur.jsonl"
+fi
+
 echo "## fuite par OCR (P2-264, P2-268) : Ecluse.redact (chemin du produit)"
 # « O »/« o » pour 0, « l »/« I » pour 1 : 1 200 positifs (5 types x 3 confusions
 # x avec/sans libellé x 40), 400 témoins d'origine et 450 témoins durcis.
 produit "générateur OCR" "$B/flou/corpus_ocr.jsonl" python3 "$B/generate_corpus_ocr.py" --n 40 --seed 42 --out "$B/flou/corpus_ocr.jsonl" || true
 if produit "OCR, Ecluse.redact" "$B/flou/pred_ocr.jsonl" redact run_redact_bench.dart "../../bench/flou/corpus_ocr.jsonl" "../../bench/flou/pred_ocr.jsonl"; then
   montre "OCR, score" -E "^(TOTAL|témoin négatif)" 0 non dans_B python3 score_ocr.py --corpus flou/corpus_ocr.jsonl --pred flou/pred_ocr.jsonl || true
+fi
+
+echo "## OCR derrière un libellé, clé fausse (P2-275) : Ecluse.redact (chemin du produit)"
+# NIR, RPPS et IBAN à clé fausse lus avec des lettres d'OCR, séparateurs multiples.
+produit "générateur OCR clé fausse" "$B/flou/corpus_ocr_cle_fausse.jsonl" python3 "$B/generate_corpus_ocr_cle_fausse.py" --n 40 --seed 42 --out "$B/flou/corpus_ocr_cle_fausse.jsonl" || true
+if produit "OCR clé fausse, Ecluse.redact" "$B/flou/pred_ocr_cle_fausse.jsonl" redact run_redact_bench.dart "../../bench/flou/corpus_ocr_cle_fausse.jsonl" "../../bench/flou/pred_ocr_cle_fausse.jsonl"; then
+  montre "OCR clé fausse, score" -E "^TOTAL" 0 non dans_B python3 score_ocr.py --corpus flou/corpus_ocr_cle_fausse.jsonl --pred flou/pred_ocr_cle_fausse.jsonl || true
 fi
 
 echo "## flou (entités floues) et variantes de casse"
