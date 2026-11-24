@@ -172,6 +172,29 @@ for v in mot_perdu cle_fausse; do
   fi
 done
 
+echo "## faux accords par détecteur (P2-279, P2-284) : Ecluse.redact (chemin du produit)"
+# Documents sans aucune entité annotée : tout masquage est un faux accord. Taux de
+# DOCUMENTS à tort par détecteur, intervalle de Wilson à 95 % (`score_faux_accords.py`).
+# 5 000 documents du témoin durci de P2-268 (5 x 1 000) et 5 600 phrases ordinaires de
+# nombres en lettres (7 x 800). Les 200 000 documents sans donnée personnelle de
+# P2-279 (≈ 10 min) restent à `bench/mesure_faux_accords.sh`.
+produit "générateur OCR durci élargi" "$B/flou/corpus_faux_accords_ocr_brut.jsonl" python3 "$B/generate_corpus_ocr.py" --n 1 --n-dur 1000 --seed 42 --out "$B/flou/corpus_faux_accords_ocr_brut.jsonl" || true
+produit "témoin durci élargi, extraction" "$B/flou/corpus_faux_accords_ocr_dur.jsonl" python3 -c '
+import json, sys
+with open(sys.argv[2], "w", encoding="utf-8") as f:
+    for l in open(sys.argv[1], encoding="utf-8"):
+        if json.loads(l)["presentation"] == "temoin_dur":
+            f.write(l)
+' "$B/flou/corpus_faux_accords_ocr_brut.jsonl" "$B/flou/corpus_faux_accords_ocr_dur.jsonl" || true
+produit "générateur mots-nombres durci élargi" "$B/transcrit/corpus_faux_accords_mn_dur.jsonl" python3 "$B/generate_corpus_mots_nombres_dur.py" --n 800 --seed 42 --out "$B/transcrit/corpus_faux_accords_mn_dur.jsonl" || true
+faux_accords_score() { python3 "$B/score_faux_accords.py" --exemples 0 "$@" | sed 's/^## /faux accords : /'; }
+if produit "faux accords, témoin durci élargi, Ecluse.redact" "$B/flou/pred_faux_accords_ocr_dur.jsonl" redact run_faux_accords.dart "../../bench/flou/corpus_faux_accords_ocr_dur.jsonl" "../../bench/flou/pred_faux_accords_ocr_dur.jsonl"; then
+  montre "faux accords, témoin durci élargi, score" -E "^faux accords : | documents \(" 0 non faux_accords_score --corpus "$B/flou/corpus_faux_accords_ocr_dur.jsonl" --pred "$B/flou/pred_faux_accords_ocr_dur.jsonl" --nom "témoin durci de P2-268, élargi" || true
+fi
+if produit "faux accords, mots-nombres durci élargi, Ecluse.redact" "$B/transcrit/pred_faux_accords_mn_dur.jsonl" redact run_faux_accords.dart "../../bench/transcrit/corpus_faux_accords_mn_dur.jsonl" "../../bench/transcrit/pred_faux_accords_mn_dur.jsonl"; then
+  montre "faux accords, mots-nombres durci élargi, score" -E "^faux accords : | documents \(" 0 non faux_accords_score --corpus "$B/transcrit/corpus_faux_accords_mn_dur.jsonl" --pred "$B/transcrit/pred_faux_accords_mn_dur.jsonl" --nom "mots-nombres durci, élargi" --tout-en-dictees || true
+fi
+
 echo "## flou (entités floues) et variantes de casse"
 produit "générateur flou" "$B/flou/corpus_flou_realiste.jsonl" python3 "$B/generate_corpus_flou.py" --n 400 --seed 42 --out-dir "$B/flou" || true
 produit "variantes de casse (flou)" "$B/flou/corpus_flou_temoin_phrase.jsonl" python3 "$B/variantes_casse.py" "$B"/flou/corpus_flou_{realiste,adversarial,temoin}.jsonl || true
