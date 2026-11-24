@@ -34,6 +34,18 @@ final class IbanFrDetector implements EntityDetector {
 
   static final RegExp _separators = RegExp(r'[ \-./]');
 
+  /// Écriture en paires derrière « FR » + séparateur (P2-283) : « FR 24 30 00
+  /// … », clé en chiffres, onze paires, un dernier caractère, un séparateur
+  /// entre chaque groupe. Même forme **stricte** que celle de
+  /// [IbanCleInvalideDetector] (P2-277), et pour la même raison : une forme plus
+  /// large (n'importe quel groupement derrière « FR » + séparateur) masquait
+  /// des codes de pièce à tort. Ici la clé mod 97 doit en plus être juste :
+  /// un faux accord est de l'ordre d'un sur 97.
+  static final RegExp _candidatePaires = RegExp(
+    r'(?<![A-Za-z0-9])[Ff][Rr][ \-./][0-9]{2}(?:[ \-./][0-9A-Za-z]{2}){11}'
+    r'[ \-./][0-9A-Za-z](?![0-9A-Za-z])',
+  );
+
   @override
   List<DetectedEntity> detect(String text) {
     // Neutralise d'abord les espaces (multiples, insécables, tabulations)
@@ -44,7 +56,10 @@ final class IbanFrDetector implements EntityDetector {
     final compaction = DigitCompaction(text);
 
     final results = <DetectedEntity>[];
-    for (final match in compaction.candidates(_candidate)) {
+    for (final match in [
+      ...compaction.candidates(_candidate),
+      ...compaction.candidates(_candidatePaires),
+    ]) {
       final start = match.start;
       final end = match.end;
       final raw = text.substring(start, end);
@@ -147,7 +162,7 @@ final class IbanCleInvalideDetector implements EntityDetector {
   /// point ou barre) entre chaque groupe. Une version plus large (n'importe quel groupement derrière
   /// « FR » + séparateur) masquait 9 codes de pièce de plus au témoin durci de
   /// P2-268 (14 → 23 documents à tort). Un IBAN dont la clé est **juste**,
-  /// écrit ainsi, reste hors de ce détecteur (voir plus bas).
+  /// écrit ainsi, est pris par [IbanFrDetector] (P2-283).
   static final RegExp _candidate = RegExp(
     r'(?<![A-Za-z0-9])[Ff][Rr][0-9Oo]{2}(?:[ \-./]?[0-9A-Za-z]){23}(?![0-9A-Za-z])',
   );
@@ -173,8 +188,8 @@ final class IbanCleInvalideDetector implements EntityDetector {
       // soit faite de chiffres : avec un « o » dans la clé il ne l'est jamais,
       // et « O » vaudrait 24 au calcul mod 97, sans signification ici.
       final cleChiffres = _cleEnChiffres.hasMatch(normalized);
-      // (Écrit avec un séparateur après « FR », un IBAN valide n'est pas non
-      // plus émis par IbanFrDetector : trou mesuré, hors de P2-277.)
+      // (Écrit en paires derrière « FR » + séparateur, un IBAN valide est émis
+      // par IbanFrDetector depuis P2-283 ; il est donc écarté ici aussi.)
       if (cleChiffres && IbanFrDetector._isValidIban(normalized)) continue;
       results.add(
         DetectedEntity(
@@ -250,6 +265,22 @@ final class IbanDetector implements EntityDetector {
     final results = <DetectedEntity>[];
     if (cleInvalideFr) {
       results.addAll(const IbanCleInvalideDetector().detect(text));
+    }
+    // P2-283 : « FR 24 30 00 … » (paires derrière « FR » + séparateur), forme
+    // que `_candidate` ne couvre pas. Même clé mod 97, même confiance 1,0.
+    for (final match
+        in compaction.candidates(IbanFrDetector._candidatePaires)) {
+      final normalized = match.text.replaceAll(_separators, '').toUpperCase();
+      if (!IbanFrDetector._isValidIban(normalized)) continue;
+      results.add(
+        DetectedEntity(
+          type: EntityType.iban,
+          start: match.start,
+          end: match.end,
+          value: text.substring(match.start, match.end),
+          confidence: 1.0,
+        ),
+      );
     }
     for (final match in compaction.candidates(_candidate)) {
       final normalized = match.text.replaceAll(_separators, '').toUpperCase();

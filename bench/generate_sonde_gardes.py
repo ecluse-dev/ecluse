@@ -130,6 +130,12 @@ def main():
             v = f"{cp} {commune}"
             ajoute("Courrier à renvoyer à {v}.", v, "adresse", "adresse_cp_commune",
                    commune, "neutre")
+    # P2-283 : IBAN de clé JUSTE écrit en paires après « FR » (`FR 24 30 00 …`).
+    # Ajouté en dernier : les documents précédents (et leur graine) ne changent pas.
+    for k in range(a.n):
+        v = ecrit_iban(make_iban(rng), "paires", rng)
+        phrase = ("motcle", MOTCLE_IBAN) if k % 2 else ("neutre", NEUTRE)
+        ajoute(rng.choice(phrase[1]), v, "iban", "iban_cle_juste", "paires", phrase[0])
     with open(a.out, "w", encoding="utf-8") as f:
         for d in docs:
             f.write(json.dumps(d, ensure_ascii=False) + "\n")

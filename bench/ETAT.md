@@ -2483,6 +2483,7 @@ sonde iban fausse iban_cle_fausse/quatre : couverts 40/40
 sonde iban fausse iban_cle_fausse/quatre_points : couverts 40/40
 sonde iban fausse iban_cle_fausse/rib : couverts 40/40
 sonde iban fausse iban_cle_fausse/trois : couverts 40/40
+sonde iban juste iban_cle_juste/paires : couverts 40/40
 sonde iban cle_non_calculable iban_cle_fausse/cle_o : couverts 40/40
 sonde nir fausse nir_cle_fausse/compact : couverts 40/40
 sonde nir fausse nir_cle_fausse/deux_lettres : couverts 2/2
@@ -2492,7 +2493,7 @@ sonde nir fausse nir_cle_fausse/suivi_nombre : couverts 40/40
 sonde nir fausse nir_cle_fausse/une_lettre : couverts 1/1
 sonde nir cle_non_calculable nir_cle_fausse/deux_lettres : couverts 38/38
 sonde nir cle_non_calculable nir_cle_fausse/une_lettre : couverts 39/39
-sonde TOTAL : couverts 820/820
+sonde TOTAL : couverts 860/860
 ## identifiants dictés abîmés (P2-274, P2-278) : Ecluse.redact (chemin du produit)
 # mot_perdu
 nir n= 1570 masqués= 769 (dont signalés 0) signalés seulement= 797 rien= 4
