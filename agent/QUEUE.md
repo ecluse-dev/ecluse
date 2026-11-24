@@ -339,6 +339,10 @@ tâches copiées ici sont prises par l'agent.
 | P2-269 | mesure | Presidio rejoué sur les 200 000 documents (au lieu d'être rescoré sur ses prédictions du 21 novembre) ; écarts rapportés, rien corrigé | — | fusionnée |
 | P2-270 | mesure | Nombres dictés : témoin durci de phrases ordinaires denses en nombres (montants, horaires, adresses, consignes avec « code ») ; masquages et signalements à tort comptés, rien corrigé | P2-267 | fusionnée |
 | P2-271 | code | Nombres dictés : FINESS non couvert en entier quand un nom d'établissement chevauche la lecture (6 à 9 sur 129) | P2-267 | fusionnée |
+| P2-272 | mesure | Masquages à tort hérités sur suites denses (14 / 450 au témoin durci de P2-268, dont 10 IBAN « FR » à clé fausse) : coût par détecteur et perte de rappel de chaque garde possible ; rien corrigé | P2-268 | à faire |
+| P2-273 | code | Nombres dictés : retirer « code » des mots-clés de validation faible (3 → 0 masquage à tort sur le témoin durci de P2-270, aucun effet mesuré sur les variantes dictées) | P2-270 | à faire |
+| P2-274 | mesure | Nombres dictés : seuil du signalement « non reconnu » (9, 11, 13 mots) : signalements à tort sur le témoin durci contre identifiants dictés non validés signalés ; rien corrigé | P2-270 | à faire |
+| P2-275 | code | OCR : trous restants de P2-268 (NIR corse « 2A »/« 2B » relu sans libellé, libellé + clé fausse + séparateurs multiples) et témoin durci des mots-nombres dans `etat.sh` | P2-268 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1272,4 +1276,57 @@ FINESS dicté 129 / 129 couverts en entier sur chaque variante ; prédictions
 identiques octet pour octet sur tous les autres corpus
 (`bench/equivalence_predictions.sh`) ; `python3 bench/controle_etat.py` conforme
 (bloc régénéré pour les seules lignes dictées) ; témoins à 0.
+
+### P2-272 — Masquages à tort hérités sur suites denses (mesure)
+
+Le témoin durci de P2-268 (`bench/generate_corpus_ocr.py`, 450 documents de
+références, lots et codes ordinaires) donne 14 masquages à tort **déjà présents
+avant P2-268** (compte rendu du 24 novembre, nuit) : IBAN de forme française à clé
+fausse sans libellé (P2-252) 10, NIR à clé fausse avec « o » (P2-258) 1, adresse
+« cinq chiffres + mot » 2, FINESS neuf chiffres 1. Travail : par `Ecluse.redact`,
+lister ces cas par détecteur et par gabarit ; pour chaque détecteur, simuler deux
+ou trois gardes (par exemple : séparateurs de groupe de quatre exigés pour l'IBAN
+à clé fausse sans libellé, deux chiffres de clé réels, mot-clé voisin) et mesurer
+pour chacune les masquages à tort évités et le **rappel perdu** sur les corpus à
+clé fausse (v3 : 48 IBAN et 45 NIR ; libellé fort ; 200 000 documents si le temps
+le permet). Rapport dans `agent/specs/P2-272.md`. **Rien n'est corrigé.**
+**Fini quand** : tableau détecteur × garde (masquages à tort évités, identifiants
+perdus), chemin mesuré écrit, recommandation chiffrée pour le mainteneur.
+
+### P2-273 — Nombres dictés : retirer « code » des mots-clés faibles (code)
+
+P2-270 (`agent/specs/P2-270.md`) : avec « code » dans `_motCleFaible`, le témoin
+durci donne 3 masquages à tort (FINESS 1, RPPS 2, famille « codes ») ; sans lui,
+0, et aucun changement sur les six variantes dictées. Travail : test qui montre
+un des 3 cas, retrait du mot, rejeu. **Fini quand** : témoin durci à 0 masquage à
+tort ; six variantes dictées à 943 / 943 couverts comme après P2-271 ;
+prédictions identiques octet pour octet ailleurs
+(`bench/equivalence_predictions.sh`) ; `python3 bench/controle_etat.py`
+conforme.
+
+### P2-274 — Nombres dictés : seuil du signalement (mesure)
+
+P2-270 : 46 signalements « nombre dicté non reconnu » à tort sur 630 phrases,
+tous des codes dits de 9 chiffres ou plus ; le seuil est 9 mots-nombres. Travail :
+mesurer, par `Ecluse.redact` (paramètre de seuil exposé à un script de banc
+seulement, sans changer le produit), les seuils 9, 11 et 13 : signalements à tort
+sur le témoin durci, et identifiants dictés **non validés** encore signalés sur
+les corpus dictés (NIR à 15, IBAN à 27, avec clé fausse ou mot perdu).
+Rapport dans `agent/specs/P2-274.md`. **Rien n'est corrigé.** **Fini quand** :
+tableau seuil × (signalements à tort, identifiants non validés signalés), et
+recommandation chiffrée.
+
+### P2-275 — OCR : trous restants (code)
+
+Après P2-268 (#518), par `Ecluse.redact` : 4 NIR corses (« 2A »/« 2B ») sur 120
+lus avec une lettre d'OCR sans libellé restent en clair ; un identifiant derrière
+un libellé, à clé fausse une fois relu et écrit avec des séparateurs multiples,
+n'est pas couvert. Le témoin durci des mots-nombres (P2-270) n'est pas dans
+`etat.sh`. Travail : sonde synthétique qui montre chaque trou, puis correction,
+puis ajout du témoin durci au tableau de bord (`etat.sh`, `etat_attendu.py`,
+bloc de `ETAT.md` régénéré par `controle_etat.py --propose`). Garder la règle
+« sexe 1 ou 2 » pour un NIR relu sans libellé. **Fini quand** : les 4 NIR corses
+masqués à 0,3 avec l'avertissement OCR ; le cas libellé + clé fausse + séparateurs
+multiples masqué ; 0 masquage à tort nouveau sur tous les témoins (dont le témoin
+durci de P2-268) ; prédictions identiques ailleurs ; `controle_etat.py` conforme.
 
