@@ -16,6 +16,7 @@ Usage :
     python3 ocr_proposition.py flou/corpus_ocr.jsonl [autre.jsonl ...]
 """
 
+import collections
 import json
 import re
 import sys
@@ -61,6 +62,32 @@ def iban_ok(s):
     return 98 - (int(n) % 97) == int(s[2:4])
 
 
+def detecte_par_type(texte):
+    """Faux accords ou détections simulées, par type : nir, rpps, neuf (FINESS
+    ou SIREN, indistinguables sans libellé), iban. Comptes seulement."""
+    c = collections.Counter()
+    for m in SEUIL.finditer(texte):
+        brut = m.group(1)
+        if not re.search(r"[OolI]", brut):
+            continue
+        d = normalise(brut)
+        if not d.isdigit():
+            continue
+        if len(d) == 15 and nir_ok(d):
+            c["nir"] += 1
+        elif len(d) == 11 and luhn(d):
+            c["rpps"] += 1
+        elif len(d) == 9 and luhn(d):
+            c["neuf"] += 1
+    for m in IBAN.finditer(texte):
+        brut = m.group(0)
+        if re.search(r"[OolI]", brut[2:]) and iban_ok(
+                "FR" + "".join("0" if ch in "Oo" else "1" if ch in "lI" else ch
+                               for ch in brut[2:] if ch != " ")):
+            c["iban"] += 1
+    return c
+
+
 def detecte(texte):
     n = 0
     for m in SEUIL.finditer(texte):
@@ -89,10 +116,16 @@ def main():
         avec = sum(1 for d in docs if detecte(d["text"]) > 0)
         print(f"{chemin} : {avec} / {len(docs)} documents avec une détection simulée")
         if docs and "presentation" in docs[0]:
-            for pr in ("libelle", "sans_libelle", "temoin"):
+            for pr in ("libelle", "sans_libelle", "temoin", "temoin_dur"):
                 ds = [d for d in docs if d["presentation"] == pr]
+                if not ds:
+                    continue
                 a = sum(1 for d in ds if detecte(d["text"]) > 0)
-                print(f"   {pr:13} {a} / {len(ds)}")
+                par_type = collections.Counter()
+                for d in ds:
+                    par_type.update(detecte_par_type(d["text"]))
+                detail = ", ".join(f"{t} {n}" for t, n in sorted(par_type.items()))
+                print(f"   {pr:13} {a} / {len(ds)}  par type : {detail or 'aucun'}")
 
 
 if __name__ == "__main__":

@@ -53,7 +53,7 @@ final class Proposition {
               valeur: _brutes[i].value,
               confiance: _brutes[i].confidence,
               tier: _brutes[i].tier,
-              aVerifier: _brutes[i].provenance == Provenance.tournure,
+              aVerifier: _brutes[i].provenance != null,
             )
         ]);
 

@@ -454,8 +454,8 @@ une coupure au milieu d'un groupe ne l'est pas.
   insérée entre deux groupes. Un tel identifiant est masqué **même si sa clé
   est juste après correction** (le détecteur strict ne le voit pas), avec le
   même avertissement « à vérifier ». Les détecteurs stricts de `ecluse_core`
-  ne changent pas ; sans libellé fort, « 1 85 05 78 OO6 084 91 » reste en
-  clair. De même, un IBAN français à clé fausse **sans libellé** dont la clé
+  ne changent pas ; sans libellé fort, « 1 85 05 78 OO6 084 91 » restait en
+  clair avant P2-268 (voir « Identifiants lus avec des lettres d'OCR »). De même, un IBAN français à clé fausse **sans libellé** dont la clé
   porte une lettre d'OCR (« FR8o52… ») part en clair : mesuré au corpus
   « libellé fort », 4 sur 50 IBAN à clé fausse sans libellé (les 46 autres
   sont masqués, P2-252) ; correction inscrite (P2-254). **ADELI (P2-199)** : le libellé « ADELI » reçoit les mêmes
@@ -472,6 +472,47 @@ une coupure au milieu d'un groupe ne l'est pas.
   de vrais textes OCR : seul le témoin synthétique de
   `identifiant_cle_invalide_ocr_test.dart` (13 cas positifs, 12 négatifs)
   est chiffré.
+
+### Identifiants lus avec des lettres d'OCR (P2-268)
+
+`Ecluse.redact` relit les lettres d'OCR (« O » ou « o » pour 0, « l » ou « I »
+pour 1) d'une suite candidate et la masque en entier, **sans réécrire le texte**,
+si elle devient un identifiant valide une fois relue (`IdentifiantOcrDetector`,
+confiance 0,3, avertissement « identifiant lu avec des lettres d'OCR masqué : à
+vérifier », aperçu « à vérifier »). Ce n'est pas le moteur seul (`ecluse_core`),
+dont les détecteurs restent stricts.
+
+- **Clé forte, avec ou sans libellé** : NIR (mod 97) et IBAN français (mod 97).
+  Sans libellé, la suite entière doit avoir la longueur de l'identifiant (15
+  caractères, ou « FR » + 25) ; le sexe du NIR est 1 ou 2 (1 à 8 derrière un
+  libellé). Avec 1 à 8 sans libellé, le témoin durci donnait 1 faux accord sur 450.
+- **Clé faible (Luhn seul), derrière un libellé seulement** : RPPS, FINESS, SIREN,
+  ADELI. Sans libellé ils restent en clair, par décision : 7 faux accords sur
+  450 documents sans identifiant au prototype (5 de neuf chiffres, 2 de onze).
+  Les mots-clés sont les seuls libellés explicites ; le mot « code » des nombres
+  dictés (P2-267) n'en fait pas partie.
+- Séparateurs : un à quatre blancs (espace, tabulation, espaces insécables) ou un
+  point, tiret ou barre entre deux groupes. Pas de fin de ligne.
+
+**Mesuré** (graine 42, synthétique, par `Ecluse.redact`, 120 documents par
+type et par présentation) : fuite au caractère de 0,0 % pour les cinq types avec
+libellé ; sans libellé, NIR 3,3 % (les 4 documents non couverts sont des NIR
+corses), IBAN 0,0 %, RPPS 98,8 %, FINESS 100 %, SIREN 99,1 % (inchangés, voulu).
+
+**Pas couvert** : le NIR corse (« 2A »/« 2B ») lu avec une lettre d'OCR, sans
+libellé ; un libellé derrière lequel la clé reste fausse une fois relue et dont
+les séparateurs sont multiples (le détecteur de P2-188 ne couvre que les
+séparateurs simples) ; toute autre confusion que O/o/l/I ; un identifiant faible
+sans libellé ; un IBAN dont une lettre légitime du corps est elle-même un « O »
+ou un « I » et dont une autre lettre est mal lue. **Faux accords** : le témoin
+durci (450 documents de suites ordinaires denses en O/l/I, dont 24 % de longueur
+9, 11 ou 15 et 6 % « FR » + 25 caractères) n'en donne **aucun pour la règle
+nouvelle** ; il garde **14 masquages à tort déjà présents sur `main`**, dus à
+d'autres détecteurs (IBAN de forme française à clé fausse, P2-252 : 10 ; NIR à
+clé fausse avec « o », P2-258 : 1 ; adresse « cinq chiffres + mot » : 2 ; FINESS
+à neuf chiffres Luhn-valides : 1). Une suite de 15 caractères ou « FR » + 25 qui
+se trouve valide par hasard (≈ 0,5 % et 1 % par suite de cette longueur) sera
+masquée à tort ; non mesuré sur de vrais textes OCR ni sur des références réelles.
 
 ### Identifiants dictés en toutes lettres (P2-267)
 
