@@ -354,7 +354,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-284 | code | Tableau de bord : faux accords par détecteur de P2-279 (5 000 + 5 600 documents) suivis par `etat.sh` | P2-279 | fusionnée |
 | P2-285 | mesure | Établissement masqué dans des phrases sans personne (3,98 % sur 200 000 : « SSIAD à Angers ») : décompte par forme, rien corrigé | P2-279 | fusionnée |
 | P2-286 | code | Démo `ecluse_demo` : encart « ce que disent les mesures » (chiffres de l'article v2, avec leurs réserves) et troisième exemple « note de liaison » (NIR à clé fausse, IBAN aux espacements irréguliers, sigles sans personne) | — | fusionnée |
-| P2-287 | mesure | Rapport de risque : un mot courant en tête de phrase lu comme commune (« Son numéro… » → lieu « Son », F = 89) ; décompte sur les corpus, rien corrigé | — | à faire |
+| P2-287 | mesure | Rapport de risque : un mot courant en tête de phrase lu comme commune (« Son numéro… » → lieu « Son », F = 89) ; décompte sur les corpus, rien corrigé | — | fusionnée |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
