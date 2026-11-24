@@ -48,6 +48,15 @@ qui change : « structurel largeur 60, `Ecluse.redact` », NIR **313/314 → 314
 ni aucun fichier de prédiction des autres corpus (tous identiques octet pour octet
 avant et après).
 
+**P2-291 (24 novembre 2026)** : le tableau de bord suit les phrases signalées
+« nombre dicté non reconnu » à tort, par `Ecluse.redact` (chemin du produit), sur
+trois témoins sans entité annotée : durci (630, graine 42), neuf (630, graine 43,
+`generate_corpus_mots_nombres_dur.py --seed 43`) et d'origine (300). Valeurs
+courantes : **0 / 630, 0 / 630, 0 / 300**. Avant P2-282 (rejoué avec le
+`nombres_dictes.dart` du commit parent) : 49, 41 et 0 phrases signalées, aucune
+masquée. Aucun autre chiffre du tableau de bord ne change (sortie complète
+comparée ligne à ligne avant et après, hors numéro de commit).
+
 ## Identifiants d'entreprise annotés `siren` au banc (P2-261, 23 novembre 2026)
 
 Décision du 23 novembre, point 8 : SIREN, SIRET et numéro de TVA, que Écluse
@@ -2448,6 +2457,10 @@ fuite au caractère : finess 0.0 % iban 0.0 % nir 0.0 % rpps 0.0 % siren 0.0 % T
 témoin mots-nombres : 0 prédictions sur 300 phrases
 ## mots-nombres durci (P2-270, P2-275) : Ecluse.redact, aucune entité annotée
 mots-nombres durci : 0 prédictions sur 630 phrases
+## signalements « nombre dicté non reconnu » à tort (P2-291) : Ecluse.redact (chemin du produit)
+signalements à tort, témoin durci (630, graine 42) : 0 signalées à tort, 0 masquées à tort sur 630 phrases
+signalements à tort, témoin neuf (630, graine 43) : 0 signalées à tort, 0 masquées à tort sur 630 phrases
+signalements à tort, témoin d'origine (300, graine 42) : 0 signalées à tort, 0 masquées à tort sur 300 phrases
 ## fuite par OCR (P2-264, P2-268) : Ecluse.redact (chemin du produit)
 TOTAL nir libelle couverts 120/120 fuite 0.0 %
 TOTAL rpps libelle couverts 120/120 fuite 0.0 %

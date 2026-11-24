@@ -45,6 +45,12 @@ ATTENDU = [
         (r"^mots-nombres durci : \d+ prédictions sur \d+ phrases$", 1,
          "témoin mots-nombres durci (P2-270, P2-275)"),
     ]),
+    ("## signalements « nombre dicté non reconnu » à tort", [
+        (r"^signalements à tort, témoin (durci \(630, graine 42\)|neuf \(630, graine 43\)|"
+         r"d'origine \(300, graine 42\)) : \d+ signalées à tort, \d+ masquées à tort "
+         r"sur \d+ phrases$", 3,
+         "témoin durci, témoin neuf et témoin d'origine (P2-291)"),
+    ]),
     ("## fuite par OCR", [
         (r"^TOTAL (nir|rpps|iban|finess|siren) +(libelle|sans_libelle) ", 10,
          "5 types, avec et sans libellé (P2-264, P2-268)"),
