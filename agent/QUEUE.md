@@ -346,7 +346,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-276 | code | Gardes à coût nul de P2-272 : `nir_suitelettre`, `finess_suitelettre`, `adr_confusables` (pas `iban_g45`, qui attend le mainteneur) | P2-272 | fusionnée |
 | P2-277 | code | IBAN à clé fausse écrit en paires (0 / 40 à la sonde) et adresse « code postal + commune avec arrondissement » (0 / 140) | P2-272 | fusionnée |
 | P2-278 | code | Tableau de bord : sonde de P2-272 et identifiants dictés abîmés de P2-274 suivis par `etat.sh` | P2-272, P2-274 | fusionnée |
-| P2-279 | mesure | Faux accords par détecteur sur un témoin durci élargi (≥ 5 000 documents) et sur 200 000 documents sans identifiant, avec intervalle ; rien corrigé | P2-272 | à faire |
+| P2-279 | mesure | Faux accords par détecteur sur un témoin durci élargi (≥ 5 000 documents) et sur 200 000 documents sans identifiant, avec intervalle ; rien corrigé | P2-272 | fusionnée |
 | P2-280 | mesure | Signalement « nombre dicté non reconnu » : critères autres que le nombre de mots (mot voisin « code », « digicode »…) ; rien corrigé | P2-274 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
