@@ -210,15 +210,49 @@ La séance est levée à 15h30.
 ''',
 );
 
+/// Note de liaison fictive (sortie d'hospitalisation vers le domicile) : le
+/// cas des « pièges ». Un NIR recopié **avec une clé fausse** (masqué quand
+/// même, avec l'avertissement « à vérifier » : un numéro mal recopié reste celui
+/// de quelqu'un), un IBAN à clé juste écrit avec des espaces multiples, une
+/// espace insécable et une tabulation (un copier-coller de traitement de
+/// texte), et deux phrases **sans personne** (salle, page, article de loi,
+/// sigles CHU, CPAM, HAD) où rien ne doit être masqué. Cinq entités : deux
+/// noms, le NIR, l'IBAN et un téléphone. L'IBAN est à clé valide ; le NIR est
+/// volontairement faux (clé 90 au lieu de 83) : ce document n'entre donc pas
+/// dans [validKeysDemoCorpus]. Aucun nom de structure réelle.
+const noteDeLiaisonSample = DemoSample(
+  title: 'Note de liaison (clé fausse, espacements irréguliers)',
+  instruction:
+      'Résume la situation et liste les actions à prévoir au domicile.',
+  text: '''
+NOTE DE LIAISON — SORTIE D'HOSPITALISATION
+
+Patiente : Mme Camille Faure, suivie par le Dr Hugo Lemaire.
+Numéro de sécurité sociale recopié sur la fiche : 2 91 04 75 118 042 90.
+Versement de l'allocation sur le compte FR77 1419  9608 2410\u00a056262\t5924 78.
+Contact de la patiente : 01 99 00 12 34.
+
+Retour à domicile prévu jeudi : passage de l'infirmière chaque matin, puis
+point d'étape à une semaine.
+
+La réunion se tient en salle 12, voir page 4 et l'article L. 1110-4 du code de
+la santé publique. Les sigles CHU, CPAM et HAD restent tels quels dans le
+compte rendu.
+''',
+);
+
 /// Les documents d'exemple chargeables depuis la démo (boutons de
 /// `ecluse_demo`), dans leur ordre d'affichage : un contrat de travail
 /// (secteur médico-social), un compte rendu HAD/RCP (santé à domicile),
-/// et un compte rendu de synthèse ESAT (médico-social handicap, avec
-/// identifiant national de santé — INS-NIR + OID d'affectation ANS).
+/// un compte rendu de synthèse ESAT (médico-social handicap, avec
+/// identifiant national de santé — INS-NIR + OID d'affectation ANS), et une
+/// note de liaison « pièges » (clé fausse, espacements irréguliers, phrases
+/// sans personne).
 const demoSamples = [
   contratTravailSample,
   compteRenduSample,
   compteRenduEsatSample,
+  noteDeLiaisonSample,
 ];
 
 /// Corpus de démonstration où NIR, IBAN et RPPS sont **tous** à clé
