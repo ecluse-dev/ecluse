@@ -357,8 +357,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-287 | mesure | Rapport de risque : un mot courant en tête de phrase lu comme commune (« Son numéro… » → lieu « Son », F = 89) ; décompte sur les corpus, rien corrigé | — | fusionnée |
 | P2-288 | mesure | Faux accords IBAN à clé fausse 89 → 102 sur le témoin élargi de P2-279 : rejouer avant et après P2-277 et P2-283, cause par gabarit ; rien corrigé | P2-284 | fusionnée |
 | P2-289 | code | Établissements : la classe `[A-ZÀ-Ÿ]` contient les minuscules accentuées, « à » est absorbé (« CHU à Lille ») ; majuscules seulement (mesure P2-285 : 5 902 → 0) | P2-285 | fusionnée |
-| P2-290 | mesure | Détecteur d'établissements corrigé (P2-289) sur les variantes de casse et de mise en page du corpus flou ; rien corrigé | P2-289 | PR ouverte |
-| P2-291 | code | Tableau de bord : signalements « nombre dicté non reconnu » à tort suivis par `etat.sh` (durci 630, neuf graine 43, origine 300) | P2-282 | à faire |
+| P2-290 | mesure | Détecteur d'établissements corrigé (P2-289) sur les variantes de casse et de mise en page du corpus flou ; rien corrigé | P2-289 | fusionnée |
+| P2-291 | code | Tableau de bord : signalements « nombre dicté non reconnu » à tort suivis par `etat.sh` (durci 630, neuf graine 43, origine 300) | P2-282 | fusionnée |
 | P2-292 | mesure | Coût réel de la garde du mot voisin (P2-282) : identifiants dictés abîmés précédés de « code » sans libellé ; rien corrigé | P2-282 | à faire |
 | P2-293 | mesure | IBAN en paires : sonde élargie aux séparateurs point, tiret, barre et aux confusions d'OCR ; coût des gardes de P2-288 ; rien corrigé | P2-288 | à faire |
 | P2-294 | code | Établissements en 60 colonnes : « IME La Source », « CH de Vesoul », « SSIAD de Gray » non couverts en entier sur le flou réaliste | P2-289 | à faire |
