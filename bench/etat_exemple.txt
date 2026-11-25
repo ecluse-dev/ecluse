@@ -42,6 +42,10 @@ finess 34/129  iban 0/262  nir 0/269  rpps 0/166  TOTAL 34/826 (4.1 %)
 témoin mots-nombres : 0 prédictions sur 300 phrases
 ## mots-nombres durci (P2-270, P2-275) : Ecluse.redact, aucune entité annotée
 mots-nombres durci : 0 prédictions sur 630 phrases
+## signalements « nombre dicté non reconnu » à tort (P2-291) : Ecluse.redact (chemin du produit)
+signalements à tort, témoin durci (630, graine 42) : 0 signalées à tort, 0 masquées à tort sur 630 phrases
+signalements à tort, témoin neuf (630, graine 43) : 0 signalées à tort, 0 masquées à tort sur 630 phrases
+signalements à tort, témoin d'origine (300, graine 42) : 0 signalées à tort, 0 masquées à tort sur 300 phrases
 ## fuite par OCR (P2-264, P2-268) : Ecluse.redact (chemin du produit)
 TOTAL nir     libelle       couverts  120/120  fuite   0.0 %
 TOTAL rpps    libelle       couverts  120/120  fuite   0.0 %

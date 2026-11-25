@@ -136,6 +136,20 @@ if produit "mots-nombres durci, Ecluse.redact" "$B/transcrit/pred_temoin_mots_no
   python3 -c "import json,sys;print('mots-nombres durci :',sum(len(json.loads(l)['entities']) for l in open(sys.argv[1])),'prédictions sur',sum(1 for _ in open(sys.argv[1])),'phrases')" "$B/transcrit/pred_temoin_mots_nombres_dur.jsonl"
 fi
 
+echo "## signalements « nombre dicté non reconnu » à tort (P2-291) : Ecluse.redact (chemin du produit)"
+# Phrases ordinaires sans aucune entité annotée : toute phrase signalée ou masquée
+# est un signalement ou un masquage en trop. Le témoin durci (630, graine 42) et le
+# témoin d'origine (300) sont ceux des deux sections ci-dessus ; le témoin neuf
+# (630, graine 43) a été écrit pour P2-282 (mêmes familles, jamais lu avant).
+# Avant P2-282 : durci 49, neuf 41, d'origine 0 phrases signalées à tort.
+produit "générateur mots-nombres durci, graine 43" "$B/transcrit/corpus_temoin_mots_nombres_dur_g43.jsonl" python3 "$B/generate_corpus_mots_nombres_dur.py" --n 90 --seed 43 --out "$B/transcrit/corpus_temoin_mots_nombres_dur_g43.jsonl" || true
+for t in "durci (630, graine 42):temoin_mots_nombres_dur" "neuf (630, graine 43):temoin_mots_nombres_dur_g43" "d'origine (300, graine 42):temoin_mots_nombres"; do
+  nom=${t%%:*}; f=${t#*:}
+  if produit "signalements à tort, témoin $nom, Ecluse.redact" "$B/transcrit/pred_signalements_$f.jsonl" redact run_temoin_nombres_dictes.dart "../../bench/transcrit/corpus_$f.jsonl" "../../bench/transcrit/pred_signalements_$f.jsonl"; then
+    python3 "$B/compte_signalements_a_tort.py" "signalements à tort, témoin $nom" "$B/transcrit/pred_signalements_$f.jsonl"
+  fi
+done
+
 echo "## fuite par OCR (P2-264, P2-268) : Ecluse.redact (chemin du produit)"
 # « O »/« o » pour 0, « l »/« I » pour 1 : 1 200 positifs (5 types x 3 confusions
 # x avec/sans libellé x 40), 400 témoins d'origine et 450 témoins durcis.
