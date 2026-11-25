@@ -362,7 +362,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-292 | mesure | Coût réel de la garde du mot voisin (P2-282) : identifiants dictés abîmés précédés de « code » sans libellé ; rien corrigé | P2-282 | fusionnée |
 | P2-293 | mesure | IBAN en paires : sonde élargie aux séparateurs point, tiret, barre et aux confusions d'OCR ; coût des gardes de P2-288 ; rien corrigé | P2-288 | fusionnée |
 | P2-294 | code | Établissements en 60 colonnes : « IME La Source », « CH de Vesoul », « SSIAD de Gray » non couverts en entier sur le flou réaliste | P2-289 | à faire |
-| P2-295 | spec | « Type + mot générique » (« Résidence Autonomie », 2 063 / 200 000) : options chiffrées pour la décision du mainteneur | P2-289 | à faire |
+| P2-295 | spec | « Type + mot générique » (« Résidence Autonomie », 2 063 / 200 000) : options chiffrées pour la décision du mainteneur | P2-289 | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
