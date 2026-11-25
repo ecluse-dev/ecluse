@@ -361,8 +361,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-291 | code | Tableau de bord : signalements « nombre dicté non reconnu » à tort suivis par `etat.sh` (durci 630, neuf graine 43, origine 300) | P2-282 | fusionnée |
 | P2-292 | mesure | Coût réel de la garde du mot voisin (P2-282) : identifiants dictés abîmés précédés de « code » sans libellé ; rien corrigé | P2-282 | fusionnée |
 | P2-293 | mesure | IBAN en paires : sonde élargie aux séparateurs point, tiret, barre et aux confusions d'OCR ; coût des gardes de P2-288 ; rien corrigé | P2-288 | fusionnée |
-| P2-294 | code | Établissements en 60 colonnes : « IME La Source », « CH de Vesoul », « SSIAD de Gray » non couverts en entier sur le flou réaliste | P2-289 | à faire |
-| P2-295 | spec | « Type + mot générique » (« Résidence Autonomie », 2 063 / 200 000) : options chiffrées pour la décision du mainteneur | P2-289 | PR ouverte |
+| P2-294 | code | Établissements en 60 colonnes : « IME La Source », « CH de Vesoul », « SSIAD de Gray » non couverts en entier sur le flou réaliste | P2-289 | bloquée |
+| P2-295 | spec | « Type + mot générique » (« Résidence Autonomie », 2 063 / 200 000) : options chiffrées pour la décision du mainteneur | P2-289 | fusionnée |
+| P2-296 | mesure | Faux tableau à 60 colonnes : 3 documents sur 400 du flou réaliste refusés (« ligne 7 : 3 colonnes au lieu de 2 ») ; cause, et coût d'une règle plus stricte sur les tableaux de noms ; rien corrigé | — | à faire |
+| P2-297 | mesure | Établissements en majuscules : 69 / 400 (réaliste) et 98 / 114 (adversarial) couverts sans aucune entité `etablissement` ; par quoi ils sont couverts, et ce qui partirait si ce type-là manquait ; rien corrigé | P2-290 | à faire |
+| P2-298 | code | Témoin de 480 documents : `bench/COMPARATIF.md` et `bench/ARTICLE.md` disent encore 16 / 480 pour Écluse ; remesurer et mettre à jour (9 / 480 attendu après P2-289) | P2-290 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1581,6 +1584,10 @@ quand** : tableau garde × écriture (perdus, évités) et recommandation chiffr
 
 ### P2-294 — Établissements en 60 colonnes (code)
 
+**Bloquée (PR #551, fermée sans fusion)** : la fiche est fausse. Les trois
+documents ne sont pas couverts en partie : `Ecluse.redact` les refuse en entier
+(tableau ambigu, aucune fuite). Remplacée par P2-296.
+
 Après P2-289, trois établissements du corpus flou réaliste coupé à 60 colonnes
 restent couverts en partie par `Ecluse.redact` (« IME La Source », « CH de
 Vesoul », « SSIAD de Gray », identiques avant et après P2-289). Travail : test
@@ -1602,3 +1609,44 @@ adversarial et principal, et une recommandation. **Aucune ligne de code de
 production.** **Fini quand** : tableau option × (évités, perdus) et questions
 fermées pour le mainteneur.
 
+### P2-296 — Faux tableau à 60 colonnes (mesure)
+
+P2-294 (PR #551) : sur le flou réaliste coupé à 60 colonnes
+(`generate_corpus_flou.py --n 400 --seed 42`, puis
+`generate_corpus_mise_en_page.py --largeur 60`), les documents 27, 292 et 395
+sont refusés par `Ecluse.redact` (`TableauAmbiguException`, « ligne 7 : 3
+colonnes au lieu de 2 »). Le refus fait ce qu'il doit : rien ne part. Mais trois
+documents sur 400 (0,75 %) ne sont pas traités du tout. Travail : trouver pourquoi
+la coupure à 60 colonnes fabrique un tableau de noms (`tableau_csv.dart`) ;
+simuler au plus trois règles plus strictes (le temps de la mesure, jamais
+commitées) et mesurer pour chacune, par `Ecluse.redact` : documents refusés à tort
+évités sur les largeurs 60 et 90, et vrais tableaux de noms **acceptés à tort**
+(donc envoyés) sur les corpus de tableaux du dépôt. Rapport dans
+`agent/specs/P2-296.md`. **Rien n'est corrigé.** **Fini quand** : cause écrite,
+tableau règle × (refus évités, vrais tableaux acceptés à tort), recommandation
+chiffrée. Si une règle accepte un seul vrai tableau à tort, elle est déconseillée
+(règle 4 de `CLAUDE.md`).
+
+### P2-297 — Établissements en majuscules sans type `etablissement` (mesure)
+
+P2-290 et P2-295 : en majuscules, 69 établissements sur 400 du flou réaliste et
+98 sur 114 de l'adversarial sont couverts en entier, mais par aucune entité de
+type `etablissement`. Travail : par `Ecluse.redact`, dire par quel type chacun est
+couvert (personne, lieu, autre), document par document, et ce que cela change
+pour la restauration et pour le rapport de risque (type affiché, F). Vérifier si
+`LIMITES.md` le dit déjà (mots-clés lus dans leur casse d'origine). Rapport dans
+`agent/specs/P2-297.md`. **Rien n'est corrigé.** **Fini quand** : tableau type
+couvrant × corpus, effet sur la restauration et sur le rapport, et
+recommandation chiffrée (correction ou ligne de `LIMITES.md`).
+
+### P2-298 — Témoin de 480 documents : mettre à jour le comparatif (code)
+
+P2-290 : après P2-289, Écluse masque à tort 9 documents sur 480 du témoin sans
+donnée personnelle (contre 16), tous « Résidence Autonomie » ou « Foyer D'accueil
+Médicalisé ». `bench/COMPARATIF.md` (ligne « Documents masqués à tort ») et
+`bench/ARTICLE.md` disent encore 16 / 480. Travail : rejouer
+`python3 bench/comparatif.py --temoin` sur `main`, reporter les chiffres Écluse
+(documents et caractères), dire en une phrase d'où viennent les 9 restants et
+renvoyer à P2-295 ; ne toucher aucun chiffre des autres outils sans l'avoir
+rejoué. **Fini quand** : les deux fichiers disent la valeur rejouée, la commande
+pour la reproduire y figure, `controle_etat.py` conforme.
