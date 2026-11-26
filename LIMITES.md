@@ -916,6 +916,20 @@ détections identiques avant et après. **Ce qui reste :**
   autres refus ont la même cause, sans ligne recollée), pas une règle
   nouvelle. Des 13 adresses, 12 sont maintenant couvertes et 1 est dans ce
   document refusé.
+- **Coût des faux tableaux selon la largeur** (P2-296, `Ecluse.redact`, flou
+  réaliste, 400 documents, graine 42) : 0 document refusé à partir de 70
+  colonnes, 3 à 60, 14 à 15 à 50-55. Le refus fait ce qu'il doit : rien ne part,
+  mais le document n'est pas traité. Les trois règles plus souples mesurées
+  enverraient de vrais tableaux de noms à tort (jusqu'à 80 documents de la
+  sonde) : aucune n'est retenue (règle 4 de `CLAUDE.md`). Le message d'exception
+  parle de « tableau de noms » même quand la colonne en cause est une date de
+  naissance.
+- **Établissements en capitales masqués comme une personne** (P2-297) : en
+  capitales, 69 établissements sur 400 (flou réaliste) et 98 sur 114
+  (adversarial) sont masqués par un jeton de personne (`[NOM_k]`) au lieu de
+  `[ETABLISSEMENT_k]`, à cause de l'article élidé en tête (« L'HÔPITAL… »). Rien
+  ne part en clair, la restauration est exacte et le rapport de risque n'en
+  dépend pas ; seul le type du jeton est faux.
 
 Dans tous les autres cas, le coût reste symétrique : entre « fusionner deux
 lignes à tort » et « rater une entité coupée par la mise en forme », le
