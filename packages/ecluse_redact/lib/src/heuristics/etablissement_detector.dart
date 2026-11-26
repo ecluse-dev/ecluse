@@ -28,8 +28,36 @@ import 'etablissement_keywords.dart';
 /// `Hospitalier`, pas de connecteur qui traîne). Il s'arrête à la première
 /// ponctuation, au premier saut de ligne, ou au premier mot en minuscule
 /// hors liste de connecteurs.
+///
+/// **Mots génériques (P2-301).** Un type écrit en toutes lettres (« Résidence »,
+/// « Foyer », « Centre »…) suivi *seulement* de mots de [motsGeneriques]
+/// (« Résidence Autonomie », « Foyer D'accueil Médicalisé », « Centre
+/// Social ») désigne une catégorie, pas un établissement : il n'est pas
+/// masqué. Sans cette garde, 2 063 documents sur 200 000 phrases du soin sans
+/// personne portaient ce masquage (P2-295). La garde ne vaut ni pour un sigle
+/// (« CH Services » reste masqué), ni pour un nom entre guillemets, ni dès
+/// qu'un mot hors liste figure dans le nom (« Résidence Autonomie Horizon »
+/// est masqué en entier). **Limite assumée** : la liste ne connaît que ce
+/// qu'elle contient ; un établissement réellement nommé « Résidence
+/// Autonomie » ne serait pas masqué (voir `LIMITES.md`, 5.2).
 final class EtablissementDetector implements EntityDetector {
   const EtablissementDetector();
+
+  /// Mots génériques (en minuscules) qui, seuls derrière un type en toutes
+  /// lettres, ne forment pas un nom d'établissement. Liste fermée et
+  /// extensible : y ajouter un mot revient à parier qu'aucun établissement ne
+  /// porte ce seul mot comme nom (P2-295, question 2). Les deux écritures de
+  /// l'apostrophe sont présentes.
+  static const Set<String> motsGeneriques = {
+    'autonomie',
+    "d'accueil",
+    'd’accueil',
+    'médicalisé',
+    'médicalisée',
+    'services',
+    'social',
+    'agricole',
+  };
 
   @override
   EntityType get type => EntityType.etablissement;
@@ -69,10 +97,32 @@ final class EtablissementDetector implements EntityDetector {
     '|$_segment(?:[ \\t]+$_segment)*)',
   );
 
+  /// Vrai si [nom] (mot-clé compris) est un type en toutes lettres suivi
+  /// seulement de mots génériques. Ne lit que la forme, jamais n'imprime la
+  /// valeur.
+  static bool _typeEtMotsGeneriques(String nom) {
+    var motCle = '';
+    for (final k in [..._keywords, ...etablissementKeywordsMinuscules]) {
+      if (nom.startsWith(k) && k.length > motCle.length) motCle = k;
+    }
+    if (motCle.isEmpty) return false;
+    // Un sigle (« CH », « EHPAD », « IMPro ») n'est pas un type en toutes
+    // lettres : il reste masqué quel que soit le mot qui suit.
+    if (motCle == motCle.toUpperCase() || motCle == 'IMPro') return false;
+    final mots = nom
+        .substring(motCle.length)
+        .split(RegExp(r'[ \t]+'))
+        .where((m) => m.isNotEmpty)
+        .toList();
+    return mots.isNotEmpty &&
+        mots.every((m) => motsGeneriques.contains(m.toLowerCase()));
+  }
+
   @override
   List<DetectedEntity> detect(String text) {
     final results = <DetectedEntity>[];
     for (final match in _pattern.allMatches(text)) {
+      if (_typeEtMotsGeneriques(match.group(0)!)) continue;
       results.add(
         DetectedEntity(
           type: EntityType.etablissement,
