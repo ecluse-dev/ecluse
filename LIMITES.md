@@ -669,6 +669,29 @@ couvert par les motifs ajoutés (un nom commun de métier ou une civilité
 absents des tables `_civiliteAvant` / `_nomCommunAvant`) resterait lu comme
 un lieu ; aucun cas de ce type n'a été trouvé sur les corpus mesurés.
 
+**Mots courants lus comme une commune : liste d'exclusion (P2-302, décision du
+26 novembre, point 6).** La référence publique porte pour communes des mots
+courants (« Son », « Aucun », « Salles », « La Réunion », « ARS »…). Lus comme un
+lieu, ils fabriquaient un quasi-identifiant fantôme, et **un seul mot courant en
+tête de phrase suffisait à faire passer un rapport de `evalue` à `nonEvaluable`**
+(`agent/specs/P2-287.md` § 5). `motsCourantsSansLieu` (`ecluse_reid`, 21 mots,
+extensible) les écarte, **sauf derrière un locatif écrit en minuscules** (« né à La
+Réunion », « habite à Fontaine »). Mesuré par `Ecluse.redact` avec référence, graine
+42 : documents du corpus sans personne (60 000) portant un lieu qui est un mot courant
+17 333 → 0 ; lieux de mots courants écartés 18 650 sur 18 653 (les 3 restants sont
+« Chevrier », volontairement hors liste) ; 0 lieu perdu sur les corpus de
+quasi-identifiants (320 et 396 lieux lus avant et après) ; sonde isolée de 112 mots,
+15 lus comme un lieu → 0 ; sonde combinée : les 7 mots qui faisaient perdre le rapport le
+laissent évalué (bande moyen, F = 31,6, comme sans la phrase). **La liste ne couvre que
+ce qu'elle contient** : elle est écrite d'après les mots observés dans les corpus
+synthétiques du dépôt et la sonde de 112 mots, donc le « 0 perdu » et le « 100 % écartés »
+mesurent ce qu'elle couvre, pas ce qu'elle manque ; tout autre mot courant homonyme d'une
+commune reste lu comme un lieu. **Coût assumé** : un vrai lieu de la liste écrit sans
+locatif en minuscules (« Domicile : Fontaine », « Mont (25) », un titre « Résidence De
+Salles ») n'est plus lu ; le rapport de risque l'ignore (fausse rassurance possible, du côté
+d'un F plus grand), le masquage du texte n'est pas concerné. « Plan » seul est aussi dans
+la liste (sans lui, exclure « Le Plan » laissait « Plan »).
+
 **QI par `Ecluse.redact` : patronyme en clair derrière un métier sans
 civilité (P2-175, non corrigé).** La ligne « QI par `Ecluse.redact` » du
 tableau de bord (`bench/score_qi_redact.py`) mesure, sur le texte que
