@@ -694,21 +694,31 @@ Future<List<DetectedEntity>> _lireFenetre(
   return const [];
 }
 
-/// Positions de départ des suites d'au moins [_kSuiteNonReconnue]
-/// mots-nombres qu'aucune entité de [entites] ne recouvre **en entier** :
-/// « nombre dicté non reconnu ». Ne renvoie que des positions, jamais de texte
-/// (point 4 des décisions du 23 novembre).
+/// Suites d'au moins [_kSuiteNonReconnue] mots-nombres qu'aucune entité de
+/// [entites] ne recouvre **en entier** : « nombre dicté non reconnu ». Ne
+/// renvoie que des positions de départ, jamais de texte (point 4 des décisions
+/// du 23 novembre), en deux listes :
+///
+/// - `signalees` : le signalement ordinaire, « relire avant envoi » ;
+/// - `coupees` : suites que la garde du mot voisin ([_motVoisinCoupe], P2-282)
+///   dispense du signalement ordinaire. Elles ne sont pas masquées pour autant :
+///   un avertissement distinct, moins pressant, les remplace (P2-299, décision du
+///   26 novembre, point 3 : une garde ne rend jamais une donnée silencieuse ;
+///   mesure P2-292 : 94 % des identifiants dictés abîmés précédés de « code » sans
+///   libellé partaient sans aucun avertissement).
 ///
 /// P2-281 : une entité qui ne recouvre qu'une partie de la suite (par exemple
 /// un `iban` posé sur le début d'un IBAN dicté abîmé) ne dispense pas du
 /// signalement : le reste de la suite part en clair. Seules comptent les
 /// lettres non recouvertes : un séparateur laissé entre deux entités
 /// contiguës (espace, trait d'union) n'est pas un passage non lu.
-List<int> _suitesNonReconnues(String text, List<DetectedEntity> entites) {
+({List<int> signalees, List<int> coupees}) _suitesNonReconnues(
+    String text, List<DetectedEntity> entites) {
+  final signalees = <int>[];
+  final coupees = <int>[];
   final suites = _suitesDeMotsNombres(text,
       kMin: _kSuiteNonReconnue, kMotCle: _kSuiteNonReconnue);
-  if (suites.isEmpty) return const [];
-  final r = <int>[];
+  if (suites.isEmpty) return (signalees: signalees, coupees: coupees);
   var k = 0;
   for (final s in suites) {
     while (k < entites.length && entites[k].end <= s.debut) {
@@ -731,9 +741,10 @@ List<int> _suitesNonReconnues(String text, List<DetectedEntity> entites) {
       if (_contientLettre(text, pos, limite)) nonLu = true;
       pos = limite;
     }
-    if (nonLu && !_motVoisinCoupe(text, s.debut)) r.add(s.debut);
+    if (!nonLu) continue;
+    (_motVoisinCoupe(text, s.debut) ? coupees : signalees).add(s.debut);
   }
-  return r;
+  return (signalees: signalees, coupees: coupees);
 }
 
 /// Nombre de caractères avant une suite où l'on cherche un mot voisin
@@ -767,7 +778,8 @@ final RegExp _libelleIdentifiant = RegExp(
 /// étaient signalées à tort (mesure P2-280), et un seuil plus haut aurait fait
 /// taire des identifiants abîmés (23 à 46 de plus). Réserve : la liste des mots
 /// a été choisie après lecture du témoin durci ; un identifiant dicté précédé
-/// de « code » sans libellé ne serait plus signalé (`LIMITES.md`).
+/// de « code » sans libellé n'est plus signalé « non reconnu » : depuis P2-299
+/// il l'est par un avertissement distinct (`LIMITES.md`).
 bool _motVoisinCoupe(String text, int debut) {
   final fenetre = text.substring(
       debut > _kFenetreMotVoisin ? debut - _kFenetreMotVoisin : 0, debut);

@@ -68,6 +68,16 @@ class Scoreur(unittest.TestCase):
         pred = {"entities": [{"start": 10, "end": 20}], "signalements": 0}
         self.assertEqual(etat(self.ENT, pred), "rien")
 
+    def test_averti_par_la_garde_du_mot_voisin(self):
+        # P2-299 : l'avertissement distinct n'est ni un signalement ordinaire ni
+        # le silence ; le signalement ordinaire l'emporte quand les deux existent.
+        pred = {"entities": [], "signalements": 0, "signalements_mot_voisin": 1}
+        self.assertEqual(etat(self.ENT, pred), "averti")
+        pred["signalements"] = 1
+        self.assertEqual(etat(self.ENT, pred), "signalé")
+        # Ancien format de prédictions, sans le champ : « rien ».
+        self.assertEqual(etat(self.ENT, {"entities": [], "signalements": 0}), "rien")
+
     def test_classes(self):
         self.assertEqual(classe({"bras": "temoin"}), "temoin")
         self.assertEqual(classe({"bras": "sans_lib", "lib_fenetre": False}), "sans_lib")

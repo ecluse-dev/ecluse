@@ -2399,6 +2399,31 @@ du témoin flou** sont toutes de type `siren`, toutes sur « TVA FR11123456782 �
 depuis la décision du 23 novembre (P2-259 y masque aussi « SIRET 12345678200010 » :
 216 prédictions si les deux sont fusionnées). Le témoin n'a pas été modifié.
 
+## Garde du mot voisin : avertissement distinct (P2-299, 26 novembre 2026)
+
+Décision du 26 novembre, point 3. Chemin mesuré : `Ecluse.redact`
+(`run_temoin_nombres_dictes.dart`), graine 42, corpus
+`generate_corpus_mot_voisin.py` (87 780 documents, deux modes). Avant : la garde
+de P2-282 coupait le signalement « nombre dicté non reconnu » et rien ne le
+remplaçait. Après : un avertissement distinct, « suite de nombres dictés
+précédée d'un mot comme « code » : non masquée, à vérifier » (positions et
+compte, jamais la valeur).
+
+| Mesure | Avant | Après |
+|---|---|---|
+| Identifiants signalés au témoin, sans libellé, ≤ 100 caractères : passés à « rien » | **6 214** / 6 580 | **0** / 6 580 |
+| … portés par l'avertissement distinct | 0 | 6 214 |
+| Signalements « nombre dicté non reconnu » à tort : durci / neuf / d'origine | 0 / 0 / 0 | 0 / 0 / 0 |
+| Avertissements distincts sur ces témoins (phrases ordinaires) | — | **49** / 41 / 0 |
+| Avec libellé (« code iban »), ≤ 100 : passés à « rien » | 0 | 0 |
+
+Prédictions de tous les autres corpus identiques octet pour octet
+(`bench/equivalence_predictions.sh` : 72 fichiers identiques ; 5 différents comme
+prévu, ne différant que par le champ `signalements_mot_voisin` ou par les lignes
+« signalements à tort », sans changement d'entité). Les 49 / 41 avertissements des
+témoins sont les phrases que le signalement ordinaire signalait à tort avant P2-282 :
+le prix de la garde est un message moins pressant sur des codes d'accès.
+
 ## Valeurs courantes contrôlées (P2-265, 23 novembre 2026)
 
 Tout ce qui précède est de l'**historique daté** : des tableaux écrits section
@@ -2458,9 +2483,9 @@ témoin mots-nombres : 0 prédictions sur 300 phrases
 ## mots-nombres durci (P2-270, P2-275) : Ecluse.redact, aucune entité annotée
 mots-nombres durci : 0 prédictions sur 630 phrases
 ## signalements « nombre dicté non reconnu » à tort (P2-291) : Ecluse.redact (chemin du produit)
-signalements à tort, témoin durci (630, graine 42) : 0 signalées à tort, 0 masquées à tort sur 630 phrases
-signalements à tort, témoin neuf (630, graine 43) : 0 signalées à tort, 0 masquées à tort sur 630 phrases
-signalements à tort, témoin d'origine (300, graine 42) : 0 signalées à tort, 0 masquées à tort sur 300 phrases
+signalements à tort, témoin durci (630, graine 42) : 0 signalées à tort, 0 masquées à tort sur 630 phrases ; 49 avertissements « mot voisin »
+signalements à tort, témoin neuf (630, graine 43) : 0 signalées à tort, 0 masquées à tort sur 630 phrases ; 41 avertissements « mot voisin »
+signalements à tort, témoin d'origine (300, graine 42) : 0 signalées à tort, 0 masquées à tort sur 300 phrases ; 0 avertissements « mot voisin »
 ## fuite par OCR (P2-264, P2-268) : Ecluse.redact (chemin du produit)
 TOTAL nir libelle couverts 120/120 fuite 0.0 %
 TOTAL rpps libelle couverts 120/120 fuite 0.0 %
