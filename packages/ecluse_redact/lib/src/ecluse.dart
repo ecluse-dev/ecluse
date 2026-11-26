@@ -625,16 +625,28 @@ abstract final class Ecluse {
 
   /// Signalement non bloquant d'une suite dictée non reconnue (P2-267, option
   /// B de la spec P2-155) : positions et compte seulement, jamais de valeur.
+  ///
+  /// P2-299 : une suite que la garde du mot voisin dispense du signalement
+  /// ordinaire (« code », « digicode »… dans les 100 caractères avant, sans
+  /// libellé d'identifiant) reçoit un avertissement distinct, moins pressant :
+  /// elle n'est pas masquée, et une garde ne rend jamais une donnée silencieuse.
   static List<String> _avertissementNombreDicte(
       String text, List<DetectedEntity> resolved) {
-    final positions = _suitesNonReconnues(text, resolved);
-    if (positions.isEmpty) return const [];
-    final n = positions.length;
-    final liste = positions.take(5).join(', ');
+    final suites = _suitesNonReconnues(text, resolved);
+    String passages(List<int> positions) {
+      final n = positions.length;
+      final liste = positions.take(5).join(', ');
+      return '($n passage${n > 1 ? "s" : ""}, position${n > 1 ? "s" : ""} '
+          '$liste${n > 5 ? ", …" : ""})';
+    }
+
     return [
-      'nombre dicté non reconnu, relire avant envoi ($n passage'
-          '${n > 1 ? "s" : ""}, position${n > 1 ? "s" : ""} $liste'
-          '${n > 5 ? ", …" : ""}).'
+      if (suites.signalees.isNotEmpty)
+        'nombre dicté non reconnu, relire avant envoi '
+            '${passages(suites.signalees)}.',
+      if (suites.coupees.isNotEmpty)
+        "suite de nombres dictés précédée d'un mot comme « code » : non "
+            'masquée, à vérifier ${passages(suites.coupees)}.',
     ];
   }
 
