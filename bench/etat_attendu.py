@@ -62,9 +62,9 @@ ATTENDU = [
          "NIR, RPPS, IBAN à clé fausse derrière un libellé (P2-275)"),
     ]),
     ("## sonde des gardes", [
-        (r"^sonde (adresse|finess|iban|nir) \S+ .+ : couverts \d+/\d+$", 27,
+        (r"^sonde (adresse|finess|iban|nir) \S+ .+ : couverts \d+/\d+( ; non couverts signalés \d+/\d+)?$", 27,
          "identifiants de la sonde, par type, clé et écriture (P2-278, P2-283)"),
-        (r"^sonde TOTAL : couverts \d+/\d+$", 1, "total de la sonde"),
+        (r"^sonde TOTAL : couverts \d+/\d+( ; non couverts signalés \d+/\d+)?$", 1, "total de la sonde"),
     ]),
     ("## faux accords par détecteur", [
         (r"^faux accords : .+ : \d+ documents, \d+ avec au moins une entité$", 2,

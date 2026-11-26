@@ -46,6 +46,15 @@ def couvert(debut, fin, intervalles):
     return pos >= fin
 
 
+def ligne_signales(non_couverts, signales):
+    """Suffixe d'une ligne du tableau de bord : vide quand tout est couvert (les
+    lignes d'avant restent identiques), sinon combien des identifiants non
+    couverts en entier portent un avertissement « à vérifier »."""
+    if non_couverts == 0:
+        return ""
+    return f" ; non couverts signalés {signales}/{non_couverts}"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--corpus", required=True)
@@ -59,10 +68,16 @@ def main():
     a = ap.parse_args()
     corpus = [json.loads(l) for l in open(a.corpus, encoding="utf-8")]
     pred = {}
+    verifier = {}
     for l in open(a.pred, encoding="utf-8"):
         d = json.loads(l)
         pred[d["id"]] = d["entities"]
+        verifier[d["id"]] = bool(d.get("a_verifier"))
     pos, tot, neg_docs, neg_types, n_neg = Counter(), Counter(), 0, Counter(), 0
+    # Identifiants non couverts en entier dont le document porte un avertissement
+    # « à vérifier » (prédictions écrites avec `--confiance`) : P2-300, une garde ne
+    # rend jamais une donnée silencieuse.
+    signales = Counter()
     for d in corpus:
         if a.sous_ensemble and d.get("presentation") != a.sous_ensemble:
             continue
@@ -92,13 +107,17 @@ def main():
             tot[k] += 1
             if couvert(e["start"], e["end"], inter):
                 pos[k] += 1
+            elif verifier.get(d["id"]):
+                signales[k] += 1
     if a.lignes:
         # Une ligne par clé : « sonde <type> <clé> <écriture> : couverts a/b ».
         for k in sorted(tot):
             type_, cle, sep = k.split("|", 2)
             print(f"sonde {type_} {cle or 'cle_non_calculable'} {sep} : "
-                  f"couverts {pos[k]}/{tot[k]}")
-        print(f"sonde TOTAL : couverts {sum(pos.values())}/{sum(tot.values())}")
+                  f"couverts {pos[k]}/{tot[k]}" + ligne_signales(tot[k] - pos[k], signales[k]))
+        print(f"sonde TOTAL : couverts {sum(pos.values())}/{sum(tot.values())}"
+              + ligne_signales(sum(tot.values()) - sum(pos.values()),
+                               sum(signales.values())))
         if n_neg:
             print(f"sonde témoins : {neg_docs} / {n_neg} documents avec une "
                   f"prédiction")
