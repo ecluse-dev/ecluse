@@ -5,8 +5,9 @@ identifiants dictés abîmés précédés d'un mot voisin.
 Entrées : `corpus_mot_voisin_<mode>.jsonl` (generate_corpus_mot_voisin.py) et la
 sortie de `run_temoin_nombres_dictes.dart` (chemin `Ecluse.redact`). Pour chaque
 document : « masqué » (l'identifiant abîmé est entièrement recouvert), « signalé »
-(pas masqué en entier, avertissement « nombre dicté non reconnu ») ou « rien »
-(ni l'un ni l'autre : l'identifiant part en clair sans avertissement).
+(pas masqué en entier, avertissement « nombre dicté non reconnu »), « averti »
+(pas masqué en entier, avertissement distinct de la garde du mot voisin, P2-299) ou
+« rien » (aucun avertissement : l'identifiant part en clair sans rien dire).
 
 Le coût d'un bras est mesuré par paires : même document source, même distance,
 comparé au bras « temoin » (mots neutres de même longueur, sans mot voisin).
@@ -30,7 +31,9 @@ def etat(e, pred):
             break
     if ok:
         return "masqué"
-    return "signalé" if pred["signalements"] > 0 else "rien"
+    if pred["signalements"] > 0:
+        return "signalé"
+    return "averti" if pred.get("signalements_mot_voisin", 0) > 0 else "rien"
 
 
 def charge(chemin_corpus, chemin_pred):
@@ -74,7 +77,8 @@ def main():
     for k in ("temoin", "sans_lib", "sans_lib_origine", "avec_lib", "avec_lib_hors_fenetre"):
         x = t[k]
         n = sum(x.values())
-        print(f"{k:24} n={n:6} masqué={x['masqué']:6} signalé={x['signalé']:6} rien={x['rien']:6}")
+        print(f"{k:24} n={n:6} masqué={x['masqué']:6} signalé={x['signalé']:6} "
+              f"averti={x['averti']:6} rien={x['rien']:6}")
     # Tableau 2 : mot × distance, bras sans libellé et bras avec libellé :
     # identifiants passés de « signalé » (témoin) à « rien » (garde).
     for bras, filtre in (("sans_lib", lambda d: not d["lib_fenetre"]),
@@ -98,6 +102,16 @@ def main():
                 ligne += f"{len(perdus):>5}/{len(base_sig):<4}+{len(autres):<3}"
             print(ligne)
         print("(cellule : perdus / signalés au témoin + autres changements d'état)")
+    # Résumé P2-299 : parmi les identifiants que le témoin signalait, sans
+    # libellé, à au plus 100 caractères du mot voisin, combien n'ont plus aucun
+    # avertissement (« rien ») et combien ont l'avertissement distinct (« averti »).
+    sel = [d for d in docs if d["bras"] == "sans_lib" and not d["lib_fenetre"]
+           and d["d"] <= 100
+           and temoin[(d["mode"], d["source"], d["d"])] == "signalé"]
+    c = Counter(d["etat"] for d in sel)
+    print(f"\n## Résumé : sans libellé, d <= 100, signalés au témoin : {len(sel)} ; "
+          f"rien={c['rien']} averti={c['averti']} signalé={c['signalé']} "
+          f"masqué={c['masqué']}")
 
 
 if __name__ == "__main__":

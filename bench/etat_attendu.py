@@ -48,7 +48,7 @@ ATTENDU = [
     ("## signalements « nombre dicté non reconnu » à tort", [
         (r"^signalements à tort, témoin (durci \(630, graine 42\)|neuf \(630, graine 43\)|"
          r"d'origine \(300, graine 42\)) : \d+ signalées à tort, \d+ masquées à tort "
-         r"sur \d+ phrases$", 3,
+         r"sur \d+ phrases ; \d+ avertissements « mot voisin »$", 3,
          "témoin durci, témoin neuf et témoin d'origine (P2-291)"),
     ]),
     ("## fuite par OCR", [

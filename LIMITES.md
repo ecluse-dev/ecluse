@@ -569,13 +569,22 @@ pire 1,1 % par type (FINESS). Voir `bench/ETAT.md`.
   « mot de passe », « mdp » ou « pin » figure dans les 100 caractères qui précèdent
   la suite, sans libellé d'identifiant (nir, sécu, iban, rib, compte, banque,
   virement, rpps, finess, siren, adeli, identifiant…) dans la même fenêtre, la suite
-  n'est pas signalée. Mesuré par `Ecluse.redact` : signalements à tort sur le témoin
-  durci 49 → 0 (graine 42, critère choisi après lecture de ce témoin) et 41 → 0 sur
-  un témoin neuf (graine 43) ; 0 → 0 sur le témoin d'origine (300) ; identifiants
-  abîmés sans avertissement inchangés (aucun des corpus abîmés ne place « code »
-  devant l'identifiant, le coût n'y est donc pas mesurable). **Réserve** : un
-  identifiant dicté abîmé précédé de « code » sans libellé passe désormais sans
-  avertissement ; la part de tels textes dans de la dictée réelle n'est pas connue.
+  n'est pas signalée « non reconnu ». Mesuré par `Ecluse.redact` : signalements à tort
+  sur le témoin durci 49 → 0 (graine 42, critère choisi après lecture de ce témoin) et
+  41 → 0 sur un témoin neuf (graine 43) ; 0 → 0 sur le témoin d'origine (300).
+  **Avertissement distinct (P2-299, décision du 26 novembre, point 3)** : la suite
+  n'est pas masquée pour autant, et sans mot de plus elle partait sans aucun
+  message (P2-292 : 6 214 identifiants dictés abîmés sur 6 580, soit 94,4 %, sans
+  libellé, à au plus 100 caractères d'un mot voisin). Elle reçoit maintenant
+  « suite de nombres dictés précédée d'un mot comme « code » : non masquée, à
+  vérifier » (positions et compte, jamais la valeur), moins pressant que le
+  signalement ordinaire. Sur les témoins de phrases ordinaires, cela fait 49
+  (durci), 41 (neuf) et 0 (d'origine) avertissements distincts : ce sont les phrases
+  que le signalement ordinaire signalait à tort avant P2-282 ; le prix de la garde
+  est donc un message moins pressant sur des codes d'accès, au lieu de rien sur des
+  identifiants. **Réserve** : un code d'accès dicté chiffre par chiffre reçoit ce
+  message sans être une donnée personnelle ; le texte ne dit pas lequel des deux
+  c'est.
 - **FINESS dicté derrière un nom d'établissement (P2-271)** : le nom d'établissement
   qui chevauche un identifiant dicté validé est rogné autour de lui, les deux
   étendues sont gardées (avant P2-271, 6 à 9 FINESS sur 129 restaient en partie en

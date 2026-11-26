@@ -26,7 +26,19 @@ class CompteTest(unittest.TestCase):
             {"id": 4, "entities": [{"type": "nir", "start": 0, "end": 5}], "signalements": 1},
         ])
         try:
-            self.assertEqual(c.compte(p), (4, 2, 2))
+            self.assertEqual(c.compte(p), (4, 2, 2, 0))
+        finally:
+            os.unlink(p)
+
+    def test_avertissements_mot_voisin_comptes_a_part(self):
+        # P2-299 : l'avertissement distinct n'est pas un signalement ordinaire.
+        p = ecrit([
+            {"id": 1, "entities": [], "signalements": 0, "signalements_mot_voisin": 1},
+            {"id": 2, "entities": [], "signalements": 1, "signalements_mot_voisin": 0},
+            {"id": 3, "entities": [], "signalements": 0},
+        ])
+        try:
+            self.assertEqual(c.compte(p), (3, 1, 0, 1))
         finally:
             os.unlink(p)
 
