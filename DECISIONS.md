@@ -993,3 +993,50 @@ des documents, 0 masquage à tort sur 2 200 documents sans identifiant OCR.
 6. GO : 0 masquage à tort sur tous les témoins, dont un témoin durci de suites
    O/l/I ordinaires (références, lots, codes). Tâche P2-268.
 
+## 2026-11 — Gardes, seuils et faux masquages : décisions du 26 novembre
+
+Décisions du mainteneur sur les rapports `agent/specs/P2-272.md`, `P2-274.md`,
+`P2-287.md`, `P2-292.md`, `P2-293.md` et `P2-295.md` (chemin `Ecluse.redact`,
+graine 42, corpus synthétiques).
+
+0. **Principe : une garde ne rend jamais une donnée silencieuse.** Une garde
+   ajoutée pour éviter un masquage à tort, et qui retire un masquage, émet à la
+   place un avertissement dans `RedactResult.warnings` (sans la valeur). Un
+   masquage à tort gêne la lecture ; un identifiant parti en clair sans
+   avertissement est l'échec silencieux que la règle 4 de `CLAUDE.md` interdit.
+   S'applique aux gardes existantes (inventaire P2-303) et futures.
+1. **Gardes de P2-272 : prises.** `nir_suitelettre`, `finess_suitelettre` et
+   `adr_confusables` (0 perte mesurée), plus `iban_g45` : l'IBAN à clé fausse en
+   groupes de trois qu'elle ne masque plus est signalé (principe 0). Témoin durci
+   attendu : 14 → 2 documents masqués à tort. Tâche P2-300.
+2. **Seuil du signalement des nombres dictés : 9 mots-nombres, inchangé.**
+   Depuis P2-282, 0 signalement à tort sur 630 (P2-291) ; passer à 11 ajouterait
+   7 silences sur 4 840.
+3. **Garde du mot voisin (P2-282) : la coupure devient un avertissement
+   distinct**, moins pressant (« suite de nombres dictés précédée de “code” : non
+   masquée »). Mesure P2-292 : 94 % des identifiants dictés abîmés précédés de
+   « code » sans libellé partaient sans avertissement. Tâche P2-299.
+4. **IBAN en paires : aucune garde.** Les 13 masquages à tort sur 5 000 du témoin
+   élargi sont assumés et écrits dans `LIMITES.md` § 5.1 ; les gardes D et E
+   perdraient 29,7 % et 37,5 % des IBAN en paires écrits sans mot bancaire
+   (P2-293). À rouvrir sur des documents réels.
+5. **« Type + mot générique » : option 2, liste fermée** de mots génériques
+   (« Résidence Autonomie », « Foyer D'accueil Médicalisé »…), courte et
+   assumée, avec sa limite dans `LIMITES.md` (la liste ne connaît que ce qu'elle
+   contient). L'option 3 (exiger plus qu'un mot nu) est écartée : elle perd des
+   établissements réels d'un seul mot (« Clinique Pasteur »). Tâche P2-301.
+6. **Mot courant lu comme commune : liste d'exclusion** des mots courants en tête
+   de phrase pour les lieux (P2-287 : un seul mot fait perdre le rapport de risque
+   entier), extensible, avec la sonde comme jeu de test. Tâche P2-302.
+7. **Âge en lettres : hors lot**, écrit dans `LIMITES.md`. Un âge seul n'identifie
+   pas ; il relève du score de ré-identification.
+8. **OCR par un vrai moteur : pas sur `main`** tant qu'un pilote n'a pas fourni
+   des images réelles, mesurées chez lui (règle 7). `feat/ocr-scaffold` reste en
+   l'état.
+9. **Article de benchmark** : publié sur ecluse.dev et dans le dépôt après la
+   relecture du mainteneur et la mise à jour du témoin de 480 documents (P2-298).
+10. **Formulation de la table de correspondance inchangée** (« ne quitte jamais
+    le client ») tant que la transmission masquée n'existe pas.
+11. **Transmission masquée : rien n'est construit** sans un cas réel décrit par
+    un utilisateur.
+
