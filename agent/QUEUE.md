@@ -365,7 +365,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-295 | spec | « Type + mot générique » (« Résidence Autonomie », 2 063 / 200 000) : options chiffrées pour la décision du mainteneur | P2-289 | fusionnée |
 | P2-296 | mesure | Faux tableau à 60 colonnes : 3 documents sur 400 du flou réaliste refusés (« ligne 7 : 3 colonnes au lieu de 2 ») ; cause, et coût d'une règle plus stricte sur les tableaux de noms ; rien corrigé | — | fusionnée |
 | P2-297 | mesure | Établissements en majuscules : 69 / 400 (réaliste) et 98 / 114 (adversarial) couverts sans aucune entité `etablissement` ; par quoi ils sont couverts, et ce qui partirait si ce type-là manquait ; rien corrigé | P2-290 | fusionnée |
-| P2-298 | code | Témoin de 480 documents : `bench/COMPARATIF.md` et `bench/ARTICLE.md` disent encore 16 / 480 pour Écluse ; remesurer et mettre à jour (9 / 480 attendu après P2-289) | P2-290 | à faire |
+| P2-298 | code | Témoin de 480 documents : `bench/COMPARATIF.md` et `bench/ARTICLE.md` disent encore 16 / 480 pour Écluse ; remesurer et mettre à jour (9 / 480 attendu après P2-289) | P2-290 | fusionnée |
 | P2-299 | code | Garde du mot voisin (P2-282) : la coupure du signalement devient un avertissement distinct (décision du 26 novembre, point 3) | P2-292 | à faire |
 | P2-300 | code | Gardes de P2-272 : `nir_suitelettre`, `finess_suitelettre`, `adr_confusables`, et `iban_g45` avec avertissement (décision du 26 novembre, points 0 et 1) | P2-272 | à faire |
 | P2-301 | code | Établissements : liste fermée « type + mot générique » non masqués (décision du 26 novembre, point 5) | P2-295 | à faire |

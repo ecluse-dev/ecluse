@@ -193,10 +193,12 @@ Limites : la règle ne voit que les personnes posées par les listes du généra
 
 Chemin mesuré : `Ecluse.redact` (ce que reçoit le LLM) pour les deux colonnes Écluse ; la détection propre de chaque outil pour les autres.
 
+Mise à jour partielle (P2-298) : les deux colonnes Écluse de ce témoin, les familles ci-dessous et le décompte par famille ont été rejoués sur le commit `1b84f34` (après P2-289 : 16 → 9 documents) par `python3 bench/comparatif.py --temoin --outils ecluse_document,ecluse_session` ; les colonnes des autres outils sont celles du commit `c813ef4`, non rejouées. Les autres cellules Écluse du comparatif, rejouées dans le même appel, n'ont pas changé.
+
 | | Écluse, document par document | Écluse, session de dossier | Presidio par défaut | Presidio en français | spaCy fr_core_news_lg seul | EDS-Pseudo (règles) |
 |---|---:|---:|---:|---:|---:|---:|
-| Documents masqués à tort | 16/480 (3 %) | 16/480 (3 %) | 447/480 (93 %) | 456/480 (95 %) | 480/480 (100 %) | 257/480 (54 %) |
-| Caractères (hors blancs) masqués à tort | 253/141910 (0 %) | 253/141910 (0 %) | 9459/141910 (7 %) | 11521/141910 (8 %) | 24311/141910 (17 %) | 2471/141910 (2 %) |
+| Documents masqués à tort | 9/480 (2 %) | 9/480 (2 %) | 447/480 (93 %) | 456/480 (95 %) | 480/480 (100 %) | 257/480 (54 %) |
+| Caractères (hors blancs) masqués à tort | 180/141910 (0 %) | 180/141910 (0 %) | 9459/141910 (7 %) | 11521/141910 (8 %) | 24311/141910 (17 %) | 2471/141910 (2 %) |
 | type prédit `DATE` (documents / caractères) | — | — | — | — | — | 257/2469 |
 | type prédit `DATE_TIME` (documents / caractères) | — | — | 80/579 | — | — | — |
 | type prédit `LOC` (documents / caractères) | — | — | — | — | 348/4754 | — |
@@ -209,15 +211,14 @@ Chemin mesuré : `Ecluse.redact` (ce que reçoit le LLM) pour les deux colonnes 
 | type prédit `PER` (documents / caractères) | — | — | — | — | 242/3880 | — |
 | type prédit `PERSON` (documents / caractères) | — | — | 361/6888 | 242/3880 | — | — |
 | type prédit `PHONE_NUMBER` (documents / caractères) | — | — | 3/16 | 3/16 | — | — |
-| type prédit `etablissement` (documents / caractères) | 16/253 | 16/253 | — | — | — | — |
+| type prédit `etablissement` (documents / caractères) | 9/180 | 9/180 | — | — | — | — |
 
-Écluse (document par document), documents masqués à tort par famille : compte_rendu 7/80 ; consigne_service 0/80 ; courrier_type 0/80 ; note_logistique 9/80 ; planning_salles 0/80 ; protocole 0/80.
+Écluse (document par document), documents masqués à tort par famille : compte_rendu 0/80 ; consigne_service 0/80 ; courrier_type 0/80 ; note_logistique 9/80 ; planning_salles 0/80 ; protocole 0/80.
 
-Familles de masquage à tort d'Écluse sur le témoin (type `etablissement` seul, 16 documents sur 480, 253 caractères ; exemples synthétiques, aucune correction) :
+Familles de masquage à tort d'Écluse sur le témoin (type `etablissement` seul, 9 documents sur 480, 180 caractères ; exemples synthétiques, aucune correction) :
 
-1. **Sigle ou type d'établissement suivi de « à » et d'une ville**, 8 documents, tous des comptes rendus : « Prévoir un point d'étape avec CHU à Lille. » masque « CHU à Lille » (idem « SSIAD à Tours », « EHPAD à Nantes »). Le texte désigne un type de structure générique et une ville, pas une structure identifiable ; Écluse y lit une tournure d'établissement.
-2. **Dénomination de service en majuscules de titre** après un titre de note, 8 documents, toutes des notes logistiques : « Note Logistique La Résidence Autonomie. » masque « Résidence Autonomie » (idem « Foyer D'accueil Médicalisé »). La casse de titre fait lire un nom propre d'établissement ; la même dénomination en casse ordinaire (« la résidence autonomie ») n'est pas masquée dans ce témoin.
+1. **Dénomination de service en majuscules de titre** après un titre de note, 9 documents, toutes des notes logistiques (« Résidence Autonomie » dans 6, « Foyer D'accueil Médicalisé » dans 3) : « Note Logistique La Résidence Autonomie. » masque « Résidence Autonomie ». La casse de titre fait lire un nom propre d'établissement ; la même dénomination en casse ordinaire (« la résidence autonomie ») n'est pas masquée dans ce témoin. Ce sont les 9 documents restants : un type d'établissement suivi d'un mot générique, sans nom propre ; la décision de les laisser ou non est au mainteneur (`agent/specs/P2-295.md`). La famille « sigle ou type d'établissement suivi de « à » et d'une ville » (8 comptes rendus avant P2-289, par exemple « CHU à Lille ») n'est plus masquée : 0 / 80 comptes rendus.
 
-Aucun masquage à tort d'Écluse dans les quatre autres familles (consignes de service, courriers types, protocoles, plannings de salles) ni sur les numéros de salle, pages, articles de loi, codes de protocole, marques ou villes seules.
+Aucun masquage à tort d'Écluse dans les cinq autres familles (comptes rendus, consignes de service, courriers types, protocoles, plannings de salles) ni sur les numéros de salle, pages, articles de loi, codes de protocole, marques ou villes seules.
 
 Limite propre à ce témoin : il est produit par le projet, à partir de pools de mots limités (une quinzaine de villes, une dizaine de sigles) ; l'absence d'autres familles chez Écluse ne dit rien des tournures que ce générateur ne tire pas. Les autres outils produisent des types différents (`PERSON`, `LOC`, `MISC`…) sur des mots de ces mêmes phrases ; leurs masquages n'ont pas été décomposés famille par famille.
