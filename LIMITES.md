@@ -817,9 +817,26 @@ compris : « CHU à Lille » était masqué en entier. Corrigé (`[A-ZÀ-ÖØ-Þ
 dans `coupures_de_nom.dart`). Mesuré par `Ecluse.redact`, graine 42 : sur
 200 000 phrases sans personne, documents avec un établissement masqué 7 965 → 2 063
 (« sigle + à + ville » 5 902 → 0) ; corpus flou réaliste, bornes exactes
-317 → 400 / 400 ; adversarial 114 / 114 inchangé. Reste : « type + mot
-générique » (« Résidence Autonomie », 2 063 documents) masqué, décision du
-mainteneur en attente ; le « Ÿ » capital (U+0178) n'est plus un début de mot.
+317 → 400 / 400 ; adversarial 114 / 114 inchangé. Le « Ÿ » capital
+(U+0178) n'est plus un début de mot.
+
+**« Type + mot générique » : liste fermée (P2-301, décision du 26 novembre, point 5).**
+Un type d'établissement écrit en toutes lettres (« Résidence », « Foyer »,
+« Centre »…) suivi *seulement* de mots d'une liste fermée n'est plus masqué : Autonomie,
+D'accueil, Médicalisé, Médicalisée, Services, Social, Agricole
+(`EtablissementDetector.motsGeneriques`). Mesuré par `Ecluse.redact`, graine 42 :
+200 000 phrases sans personne, documents avec un établissement masqué 2 063 → 0 ;
+témoin de 480 documents 9 → 0 ; flou réaliste et adversarial en 7 présentations,
+0 établissement annoté perdu (3 305 bornes exactes sur 3 595 avant et après).
+**La liste ne connaît que ce qu'elle contient** : un établissement réellement nommé
+« Résidence Autonomie », « Centre Social » ou « Lycée Agricole » ne serait pas masqué,
+et c'est une fuite possible du nom de l'établissement (les corpus synthétiques n'en
+contiennent aucun : le coût réel est inconnu). Ne sont pas concernés : un sigle (« CH
+Services » reste masqué), un nom entre guillemets, un nom qui contient un mot hors liste
+(« Résidence Autonomie Horizon » est masqué en entier). Des mots courants hors liste
+(« Résidence Seniors », « Centre Médical »…) restent masqués : la liste est écrite
+d'après le corpus et quelques ajouts du mainteneur, pas d'après un annuaire. Le retrait
+est silencieux (pas d'avertissement) : à rapprocher de l'inventaire P2-303.
 
 #### IBAN en paires : masquages à tort assumés (décision du 26 novembre)
 

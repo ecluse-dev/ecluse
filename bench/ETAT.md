@@ -2424,6 +2424,24 @@ prévu, ne différant que par le champ `signalements_mot_voisin` ou par les lign
 témoins sont les phrases que le signalement ordinaire signalait à tort avant P2-282 :
 le prix de la garde est un message moins pressant sur des codes d'accès.
 
+## « Type + mot générique » : liste fermée (P2-301, 26 novembre 2026)
+
+Chemin mesuré : **`Ecluse.redact`** (`run_redact_bench.dart`), graine 42, sur le code
+de la tâche contre `main` au commit `fe92420`. Ces trois lignes ne sont pas dans
+`bench/etat.sh` (200 000 documents, ≈ 5 min) ; elles se rejouent avec
+`bench/mesure_type_mot_generique.sh` (P2-295) en lisant la colonne « generiques ».
+
+| mesure | avant | après |
+|---|---|---|
+| 200 000 phrases du soin sans personne : documents avec un établissement masqué | 2 063 | 0 |
+| témoin de 480 documents (`comparatif.py --temoin`, Écluse) : masqués à tort | 9 / 480 | 0 / 480 |
+| flou réaliste + adversarial, 7 présentations : établissements annotés couverts / bornes exactes | 3 595 / 3 305 | 3 595 / 3 305 |
+| corpus principal (v3, 1 000 documents) : documents avec un établissement masqué | 91 | 91 |
+
+Le tableau de bord complet (`bench/etat.sh`) rejoué : `bench/controle_etat.py` le
+déclare conforme au bloc courant ; aucun chiffre ne bouge. La liste est dans
+`EtablissementDetector.motsGeneriques` ; sa limite est dans `LIMITES.md` § 5.1.
+
 ## Valeurs courantes contrôlées (P2-265, 23 novembre 2026)
 
 Tout ce qui précède est de l'**historique daté** : des tableaux écrits section
