@@ -156,7 +156,20 @@ final class FinessDetector implements Detector {
     r'(?![0-9A-Za-z])',
   );
 
-  static List<DetectedEntity> _detectSync(String raw) {
+  /// Empans des FINESS sans contexte que la garde « suite abîmée » (P2-276) a
+  /// écartés (bornes dans [text], jamais la valeur). `Ecluse.redact` en tire un
+  /// avertissement « à vérifier » : une garde ne rend jamais une donnée
+  /// silencieuse (principe du 26 novembre, point 0 ; P2-304).
+  static List<({int start, int end})> ecartes(String text) {
+    final ecartes = <({int start, int end})>[];
+    _detectSync(text, ecartes);
+    return ecartes;
+  }
+
+  static List<DetectedEntity> _detectSync(
+    String raw, [
+    List<({int start, int end})>? ecartes,
+  ]) {
     final compaction = DigitCompaction(raw);
     final results = <DetectedEntity>[];
     final vus = <(int, int)>{};
@@ -180,6 +193,7 @@ final class FinessDetector implements Detector {
       if (!hasContext &&
           !siren &&
           _suiteAbimee.matchAsPrefix(raw, end) != null) {
+        ecartes?.add((start: start, end: end));
         continue;
       }
       results.add(

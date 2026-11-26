@@ -289,7 +289,22 @@ final class NirCleInvalideDetector implements EntityDetector {
       RegExp(r'[ .\-/](?=[0-9oOlI]{0,3}[oOlI])[0-9oOlI]{1,4}(?![0-9A-Za-z])');
 
   @override
-  List<DetectedEntity> detect(String text) {
+  List<DetectedEntity> detect(String text) => _analyse(text, null);
+
+  /// Empans des NIR à clé fausse que la garde « suite abîmée » (P2-276) a
+  /// écartés (bornes dans [text], jamais la valeur). `Ecluse.redact` en tire un
+  /// avertissement « à vérifier » : une garde ne rend jamais une donnée
+  /// silencieuse (principe du 26 novembre, point 0 ; P2-304). Ne couvre pas les
+  /// coupures hors des groupes d'un NIR, qui écartent aussi sans rien dire
+  /// (`agent/specs/P2-303.md`).
+  List<({int start, int end})> ecartes(String text) {
+    final ecartes = <({int start, int end})>[];
+    _analyse(text, ecartes);
+    return ecartes;
+  }
+
+  List<DetectedEntity> _analyse(
+      String text, List<({int start, int end})>? ecartes) {
     final compaction = DigitCompaction(text);
     final results = <DetectedEntity>[];
     final vus = <int>{};
@@ -318,7 +333,10 @@ final class NirCleInvalideDetector implements EntityDetector {
       // une lettre de confusion d'OCR (« 19226.71o31.753o6.26I »), montre un
       // numéro de pièce plus long, pas un NIR coupé. Une suite faite de
       // chiffres seuls (« … 12 pièces ») ne compte pas : le NIR reste masqué.
-      if (_suiteAbimee.matchAsPrefix(text, match.end) != null) continue;
+      if (_suiteAbimee.matchAsPrefix(text, match.end) != null) {
+        ecartes?.add((start: match.start, end: match.end));
+        continue;
+      }
       results.add(
         DetectedEntity(
           type: EntityType.nir,
