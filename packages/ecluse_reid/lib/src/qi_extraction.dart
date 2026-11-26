@@ -332,6 +332,7 @@ List<(String, List<Commune>)> _scanCommunesNommees(
               .hasMatch(text.substring(debut > 30 ? debut - 30 : 0, debut))) {
         continue;
       }
+      if (_motCourantSansLieu(text, debut, candidate)) continue;
       found.add((candidate, matches));
     }
   }
@@ -583,6 +584,53 @@ const Set<String> _homonymesCourants = {
   'gap', 'bourg', 'port', 'puy', 'roche', 'rive', 'lac', 'val', 'bois', //
 };
 
+/// Mots courants que la référence publique porte aussi pour commune
+/// (« Son », « Aucun », « Salles », « La Réunion », « ARS »…) et qui, lus comme
+/// un lieu, fabriquent un quasi-identifiant fantôme (P2-302, décision du
+/// 26 novembre, point 6 ; mesure `agent/specs/P2-287.md` : un seul de ces mots
+/// en tête de phrase faisait passer un rapport de `evalue` à `nonEvaluable`).
+///
+/// Un mot de la liste n'est un lieu que s'il suit, **en minuscules**, un
+/// locatif (« né à La Réunion », « habite à Fontaine ») ; en titre
+/// (« Planning Des Salles »), en tête de phrase ou après un mot quelconque, il
+/// n'est pas lu. **La liste ne connaît que ce qu'elle contient** : elle est
+/// écrite d'après les mots observés dans les corpus synthétiques du dépôt et
+/// la sonde de 112 mots de P2-287, pas d'après un dictionnaire ; tout autre
+/// mot courant homonyme d'une commune reste lu comme un lieu. Et un vrai lieu
+/// de la liste écrit sans locatif en minuscules (« Domicile : Fontaine ») est
+/// perdu : coût assumé, écrit dans `LIMITES.md`. Extensible : ajouter un mot,
+/// en minuscules, revient à parier qu'il est plus souvent un mot courant
+/// qu'un lieu dans le texte du soin. « Chevrier » (3 documents du corpus
+/// adversarial, patronyme sans civilité) n'y est volontairement pas : c'est
+/// une vraie commune lue comme telle ailleurs (« Mme Verdier, Chevrier (74) »).
+const Set<String> motsCourantsSansLieu = {
+  // Mots observés dans les corpus de documents (P2-287 § 3).
+  'salles', 'la réunion', 'ars', 'le plan', 'linge', 'avril', 'aucun', //
+  'cours', //
+  // « Plan » seul est aussi une commune : sans lui, exclure « Le Plan »
+  // laissait « Plan » comme lieu (le test le montre).
+  'plan', //
+  // Mots de la sonde isolée de P2-287 lus comme un lieu en tête de phrase.
+  'contre', 'doux', 'fontaine', 'grand', 'long', 'mont', 'place', 'rue', //
+  'son', 'vaux', 'vers', 'vieux', //
+};
+
+/// Un locatif **en minuscules** juste avant le mot : seul cas où un mot de
+/// [motsCourantsSansLieu] reste un lieu. Sensible à la casse : « De La
+/// Réunion » ou « EN COURS » (titres) ne comptent pas.
+final RegExp _locatifMinuscule = RegExp(
+  r"(?:^|[^\p{L}])(?:à|a|de|d'|d’|en|vers|près de|habite|vit|né|née|"
+  r'originaire de|domicilié|domiciliée|résidant|réside)[ \t\u00A0]*$',
+  unicode: true,
+);
+
+/// Vrai si [nom], lu à [debut] dans [text], est un mot courant de la liste
+/// sans locatif en minuscules devant : ce n'est pas un lieu.
+bool _motCourantSansLieu(String text, int debut, String nom) =>
+    motsCourantsSansLieu.contains(nom.toLowerCase()) &&
+    !_locatifMinuscule
+        .hasMatch(text.substring(debut > 30 ? debut - 30 : 0, debut));
+
 final RegExp _locatifAvant = RegExp(
   r"(?:^|[^\p{L}])(?:à|a|de|d'|d’|en|vers|près de|habite|vit|né|née|"
   r'originaire de|domicilié|domiciliée|résidant|réside)[ \t\u00A0]*$',
@@ -664,6 +712,7 @@ List<QiSpan> _lieuSpans(EcluseReference ref, String text) {
               .hasMatch(text.substring(start > 30 ? start - 30 : 0, start))) {
         continue;
       }
+      if (_motCourantSansLieu(text, start, nom)) continue;
       if (_lieuEvenement
           .hasMatch(text.substring(start > 40 ? start - 40 : 0, start))) {
         continue;
