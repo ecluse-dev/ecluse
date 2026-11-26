@@ -2691,6 +2691,21 @@ l'application déclenche en la fournissant :
   distincts, une passe sur 397 documents prend environ trois fois plus de temps
   qu'avec 0 nom (voir `bench/ETAT.md`).
 
+
+### IBAN à clé fausse écrit en groupes inhabituels (P2-300, 26 novembre 2026)
+
+Un IBAN dont la clé mod 97 est fausse n'est retenu que s'il est écrit en groupes
+usuels (4-4-…-4-3, ou la forme RIB 4-5-5-11-2 / 4-5-5-5-5-3) ou sans séparateur.
+Écrit en autres groupes (par exemple par trois), il n'est **pas masqué** : sur le
+témoin durci cette garde fait passer les faux accords de 10 à 2 documents sur 450
+(`Ecluse.redact`), au prix de la sonde « trois » : 0/40 couverts. Ces 40 sont tous
+**signalés** (« à vérifier », avertissement sans la valeur) ; aucun identifiant
+annoté n'est perdu sur v3, libellé fort, OCR ni 200 000 documents.
+Limites : un IBAN à clé fausse **précédé d'un libellé** et écrit en groupes
+inhabituels n'est pas exempté de la garde ; les trois autres gardes de P2-272
+(déjà sur `main`, P2-276) ne signalent pas ce qu'elles écartent, ce qui contredit
+le principe 0 de la décision du 26 novembre : à traiter à part.
+
 ---
 
 **Écluse réduit le risque, il ne l'annule pas.**

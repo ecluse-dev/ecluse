@@ -174,14 +174,57 @@ final class IbanCleInvalideDetector implements EntityDetector {
 
   static final RegExp _cleEnChiffres = RegExp(r'^FR[0-9]{2}');
 
+  static final RegExp _separateur = RegExp(r'[\s\-./]');
+  static final RegExp _separateurs = RegExp(r'[\s\-./]+');
+
+  /// Garde `iban_g45` (P2-272, décision du 26 novembre, point 1) : un IBAN à
+  /// clé **fausse** écrit avec des séparateurs n'est masqué que s'il est groupé
+  /// comme un IBAN : 4-4-4-4-4-4-3 (la forme imprimée), 4-5-5-11-2 (RIB) ou
+  /// 4-5-5-5-5-3. Sans séparateur : accepté. « FR » + 25 caractères en groupes de
+  /// trois ou d'une autre taille est surtout un code de pièce : 10 des 14
+  /// masquages à tort du témoin durci de P2-268, 0 identifiant perdu sur v3,
+  /// libellé fort, OCR et 200 000 documents. **Coût mesuré** : un IBAN à clé
+  /// fausse recopié en groupes de trois n'est plus masqué (40 sur 40 de la
+  /// sonde) ; principe 0 de la décision : `Ecluse.redact` le signale « à
+  /// vérifier » à la place ([ecartes]). Ne s'applique pas à l'écriture en paires
+  /// derrière « FR » + séparateur (P2-277), dont la forme est déjà stricte.
+  static bool _groupesUsuels(String brut) {
+    if (!_separateur.hasMatch(brut)) return true;
+    final l = brut.split(_separateurs).map((g) => g.length).toList();
+    final quatre =
+        l.length == 7 && l.sublist(0, 6).every((x) => x == 4) && l[6] == 3;
+    final rib = l.length == 5 &&
+        l[0] == 4 &&
+        l[1] == 5 &&
+        l[2] == 5 &&
+        l[3] == 11 &&
+        l[4] == 2;
+    final cinq = l.length == 6 &&
+        l[0] == 4 &&
+        l.sublist(1, 5).every((x) => x == 5) &&
+        l[5] == 3;
+    return quatre || rib || cinq;
+  }
+
   @override
-  List<DetectedEntity> detect(String text) {
+  List<DetectedEntity> detect(String text) => _analyse(text).retenus;
+
+  /// Empans des IBAN à clé fausse que la garde [_groupesUsuels] n'a **pas**
+  /// masqués (bornes dans [text], jamais la valeur). `Ecluse.redact` en tire un
+  /// avertissement « à vérifier » : une garde ne rend jamais une donnée
+  /// silencieuse (décision du 26 novembre, principe 0).
+  List<({int start, int end})> ecartes(String text) => _analyse(text).ecartes;
+
+  ({List<DetectedEntity> retenus, List<({int start, int end})> ecartes})
+      _analyse(String text) {
     final compaction = DigitCompaction(text);
-    final results = <DetectedEntity>[];
-    for (final match in [
-      ...compaction.candidates(_candidate),
-      ...compaction.candidates(_candidatePaires),
-    ]) {
+    final retenus = <DetectedEntity>[];
+    final ecartes = <({int start, int end})>[];
+    final candidats = [
+      for (final m in compaction.candidates(_candidate)) (m, false),
+      for (final m in compaction.candidates(_candidatePaires)) (m, true),
+    ];
+    for (final (match, paires) in candidats) {
       final normalized =
           match.text.replaceAll(IbanFrDetector._separators, '').toUpperCase();
       // Un IBAN valide est émis par IbanFrDetector, à condition que sa clé
@@ -191,7 +234,11 @@ final class IbanCleInvalideDetector implements EntityDetector {
       // (Écrit en paires derrière « FR » + séparateur, un IBAN valide est émis
       // par IbanFrDetector depuis P2-283 ; il est donc écarté ici aussi.)
       if (cleChiffres && IbanFrDetector._isValidIban(normalized)) continue;
-      results.add(
+      if (!paires && !_groupesUsuels(text.substring(match.start, match.end))) {
+        ecartes.add((start: match.start, end: match.end));
+        continue;
+      }
+      retenus.add(
         DetectedEntity(
           type: EntityType.iban,
           start: match.start,
@@ -201,7 +248,7 @@ final class IbanCleInvalideDetector implements EntityDetector {
         ),
       );
     }
-    return results;
+    return (retenus: retenus, ecartes: ecartes);
   }
 }
 

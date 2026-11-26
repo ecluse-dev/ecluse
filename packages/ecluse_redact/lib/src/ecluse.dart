@@ -608,6 +608,7 @@ abstract final class Ecluse {
           "identifiant lu avec des lettres d'OCR masqué : à vérifier"
               '${ocrCount > 1 ? " ($ocrCount occurrences)" : ""}.',
         ..._avertissementNombreDicte(text, resolved),
+        ..._avertissementIbanEcarte(text, resolved),
         if (_sansMajuscule(text))
           _avertissementSansMajuscule
         else if (_casseDePhrase(text, resolved))
@@ -648,6 +649,46 @@ abstract final class Ecluse {
         "suite de nombres dictés précédée d'un mot comme « code » : non "
             'masquée, à vérifier ${passages(suites.coupees)}.',
     ];
+  }
+
+  /// Avertissement d'un IBAN à clé fausse que la garde `iban_g45` n'a pas
+  /// masqué (P2-300, décision du 26 novembre, points 0 et 1) : « FR » + 25
+  /// caractères en groupes inhabituels (de trois par exemple) est le plus
+  /// souvent un code de pièce, parfois un IBAN recopié autrement. Une garde ne
+  /// rend jamais une donnée silencieuse : le passage est signalé « à vérifier »
+  /// (compte et positions, jamais la valeur), sauf si une autre entité le
+  /// couvre déjà en entier (libellé fort, OCR…).
+  static List<String> _avertissementIbanEcarte(
+      String text, List<DetectedEntity> resolved) {
+    // Rien à chercher sans « FR » : évite de refaire la compaction du texte.
+    if (!_contientFr.hasMatch(text)) return const [];
+    final positions = [
+      for (final e in const IbanCleInvalideDetector().ecartes(text))
+        if (!_couvertEnEntier(resolved, e.start, e.end)) e.start
+    ];
+    if (positions.isEmpty) return const [];
+    final n = positions.length;
+    return [
+      'IBAN à clé fausse écrit en groupes inhabituels, non masqué : à vérifier '
+          '($n occurrence${n > 1 ? "s" : ""}, position${n > 1 ? "s" : ""} '
+          '${positions.take(5).join(", ")}${n > 5 ? ", …" : ""}).'
+    ];
+  }
+
+  static final RegExp _contientFr = RegExp(r'[Ff][Rr]');
+
+  /// Vrai si l'union des entités de [resolved] (triées, disjointes) couvre
+  /// `[debut, fin)` sans trou.
+  static bool _couvertEnEntier(
+      List<DetectedEntity> resolved, int debut, int fin) {
+    var pos = debut;
+    for (final e in resolved) {
+      if (e.end <= pos) continue;
+      if (e.start > pos) return false;
+      pos = e.end;
+      if (pos >= fin) return true;
+    }
+    return pos >= fin;
   }
 
   /// Vrai pour un ADELI de neuf chiffres dont la clé Luhn est fausse, masqué à

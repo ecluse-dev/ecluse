@@ -39,10 +39,27 @@ class LignesTest(unittest.TestCase):
         lignes = self.lance(corpus, pred)
         self.assertEqual(lignes, [
             "sonde adresse cle_non_calculable adresse_cp_commune/Lyon 3e : "
-            "couverts 1/2",
-            "sonde TOTAL : couverts 1/2",
+            "couverts 1/2 ; non couverts signalés 0/1",
+            "sonde TOTAL : couverts 1/2 ; non couverts signalés 0/1",
         ])
         self.assertTrue(all("69003" not in l for l in lignes))
+
+    def test_non_couverts_signales_suffixe(self):
+        """P2-300 : un identifiant non couvert dont le document porte
+        `a_verifier` est compté « signalé » ; sans signalement, 0/1."""
+        texte = "Adresse 69003 Lyon 3e ici."
+        corpus = [
+            {"id": i, "text": texte, "famille": "adresse_cp_commune",
+             "ecriture": "Lyon 3e",
+             "entities": [{"type": "adresse", "start": 8, "end": 21}]}
+            for i in (0, 1)
+        ]
+        pred = [{"id": 0, "entities": [], "a_verifier": True},
+                {"id": 1, "entities": []}]
+        lignes = self.lance(corpus, pred)
+        self.assertEqual(lignes[0].split(" : ")[1],
+                         "couverts 0/2 ; non couverts signalés 1/2")
+        self.assertEqual(lignes[-1], "sonde TOTAL : couverts 0/2 ; non couverts signalés 1/2")
 
 
 if __name__ == "__main__":
