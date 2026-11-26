@@ -609,6 +609,7 @@ abstract final class Ecluse {
               '${ocrCount > 1 ? " ($ocrCount occurrences)" : ""}.',
         ..._avertissementNombreDicte(text, resolved),
         ..._avertissementIbanEcarte(text, resolved),
+        ..._avertissementsSuiteAbimee(text, resolved),
         if (_sansMajuscule(text))
           _avertissementSansMajuscule
         else if (_casseDePhrase(text, resolved))
@@ -674,6 +675,51 @@ abstract final class Ecluse {
           '${positions.take(5).join(", ")}${n > 5 ? ", …" : ""}).'
     ];
   }
+
+  /// Avertissements des trois gardes de P2-276 (`nir_suitelettre`,
+  /// `finess_suitelettre`, `adr_confusables`, P2-304 ; principe du 26 novembre,
+  /// point 0) : un candidat suivi d'une suite à lettre de confusion d'OCR est
+  /// pris pour un numéro de pièce plus long et n'est pas masqué ; il est
+  /// signalé « à vérifier » (type, compte et positions, **jamais la valeur**),
+  /// sauf si une autre entité le couvre déjà en entier. Aucun masquage ne
+  /// change. Chaque détecteur n'est interrogé que si le texte contient de quoi
+  /// le déclencher (un chiffre, ou un code postal suivi d'un mot à chiffres).
+  static List<String> _avertissementsSuiteAbimee(
+      String text, List<DetectedEntity> resolved) {
+    if (!_contientChiffre.hasMatch(text)) return const [];
+    String ligne(String quoi, List<int> positions, {bool feminin = false}) {
+      final n = positions.length;
+      return '$quoi, non masqué${feminin ? "e" : ""} : à vérifier '
+          '($n occurrence${n > 1 ? "s" : ""}, position${n > 1 ? "s" : ""} '
+          '${positions.take(5).join(", ")}${n > 5 ? ", …" : ""}).';
+    }
+
+    List<int> positions(Iterable<({int start, int end})> ecartes) => [
+          for (final e in ecartes)
+            if (!_couvertEnEntier(resolved, e.start, e.end)) e.start
+        ];
+
+    final nir = positions(const NirCleInvalideDetector().ecartes(text));
+    final finess = positions(FinessDetector.ecartes(text));
+    final adresse = _codePostalPuisMotAChiffres.hasMatch(text)
+        ? positions(const AdresseDetector().ecartes(text))
+        : const <int>[];
+    return [
+      if (nir.isNotEmpty)
+        ligne("NIR à clé fausse suivi d'une suite à lettres d'OCR", nir),
+      if (finess.isNotEmpty)
+        ligne("FINESS suivi d'une suite à lettres d'OCR", finess),
+      if (adresse.isNotEmpty)
+        ligne(
+            "adresse dont la commune est faite de chiffres et de lettres d'OCR",
+            adresse,
+            feminin: true),
+    ];
+  }
+
+  static final RegExp _contientChiffre = RegExp(r'[0-9]');
+  static final RegExp _codePostalPuisMotAChiffres =
+      RegExp(r'[0-9]{5}[ \t]+[0-9oOlI]');
 
   static final RegExp _contientFr = RegExp(r'[Ff][Rr]');
 

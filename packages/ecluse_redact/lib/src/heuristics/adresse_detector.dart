@@ -648,7 +648,21 @@ final class AdresseDetector implements EntityDetector {
   }
 
   @override
-  List<DetectedEntity> detect(String text) {
+  List<DetectedEntity> detect(String text) => _detecte(text, null);
+
+  /// Empans des « code postal + commune » que la garde « commune faite de
+  /// confusions d'OCR » (P2-276) a écartés (bornes dans [text], jamais la
+  /// valeur). `Ecluse.redact` en tire un avertissement « à vérifier » : une
+  /// garde ne rend jamais une donnée silencieuse (principe du 26 novembre,
+  /// point 0 ; P2-304).
+  List<({int start, int end})> ecartes(String text) {
+    final ecartes = <({int start, int end})>[];
+    _detecte(text, ecartes);
+    return ecartes;
+  }
+
+  List<DetectedEntity> _detecte(
+      String text, List<({int start, int end})>? ecartes) {
     // Texte sans aucune minuscule : la règle « la commune commence par une
     // majuscule » ne filtre plus rien (« 70000 EUROS HORS TAXES » devenait
     // une adresse : 194 faux positifs sur le témoin, mesure P2-121). On y
@@ -778,7 +792,10 @@ final class AdresseDetector implements EntityDetector {
       // de pièce, pas une commune (P2-276). Sans chiffre, le mot peut être un
       // vrai nom (« OO », « O DE SELLE » au balayage CEDEX) : la garde ne
       // s'applique pas.
-      if (_communeFaiteDeConfusables(text.substring(start, end))) continue;
+      if (_communeFaiteDeConfusables(text.substring(start, end))) {
+        ecartes?.add((start: start, end: end));
+        continue;
+      }
       // Déjà couvert par une adresse complète (numéro + voie) ci-dessus :
       // ne pas ajouter un doublon pour le seul suffixe "code postal +
       // commune" de cette même adresse.

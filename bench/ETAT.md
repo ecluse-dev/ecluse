@@ -3233,7 +3233,7 @@ confiance variante=ligne_vide : 0.3=300
 confiance variante=ocr_et_ligne_vide : 0.3=300
 confiance variante=cle_fausse_sans_libelle : 0.3=199, 1=1
 confiance détections des négatifs : 0.55=2
-avertissement à vérifier : positifs 1699 / 2000, négatifs 0 / 1000
+avertissement à vérifier : positifs 1699 / 2000, négatifs 1 / 1000
 à vérifier variante=cle_juste : 0 / 300
 à vérifier variante=cle_fausse : 300 / 300
 à vérifier variante=ocr_zero : 300 / 300
@@ -3241,7 +3241,7 @@ avertissement à vérifier : positifs 1699 / 2000, négatifs 0 / 1000
 à vérifier variante=ligne_vide : 300 / 300
 à vérifier variante=ocr_et_ligne_vide : 300 / 300
 à vérifier variante=cle_fausse_sans_libelle : 199 / 200
-incohérence confiance 0.3 / avertissement : positifs 0, négatifs 0
+incohérence confiance 0.3 / avertissement : positifs 0, négatifs 1
 exception P2-204 (ADELI clé fausse, confiance 0.6, avec avertissement) : positifs 50
 ## mise en page (P2-153) : textes recoupés aux espaces, largeur 60 puis 90
 # realiste largeur 60 : 3 refus

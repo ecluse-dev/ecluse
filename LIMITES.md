@@ -2756,9 +2756,20 @@ témoin durci cette garde fait passer les faux accords de 10 à 2 documents sur 
 **signalés** (« à vérifier », avertissement sans la valeur) ; aucun identifiant
 annoté n'est perdu sur v3, libellé fort, OCR ni 200 000 documents.
 Limites : un IBAN à clé fausse **précédé d'un libellé** et écrit en groupes
-inhabituels n'est pas exempté de la garde ; les trois autres gardes de P2-272
-(déjà sur `main`, P2-276) ne signalent pas ce qu'elles écartent, ce qui contredit
-le principe 0 de la décision du 26 novembre : à traiter à part.
+inhabituels n'est pas exempté de la garde.
+
+**Les trois autres gardes de P2-272 (P2-276) signalent maintenant ce qu'elles
+écartent (P2-304).** Un NIR à clé fausse ou un FINESS sans contexte suivi d'un
+groupe court à lettre de confusion d'OCR (« … 85 I2 »), et un « code postal + mot
+fait de chiffres et de confusions d'OCR commençant par une majuscule » (« 05214
+OO1l »), sont pris pour un numéro de pièce plus long et **ne sont pas masqués** ;
+`Ecluse.redact` les signale « à vérifier » (type, compte et positions, jamais la
+valeur). Sonde de 118 candidats : 0 / 118 signalés avant, 118 / 118 après ; aucun
+masquage ne change. Coût : 21 documents sur 5 000 du témoin durci portent cet
+avertissement sans aucun identifiant (code pièce de la même forme), 1 négatif sur
+1 000 du corpus à libellé fort. **Reste silencieux** (`agent/specs/P2-303.md`) : le
+NIR à clé fausse en groupes qui n'en sont pas (« 1850 5780 0608 436 »), le RPPS suivi
+d'une date, le SIRET et la TVA sans libellé ; chacun est une tâche à part.
 
 ---
 
