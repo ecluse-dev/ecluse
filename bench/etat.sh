@@ -170,7 +170,7 @@ echo "## sonde des gardes (P2-272, P2-278) : Ecluse.redact (chemin du produit)"
 # contexte et d'adresses avec arrondissement, par écriture : « couverts a/b » = identifiants
 # entièrement masqués. Les trous connus (IBAN en paires, arrondissement) y sont suivis.
 produit "générateur sonde" "$B/flou/corpus_sonde_gardes.jsonl" python3 "$B/generate_sonde_gardes.py" --n 40 --seed 42 --out "$B/flou/corpus_sonde_gardes.jsonl" || true
-if produit "sonde, Ecluse.redact" "$B/flou/pred_sonde_gardes.jsonl" redact run_redact_bench.dart "../../bench/flou/corpus_sonde_gardes.jsonl" "../../bench/flou/pred_sonde_gardes.jsonl"; then
+if produit "sonde, Ecluse.redact" "$B/flou/pred_sonde_gardes.jsonl" redact run_redact_bench.dart --confiance "../../bench/flou/corpus_sonde_gardes.jsonl" "../../bench/flou/pred_sonde_gardes.jsonl"; then
   montre "sonde, score" -E "^sonde " 0 non python3 "$B/score_gardes.py" --corpus "$B/flou/corpus_sonde_gardes.jsonl" --pred "$B/flou/pred_sonde_gardes.jsonl" --par famille,ecriture --lignes || true
 fi
 

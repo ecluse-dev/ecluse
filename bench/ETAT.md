@@ -2498,7 +2498,7 @@ TOTAL iban sans_libelle couverts 120/120 fuite 0.0 %
 TOTAL finess sans_libelle couverts 0/120 fuite 100.0 %
 TOTAL siren sans_libelle couverts 0/120 fuite 99.1 %
 témoin négatif temoin : 0 / 400 documents avec une prédiction (aucun type)
-témoin négatif temoin_dur : 10 / 450 documents avec une prédiction (iban 10)
+témoin négatif temoin_dur : 2 / 450 documents avec une prédiction (iban 1, telephone 1)
 ## OCR derrière un libellé, clé fausse (P2-275) : Ecluse.redact (chemin du produit)
 TOTAL nir libelle_cle_fausse couverts 120/120 fuite 0.0 %
 TOTAL rpps libelle_cle_fausse couverts 120/120 fuite 0.0 %
@@ -2520,7 +2520,7 @@ sonde iban fausse iban_cle_fausse/paires : couverts 40/40
 sonde iban fausse iban_cle_fausse/quatre : couverts 40/40
 sonde iban fausse iban_cle_fausse/quatre_points : couverts 40/40
 sonde iban fausse iban_cle_fausse/rib : couverts 40/40
-sonde iban fausse iban_cle_fausse/trois : couverts 40/40
+sonde iban fausse iban_cle_fausse/trois : couverts 0/40 ; non couverts signalés 40/40
 sonde iban juste iban_cle_juste/paires : couverts 40/40
 sonde iban cle_non_calculable iban_cle_fausse/cle_o : couverts 40/40
 sonde nir fausse nir_cle_fausse/compact : couverts 40/40
@@ -2531,7 +2531,7 @@ sonde nir fausse nir_cle_fausse/suivi_nombre : couverts 40/40
 sonde nir fausse nir_cle_fausse/une_lettre : couverts 1/1
 sonde nir cle_non_calculable nir_cle_fausse/deux_lettres : couverts 38/38
 sonde nir cle_non_calculable nir_cle_fausse/une_lettre : couverts 39/39
-sonde TOTAL : couverts 860/860
+sonde TOTAL : couverts 820/860 ; non couverts signalés 40/40
 ## identifiants dictés abîmés (P2-274, P2-278) : Ecluse.redact (chemin du produit)
 # mot_perdu
 nir n= 1570 masqués= 769 (dont signalés 0) signalés seulement= 797 rien= 4
@@ -2542,13 +2542,13 @@ nir n= 1570 masqués= 1253 (dont signalés 0) signalés seulement= 317 rien= 0
 iban n= 850 masqués= 781 (dont signalés 0) signalés seulement= 69 rien= 0
 TOTAL n= 2420 masqués= 2034 (dont signalés 0) signalés seulement= 386 rien= 0
 ## faux accords par détecteur (P2-279, P2-284) : Ecluse.redact (chemin du produit)
-faux accords : témoin durci de P2-268, élargi : 5000 documents, 141 avec au moins une entité
-IBAN à clé fausse (P2-252) : 102 / 5000 documents (2.040 %, IC 95 % [1.683 ; 2.470] %), 102 entité(s)
+faux accords : témoin durci de P2-268, élargi : 5000 documents, 58 avec au moins une entité
 NIR à clé fausse (P2-258) : 14 / 5000 documents (0.280 %, IC 95 % [0.167 ; 0.469] %), 14 entité(s)
+IBAN à clé fausse (P2-252) : 13 / 5000 documents (0.260 %, IC 95 % [0.152 ; 0.444] %), 13 entité(s)
+autre : rpps : 9 / 5000 documents (0.180 %, IC 95 % [0.095 ; 0.342] %), 9 entité(s)
 adresse : 8 / 5000 documents (0.160 %, IC 95 % [0.081 ; 0.315] %), 8 entité(s)
-autre : rpps : 7 / 5000 documents (0.140 %, IC 95 % [0.068 ; 0.289] %), 7 entité(s)
-autre : telephone : 5 / 5000 documents (0.100 %, IC 95 % [0.043 ; 0.234] %), 5 entité(s)
-OCR (P2-268) : 2 / 5000 documents (0.040 %, IC 95 % [0.011 ; 0.146] %), 2 entité(s)
+autre : telephone : 6 / 5000 documents (0.120 %, IC 95 % [0.055 ; 0.262] %), 6 entité(s)
+OCR (P2-268) : 5 / 5000 documents (0.100 %, IC 95 % [0.043 ; 0.234] %), 5 entité(s)
 finess : 2 / 5000 documents (0.040 %, IC 95 % [0.011 ; 0.146] %), 2 entité(s)
 IBAN à clé juste par hasard (P2-252 absent, 1 chance sur 97) : 1 / 5000 documents (0.020 %, IC 95 % [0.004 ; 0.113] %), 1 entité(s)
 faux accords : mots-nombres durci, élargi : 5600 documents, 0 avec au moins une entité
@@ -3291,5 +3291,6 @@ colonne de 2 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversa
 colonne de 10 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
 colonne de 2 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
 colonne de 10 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+exit 0
 ```
 <!-- controle:fin -->
