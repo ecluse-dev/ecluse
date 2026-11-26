@@ -363,8 +363,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-293 | mesure | IBAN en paires : sonde élargie aux séparateurs point, tiret, barre et aux confusions d'OCR ; coût des gardes de P2-288 ; rien corrigé | P2-288 | fusionnée |
 | P2-294 | code | Établissements en 60 colonnes : « IME La Source », « CH de Vesoul », « SSIAD de Gray » non couverts en entier sur le flou réaliste | P2-289 | bloquée |
 | P2-295 | spec | « Type + mot générique » (« Résidence Autonomie », 2 063 / 200 000) : options chiffrées pour la décision du mainteneur | P2-289 | fusionnée |
-| P2-296 | mesure | Faux tableau à 60 colonnes : 3 documents sur 400 du flou réaliste refusés (« ligne 7 : 3 colonnes au lieu de 2 ») ; cause, et coût d'une règle plus stricte sur les tableaux de noms ; rien corrigé | — | PR ouverte |
-| P2-297 | mesure | Établissements en majuscules : 69 / 400 (réaliste) et 98 / 114 (adversarial) couverts sans aucune entité `etablissement` ; par quoi ils sont couverts, et ce qui partirait si ce type-là manquait ; rien corrigé | P2-290 | à faire |
+| P2-296 | mesure | Faux tableau à 60 colonnes : 3 documents sur 400 du flou réaliste refusés (« ligne 7 : 3 colonnes au lieu de 2 ») ; cause, et coût d'une règle plus stricte sur les tableaux de noms ; rien corrigé | — | fusionnée |
+| P2-297 | mesure | Établissements en majuscules : 69 / 400 (réaliste) et 98 / 114 (adversarial) couverts sans aucune entité `etablissement` ; par quoi ils sont couverts, et ce qui partirait si ce type-là manquait ; rien corrigé | P2-290 | fusionnée |
 | P2-298 | code | Témoin de 480 documents : `bench/COMPARATIF.md` et `bench/ARTICLE.md` disent encore 16 / 480 pour Écluse ; remesurer et mettre à jour (9 / 480 attendu après P2-289) | P2-290 | à faire |
 | P2-299 | code | Garde du mot voisin (P2-282) : la coupure du signalement devient un avertissement distinct (décision du 26 novembre, point 3) | P2-292 | à faire |
 | P2-300 | code | Gardes de P2-272 : `nir_suitelettre`, `finess_suitelettre`, `adr_confusables`, et `iban_g45` avec avertissement (décision du 26 novembre, points 0 et 1) | P2-272 | à faire |
