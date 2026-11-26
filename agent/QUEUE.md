@@ -366,6 +366,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-296 | mesure | Faux tableau à 60 colonnes : 3 documents sur 400 du flou réaliste refusés (« ligne 7 : 3 colonnes au lieu de 2 ») ; cause, et coût d'une règle plus stricte sur les tableaux de noms ; rien corrigé | — | à faire |
 | P2-297 | mesure | Établissements en majuscules : 69 / 400 (réaliste) et 98 / 114 (adversarial) couverts sans aucune entité `etablissement` ; par quoi ils sont couverts, et ce qui partirait si ce type-là manquait ; rien corrigé | P2-290 | à faire |
 | P2-298 | code | Témoin de 480 documents : `bench/COMPARATIF.md` et `bench/ARTICLE.md` disent encore 16 / 480 pour Écluse ; remesurer et mettre à jour (9 / 480 attendu après P2-289) | P2-290 | à faire |
+| P2-299 | code | Garde du mot voisin (P2-282) : la coupure du signalement devient un avertissement distinct (décision du 26 novembre, point 3) | P2-292 | à faire |
+| P2-300 | code | Gardes de P2-272 : `nir_suitelettre`, `finess_suitelettre`, `adr_confusables`, et `iban_g45` avec avertissement (décision du 26 novembre, points 0 et 1) | P2-272 | à faire |
+| P2-301 | code | Établissements : liste fermée « type + mot générique » non masqués (décision du 26 novembre, point 5) | P2-295 | à faire |
+| P2-302 | code | Rapport de risque : liste d'exclusion des mots courants en tête de phrase lus comme commune (décision du 26 novembre, point 6) | P2-287 | à faire |
+| P2-303 | mesure | Inventaire des gardes existantes qui retirent un masquage sans avertissement (principe du 26 novembre, point 0) ; rien corrigé | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1650,3 +1655,74 @@ Médicalisé ». `bench/COMPARATIF.md` (ligne « Documents masqués à tort ») 
 renvoyer à P2-295 ; ne toucher aucun chiffre des autres outils sans l'avoir
 rejoué. **Fini quand** : les deux fichiers disent la valeur rejouée, la commande
 pour la reproduire y figure, `controle_etat.py` conforme.
+
+### P2-299 — Garde du mot voisin : avertissement au lieu du silence (code)
+
+Décision du 26 novembre, point 3. Mesure P2-292 : quand « code », « digicode »,
+« mot de passe », « mdp » ou « pin » précède à moins de 100 caractères un
+identifiant dicté non reconnu sans libellé, la garde de P2-282 coupe le
+signalement et 94 % de ces identifiants partent sans avertissement. Travail : test
+d'abord (le corpus de `bench/generate_corpus_mot_voisin.py` montre le silence),
+puis, dans ce cas seulement, émettre un avertissement distinct et moins pressant
+(« suite de nombres dictés précédée d'un mot comme “code” : non masquée,
+à vérifier »), jamais la valeur. Le signalement ordinaire reste coupé.
+**Fini quand** : par `Ecluse.redact`, 0 identifiant du corpus mot voisin
+(≤ 100 caractères, sans libellé) sans aucun avertissement (contre 6 214) ; les
+témoins de P2-291 donnent toujours 0 signalement « nombre dicté non reconnu » à
+tort, et le nombre d'avertissements distincts y est écrit dans `bench/ETAT.md`
+(attendu : de l'ordre de 49 sur le témoin durci) ; aucun masquage changé ailleurs
+(`bench/equivalence_predictions.sh`) ; `LIMITES.md` dit le nouvel avertissement.
+
+### P2-300 — Gardes de P2-272 (code)
+
+Décision du 26 novembre, points 0 et 1. Travail : brancher, dans le code produit,
+les quatre gardes mesurées par `agent/specs/P2-272.md`
+(`bench/gardes_faux_accords_patch.py`) : `nir_suitelettre`, `finess_suitelettre`,
+`adr_confusables`, `iban_g45`. Pour `iban_g45`, un IBAN à clé fausse en groupes de
+trois que la garde ne masque plus produit un avertissement « à vérifier » dans
+`RedactResult.warnings` (sans la valeur). Test d'abord pour chaque garde.
+**Fini quand** : témoin durci de P2-268 14 → 2 documents masqués à tort ; 0
+identifiant perdu sur v3, libellé fort, OCR et 200 000 documents ; sonde de
+`bench/generate_sonde_gardes.py` : les 40 IBAN en groupes de trois sont tous
+signalés ; `controle_etat.py` conforme, bloc régénéré pour les seules lignes
+prévues ; `LIMITES.md` à jour.
+
+### P2-301 — « Type + mot générique » : liste fermée (code)
+
+Décision du 26 novembre, point 5 (option 2 de `agent/specs/P2-295.md`). Travail :
+un type d'établissement en toutes lettres suivi seulement de mots d'une liste
+fermée de mots génériques (au départ : Autonomie, D'accueil, Médicalisé,
+Médicalisée, Services, Social, Agricole) n'est pas masqué. La liste est une
+constante documentée, extensible. Test d'abord. **Fini quand** : 200 000 documents
+sans personne 2 063 → 0 pour les mots de la liste ; témoin de 480 documents
+9 → 0 ; 0 établissement annoté perdu sur le flou réaliste et adversarial (7
+présentations) ; `LIMITES.md` dit que la liste ne connaît que ce qu'elle contient
+et qu'un établissement réellement nommé « Résidence Autonomie » ne serait pas
+masqué ; si P2-298 est fusionnée, `bench/COMPARATIF.md` et `bench/ARTICLE.md`
+mis à jour avec la valeur rejouée.
+
+### P2-302 — Mots courants lus comme commune (code)
+
+Décision du 26 novembre, point 6 (recommandation de `agent/specs/P2-287.md`).
+Travail : liste d'exclusion des mots courants qui, en tête de phrase, ne sont pas
+lus comme un lieu (« Son », « Aucun », « Mont », « Cours », « Salles », « Vers »,
+« Contre »…, les 27 mots du rapport), extensible, avec
+`bench/generate_sonde_mots_courants.py` comme jeu de test. Test d'abord. **Fini
+quand** : 0 lieu légitime perdu sur les corpus de quasi-identifiants ; les 18 653
+lieux de mots courants du rapport écartés ; la sonde combinée de P2-287 (§ 5)
+rend un rapport évalué avec ou sans la phrase ; `LIMITES.md` dit que la liste ne
+couvre que ce qu'elle contient.
+
+### P2-303 — Gardes silencieuses : inventaire (mesure)
+
+Principe du 26 novembre, point 0 : une garde ne rend jamais une donnée
+silencieuse. Travail : lister, dans `packages/ecluse_core` et
+`packages/ecluse_redact`, chaque test qui empêche d'émettre une entité ou un
+signalement pour éviter un masquage à tort (gardes de contexte, listes
+d'exclusion, seuils) ; pour chacun, dire s'il laisse un avertissement et mesurer
+par `Ecluse.redact`, sur une sonde synthétique, combien de vrais identifiants il
+laisse partir sans avertissement. Les listes d'exclusion de lieux et
+d'établissements (mots qui ne sont pas des identifiants) sont à classer à part.
+Rapport dans `agent/specs/P2-303.md`. **Rien n'est corrigé.** **Fini quand** :
+tableau garde × (avertissement oui/non, identifiants silencieux sur la sonde),
+et une proposition de tâche `code` par garde silencieuse coûteuse.
