@@ -587,6 +587,13 @@ pire 1,1 % par type (FINESS). Voir `bench/ETAT.md`.
   sans identifiant, compter quelques secondes (la suite est lue par fenêtres de 240
   mots et un budget de lectures borné).
 
+#### Âge en lettres (décision du 26 novembre)
+
+Un âge dit ou écrit en toutes lettres (« quarante-cinq ans ») n'est ni masqué ni
+signalé : il est hors lot depuis P2-155. Un âge seul n'identifie pas une
+personne ; il compte dans un faisceau d'indices, que mesure le rapport de
+ré-identification (§ 7), pas la détection.
+
 ## 3. Lieux et quasi-identifiants
 
 Une adresse postale complète (numéro + type de voie + code postal + commune)
@@ -804,6 +811,15 @@ dans `coupures_de_nom.dart`). Mesuré par `Ecluse.redact`, graine 42 : sur
 317 → 400 / 400 ; adversarial 114 / 114 inchangé. Reste : « type + mot
 générique » (« Résidence Autonomie », 2 063 documents) masqué, décision du
 mainteneur en attente ; le « Ÿ » capital (U+0178) n'est plus un début de mot.
+
+#### IBAN en paires : masquages à tort assumés (décision du 26 novembre)
+
+Une référence qui a la forme d'un IBAN français écrit en paires (« FR + clé +
+onze paires de chiffres »), même à clé fausse, est masquée comme `iban` :
+13 documents sur 5 000 du témoin élargi de P2-279 (0,26 %), sur des références de
+commande, de lot ou d'étiquette. C'est voulu : les gardes mesurées (P2-293)
+feraient perdre jusqu'à 37,5 % des vrais IBAN écrits en paires sans mot bancaire.
+Un masquage à tort ne fait rien fuiter ; il gêne la lecture de la référence.
 
 ### 5.2 Entités coupées par la mise en forme
 
