@@ -3291,6 +3291,5 @@ colonne de 2 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversa
 colonne de 10 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
 colonne de 2 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
 colonne de 10 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
-exit 0
 ```
 <!-- controle:fin -->
