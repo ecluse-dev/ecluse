@@ -371,6 +371,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-301 | code | Établissements : liste fermée « type + mot générique » non masqués (décision du 26 novembre, point 5) | P2-295 | à faire |
 | P2-302 | code | Rapport de risque : liste d'exclusion des mots courants en tête de phrase lus comme commune (décision du 26 novembre, point 6) | P2-287 | à faire |
 | P2-303 | mesure | Inventaire des gardes existantes qui retirent un masquage sans avertissement (principe du 26 novembre, point 0) ; rien corrigé | — | à faire |
+| P2-304 | code | Gardes de P2-276 (`nir_suitelettre`, `finess_suitelettre`, `adr_confusables`) : signaler ce qu'elles écartent (principe du 26 novembre, point 0) | P2-300 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1726,3 +1727,18 @@ d'établissements (mots qui ne sont pas des identifiants) sont à classer à par
 Rapport dans `agent/specs/P2-303.md`. **Rien n'est corrigé.** **Fini quand** :
 tableau garde × (avertissement oui/non, identifiants silencieux sur la sonde),
 et une proposition de tâche `code` par garde silencieuse coûteuse.
+
+### P2-304 — Gardes de P2-276 : signaler ce qu'elles écartent (code)
+
+Principe du 26 novembre, point 0. P2-300 (PR #559) : les trois gardes de P2-272
+déjà sur `main` depuis P2-276 (`nir_suitelettre`, `finess_suitelettre`,
+`adr_confusables`) écartent un candidat sans rien signaler. Travail : test d'abord
+(une suite écartée par chaque garde ne produit aujourd'hui aucun avertissement),
+puis, comme pour `iban_g45`, un avertissement « à vérifier » dans
+`RedactResult.warnings` (type et positions, jamais la valeur) pour chaque
+candidat écarté. Aucun masquage ne change. **Fini quand** : chaque garde signale
+100 % de ce qu'elle écarte sur la sonde de `bench/generate_sonde_gardes.py` ;
+nombre d'avertissements sur le témoin durci et le témoin élargi écrit dans
+`bench/ETAT.md` ; prédictions identiques ailleurs
+(`bench/equivalence_predictions.sh`) ; aucune valeur dans les messages (test) ;
+`LIMITES.md` à jour. Si P2-303 est fusionnée avant, reprendre ses chiffres.
