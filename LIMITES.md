@@ -2798,6 +2798,26 @@ caractères sur 720 qui restent en clair le restent (aucun masquage ne change : 
 fichiers de prédictions identiques). Coût : 2 documents sur 5 000 du témoin durci
 élargi (codes de colis) portent cet avertissement, 0 sur v3, libellé fort et
 mots-nombres. Un NIR à clé juste n'est pas concerné (il est masqué).
+NIR à clé fausse en groupes qui n'en sont pas (« 1850 5780 0608 436 ») et le RPPS
+suivi d'une date ; chacun est une tâche à part.
+
+**Le SIRET sans le mot « siret » et la TVA sans libellé sont signalés (P2-307).**
+Quatorze chiffres de **clé de Luhn juste** sans le mot « siret » à moins de 40
+caractères, et un numéro de TVA (« FR » + clé + SIREN) à clé fausse ou à lettre
+sans « TVA » ni « intracommunautaire », **ne sont pas masqués** : un SIRET
+d'entrepreneur individuel identifie pourtant une personne. `Ecluse.redact` les
+signale « à vérifier » (type, compte et positions, jamais la valeur), sauf si une
+autre entité les couvre en entier. Sonde de P2-303 (chemin `Ecluse.redact`) : 0 / 80
+signalés avant, 80 / 80 après ; les 576 caractères sur 680 (SIRET) et 476 sur 520
+(TVA) restent en clair : aucun masquage ne change. Quatorze chiffres de clé
+**fausse** ne sont pas signalés (rien ne les distingue d'un nombre ordinaire).
+Coût du signalement, et de ce que serait le masquage (un masquage porterait sur les
+mêmes documents) : 0 document sur 215 080 des témoins (durci élargi 5 000,
+mots-nombres durci élargi 5 600, 200 000 phrases sans personne, 480 « commune
+suivie », v3 1 000, libellé fort 3 000). Ces témoins ne contiennent aucun
+quatorze chiffres de Luhn juste hors libellé : le coût sur des textes naturels
+(numéros de suivi, références de 14 chiffres, dont un sur dix passe Luhn) n'est
+pas mesuré. La décision de masquer est au mainteneur.
 
 ---
 
