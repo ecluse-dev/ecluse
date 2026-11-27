@@ -3150,14 +3150,18 @@ mot=vers : capitales 0 / 200, ordinaire 0 / 200
 mot=à : capitales 0 / 100, ordinaire 0 / 100 ; sans accent : capitales 0 / 100, ordinaire 0 / 100
 types sur le nombre : adresse 218
 ## identifiant suivi d'un nombre (P2-174) : Ecluse.redact (chemin du produit)
-identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 2 type(s) faux, 2 suite(s) avalée(s), 2 document(s) en défaut
-type_id=finess : 1 / 1200 en défaut, 1 non couvert(s)
+identifiant suivi : 4800 documents, 1 identifiant(s) non couvert(s), 42 type(s) faux, 42 suite(s) avalée(s), 42 document(s) en défaut
+type_id=finess : 41 / 1200 en défaut, 1 non couvert(s)
 type_id=iban : 0 / 1200 en défaut, 0 non couvert(s)
 type_id=nir : 0 / 1200 en défaut, 0 non couvert(s)
 type_id=rpps : 1 / 1200 en défaut, 0 non couvert(s)
-separateur=espace : 1 / 1600 en défaut, 1 non couvert(s)
-separateur=ligne : 1 / 1600 en défaut, 0 non couvert(s)
+separateur=espace : 24 / 1600 en défaut, 1 non couvert(s)
+separateur=ligne : 18 / 1600 en défaut, 0 non couvert(s)
 separateur=virgule : 0 / 1600 en défaut, 0 non couvert(s)
+défaut : finess lu « rpps », age, espace : 16
+défaut : finess lu « rpps », age, ligne : 11
+défaut : finess lu « rpps », date_lettres, espace : 7
+défaut : finess lu « rpps », date_lettres, ligne : 6
 défaut : finess lu « rpps », nombre, espace : 1
 défaut : rpps lu « nir », nombre, ligne : 1
 ## identifiant derrière un libellé fort (P2-194) : Ecluse.redact (chemin du produit)
