@@ -20,7 +20,8 @@
 /// majuscules (ex. « IBAN 1234 » ne doit jamais devenir « IBAN1234 »,
 /// sans quoi le motif du détecteur ne reconnaît plus son propre début).
 final class DigitCompaction {
-  DigitCompaction._(this.original, this.compact, this._originalIndex);
+  DigitCompaction._(
+      this.original, this.compact, this._originalIndex, this._ecarteDevantDate);
 
   /// Texte d'origine, tel que reçu.
   final String original;
@@ -31,6 +32,11 @@ final class DigitCompaction {
   /// `_originalIndex[i]` est la position, dans le texte d'origine, du
   /// caractère `compact[i]`.
   final List<int> _originalIndex;
+
+  /// Vrai (défaut) : un candidat qui finit au milieu d'une date complète est
+  /// écarté. Faux : le candidat est rendu tel quel. Ne sert qu'à *mesurer* ce
+  /// que la garde écarte (P2-309) ; jamais utilisé pour masquer.
+  final bool _ecarteDevantDate;
 
   /// Blancs neutralisés entre deux chiffres : espace, tabulation, espace
   /// insécable, espaces typographiques U+2000 à U+200A (dont l'espace fine
@@ -55,7 +61,7 @@ final class DigitCompaction {
     '\u3000',
   };
 
-  factory DigitCompaction(String original) {
+  factory DigitCompaction(String original, {bool ecarteDevantDate = true}) {
     final compactUnits = <int>[];
     final originalIndex = <int>[];
 
@@ -93,8 +99,8 @@ final class DigitCompaction {
       i = runEnd;
     }
 
-    return DigitCompaction._(
-        original, String.fromCharCodes(compactUnits), originalIndex);
+    return DigitCompaction._(original, String.fromCharCodes(compactUnits),
+        originalIndex, ecarteDevantDate);
   }
 
   /// Y a-t-il un chiffre en fin de [units], quitte à traverser une unique
@@ -174,7 +180,9 @@ final class DigitCompaction {
         }
       }
     }
-    found.removeWhere((c) => _finitDansUneDate(c.start, c.end));
+    if (_ecarteDevantDate) {
+      found.removeWhere((c) => _finitDansUneDate(c.start, c.end));
+    }
     found.sort((a, b) => a.start - b.start);
     return found;
   }

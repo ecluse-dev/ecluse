@@ -609,6 +609,7 @@ abstract final class Ecluse {
               '${ocrCount > 1 ? " ($ocrCount occurrences)" : ""}.',
         ..._avertissementNombreDicte(text, resolved),
         ..._avertissementsSiretTva(text, resolved),
+        ..._avertissementsDevantDate(text, resolved),
         ..._avertissementIbanEcarte(text, resolved),
         ..._avertissementsSuiteAbimee(text, resolved),
         ..._avertissementNirCoupures(text, resolved),
@@ -688,6 +689,41 @@ abstract final class Ecluse {
         ligne('numéro de TVA à clé fausse sans libellé « TVA »', tva),
     ];
   }
+
+  /// Avertissements des candidats écartés devant une date complète (P2-309,
+  /// principe du 26 novembre, point 0) : `DigitCompaction` écarte, pour tous les
+  /// détecteurs, un identifiant dont les derniers chiffres ouvrent une date en
+  /// chiffres (« … 12/03/2024 »). Un NIR, un RPPS ou un FINESS à clé juste
+  /// partait ainsi en clair sans un mot. Le candidat est signalé « à vérifier »
+  /// (type, compte et positions, **jamais la valeur**), sauf si une autre entité
+  /// le couvre déjà en entier. Aucun masquage ne change. Le texte n'est
+  /// repassé aux détecteurs que s'il contient une date complète en chiffres.
+  static List<String> _avertissementsDevantDate(
+      String text, List<DetectedEntity> resolved) {
+    if (!_contientDateComplete.hasMatch(text)) return const [];
+    final parType = <EntityType, List<int>>{};
+    for (final c in candidatsEcartesDevantDate(text)) {
+      if (_couvertEnEntier(resolved, c.start, c.end)) continue;
+      (parType[c.type] ??= []).add(c.start);
+    }
+    String nom(EntityType t) => switch (t) {
+          EntityType.nir => 'NIR',
+          EntityType.rpps => 'RPPS',
+          EntityType.iban => 'IBAN',
+          EntityType.finess => 'FINESS',
+          _ => 'identifiant',
+        };
+    return [
+      for (final e in parType.entries)
+        '${nom(e.key)} de clé juste suivi d\'une date, non masqué : à vérifier '
+            '(${e.value.length} occurrence${e.value.length > 1 ? "s" : ""}, '
+            'position${e.value.length > 1 ? "s" : ""} '
+            '${e.value.take(5).join(", ")}${e.value.length > 5 ? ", …" : ""}).'
+    ];
+  }
+
+  static final RegExp _contientDateComplete =
+      RegExp(r'[0-9][/.\-][0-9]{1,2}[/.\-](?:19|20)[0-9]{2}');
 
   /// Avertissement d'un IBAN à clé fausse que la garde `iban_g45` n'a pas
   /// masqué (P2-300, décision du 26 novembre, points 0 et 1) : « FR » + 25

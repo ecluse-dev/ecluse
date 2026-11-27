@@ -76,6 +76,17 @@ final class FinessDetector implements Detector {
   Future<List<DetectedEntity>> detect(NormalizedText text) async =>
       _detectSync(text.raw);
 
+  /// Mêmes entités que [detect], mais **sans** l'écart d'un candidat qui finit
+  /// au milieu d'une date complète (P2-309) : sert à mesurer ce que cette
+  /// garde écarte, jamais à masquer.
+  static List<DetectedEntity> detectSansGardeDate(String text) =>
+      _detectSync(text, null, null, null, false);
+
+  /// Entités de [detect] (avec la garde), en version synchrone : référence de
+  /// la comparaison de P2-309.
+  static List<DetectedEntity> detectSansGardeDateReference(String text) =>
+      _detectSync(text);
+
   /// 9 chiffres exacts après `DigitCompaction` (espacements irréguliers
   /// déjà neutralisés), sans tolérance de séparateur additionnelle dans le
   /// motif lui-même : tolérer un point/tiret par chiffre (comme le fait
@@ -193,8 +204,9 @@ final class FinessDetector implements Detector {
     List<({int start, int end})>? ecartes,
     List<({int start, int end})>? ecartesSiret,
     List<({int start, int end})>? ecartesTva,
+    bool ecarteDevantDate = true,
   ]) {
-    final compaction = DigitCompaction(raw);
+    final compaction = DigitCompaction(raw, ecarteDevantDate: ecarteDevantDate);
     final results = <DetectedEntity>[];
     final vus = <(int, int)>{};
     final candidats = [

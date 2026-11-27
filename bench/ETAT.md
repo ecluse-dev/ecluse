@@ -3344,3 +3344,41 @@ Lecture : le coût est de 2 documents sur 5 000 du témoin durci élargi, deux c
 de colis écrits en groupes de quatre ; il n'y a pas de NIR annoté dans ces
 corpus qui soit écrit ainsi, donc rien à gagner non plus sur eux : le bénéfice est
 celui de la sonde (40 / 40), pas d'un corpus naturel.
+
+## Candidat écarté devant une date complète : avertissement « à vérifier » (P2-309, 27 novembre 2026)
+
+Chemin mesuré : **`Ecluse.redact`** (`packages/ecluse_redact/bin/run_gardes_avertissements.dart`),
+pas le moteur seul. Aucun masquage ne change (`detect` garde son comportement ;
+`candidatsEcartesDevantDate` ne fait que comparer avec la garde désactivée). Le
+tableau de bord complet (`bench/etat.sh`, 9 min) a été rejoué sur la branche : le
+bloc « Valeurs courantes contrôlées » est inchangé (`controle_etat.py` :
+conforme), aucune ligne `ÉCHEC`. Les fichiers de prédictions n'ont pas été
+comparés octet pour octet à `main` (non rejoué sur `main` dans cette session).
+
+Sonde (identifiants fabriqués, clés calculées, séparateur `/`, date `jj/03/2024`) :
+
+| Type | Textes | Candidats écartés non couverts | Signalés avant | Signalés après |
+|---|---|---|---|---|
+| NIR (clé ≤ 39) | 156 | 156 | 0 | **156** |
+| RPPS (deux derniers chiffres ≤ 39) | 160 | 160 | 0 | **160** |
+| FINESS (« 12 345 678 9/03/2024 ») | 400 | 400 | 0 | **400** |
+| IBAN (groupes usuels) | 50 | 0 (non constructible) | 0 | 0 |
+
+Documents qui portent l'avertissement « de clé juste suivi d'une date », sans
+qu'aucune entité ne le couvre en entier :
+
+| Témoin | Documents | Avec l'avertissement | Dont à tort |
+|---|---|---|---|
+| durci élargi (faux accords OCR) | 5 000 | 0 | 0 |
+| mots-nombres durci élargi | 5 600 | 0 | 0 |
+| commune suivie | 480 | 0 | 0 |
+| v3 (graine 42) | 1 000 | 0 | 0 |
+| libellé fort | 3 000 | 0 | 0 |
+| identifiant suivi | 4 800 | 10 (3 NIR, 7 RPPS) | 10 |
+
+Lecture : les 10 documents du témoin « identifiant suivi » ont leur identifiant
+réel (RPPS ou FINESS) masqué en entier ; l'avertissement vient d'une lecture
+voisine (NIR ou RPPS) du même nombre élargi aux chiffres de la date, que l'entité
+réelle ne couvre pas en entier. C'est un avertissement en trop, pas une fuite.
+Non rejoué : les 200 000 phrases sans personne.
+

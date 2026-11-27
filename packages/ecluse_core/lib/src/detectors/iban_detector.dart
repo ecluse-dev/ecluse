@@ -46,14 +46,25 @@ final class IbanFrDetector implements EntityDetector {
     r'[ \-./][0-9A-Za-z](?![0-9A-Za-z])',
   );
 
+  /// Mêmes entités que [detect], mais **sans** l'écart d'un candidat qui finit
+  /// au milieu d'une date complète (`DigitCompaction`). Sert uniquement à
+  /// mesurer ce que cette garde écarte (P2-309, principe du 26 novembre,
+  /// point 0) : la différence avec [detect] donne les candidats écartés.
+  /// Ne produit aucun masquage.
+  List<DetectedEntity> detectSansGardeDate(String text) =>
+      _detecte(text, ecarteDevantDate: false);
+
   @override
-  List<DetectedEntity> detect(String text) {
+  List<DetectedEntity> detect(String text) => _detecte(text);
+
+  List<DetectedEntity> _detecte(String text, {bool ecarteDevantDate = true}) {
     // Neutralise d'abord les espaces (multiples, insécables, tabulations)
     // internes à une séquence de chiffres — un RIB affiché en tableau
     // n'utilise pas toujours un séparateur simple entre les groupes.
     // `_candidate` tolère déjà un séparateur unique par caractère, donc ce
     // repli sur le format « collé » suffit à couvrir les deux cas.
-    final compaction = DigitCompaction(text);
+    final compaction =
+        DigitCompaction(text, ecarteDevantDate: ecarteDevantDate);
 
     final results = <DetectedEntity>[];
     for (final match in [
