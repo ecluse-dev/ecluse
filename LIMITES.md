@@ -247,10 +247,10 @@ types faux sur 4 800 ; 27 suivis d'un âge, 13 d'un nom de mois) ; rien en clair
 de plus, la date est abîmée. Les autres témoins ne changent pas : prédictions
 identiques octet pour octet sur 76 fichiers de prédictions du tableau de bord sur
 77, 58 / 5 000 documents masqués à tort sur le témoin durci élargi avant comme
-après, 0 / 5 600 (mots-nombres), 0 / 200 000 phrases sans personne. **Reste
-silencieux, hors de cette tâche** : un candidat dont les deux derniers chiffres
-ouvrent une date complète en chiffres (« … 12/03/2024 ») est écarté par
-`DigitCompaction` pour tous les détecteurs, sans avertissement.
+après, 0 / 5 600 (mots-nombres), 0 / 200 000 phrases sans personne. **Ce qui était
+silencieux est signalé par P2-309** (ci-dessous) : un candidat dont les deux
+derniers chiffres ouvrent une date complète en chiffres (« … 12/03/2024 ») est
+écarté par `DigitCompaction` pour tous les détecteurs.
 
 **Ce qui reste :**
 
@@ -2818,6 +2818,26 @@ suivie », v3 1 000, libellé fort 3 000). Ces témoins ne contiennent aucun
 quatorze chiffres de Luhn juste hors libellé : le coût sur des textes naturels
 (numéros de suivi, références de 14 chiffres, dont un sur dix passe Luhn) n'est
 pas mesuré. La décision de masquer est au mainteneur.
+
+**P2-309 (27 novembre 2026) : un identifiant qui finit au milieu d'une date
+complète est signalé.** `DigitCompaction` écarte, pour tous les détecteurs, un
+candidat dont les deux derniers chiffres ouvrent une date complète en chiffres
+(« NIR 1 85 05 78 006 084 12/03/2024 ») : ses derniers chiffres sont lus comme le
+jour de la date. Un NIR, un RPPS ou un FINESS de clé juste écrit ainsi **n'est pas
+masqué**. `Ecluse.redact` le signale désormais « à vérifier » (type, compte et
+positions, jamais la valeur), sauf si une autre entité le couvre en entier. Aucun
+masquage ne change. Sonde de P2-309 (chemin `Ecluse.redact`, identifiants
+fabriqués, clés calculées) : NIR 156 / 156, RPPS 160 / 160, FINESS 400 / 400
+signalés après, aucun avant (l'avertissement n'existait pas). Un IBAN n'est pas
+concerné par les groupements usuels (dernier groupe de trois caractères, ou
+paires) : aucun cas constructible. Les candidats de clé fausse ne sont pas
+signalés. Coût : 10 documents sur 4 800 du témoin « identifiant suivi » portent
+l'avertissement, tous à tort (l'identifiant réel y est déjà masqué en entier sous
+un autre type ; la lecture NIR du même nombre mord sur les chiffres de la date) ;
+0 document sur 14 080 des autres témoins rejoués (durci élargi 5 000,
+mots-nombres durci élargi 5 600, « commune suivie » 480, v3 1 000, libellé fort
+3 000). Les 200 000 phrases sans personne n'ont pas été rejouées. L'ADELI, qui
+passe aussi par la compaction, n'est pas couvert (hors fiche).
 
 ---
 

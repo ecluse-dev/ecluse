@@ -20,6 +20,7 @@ export 'src/detection/detector_tier.dart';
 export 'src/detection/ecluse_engine.dart';
 export 'src/detection/legacy_detector_adapter.dart';
 export 'src/detection/normalized_text.dart';
+export 'src/candidats_ecartes_devant_date.dart';
 export 'src/detector.dart';
 export 'src/detectors/adeli_detector.dart';
 export 'src/detectors/finess_detector.dart';
