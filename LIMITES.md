@@ -2843,6 +2843,22 @@ quatorze chiffres de Luhn juste hors libellé : le coût sur des textes naturels
 (numéros de suivi, références de 14 chiffres, dont un sur dix passe Luhn) n'est
 pas mesuré. La décision de masquer est au mainteneur.
 
+**P2-313 (27 novembre 2026) : un horodatage de quatorze chiffres n'est plus signalé
+comme SIRET possible.** Quatorze chiffres de Luhn juste qui se lisent comme un
+horodatage AAAAMMJJhhmmss valide (année 1900 à 2099, jour du calendrier, heure
+00-23, minutes et secondes 00-59), sans le mot « siret », ne portent plus
+l'avertissement de P2-307. Mesure (`Ecluse.redact`, corpus de P2-311, graine 42,
+3 000 documents sans donnée personnelle) : signalements SIRET 206 → 170
+(−17,5 %) ; les 36 horodatages de Luhn juste, tous des dates valides, ne sont plus
+signalés ; sonde de P2-303 : 40 / 40 SIRET sans le mot toujours signalés ; aucun
+masquage ne change (un SIRET nommé est masqué quelle que soit sa forme). **Ce que
+cela coûte** : un SIRET sans le mot « siret » dont les quatorze chiffres seraient
+aussi un horodatage valide n'est plus signalé. Ordre de grandeur (simulation à
+graine 42, 300 000 SIRET de Luhn juste par ligne) : 0,007 % pour quatorze chiffres
+uniformes, 0,013 à 0,016 % pour un SIREN uniforme suivi d'un NIC 00001-00099 ou
+00001-00999, soit environ un SIRET sur 6 000 à 15 000 ; le SIREN réel n'est pas
+uniforme, la simulation n'est qu'un ordre de grandeur.
+
 **P2-309 (27 novembre 2026) : un identifiant qui finit au milieu d'une date
 complète est signalé.** `DigitCompaction` écarte, pour tous les détecteurs, un
 candidat dont les deux derniers chiffres ouvrent une date complète en chiffres

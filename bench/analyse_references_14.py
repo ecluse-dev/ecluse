@@ -62,7 +62,10 @@ def main(paires):
         print(f"{f} | {k['docs']} | {k['luhn']} | {k['masquerait']} | {k['signale_siret']} | "
               f"{k['signale_tva']} | {k['masque_aujourdhui']}")
         tot.update(k)
-        if k["masquerait"] != k["signale_siret"] + k["signale_tva"]:
+        # P2-313 : un horodatage valide n'est plus signalé (voulu) ; la colonne
+        # « masqués à tort si on masquait » reste le coût d'un masquage.
+        attendu = 0 if f == "horodatage" else k["masquerait"]
+        if attendu != k["signale_siret"] + k["signale_tva"]:
             ecarts += 1
     print(f"TOTAL | {tot['docs']} | {tot['luhn']} | {tot['masquerait']} | {tot['signale_siret']} | "
           f"{tot['signale_tva']} | {tot['masque_aujourdhui']}")

@@ -380,7 +380,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-310 | code | Listes d'exclusion des noms coûteuses (`verbes_conjugues`, `statuts`, `mots_voisins_neutres`, `mots_de_role`) : un homonyme écarté est signalé (principe 0) | P2-308 | fusionnée |
 | P2-311 | mesure | Références de quatorze chiffres dans des textes logistiques synthétiques : coût d'un masquage des SIRET et TVA sans libellé, pour la décision du mainteneur ; rien corrigé | P2-307 | fusionnée |
 | P2-312 | code | Avertissement « suivi d'une date » (P2-309) : ne plus signaler un candidat dont l'identifiant réel est déjà masqué en entier par une lecture voisine (10 en trop sur 4 800) | P2-309 | à faire |
-| P2-313 | code | Signalement SIRET sans libellé (P2-307) : écarter les horodatages valides (−17 % de signalements sur le corpus de P2-311) | P2-311 | à faire |
+| P2-313 | code | Signalement SIRET sans libellé (P2-307) : écarter les horodatages valides (−17 % de signalements sur le corpus de P2-311) | P2-311 | PR ouverte |
 | P2-314 | mesure | Avertissement des homonymes (P2-310) en texte tout en minuscules : 18,75 % des documents de la sonde de P2-240 ; options pour réduire le bruit sans rendre de silence ; rien corrigé | P2-310 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.

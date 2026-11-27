@@ -199,6 +199,33 @@ final class FinessDetector implements Detector {
     return ecartes;
   }
 
+  /// Quatorze chiffres qui se lisent comme un horodatage AAAAMMJJhhmmss valide :
+  /// année 1900 à 2099, jour du calendrier (années bissextiles comprises),
+  /// heure 00-23, minutes et secondes 00-59.
+  ///
+  /// Pourquoi (P2-313) : un horodatage de Luhn juste (un sur dix) était signalé
+  /// comme « SIRET possible » à chaque export, journal ou nom de fichier
+  /// (36 sur 36 sur le corpus de P2-311), alors qu'aucun des 19 736 nombres
+  /// uniformes de Luhn juste du même corpus n'a cette forme. Ne sert qu'à
+  /// **taire un avertissement** : jamais à décider d'un masquage (un SIRET
+  /// nommé est masqué quelle que soit sa forme). Coût : un SIRET dont les
+  /// quatorze chiffres seraient aussi un horodatage valide, sans le mot
+  /// « siret », n'est plus signalé (voir `LIMITES.md` pour l'ordre de grandeur).
+  static bool _seLitCommeHorodatage(String d) {
+    if (d.length != 14) return false;
+    int n(int a, int b) => int.parse(d.substring(a, b));
+    final annee = n(0, 4);
+    final mois = n(4, 6);
+    final jour = n(6, 8);
+    if (annee < 1900 || annee > 2099 || mois < 1 || mois > 12 || jour < 1) {
+      return false;
+    }
+    final bissextile = (annee % 4 == 0 && annee % 100 != 0) || annee % 400 == 0;
+    const jours = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    final max = (mois == 2 && bissextile) ? 29 : jours[mois - 1];
+    return jour <= max && n(8, 10) <= 23 && n(10, 12) <= 59 && n(12, 14) <= 59;
+  }
+
   static List<DetectedEntity> _detectSync(
     String raw, [
     List<({int start, int end})>? ecartes,
@@ -249,9 +276,12 @@ final class FinessDetector implements Detector {
     ]..sort((a, b) => a.start - b.start);
     for (final match in siret) {
       if (!siretVus.add((match.start, match.end))) continue;
-      final juste = isLuhnValid(match.text.replaceAll(' ', ''));
+      final chiffresSiret = match.text.replaceAll(' ', '');
+      final juste = isLuhnValid(chiffresSiret);
       if (!_fenetre(raw, match.start, match.end).contains('siret')) {
-        if (juste) {
+        // Un horodatage valide n'est pas signalé (P2-313) : voir
+        // [_seLitCommeHorodatage]. Avec le mot « siret », il reste masqué.
+        if (juste && !_seLitCommeHorodatage(chiffresSiret)) {
           ecartesSiret?.add((start: match.start, end: match.end));
         }
         continue;
