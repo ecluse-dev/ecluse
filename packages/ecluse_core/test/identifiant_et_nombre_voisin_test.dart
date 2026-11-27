@@ -149,33 +149,46 @@ void main() {
     });
   });
 
-  group('type faux : un RPPS n\'avale pas le début d\'une date ou d\'un âge',
-      () {
+  group(
+      'RPPS de onze chiffres suivi d\'une date ou d\'un âge : masqué en entier '
+      '(P2-306, « dans le doute, masquer »)', () {
     final (fd, jour) = finessEtSuite(1, 28);
     final (fa, age) = finessEtSuite(30, 99);
 
-    for (final (cas, texte, f) in [
-      ('date en chiffres', 'FINESS $fd $jour/03/2024 noté', fd),
-      ('date à points', 'FINESS $fd $jour.03.2024 noté', fd),
-      ('date en lettres', 'FINESS $fd $jour mars 2024 noté', fd),
-      ('date en lettres abrégée', 'FINESS $fd $jour janv. 2024 noté', fd),
-      ('âge', 'FINESS $fa $age ans noté', fa),
+    // Avant P2-306, la garde `rpps_finess_date` (P2-174) écartait ce candidat :
+    // neuf chiffres de Luhn juste + deux chiffres + une date ou « ans » se lit
+    // aussi comme un FINESS suivi d'une date. Mais la même forme est un RPPS
+    // écrit en deux groupes (mesure P2-303 : 39 / 39 écartés, les deux derniers
+    // chiffres en clair). Rien ne départage les deux : on masque les onze.
+    for (final (cas, texte, f, suite) in [
+      ('date en lettres', 'FINESS $fd $jour mars 2024 noté', fd, jour),
+      ('date en lettres abrégée', 'FINESS $fd $jour janv. 2024 noté', fd, jour),
+      ('âge', 'FINESS $fa $age ans noté', fa, age),
     ]) {
-      test(cas, () async {
-        // La prémisse du cas : les 11 chiffres passent Luhn.
-        final i = texte.indexOf(f);
-        expect(luhn('$f${texte.substring(i + 10, i + 12)}'), isTrue);
-        expect(rppsDetector.detect(texte), isEmpty, reason: texte);
-        final e = await finess(texte);
-        expect(e, hasLength(1));
-        expect(texte.substring(e.single.start, e.single.end), f);
+      test(cas, () {
+        // La prémisse du cas : les onze chiffres passent Luhn.
+        expect(luhn('$f$suite'), isTrue);
+        final e = rppsDetector.detect(texte);
+        expect(e, hasLength(1), reason: cas);
+        expect(texte.substring(e.single.start, e.single.end), '$f $suite');
       });
     }
 
-    test('sans preuve que les deux chiffres sont autre chose, le RPPS reste',
-        () {
-      // « 123456789 12 exerce » : rien ne dit que « 12 » n'est pas la fin du
-      // numéro. Dans le doute, le côté qui protège : tout reste masqué.
+    test(
+        'date complète en chiffres : écartée par la compaction, non touchée '
+        'par P2-306 (autre garde, hors fiche)', () {
+      // `DigitCompaction._finitDansUneDate` écarte tout candidat dont les deux
+      // derniers chiffres ouvrent « jj/mm/aaaa » : garde commune à tous les
+      // détecteurs, inchangée ici. À traiter à part (compte rendu de P2-306).
+      for (final texte in [
+        'FINESS $fd $jour/03/2024 noté',
+        'FINESS $fd $jour.03.2024 noté',
+      ]) {
+        expect(rppsDetector.detect(texte), isEmpty, reason: texte);
+      }
+    });
+
+    test('sans date derrière, le RPPS reste (inchangé)', () {
       final texte = 'Prescripteur $fd $jour exerce à mi-temps';
       expect(rppsDetector.detect(texte), hasLength(1));
       final texteNombre = 'Prescripteur $fd $jour lits';
