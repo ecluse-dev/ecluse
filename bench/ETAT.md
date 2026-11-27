@@ -3422,3 +3422,23 @@ voisine (NIR ou RPPS) du même nombre élargi aux chiffres de la date, que l'ent
 réelle ne couvre pas en entier. C'est un avertissement en trop, pas une fuite.
 Non rejoué : les 200 000 phrases sans personne.
 
+### Doublons de l'avertissement « suivi d'une date » (P2-312, 27 novembre 2026)
+
+Chemin mesuré : `Ecluse.redact` (ce que reçoit le LLM), témoin « identifiant suivi »
+(4 800 documents, graine 42). Un candidat écarté n'est plus signalé quand une entité
+**à confiance ≥ 0,9** masque déjà en entier ses chiffres d'identifiant (le candidat
+privé de son dernier groupe, qui est le début de la date).
+
+| Mesure | Avant | Après |
+|---|---|---|
+| Documents du témoin « identifiant suivi » avec l'avertissement | 10 (3 NIR, 7 RPPS) | **2** |
+| Sonde de P2-309 (716 textes, NIR, RPPS, FINESS) signalés | 716 / 716 | 716 / 716 |
+
+Les 8 doublons retirés ont une entité couvrante à 0,9 (libellé ou forme confirmés).
+Les 2 restants (« Établissement … » + FINESS de Luhn juste sans libellé, confiance 0,5)
+**ne sont pas retirés** : la fiche demandait 10 → 0, mais ces deux textes ont la
+forme exacte de 16 cas de la sonde RPPS (« Prescripteur 100033000 18/03/2024 » :
+un RPPS dont les neuf premiers chiffres sont aussi un FINESS de Luhn juste, masqué à
+0,5), où l'avertissement est le seul signe que deux chiffres d'un RPPS restent en
+clair. Les retirer rendait ces 16 cas silencieux (716 → 700 signalés). Aucun masquage
+ne change. Non rejoué : les 200 000 phrases sans personne.
