@@ -827,6 +827,20 @@ final class AdresseDetector implements EntityDetector {
       );
     }
 
+    // P2-324 : cinq chiffres qui terminent un SIRET de clé juste, suivis d'un
+    // mot (« 732 829 320 33565 puis »), ne sont pas un code postal : le SIRET
+    // reste entier, sans quoi l'« adresse », plus longue, lui faisait perdre le
+    // chevauchement et laissait son SIREN en clair. Seule une adresse qui
+    // **commence** dans le SIRET est écartée ; une adresse qui le précède ou le
+    // suit, et toute autre règle de chevauchement, restent ce qu'elles étaient.
+    if (results.isNotEmpty) {
+      final sirets = FinessDetector.siretsDeCleJuste(text);
+      if (sirets.isNotEmpty) {
+        results.removeWhere(
+            (e) => sirets.any((s) => e.start >= s.start && e.start < s.end));
+      }
+    }
+
     results.sort((a, b) => a.start - b.start);
     return results;
   }
