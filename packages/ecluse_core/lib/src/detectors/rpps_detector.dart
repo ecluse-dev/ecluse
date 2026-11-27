@@ -57,10 +57,21 @@ final class RppsDetector implements EntityDetector {
   /// FINESS suivi d'un jour dont les onze chiffres passent Luhn (un sur dix)
   /// est masqué comme RPPS, jour compris (`LIMITES.md`).
 
+  /// Mêmes entités que [detect], mais **sans** l'écart d'un candidat qui finit
+  /// au milieu d'une date complète (`DigitCompaction`). Sert uniquement à
+  /// mesurer ce que cette garde écarte (P2-309, principe du 26 novembre,
+  /// point 0) : la différence avec [detect] donne les candidats écartés.
+  /// Ne produit aucun masquage.
+  List<DetectedEntity> detectSansGardeDate(String text) =>
+      _detecte(text, ecarteDevantDate: false);
+
   @override
-  List<DetectedEntity> detect(String text) {
+  List<DetectedEntity> detect(String text) => _detecte(text);
+
+  List<DetectedEntity> _detecte(String text, {bool ecarteDevantDate = true}) {
     final results = <DetectedEntity>[];
-    final compaction = DigitCompaction(text);
+    final compaction =
+        DigitCompaction(text, ecarteDevantDate: ecarteDevantDate);
     // La forme d'IBAN est cherchée par les mêmes passages que les candidats
     // (P2-174) : sinon un IBAN à blancs irréguliers (insécables, espaces
     // multiples), que le passage régularisé lit maintenant groupe par groupe,

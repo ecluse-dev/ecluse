@@ -376,7 +376,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-306 | code | Garde `rpps_finess_date` : le RPPS suivi d'une date est masqué en entier (les deux derniers chiffres restaient en clair) | P2-303 | fusionnée |
 | P2-307 | code | SIRET et TVA sans libellé : écartés et signalés (principe 0), avec mesure du coût d'un masquage pour une décision ultérieure | P2-303 | fusionnée |
 | P2-308 | mesure | Listes d'exclusion des noms (`name_detector.dart` et voisins) : inventaire et coût de chacune ; rien corrigé | P2-303 | fusionnée |
-| P2-309 | code | `DigitCompaction._finitDansUneDate` : un identifiant écarté parce qu'il touche une date complète est signalé (principe du 26 novembre, point 0) | P2-306 | à faire |
+| P2-309 | code | `DigitCompaction._finitDansUneDate` : un identifiant écarté parce qu'il touche une date complète est signalé (principe du 26 novembre, point 0) | P2-306 | PR ouverte |
 | P2-310 | code | Listes d'exclusion des noms coûteuses (`verbes_conjugues`, `statuts`, `mots_voisins_neutres`, `mots_de_role`) : un homonyme écarté est signalé (principe 0) | P2-308 | à faire |
 | P2-311 | mesure | Références de quatorze chiffres dans des textes logistiques synthétiques : coût d'un masquage des SIRET et TVA sans libellé, pour la décision du mainteneur ; rien corrigé | P2-307 | à faire |
 
