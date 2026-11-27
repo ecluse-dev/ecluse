@@ -4,9 +4,11 @@ import 'package:ecluse_core/ecluse_core.dart';
 
 import 'communes_grandes.dart';
 import 'etablissement_keywords.dart';
+import 'homonymes_patronymes.dart';
 import 'french_first_names.dart';
 import 'mots_neutres.dart';
 import 'tableau_csv.dart';
+import 'verbes_conjugues.dart';
 
 /// Détecteur heuristique de noms de personnes — **v0 de démonstration**.
 ///
@@ -740,6 +742,84 @@ final class NameDetector implements EntityDetector {
       }
     }
     return true;
+  }
+
+  /// Civilité ou mot de parenté, puis un mot de [_statuts] écrit avec une
+  /// majuscule (« Madame Marié », « Famille Cadet ») : le lookahead de
+  /// [_civility] et de [_cueParente] l'écarte (P2-77), il n'est donc jamais
+  /// masqué. Sert au seul signalement de [homonymesEcartes].
+  static final RegExp _civiliteDevantStatut = RegExp(
+    r'(?<![\wÀ-ÿ])(?:M\.|Mrs\.?|Mr\.?|Ms\.?|Mme\.?|Mlle\.?|Mademoiselle|'
+    r'Monsieur|Madame|Dre\.?|Dr\.?|Docteure|Docteur|Pr\.?|Professeure|'
+    r'Professeur|Maître|Maitre|Me|Mdme\.?|Melle\.?|MME|MLLE|MR|MONSIEUR|'
+    r'MADAME|MADEMOISELLE|DOCTEUR|PROFESSEUR|'
+    r'[Ff]amille|[EeÉé]poux|[Cc]onsorts|[SsŒœ]œur|[Ss]oeur|[Ff]rère|Père)'
+    '$_h+'
+    '(?=[A-ZÀ-ÖØ-Þ])((?:$_statutsAlt))(?![\\wÀ-ÿ])',
+  );
+
+  /// Le mot est-il aussi un patronyme du fichier INSEE (P2-310) ? Sans cela, un
+  /// mot de statut ou un verbe qui n'est pas un nom de personne (« Bénéficiaire »,
+  /// « rappelle ») serait signalé à chaque occurrence.
+  static bool _estHomonymeDePatronyme(String mot) =>
+      motsHomonymesDePatronymes.contains(_foldAccents(mot.toLowerCase()));
+
+  /// Deux mots en minuscules de suite, pour [homonymesEcartes] : un prénom
+  /// connu puis un mot que les listes écartent (« sophie porte a rappelé »).
+  static final RegExp _deuxMinuscules = RegExp(
+    r"(?<![\wÀ-ÿ'’-])(\p{Ll}[\p{Ll}'’-]*)[ \t\u00A0\u202F]+(\p{Ll}[\p{Ll}'’-]*)"
+    r'(?![\wÀ-ÿ])',
+    unicode: true,
+  );
+
+  /// Mots que [text] laisse en clair parce qu'une des quatre listes coûteuses
+  /// d'exclusion des noms (`verbes_conjugues`, `statuts`,
+  /// `mots_voisins_neutres`, `mots_de_role`) les retire, **là où un nom était
+  /// attendu** : derrière une civilité ou un mot de parenté (« Madame Marié »),
+  /// derrière « le dossier de », « l'entretien avec », « à la demande de »
+  /// (« le dossier de Maître »), ou derrière un prénom connu en minuscules
+  /// (« sophie porte a rappelé »). Bornes seulement, **jamais la valeur** ; aucun
+  /// masquage ne change (P2-310, principe du 26 novembre, point 0 : un patronyme
+  /// homonyme d'un mot courant part en clair, et rien ne le dit). Inventaire :
+  /// `agent/specs/P2-308.md`.
+  ///
+  /// L'appelant retire les mots qu'une entité couvre déjà.
+  static List<({int start, int end})> homonymesEcartes(String text) {
+    final sorties = <({int start, int end})>[];
+    final vus = <int>{};
+    void ajoute(int start, int end) {
+      if (vus.add(start)) sorties.add((start: start, end: end));
+    }
+
+    for (final m in _civiliteDevantStatut.allMatches(text)) {
+      if (!_estHomonymeDePatronyme(m.group(1)!)) continue;
+      ajoute(m.start + m.group(0)!.lastIndexOf(m.group(1)!), m.end);
+    }
+    for (final m in _contexteAvant.allMatches(text)) {
+      final unite = m.group(1)!;
+      if (unite.contains(_ecart) || !_estHomonymeDePatronyme(unite)) continue;
+      final bas = unite.toLowerCase();
+      if (_estStatut(unite) ||
+          _motsVoisinsNeutres.contains(bas) ||
+          _estMotDeRole(unite)) {
+        ajoute(m.end - unite.length, m.end);
+      }
+    }
+    for (final m in _deuxMinuscules.allMatches(text)) {
+      final premier = m.group(1)!;
+      final mot = m.group(2)!;
+      if (!_looksLikeKnownFirstName(premier) || !_estHomonymeDePatronyme(mot)) {
+        continue;
+      }
+      if (estVerbeConjugue(mot) ||
+          _estStatut(mot) ||
+          _motsVoisinsNeutres.contains(mot) ||
+          _estMotDeRole(mot)) {
+        ajoute(m.end - mot.length, m.end);
+      }
+    }
+    sorties.sort((a, b) => a.start - b.start);
+    return sorties;
   }
 
   /// Vrai si un mot capitalisé précède [debut] sur la même ligne : le sujet de

@@ -3316,6 +3316,46 @@ colonne de 10 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) travers
 ```
 <!-- controle:fin -->
 
+## Listes d'exclusion des noms : homonymes écartés signalés (P2-310, 27 novembre 2026)
+
+Chemin mesuré : **`Ecluse.redact`** (`packages/ecluse_redact/bin/run_gardes_avertissements.dart`),
+pas le moteur seul. Aucun masquage ne change (l'avertissement est ajouté après la
+détection, sur le texte et les entités résolues). Seuls les mots qui sont aussi un
+patronyme INSEE (236, `homonymes_patronymes.dart`, généré par
+`python3 bench/listes_exclusion.py homonymes_dart --ecrire`) sont signalés.
+
+Sonde de P2-308 (`bench/mesure_listes_exclusion.sh`, patronymes en clair
+signalés, toutes tournures) :
+
+| Liste | Avant | Après |
+|---|---|---|
+| `verbes_conjugues` | 0 / 170 | **170 / 170** |
+| `statuts` | 0 / 29 | **29 / 29** |
+| `mots_voisins_neutres` | 0 / 30 | **30 / 30** |
+| `mots_de_role` | 0 / 30 | **30 / 30** |
+
+Les neuf autres listes restent silencieuses (hors fiche). Témoin de patronymes
+hors liste (160 documents) : 0 signalé.
+
+Documents avertis sur les témoins propres (seuil d'arrêt : 5 %) :
+
+| Témoin | Documents | Avertis |
+|---|---|---|
+| mots neutres | 31 200 | 0 |
+| commune neutre, neutre cedex, faux amis, réaliste, adversarial | 5 × 400 | 0 |
+| v3 (graine 42) | 1 000 | 0 |
+| commune suivie | 480 | 0 |
+| durci élargi (faux accords OCR) | 5 000 | 0 |
+| mots-nombres durci élargi | 5 600 | 0 |
+| libellé fort | 3 000 | 0 |
+| sonde prénom + verbe (P2-240), casse ordinaire | 1 280 | 0 |
+| **même sonde mise en minuscules** | 1 280 | **240** (18,75 %, tous des verbes légitimes qui sont aussi un patronyme) |
+
+Lecture : le bruit est nul sur les témoins du dépôt, qui ne contiennent aucune de
+ces tournures ; il est massif sur du texte entièrement en minuscules, où le
+prénom suivi d'un verbe de la liste est signalé. Un document ne porte jamais
+plus d'un avertissement de ce type (compte et positions).
+
 ## Garde `nir_coupures` : avertissement « à vérifier » (P2-305, 27 novembre 2026)
 
 Chemin mesuré : **`Ecluse.redact`** (`packages/ecluse_redact/bin/run_gardes_avertissements.dart`),

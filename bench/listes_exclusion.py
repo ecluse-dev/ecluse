@@ -144,6 +144,54 @@ def homonymes(ent, eff):
     return sorted(res.items(), key=lambda kv: -kv[1])
 
 
+# Les quatre listes coûteuses (P2-308) : seules leurs entrées qui sont aussi un
+# patronyme INSEE sont signalées par `Ecluse.redact` (P2-310).
+LISTES_SIGNALEES = ["statuts", "mots_voisins_neutres", "mots_de_role", "verbes_conjugues"]
+FICHIER_HOMONYMES = os.path.join(H, "homonymes_patronymes.dart")
+
+
+def mots_homonymes():
+    """Entrées d'un mot des quatre listes qui sont aussi un patronyme INSEE
+    (≥ 30 naissances), en minuscules sans accent : ce que le code compare."""
+    eff = charge_insee()
+    mots = set()
+    for ident, fichier, nom, _ in LISTES:
+        if ident in LISTES_SIGNALEES:
+            for e, _n in homonymes(entrees(fichier, nom), eff):
+                mots.add(plie(e).lower())
+    return sorted(mots)
+
+
+def source_dart():
+    mots = mots_homonymes()
+    lignes = "".join(f"  '{m}',\n" for m in mots)
+    return (
+        "// Fichier GÉNÉRÉ : `python3 bench/listes_exclusion.py homonymes_dart`\n"
+        "// (P2-310). Ne pas éditer à la main : `bench/test_listes_exclusion.py`\n"
+        "// compare ce fichier à la sortie du script.\n"
+        "\n"
+        "/// Entrées d'un mot des quatre listes d'exclusion des noms les plus coûteuses\n"
+        "/// (`statuts`, `mots_voisins_neutres`, `mots_de_role`, `verbes_conjugues`) qui\n"
+        "/// sont aussi un patronyme du fichier INSEE des noms de famille (au moins 30\n"
+        "/// naissances, 1891-2000), en minuscules sans accent. Seuls ces mots sont\n"
+        "/// signalés « à vérifier » quand une liste les laisse en clair : un mot qui\n"
+        "/// n'est pas un nom de personne (« bénéficiaire », « rappelle ») ne l'est pas.\n"
+        "const Set<String> motsHomonymesDePatronymes = {\n"
+        f"{lignes}"
+        "};\n"
+    )
+
+
+def cmd_homonymes_dart(ecrire):
+    src = source_dart()
+    if ecrire:
+        with open(FICHIER_HOMONYMES, "w", encoding="utf-8") as f:
+            f.write(src)
+        print(f"{FICHIER_HOMONYMES} : {len(mots_homonymes())} mots")
+    else:
+        sys.stdout.write(src)
+
+
 def cmd_inventaire():
     eff = charge_insee()
     print("liste | fichier | entrées | un mot | homonymes INSEE (≥30) | dont ≥ 1 000 | plus répandus (effectif)")
@@ -261,6 +309,8 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     sp = ap.add_subparsers(dest="cmd", required=True)
     sp.add_parser("inventaire")
+    h_ = sp.add_parser("homonymes_dart")
+    h_.add_argument("--ecrire", action="store_true")
     s = sp.add_parser("sonde")
     s.add_argument("--out", required=True)
     s.add_argument("--par-liste", type=int, default=200)
@@ -269,6 +319,8 @@ if __name__ == "__main__":
     a = ap.parse_args()
     if a.cmd == "inventaire":
         cmd_inventaire()
+    elif a.cmd == "homonymes_dart":
+        cmd_homonymes_dart(a.ecrire)
     elif a.cmd == "sonde":
         cmd_sonde(a.out, a.par_liste)
     else:
