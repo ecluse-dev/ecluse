@@ -851,3 +851,8 @@ colonne de 2 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversa
 colonne de 10 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
 colonne de 2 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
 colonne de 10 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+## avertissements homonymes sur les témoins (P2-320) : Ecluse.redact (chemin du produit)
+avertissements homonymes, casse ordinaire : 42 corpus, 81296 documents, 0 avertis, pire 0.00 %
+avertissements homonymes, minuscules, mixte, phrase et transcrit : 27 corpus, 14613 documents, 36 avertis, pire 2.25 % (corpus_flou_realiste_minuscules)
+avertissements homonymes, tournures sans nom : 8 / 400 (2.00 %)
+avertissements homonymes, tournures de personne (corpus fait de ces tournures, sans seuil) : 36 / 480 (7.50 %)

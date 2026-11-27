@@ -648,6 +648,19 @@ echo "## collage de fin de ligne hors du cœur (P2-166)"
 montre "collage, corpus recoupés" -E . 0 non bench_pkg run_collage_fp.dart ../../bench/flou/structurel_l60.jsonl ../../bench/flou/structurel_l90.jsonl ../../bench/flou/corpus_flou_temoin_l60.jsonl ../../bench/flou/corpus_flou_temoin_l90.jsonl || true
 montre "collage, prose et cas ciblés" -E . 0 non bench_pkg run_collage_fp.dart || true
 
+# Bruit de l'avertissement « mot pris pour un nom commun » (P2-320) : documents
+# avertis sur les témoins propres, par groupe. P2-310, P2-315 et P2-318 l'ont
+# mesuré à la main sur environ 74 corpus ; une règle de non-signalement qui
+# saute passait inaperçue. Chemin mesuré : Ecluse.redact. Le seuil de P2-310
+# (plus de 5 % d'un témoin propre) est un ÉCHEC. Doit venir APRÈS les sections
+# qui écrivent les corpus sous bench/{flou,dossiers,transcrit}/. Coût : une
+# quinzaine de minutes (voir bench/mesure_temoins_homonymes.sh).
+echo "## avertissements homonymes sur les témoins (P2-320) : Ecluse.redact (chemin du produit)"
+TEMOINS_W=$(mktemp -d)
+temoins_homonymes() { bash "$B/mesure_temoins_homonymes.sh" "$TEMOINS_W" | python3 "$B/resume_temoins_homonymes.py"; }
+montre "avertissements homonymes, témoins" -E . 0 non temoins_homonymes || true
+rm -rf "$TEMOINS_W"
+
 # Types que le banc ne connaît pas (ATTENTION de run_redact_bench.dart) : un
 # seul avertissement pour tout le rejeu ; l'ancien script le jetait (2>&1 > /dev/null).
 if [ -s "$NONMAP" ]; then
