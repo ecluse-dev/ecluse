@@ -382,9 +382,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-312 | code | Avertissement « suivi d'une date » (P2-309) : ne plus signaler un candidat dont l'identifiant réel est déjà masqué en entier par une lecture voisine (10 en trop sur 4 800) | P2-309 | fusionnée |
 | P2-313 | code | Signalement SIRET sans libellé (P2-307) : écarter les horodatages valides (−17 % de signalements sur le corpus de P2-311) | P2-311 | abandonnée |
 | P2-314 | mesure | Avertissement des homonymes (P2-310) en texte tout en minuscules : 18,75 % des documents de la sonde de P2-240 ; options pour réduire le bruit sans rendre de silence ; rien corrigé | P2-310 | fusionnée |
-| P2-315 | code | Homonymes en texte sans majuscule : 243 des 607 homonymes en clair des quatre listes ne sont pas signalés (chemins civilité et « le dossier de » qui exigent une majuscule, P2-314) | P2-314 | PR ouverte |
-| P2-316 | code | Les neuf listes d'exclusion des noms encore silencieuses (P2-308) : signaler les homonymes écartés, dans les mêmes conditions que P2-310 | P2-310 | à faire |
-| P2-317 | spec | Article de benchmark : section « Reproduire » rejouée commande par commande d'après `bench/README.md`, et phrase « transcriptions orales » nuancée ; texte prêt à reporter | — | PR ouverte |
+| P2-315 | code | Homonymes en texte sans majuscule : 243 des 607 homonymes en clair des quatre listes ne sont pas signalés (chemins civilité et « le dossier de » qui exigent une majuscule, P2-314) | P2-314 | fusionnée |
+| P2-316 | code | Les neuf listes d'exclusion des noms encore silencieuses (P2-308) : signaler les homonymes écartés, dans les mêmes conditions que P2-310 | P2-310 | bloquée |
+| P2-317 | spec | Article de benchmark : section « Reproduire » rejouée commande par commande d'après `bench/README.md`, et phrase « transcriptions orales » nuancée ; texte prêt à reporter | — | fusionnée |
+| P2-318 | code | Reprise de P2-316 (branche de #581) : ne pas signaler derrière un prénom en minuscules qui est un faux ami connu, ni derrière un nom déjà masqué ; neuf listes signalées sans dépasser 5 % d'un témoin propre | P2-315 | à faire |
+| P2-319 | code | Écarts relevés par P2-317 : `bench/README.md` (parties A, B, C), `LIMITES.md` (nombres dictés à 0,0 %), note de `bench/COMPARATIF.md`, chemins absolus de `bench/ETAT.md` | P2-317 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1922,6 +1924,10 @@ masquage changé (`bench/equivalence_predictions.sh`) ; `LIMITES.md` à jour.
 
 ### P2-316 — Les neuf autres listes d'exclusion des noms : signaler (code)
 
+**Bloquée (PR #581, fermée sans fusion, branche conservée)** : la condition
+d'arrêt a joué. Sur `corpus_flou_fauxamis`, 38 documents sur 400 (9,5 %) sont
+avertis, tous pour « iris sans particularité ». Reprise : P2-318.
+
 P2-308 : neuf listes (`non_noms`, `articles_capitalises`, `outils_initiale`,
 `mots_contexte_non_noms`, `sigles_exclus`, `mots_structure`, `sigles_organismes`,
 `prenoms_insee_exclus`, `mots_neutres`) laissent encore des patronymes homonymes
@@ -1952,3 +1958,45 @@ fichier modifié. **Fini quand** : la spec contient les deux textes en deux
 langues, chaque commande porte la mention « rejouée le … sur … » et son résultat,
 et toute commande qui n'a pas pu être rejouée (par exemple l'accès réseau aux
 modèles) est dite comme telle, sans être présentée comme vérifiée.
+
+### P2-318 — Reprise de P2-316 : neuf listes signalées, sans bruit sur les faux amis (code)
+
+P2-316 (PR #581, fermée sans fusion, branche
+`claude/P2-316-listes-exclusion-silencieuses` conservée) : le code signale bien
+148 homonymes sur 148 des neuf listes, mais la condition d'arrêt a joué :
+`corpus_flou_fauxamis`, 38 / 400 avertis en casse ordinaire, tous « iris sans
+particularité » (« iris », prénom connu écrit en minuscules, est ici un nom
+commun). Il y a aussi du bruit derrière un nom déjà masqué (« chloé martin est »).
+Travail : partir de cette branche, rebasée sur `main`. Sur le chemin « prénom
+connu en minuscules + mot », ne pas signaler : (1) quand le prénom est un faux ami
+connu du dépôt (liste des faux amis de prénoms utilisée par
+`generate_corpus_flou.py` ou par le détecteur, à citer), écrit en minuscules ;
+(2) quand le mot suit un nom déjà couvert par une entité. Test d'abord pour chaque
+règle. **Aucun homonyme de la sonde ne doit devenir silencieux** (principe 0) : si
+une règle en rend un silencieux, la retirer et le dire. **Fini quand** : sonde des
+neuf listes 148 / 148 et des quatre listes 259 / 259 ; en minuscules,
+607 / 607 (P2-315) ; `corpus_flou_fauxamis` et tous les témoins propres en casse
+ordinaire sous 5 %, chiffres écrits dans la PR et dans `bench/ETAT.md` ; aucun
+masquage changé (`bench/equivalence_predictions.sh`) ; `LIMITES.md` à jour.
+
+### P2-319 — Écarts relevés pendant le rejeu de P2-317 (code)
+
+`agent/specs/P2-317.md`, section « Écarts constatés », points 2 à 7 :
+- `bench/README.md` partie A : dire où écrire le corpus de 200 000 documents
+  (`bench/corpus_200k.jsonl`, pour ne pas écraser celui des tests) et remplacer
+  « environ 30 minutes extrapolées (non lancé) » par la durée mesurée (18 min 5 s
+  sur 2 cœurs, majorant) ;
+- partie B : « 8 min 35 s, 857 lignes, 0 échec » au lieu de « 7 min 18 s,
+  780 lignes » ;
+- partie C : rappeler que `comparatif.py` lance `dart`, qui doit être dans le
+  `PATH` ;
+- `LIMITES.md` : « au pire 1,1 % par type (FINESS) » pour les nombres dictés
+  devient la valeur courante de `bench/ETAT.md` (0,0 %, depuis P2-271) ;
+- `bench/COMPARATIF.md` : retirer la note « mise à jour partielle (P2-301) », les
+  autres colonnes ayant été rejouées et confirmées ;
+- `bench/ETAT.md` et `bench/controle_etat.py` : les chemins absolus
+  (`/home/claude/ecluse/…`) font échouer le contrôle sur un clone placé ailleurs ;
+  les rendre relatifs à la racine du dépôt.
+Ne changer aucun chiffre sans l'avoir rejoué. **Fini quand** : chaque point est
+traité ; `controle_etat.py` conforme sur un clone placé dans un autre répertoire
+(test) ; `bash bench/etat.sh` en entier, 0 ÉCHEC.
