@@ -387,6 +387,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-317 | spec | Article de benchmark : section « Reproduire » rejouée commande par commande d'après `bench/README.md`, et phrase « transcriptions orales » nuancée ; texte prêt à reporter | — | fusionnée |
 | P2-318 | code | Reprise de P2-316 (branche de #581) : ne pas signaler derrière un prénom en minuscules qui est un faux ami connu, ni derrière un nom déjà masqué ; neuf listes signalées sans dépasser 5 % d'un témoin propre | P2-315 | fusionnée |
 | P2-319 | code | Écarts relevés par P2-317 : `bench/README.md` (parties A, B, C), `LIMITES.md` (nombres dictés à 0,0 %), note de `bench/COMPARATIF.md`, chemins absolus de `bench/ETAT.md` | P2-317 | fusionnée |
+| P2-320 | code | Tableau de bord : suivre le bruit des avertissements d'homonymes par groupe de témoins (`bench/mesure_temoins_homonymes.sh` dans `etat.sh`) | P2-318 | à faire |
+| P2-321 | spec | Politique unique des avertissements « à vérifier » : types, seuils de bruit, corpus de référence, coût mesuré, règle commune « avertir ou taire » | P2-318 | à faire |
+| P2-322 | mesure | Civilité capitalisée devant un mot en minuscules (« Madame fait un malaise ») : homonymes en clair signalés ou non, par liste ; rien corrigé | P2-318 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -2000,3 +2003,44 @@ masquage changé (`bench/equivalence_predictions.sh`) ; `LIMITES.md` à jour.
 Ne changer aucun chiffre sans l'avoir rejoué. **Fini quand** : chaque point est
 traité ; `controle_etat.py` conforme sur un clone placé dans un autre répertoire
 (test) ; `bash bench/etat.sh` en entier, 0 ÉCHEC.
+
+### P2-320 — Tableau de bord : bruit des avertissements d'homonymes (code)
+
+P2-310, P2-315 et P2-318 ont chacune dû mesurer à la main le bruit de
+l'avertissement des homonymes sur environ 74 corpus ; rien dans `bench/etat.sh` ne
+le surveille, donc une régression passerait inaperçue. Travail : intégrer
+`bench/mesure_temoins_homonymes.sh` à `etat.sh`, `etat_attendu.py`,
+`etat_exemple.txt` et au bloc contrôlé de `bench/ETAT.md`, une ligne par groupe de
+témoins (casse ordinaire ; minuscules, mixte et « de phrase » ; corpus de
+tournures), avec le seuil de 5 % comme `ÉCHEC`. Aucun chiffre existant ne change.
+**Fini quand** : lignes attendues vérifiées, 0 ÉCHEC, temps ajouté à `etat.sh`
+mesuré et écrit dans la PR, `controle_etat.py` conforme.
+
+### P2-321 — Politique unique des avertissements « à vérifier » (spec)
+
+Depuis le principe du 26 novembre, une dizaine d'avertissements existent (IBAN
+et NIR à clé fausse, identifiant devant une date, NIR mal découpé, SIRET et TVA
+sans libellé, nombre dicté non reconnu, mot voisin, homonymes des listes de noms,
+texte sans majuscule…), chacun avec son seuil de bruit fixé au cas par cas. Un
+pilote verra ces avertissements dans l'aperçu : leur nombre et leur clarté
+décident si l'utilisateur les lit. Travail : `agent/specs/P2-321.md`, avec
+(1) un tableau type × message × seuil de bruit retenu × corpus de référence × coût
+mesuré (documents avertis sur les témoins propres), chiffres repris de
+`bench/ETAT.md` et des specs, rien d'inventé ; (2) une règle commune proposée
+« avertir ou taire », compatible avec le principe 0 ; (3) une proposition de
+présentation dans l'aperçu (regroupement, niveaux de pression), sans code.
+**Fini quand** : le tableau couvre tous les avertissements de `lib/`, chaque
+chiffre cite sa source, et la règle commune est écrite avec ses exceptions.
+
+### P2-322 — Civilité capitalisée devant un mot en minuscules (mesure)
+
+`LIMITES.md` (P2-315) : une civilité capitalisée devant un mot en minuscules
+(« Madame fait un malaise ») ne déclenche pas l'avertissement des homonymes ; la
+limite n'a jamais été chiffrée. Travail : sonde synthétique (graine 42), pour
+chacune des treize listes d'exclusion, homonymes patronymes placés derrière
+« Monsieur », « Madame », « M. », « Mme » capitalisés et suivis du mot en
+minuscules ; mesurer par `Ecluse.redact` combien sont masqués, signalés, ou en
+clair sans avertissement, et le bruit qu'ajouterait un signalement sur les
+témoins propres. Rapport dans `agent/specs/P2-322.md`. **Rien n'est corrigé.**
+**Fini quand** : tableau liste × (masqués, signalés, silencieux) et coût estimé
+d'un signalement, recommandation chiffrée.
