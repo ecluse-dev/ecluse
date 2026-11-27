@@ -658,24 +658,32 @@ abstract final class Ecluse {
 
   /// Avertissements du SIRET de clé juste sans le mot « siret » et du numéro
   /// de TVA à clé fausse sans libellé (P2-307, principe du 26 novembre,
-  /// point 0) : le détecteur de FINESS ne les masque pas sans ce contexte (un
-  /// SIRET d'entrepreneur individuel identifie pourtant une personne) ; ils
-  /// sont signalés « à vérifier » (compte et positions, **jamais la valeur**),
-  /// sauf si une autre entité les couvre déjà en entier. Aucun masquage ne
-  /// change.
+  /// point 0). Depuis P2-323 (décision du 27 novembre), le détecteur de FINESS
+  /// les **masque** (SIRET à confiance 0,5, TVA à 0,3 : un SIRET d'entrepreneur
+  /// individuel identifie une personne) ; l'avertissement « à vérifier » est
+  /// conservé (compte et positions, **jamais la valeur**) parce qu'une
+  /// référence de quatorze chiffres sur dix passe la clé de Luhn par hasard
+  /// (P2-311). Il n'est tu que si une entité **à confiance forte** (≥ 0,9)
+  /// couvre déjà le passage en entier : la propre entité à 0,5 ou 0,3 du
+  /// détecteur ne compte pas, sinon l'avertissement disparaîtrait avec le
+  /// masquage.
   static List<String> _avertissementsSiretTva(
       String text, List<DetectedEntity> resolved) {
     if (!_contientChiffre.hasMatch(text)) return const [];
     String ligne(String quoi, List<int> positions) {
       final n = positions.length;
-      return '$quoi, non masqué : à vérifier '
+      return '$quoi, masqué : à vérifier '
           '($n occurrence${n > 1 ? "s" : ""}, position${n > 1 ? "s" : ""} '
           '${positions.take(5).join(", ")}${n > 5 ? ", …" : ""}).';
     }
 
+    final sures = [
+      for (final e in resolved)
+        if (e.confidence >= _confianceCouvertureSure) e
+    ];
     List<int> positions(Iterable<({int start, int end})> ecartes) => [
           for (final e in ecartes)
-            if (!_couvertEnEntier(resolved, e.start, e.end)) e.start
+            if (!_couvertEnEntier(sures, e.start, e.end)) e.start
         ];
 
     final siret = positions(FinessDetector.ecartesSiret(text));

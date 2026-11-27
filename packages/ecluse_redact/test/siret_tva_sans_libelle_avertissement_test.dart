@@ -3,18 +3,20 @@ import 'package:ecluse_redact/ecluse_redact.dart';
 import 'package:test/test.dart';
 
 /// P2-307 (principe du 26 novembre, point 0) : un SIRET de clé juste sans le
-/// mot « siret » et un numéro de TVA à clé fausse sans libellé de TVA sont
+/// mot « siret » et un numéro de TVA à clé fausse sans libellé de TVA étaient
 /// écartés sans rien dire (mesure P2-303 : 40 / 40 chacun). `Ecluse.redact` les
 /// signale « à vérifier » dans `RedactResult.warnings` (type, compte et
-/// positions, **jamais la valeur**). **Aucun masquage ne change.** Valeurs
+/// positions, **jamais la valeur**). P2-323 (décision du 27 novembre) : ils sont
+/// désormais **masqués** (siren, 0,5 et 0,3) et l'avertissement est conservé,
+/// avec « masqué » à la place de « non masqué ». Valeurs
 /// synthétiques : SIREN 732 829 320 (clé Luhn juste), SIRET de clé juste
 /// 732 829 320 00009, TVA de clé juste FR44 732829320 (on met 51).
 void main() {
   const siretGroupes = '732 829 320 00009';
   const siretCompact = '73282932000009';
   const tvaFausse = 'FR51732829320';
-  final motifSiret = RegExp(r'SIRET.*sans le mot.*non masqué.*à vérifier');
-  final motifTva = RegExp(r'TVA.*sans libellé.*non masqué.*à vérifier');
+  final motifSiret = RegExp(r'SIRET.*sans le mot.*masqué.*à vérifier');
+  final motifTva = RegExp(r'TVA.*sans libellé.*masqué.*à vérifier');
 
   Iterable<String> signaux(RedactResult r, RegExp m) =>
       r.warnings.where(m.hasMatch);
@@ -60,20 +62,25 @@ void main() {
       expect(signaux(r, motifSiret), isEmpty);
     });
 
-    test('masquage inchangé : aucune entité de plus', () async {
+    test('masqué à 0,5 en entier, et signalé quand même (P2-323)', () async {
       final r =
           await Ecluse.redact('Pièce jointe 3 : $siretCompact puis signature.');
-      // Rien ne couvre les quatorze chiffres d'un seul tenant : le passage n'est
-      // pas masqué, il est signalé.
-      expect(r.entities.where((e) => e.end - e.start >= 14), isEmpty);
+      final e = r.entities.where((e) => e.end - e.start >= 14).single;
+      expect(e.type, EntityType.siren);
+      expect(e.confidence, 0.5);
+      expect(r.maskedText, isNot(contains(siretCompact)));
+      expect(signaux(r, motifSiret), hasLength(1));
+      expect(signaux(r, RegExp('non masqué')), isEmpty);
     });
   });
 
   group('TVA à clé fausse sans libellé', () {
-    test('signalée, sans la valeur ni le SIREN', () async {
+    test('masquée à 0,3 et signalée, sans la valeur ni le SIREN', () async {
       final r =
           await Ecluse.redact('Merci de recopier $tvaFausse dans la case.');
-      expect(r.entities.where((e) => e.type == EntityType.siren), isEmpty);
+      final e = r.entities.where((e) => e.type == EntityType.siren).single;
+      expect(e.confidence, 0.3);
+      expect(r.maskedText, isNot(contains(tvaFausse)));
       final a = signaux(r, motifTva).toList();
       expect(a, hasLength(1));
       expect(a.single, contains('1 occurrence'));
