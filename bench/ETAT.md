@@ -3422,3 +3422,22 @@ voisine (NIR ou RPPS) du même nombre élargi aux chiffres de la date, que l'ent
 réelle ne couvre pas en entier. C'est un avertissement en trop, pas une fuite.
 Non rejoué : les 200 000 phrases sans personne.
 
+### Signalement SIRET : horodatages écartés (P2-313, 27 novembre 2026)
+
+Chemin mesuré : `Ecluse.redact` (ce que reçoit le LLM), par
+`bash bench/mesure_references_14.sh` (3 000 documents sans donnée personnelle,
+graine 42). Un quatorze chiffres de Luhn juste qui se lit comme un horodatage
+valide n'est plus signalé « SIRET sans le mot ».
+
+| Mesure | Avant | Après |
+|---|---|---|
+| Signalements SIRET (sur 2 100 références de quatorze chiffres) | 206 | **170** (−17,5 %) |
+| dont forme `horodatage` (36 de Luhn juste) | 36 | **0** |
+| Signalements TVA | 600 | 600 |
+| Sonde de P2-303, `siret_sans_mot` signalés | 40 / 40 | 40 / 40 |
+| Masqués aujourd'hui (tout type) | 391 | 391 |
+
+La colonne « masqués à tort si on masquait » ne change pas (806) : c'est le coût
+d'un masquage, pas celui d'un signalement. `analyse_references_14.py` attend
+désormais 0 signalement pour la forme `horodatage`. Aucun masquage ne change.
+
