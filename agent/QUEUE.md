@@ -389,7 +389,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-319 | code | Écarts relevés par P2-317 : `bench/README.md` (parties A, B, C), `LIMITES.md` (nombres dictés à 0,0 %), note de `bench/COMPARATIF.md`, chemins absolus de `bench/ETAT.md` | P2-317 | fusionnée |
 | P2-320 | code | Tableau de bord : suivre le bruit des avertissements d'homonymes par groupe de témoins (`bench/mesure_temoins_homonymes.sh` dans `etat.sh`) | P2-318 | fusionnée |
 | P2-321 | spec | Politique unique des avertissements « à vérifier » : types, seuils de bruit, corpus de référence, coût mesuré, règle commune « avertir ou taire » | P2-318 | fusionnée |
-| P2-322 | mesure | Civilité capitalisée devant un mot en minuscules (« Madame fait un malaise ») : homonymes en clair signalés ou non, par liste ; rien corrigé | P2-318 | à faire |
+| P2-322 | mesure | Civilité capitalisée devant un mot en minuscules (« Madame fait un malaise ») : homonymes en clair signalés ou non, par liste ; rien corrigé | P2-318 | fusionnée |
 | P2-323 | code | SIRET (clé juste) et TVA (clé fausse) sans libellé : masqués comme `siren`, avertissement « à vérifier » conservé (décision du 27 novembre) | P2-311 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
