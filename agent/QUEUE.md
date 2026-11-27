@@ -376,6 +376,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-306 | code | Garde `rpps_finess_date` : le RPPS suivi d'une date est masqué en entier (les deux derniers chiffres restaient en clair) | P2-303 | fusionnée |
 | P2-307 | code | SIRET et TVA sans libellé : écartés et signalés (principe 0), avec mesure du coût d'un masquage pour une décision ultérieure | P2-303 | fusionnée |
 | P2-308 | mesure | Listes d'exclusion des noms (`name_detector.dart` et voisins) : inventaire et coût de chacune ; rien corrigé | P2-303 | fusionnée |
+| P2-309 | code | `DigitCompaction._finitDansUneDate` : un identifiant écarté parce qu'il touche une date complète est signalé (principe du 26 novembre, point 0) | P2-306 | à faire |
+| P2-310 | code | Listes d'exclusion des noms coûteuses (`verbes_conjugues`, `statuts`, `mots_voisins_neutres`, `mots_de_role`) : un homonyme écarté est signalé (principe 0) | P2-308 | à faire |
+| P2-311 | mesure | Références de quatorze chiffres dans des textes logistiques synthétiques : coût d'un masquage des SIRET et TVA sans libellé, pour la décision du mainteneur ; rien corrigé | P2-307 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1802,3 +1805,52 @@ une sonde synthétique de vrais noms homonymes de ses mots (« Monsieur Blanc »
 Rapport dans `agent/specs/P2-308.md`. **Rien n'est corrigé.** **Fini quand** :
 tableau liste × (taille, homonymes en clair sur la sonde, avertissement oui/non),
 et une proposition chiffrée par liste coûteuse.
+
+### P2-309 — Candidat écarté devant une date : signaler (code)
+
+P2-306 (PR #568) : `DigitCompaction._finitDansUneDate` écarte, pour tous les
+détecteurs, un candidat dont les deux derniers chiffres ouvrent une date complète
+en chiffres (« … 12/03/2024 ») ; un RPPS en deux groupes suivi d'une telle date
+n'est pas masqué, sans avertissement (un test le documente, `LIMITES.md` le dit).
+Travail : test d'abord (sonde : NIR, RPPS, IBAN, FINESS suivis d'une date
+complète, au moins 40 cas par type), mesure de ce qui part en clair, puis un
+avertissement « à vérifier » (type, positions, jamais la valeur) pour chaque
+candidat écarté qu'aucune autre entité ne couvre en entier. Aucun masquage ne
+change. **Fini quand** : 100 % des candidats écartés de la sonde signalés ;
+avertissements sur les témoins (durci élargi, mots-nombres, v3, libellé fort,
+identifiant suivi) écrits dans `bench/ETAT.md` ; prédictions identiques ailleurs ;
+`LIMITES.md` à jour.
+
+### P2-310 — Listes d'exclusion des noms : signaler les homonymes écartés (code)
+
+Inventaire P2-308 (`agent/specs/P2-308.md`) : les quatre listes coûteuses laissent
+partir en clair, sans avertissement, des patronymes homonymes de leurs mots :
+`verbes_conjugues` (170 sur 170 en minuscules, 0,207 % des naissances INSEE),
+`statuts` (« Madame Marié », « Madame Cadet » : 11 sur 11 derrière une civilité),
+`mots_voisins_neutres` et `mots_de_role` (derrière « le dossier de »). Ce que
+masque Écluse ne change pas (décision P2-240 : aucun verbe masqué). Travail :
+test d'abord, puis un avertissement distinct et peu pressant (« mot pris pour un
+nom commun derrière un prénom ou une civilité : à vérifier »), sans la valeur,
+quand une de ces quatre listes écarte un mot placé là où un nom est attendu
+(derrière une civilité, un prénom ou « le dossier de »). **Fini quand** : sur la
+sonde de `bench/listes_exclusion.py`, 100 % des homonymes en clair des quatre
+listes sont signalés ; nombre de documents avertis sur les témoins propres (témoin
+de P2-308, 480 documents sans donnée personnelle, v3, réaliste, adversarial) écrit
+dans la PR et dans `bench/ETAT.md` ; si l'avertissement touche plus de 5 % des
+documents d'un témoin propre, s'arrêter et le dire dans la PR au lieu de livrer ;
+aucun masquage changé (`bench/equivalence_predictions.sh`) ; `LIMITES.md` à jour.
+
+### P2-311 — Références de quatorze chiffres : coût d'un masquage (mesure)
+
+P2-307 (PR #569) : signaler ou masquer un SIRET de clé juste sans le mot
+« siret », et une TVA à clé fausse sans libellé ? Les témoins du dépôt n'en
+contiennent aucun hors libellé, donc le coût d'un masquage n'est pas mesuré.
+Travail : générer un corpus synthétique de textes logistiques et administratifs
+sans donnée personnelle (numéros de suivi, références de commande, de lot, de
+facture, de quatorze chiffres et de formes de TVA, graine 42, au moins
+2 000 documents), et mesurer par `Ecluse.redact`, en simulant le masquage hors
+code produit : documents qui seraient masqués à tort, part des références de
+quatorze chiffres qui passent Luhn. Rapport dans `agent/specs/P2-311.md`.
+**Rien n'est corrigé.** **Fini quand** : tableau forme × (documents, masqués à
+tort si on masquait, signalés aujourd'hui), recommandation chiffrée pour la
+décision du mainteneur.
