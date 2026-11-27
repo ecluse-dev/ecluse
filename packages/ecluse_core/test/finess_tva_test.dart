@@ -32,14 +32,22 @@ void main() {
     }
   });
 
-  test('clé fausse : seulement avec TVA ou intracommunautaire à moins de 40',
+  test('clé fausse : masquée avec ou sans libellé (P2-323), même confiance',
       () async {
     final avec = (await detect('TVA : FR99247510795')).single;
     expect(avec.confidence, FinessDetector.confianceTvaCleFausse);
     expect(await detect('n° intracommunautaire FR99247510795'), hasLength(1));
-    expect(await detect('Référence FR99247510795'), isEmpty);
-    expect(await detect('ACTIVATION FR99247510795'), isEmpty,
-        reason: 'le mot TVA doit être entier');
+    // Décision du 27 novembre : sans libellé, masquée aussi (avant : rien).
+    final sans = (await detect('Référence FR99247510795')).single;
+    expect(sans.confidence, FinessDetector.confianceTvaCleFausse);
+    // Le libellé ne compte plus pour masquer : « ACTIVATION » (TVA non entier)
+    // ne change rien, la TVA sans libellé est masquée comme les autres. Le
+    // relevé « sans libellé » (avertissement) distingue encore les deux cas.
+    expect(await detect('ACTIVATION FR99247510795'), hasLength(1));
+    expect(FinessDetector.ecartesTva('TVA : FR99247510795'), isEmpty);
+    expect(FinessDetector.ecartesTva('ACTIVATION FR99247510795'), hasLength(1),
+        reason:
+            'le mot TVA doit être entier pour dispenser de l\'avertissement');
   });
 
   test('rejets : trop court, trop long, collé à une lettre', () async {

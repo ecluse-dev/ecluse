@@ -47,11 +47,18 @@ void main() {
     expect(r.entities.single.value, juste);
   });
 
-  test('sans le mot SIRET, rien ne change : quatorze chiffres non masqués',
-      () async {
+  test('sans le mot SIRET, clé juste : masqués à 0,5 (P2-323)', () async {
     final r = await Ecluse.redact('Référence interne $juste notée.');
+    expect(r.entities.single.type, EntityType.siren);
+    expect(r.entities.single.confidence, 0.5);
+    expect(r.maskedText, 'Référence interne [SIREN_1] notée.');
+  });
+
+  test('sans le mot SIRET, clé fausse : quatorze chiffres non masqués',
+      () async {
+    final r = await Ecluse.redact('Référence interne $fausse notée.');
     expect(r.entities, isEmpty);
-    expect(r.maskedText, 'Référence interne $juste notée.');
+    expect(r.maskedText, 'Référence interne $fausse notée.');
   });
 
   test('mot SIRET trop loin (plus de 40 caractères) : rien', () async {
@@ -59,7 +66,9 @@ void main() {
         'SIRET ${' ' * 5}voir plus bas dans ce long texte sans rapport '
         'avec le numéro de référence $juste.';
     final r = await Ecluse.redact(loin);
-    expect(r.entities, isEmpty);
+    // Le mot est trop loin : pas de confiance 0,9, mais depuis P2-323 la clé
+    // juste est masquée quand même, à 0,5.
+    expect(r.entities.single.confidence, 0.5);
   });
 
   test('SIRET suivi d\'un nombre : le nombre voisin reste lisible', () async {

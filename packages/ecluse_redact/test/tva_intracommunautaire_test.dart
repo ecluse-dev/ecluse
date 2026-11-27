@@ -44,9 +44,10 @@ void main() {
     expect(r.warnings.join(' '), isNot(contains('247510795')));
   });
 
-  test('clé fausse sans libellé : non masquée comme TVA', () async {
+  test('clé fausse sans libellé : masquée comme TVA à 0,3 (P2-323)', () async {
     final r = await Ecluse.redact('Référence FR99247510795 notée.');
-    expect(r.entities.any((e) => e.type == EntityType.siren), isFalse);
+    expect(r.entities.single.type, EntityType.siren);
+    expect(r.entities.single.confidence, 0.3);
   });
 
   test('le RPPS de onze chiffres n\'est plus pris à la place de la TVA',
