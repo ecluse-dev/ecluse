@@ -745,6 +745,21 @@ abstract final class Ecluse {
   static final RegExp _contientDateComplete =
       RegExp(r'[0-9][/.\-][0-9]{1,2}[/.\-](?:19|20)[0-9]{2}');
 
+  /// Une entité commence juste après [fin], séparée par des blancs de ligne
+  /// seulement : le mot qui précède est un titre ou un qualificatif du nom
+  /// masqué, pas un nom laissé en clair (P2-315).
+  static bool _suiviImmediatementDUneEntite(
+      String text, int fin, List<DetectedEntity> resolved) {
+    for (final r in resolved) {
+      if (r.start <= fin) continue;
+      if (RegExp(r'^[ \t\u00A0\u202F]+$')
+          .hasMatch(text.substring(fin, r.start))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /// Avertissement des mots que les listes d'exclusion des noms laissent en
   /// clair là où un nom était attendu (P2-310, principe du 26 novembre,
   /// point 0) : un patronyme homonyme d'un verbe conjugué, d'un statut, d'un
@@ -756,7 +771,10 @@ abstract final class Ecluse {
       String text, List<DetectedEntity> resolved) {
     final positions = [
       for (final e in NameDetector.homonymesEcartes(text))
-        if (!resolved.any((r) => r.start < e.end && r.end > e.start)) e.start
+        if (!resolved.any((r) => r.start < e.end && r.end > e.start) &&
+            !(e.sansMajuscule &&
+                _suiviImmediatementDUneEntite(text, e.end, resolved)))
+          e.start
     ];
     if (positions.isEmpty) return const [];
     final n = positions.length;
