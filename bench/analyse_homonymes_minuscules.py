@@ -186,7 +186,7 @@ def homonymes_signales(option, ctx, corpus, pred, filtre=None):
     for d in corpus:
         # Les quatre listes que P2-310 signale ; les neuf autres restent
         # silencieuses (hors fiche) et fausseraient le rapport.
-        if d["liste"] not in L.LISTES_SIGNALEES or (filtre and not filtre(d)):
+        if d["liste"] not in L.LISTES_COUTEUSES or (filtre and not filtre(d)):
             continue
         r = pred[d["id"]]
         if not L.en_clair(d["patro_debut"], d["patro_fin"], r["entities"]):
@@ -241,7 +241,7 @@ def analyse(dossier):
     print("\nétat actuel, sonde de P2-308 en minuscules, par liste : en clair / signalés")
     for liste, (clair, sig) in sorted(
             homonymes_signales("base", ctx, *donnees["sonde_min"])[3].items()):
-        if liste in L.LISTES_SIGNALEES:
+        if liste in L.LISTES_COUTEUSES:
             print(f"{liste} | {clair} / {sig}")
     pv = evalue("base", ctx, *donnees["pv"])
     print(f"\ncasse ordinaire, sonde prénom + verbe : documents avertis {pv['par_mot']}")

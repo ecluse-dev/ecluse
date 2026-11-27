@@ -144,9 +144,15 @@ def homonymes(ent, eff):
     return sorted(res.items(), key=lambda kv: -kv[1])
 
 
-# Les quatre listes coûteuses (P2-308) : seules leurs entrées qui sont aussi un
-# patronyme INSEE sont signalées par `Ecluse.redact` (P2-310).
-LISTES_SIGNALEES = ["statuts", "mots_voisins_neutres", "mots_de_role", "verbes_conjugues"]
+# Les quatre listes coûteuses (P2-308, signalées par P2-310) et les neuf autres
+# (P2-316) : seules leurs entrées qui sont aussi un patronyme INSEE sont
+# signalées par `Ecluse.redact`.
+LISTES_COUTEUSES = ["statuts", "mots_voisins_neutres", "mots_de_role", "verbes_conjugues"]
+# Les neuf autres listes à homonymes (P2-316), signalées comme les quatre premières.
+LISTES_NEUF = ["non_noms", "mots_structure", "sigles_organismes", "mots_contexte_non_noms",
+               "articles_capitalises", "sigles_exclus", "prenoms_insee_exclus", "mots_neutres",
+               "outils_initiale"]
+LISTES_SIGNALEES = LISTES_COUTEUSES + LISTES_NEUF
 FICHIER_HOMONYMES = os.path.join(H, "homonymes_patronymes.dart")
 
 
@@ -167,11 +173,12 @@ def source_dart():
     lignes = "".join(f"  '{m}',\n" for m in mots)
     return (
         "// Fichier GÉNÉRÉ : `python3 bench/listes_exclusion.py homonymes_dart`\n"
-        "// (P2-310). Ne pas éditer à la main : `bench/test_listes_exclusion.py`\n"
+        "// (P2-310, P2-316). Ne pas éditer à la main : `bench/test_listes_exclusion.py`\n"
         "// compare ce fichier à la sortie du script.\n"
         "\n"
-        "/// Entrées d'un mot des quatre listes d'exclusion des noms les plus coûteuses\n"
-        "/// (`statuts`, `mots_voisins_neutres`, `mots_de_role`, `verbes_conjugues`) qui\n"
+        "/// Entrées d'un mot des treize listes d'exclusion des noms qui ont des homonymes\n"
+        "/// (les quatre de P2-310 : `statuts`, `mots_voisins_neutres`, `mots_de_role`,\n"
+        "/// `verbes_conjugues` ; les neuf de P2-316, voir `LISTES_NEUF`) qui\n"
         "/// sont aussi un patronyme du fichier INSEE des noms de famille (au moins 30\n"
         "/// naissances, 1891-2000), en minuscules sans accent. Seuls ces mots sont\n"
         "/// signalés « à vérifier » quand une liste les laisse en clair : un mot qui\n"
