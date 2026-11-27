@@ -1212,7 +1212,23 @@ témoin `tournures_sans_nom`, 2,0 %, tous « contrôle » ; 0 avant). Sur 100 99
 documents des corpus du dépôt, 0 autre avertissement nouveau. **Limite qui
 demeure** : une civilité **capitalisée** devant un mot en minuscules (« Madame fait
 un malaise ») n'est pas signalée ; ce chemin n'est pas celui du texte sans
-majuscule et n'a pas été mesuré.
+majuscule. Mesurée par P2-322 (`agent/specs/P2-322.md`, `Ecluse.redact`, graine 42),
+puis réduite par P2-325 (27 novembre 2026) : voir le paragraphe suivant.
+**Civilité capitalisée devant un mot en minuscules (P2-322, P2-325, 27 novembre 2026).**
+Sonde de 1 388 documents (treize listes × « Monsieur », « Madame », « M. », « Mme »
+capitalisés, un homonyme de patronyme en minuscules derrière) : 1 092 (78,7 %) déjà
+masqués, **296 (21,3 %) en clair sans avertissement**, 74 mots × 4 civilités. P2-325
+signale **sept mots pleins** : `doit`, `fait`, `va`, `vient` (`verbes_conjugues`),
+`demain`, `matin`, `soir` (`mots_voisins_neutres`), avec l'avertissement « mot pris
+pour un nom commun » existant (compte et positions, jamais la valeur ; aucun masquage
+ne change). Résultat sur la sonde : **28 / 28 signalés** (0 avant), 268 silencieux.
+**Limite assumée, écrite** : les **67 mots-outils** (articles, prépositions, pronoms,
+« est » : « Madame est venue », « Monsieur de… ») restent en clair sans avertissement,
+un signalement avertirait sur presque toute phrase naturelle. Bruit du signalement
+ajouté : **0** document de plus sur les 298 949 documents témoins propres de P2-322
+(75 corpus, dont 200 000 phrases de soin sans personne) ; tableau de bord de P2-320
+(`etat.sh`) inchangé, pire corpus 2,25 % (seuil : 5 %). Prédictions des 77 fichiers du
+banc identiques octet pour octet avant et après (aucun masquage changé).
 **Homonymes écartés : les treize listes signalées (P2-318, reprise de P2-316,
 27 novembre 2026).** Les neuf autres listes d'exclusion des noms (`non_noms`,
 `mots_structure`, `sigles_organismes`, `mots_contexte_non_noms`,
