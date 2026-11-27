@@ -230,9 +230,27 @@ changements, dans `ecluse_core` :
 - un motif groupé « 12 345 678 9 » pour le FINESS (groupement strict 2-3-3-1,
   espace seule) ;
 - un candidat qui finit au milieu d'une date en chiffres (« … 12/03/2024 »)
-  est écarté, et un RPPS formé de neuf chiffres à clé de Luhn valide puis de
-  deux chiffres est écarté **si la suite le prouve** (suite d'une date, nom de
-  mois, « ans »).
+  est écarté ; un RPPS formé de neuf chiffres à clé de Luhn valide puis de
+  deux chiffres l'était aussi **si la suite le prouvait** (nom de mois, « ans »),
+  mais cette seconde garde est **retirée par P2-306** (voir ci-dessous).
+
+**P2-306 (27 novembre 2026) : neuf chiffres de Luhn juste + deux chiffres + un
+mois ou « ans » sont masqués en entier, sous le type RPPS.** La garde
+`rpps_finess_date` écartait ce passage (il se lit comme un FINESS suivi du jour
+d'une date) : mais la même forme est un RPPS écrit en deux groupes, et ses deux
+derniers chiffres partaient en clair (mesure P2-303, sonde de 39 cas :
+117 caractères sur 468 en clair ; **0 après**, 39 / 39 couverts, chemin
+`Ecluse.redact`). Décision du mainteneur, « dans le doute, masquer ». **Coût**
+(témoin « identifiant suivi », 4 800 documents, `Ecluse.redact`) : 40 FINESS de
+plus sont masqués **comme RPPS** en avalant le jour de la date ou l'âge (2 → 42
+types faux sur 4 800 ; 27 suivis d'un âge, 13 d'un nom de mois) ; rien en clair
+de plus, la date est abîmée. Les autres témoins ne changent pas : prédictions
+identiques octet pour octet sur 76 fichiers de prédictions du tableau de bord sur
+77, 58 / 5 000 documents masqués à tort sur le témoin durci élargi avant comme
+après, 0 / 5 600 (mots-nombres), 0 / 200 000 phrases sans personne. **Reste
+silencieux, hors de cette tâche** : un candidat dont les deux derniers chiffres
+ouvrent une date complète en chiffres (« … 12/03/2024 ») est écarté par
+`DigitCompaction` pour tous les détecteurs, sans avertissement.
 
 **Ce qui reste :**
 
