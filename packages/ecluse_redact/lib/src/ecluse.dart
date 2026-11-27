@@ -610,6 +610,7 @@ abstract final class Ecluse {
         ..._avertissementNombreDicte(text, resolved),
         ..._avertissementsSiretTva(text, resolved),
         ..._avertissementsDevantDate(text, resolved),
+        ..._avertissementHomonymesEcartes(text, resolved),
         ..._avertissementIbanEcarte(text, resolved),
         ..._avertissementsSuiteAbimee(text, resolved),
         ..._avertissementNirCoupures(text, resolved),
@@ -724,6 +725,29 @@ abstract final class Ecluse {
 
   static final RegExp _contientDateComplete =
       RegExp(r'[0-9][/.\-][0-9]{1,2}[/.\-](?:19|20)[0-9]{2}');
+
+  /// Avertissement des mots que les listes d'exclusion des noms laissent en
+  /// clair là où un nom était attendu (P2-310, principe du 26 novembre,
+  /// point 0) : un patronyme homonyme d'un verbe conjugué, d'un statut, d'un
+  /// jour ou d'un mois, d'un mot de rôle n'est pas masqué (choix assumé,
+  /// `LIMITES.md`). Signalé « à vérifier » (compte et positions, **jamais la
+  /// valeur**), peu pressant, sauf si une entité couvre déjà le mot. Aucun
+  /// masquage ne change.
+  static List<String> _avertissementHomonymesEcartes(
+      String text, List<DetectedEntity> resolved) {
+    final positions = [
+      for (final e in NameDetector.homonymesEcartes(text))
+        if (!resolved.any((r) => r.start < e.end && r.end > e.start)) e.start
+    ];
+    if (positions.isEmpty) return const [];
+    final n = positions.length;
+    return [
+      'mot pris pour un nom commun derrière un prénom, une civilité ou « le '
+          'dossier de », non masqué : à vérifier '
+          '($n occurrence${n > 1 ? "s" : ""}, position${n > 1 ? "s" : ""} '
+          '${positions.take(5).join(", ")}${n > 5 ? ", …" : ""}).'
+    ];
+  }
 
   /// Avertissement d'un IBAN à clé fausse que la garde `iban_g45` n'a pas
   /// masqué (P2-300, décision du 26 novembre, points 0 et 1) : « FR » + 25

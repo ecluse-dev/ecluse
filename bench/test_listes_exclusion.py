@@ -38,5 +38,21 @@ class ListesExclusion(unittest.TestCase):
                     doc["text"][doc["patro_debut"]:doc["patro_fin"]].lower(), doc["mot"].lower())
 
 
+class HomonymesDart(unittest.TestCase):
+    """P2-310 : le fichier Dart des homonymes de patronymes est celui que le
+    script génère (aucune édition à la main, aucune dérive des listes)."""
+
+    def test_fichier_a_jour(self):
+        with open(le.FICHIER_HOMONYMES, encoding="utf-8") as f:
+            self.assertEqual(f.read(), le.source_dart())
+
+    def test_quelques_homonymes_connus(self):
+        mots = set(le.mots_homonymes())
+        for m in ("marie", "cadet", "avril", "porte", "gendre"):
+            self.assertIn(m, mots)
+        for m in ("beneficiaire", "rappelle"):
+            self.assertNotIn(m, mots)
+
+
 if __name__ == "__main__":
     unittest.main()

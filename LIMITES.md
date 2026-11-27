@@ -1169,6 +1169,30 @@ dans ce cas. Aucun nom annoté des 76 corpus du dépôt n'est perdu (listes de
 patronymes courtes) : ce zéro ne dit rien des noms réels. Retirer du lexique les formes qui sont
 des patronymes fréquents réduit la fuite au prix de verbes de nouveau masqués
 (voir la PR de P2-251 pour le chiffrage par seuil).
+**Homonymes écartés par les listes d'exclusion : signalés (P2-310, 27 novembre
+2026).** Quatre listes retirent un mot de ce qui serait masqué comme nom :
+`verbes_conjugues`, `statuts`, `mots_voisins_neutres` et `mots_de_role` (inventaire
+`agent/specs/P2-308.md`). Un patronyme qui s'écrit comme un de leurs mots (« Madame
+Marié », « le dossier de Avril », « le dossier de Maître », « sophie porte a
+rappelé ») **n'est pas masqué** : choix assumé (aucun verbe masqué, P2-240 ; « dans
+le doute, masquer » ne vaut pas pour un mot courant). `Ecluse.redact` le signale
+désormais « mot pris pour un nom commun derrière un prénom, une civilité ou « le
+dossier de », non masqué : à vérifier » (compte et positions, jamais la valeur), sauf
+si une entité couvre le mot. Aucun masquage ne change. Sonde de P2-308 (chemin
+`Ecluse.redact`) : verbes 0 → 170 / 170, statuts 0 → 29 / 29, jours et mois 0 →
+30 / 30, mots de rôle 0 → 30 / 30 patronymes en clair signalés ; les autres listes
+restent silencieuses (hors fiche). **Coût** : dans un texte **entièrement en
+minuscules** (dictée, transcription), chaque « sophie rappelle » légitime est aussi
+signalé quand il est aussi un patronyme INSEE (un verbe, pas un nom) : sur la sonde
+de P2-240 mise en minuscules, 240 documents sur 1 280 ; en casse ordinaire, 0 sur
+1 280. Seuls les mots qui sont aussi un patronyme (≥ 30 naissances, 236 mots, fichier
+généré `homonymes_patronymes.dart`) sont signalés : « M. Bénéficiaire du RSA » ne
+l'est pas. Témoins propres rejoués :
+0 document averti sur 43 680 (mots neutres 31 200, commune neutre 400, neutre
+cedex 400, faux amis 400, réaliste 400, adversarial 400, v3 1 000, commune suivie
+480, durci élargi 5 000, mots-nombres durci élargi 5 600, libellé fort 3 000). Ces
+corpus ne contiennent aucune de ces tournures : le coût sur un texte naturel n'est
+pas mesuré.
 **Prénom + verbe conjugué (P2-240).** « Sophie rappelle. » donnait un seul nom
 de deux mots, puis le verbe était retenu comme patronyme et masqué dans toute
 la suite d'un dossier (sonde reproductible `bench/generate_corpus_prenom_verbe.py` :
