@@ -289,22 +289,35 @@ final class NirCleInvalideDetector implements EntityDetector {
       RegExp(r'[ .\-/](?=[0-9oOlI]{0,3}[oOlI])[0-9oOlI]{1,4}(?![0-9A-Za-z])');
 
   @override
-  List<DetectedEntity> detect(String text) => _analyse(text, null);
+  List<DetectedEntity> detect(String text) => _analyse(text, null, null);
 
   /// Empans des NIR à clé fausse que la garde « suite abîmée » (P2-276) a
   /// écartés (bornes dans [text], jamais la valeur). `Ecluse.redact` en tire un
   /// avertissement « à vérifier » : une garde ne rend jamais une donnée
   /// silencieuse (principe du 26 novembre, point 0 ; P2-304). Ne couvre pas les
-  /// coupures hors des groupes d'un NIR, qui écartent aussi sans rien dire
-  /// (`agent/specs/P2-303.md`).
+  /// coupures hors des groupes d'un NIR : voir [ecartesCoupures] (P2-305).
   List<({int start, int end})> ecartes(String text) {
     final ecartes = <({int start, int end})>[];
-    _analyse(text, ecartes);
+    _analyse(text, ecartes, null);
+    return ecartes;
+  }
+
+  /// Empans des NIR à clé fausse que la garde `nir_coupures` a écartés : leurs
+  /// coupures ne tombent pas entre les groupes d'un NIR (par exemple groupes de
+  /// quatre) et ne sont pas cinq groupes de trois (P2-305, principe du
+  /// 26 novembre, point 0). Seuls comptent les candidats de forme de NIR dont
+  /// la clé est fausse : une clé juste est l'affaire de [NirDetector]. Bornes
+  /// seulement, jamais la valeur ; aucun masquage ne change.
+  List<({int start, int end})> ecartesCoupures(String text) {
+    final ecartes = <({int start, int end})>[];
+    _analyse(text, null, ecartes);
     return ecartes;
   }
 
   List<DetectedEntity> _analyse(
-      String text, List<({int start, int end})>? ecartes) {
+      String text,
+      List<({int start, int end})>? ecartes,
+      List<({int start, int end})>? ecartesCoupures) {
     final compaction = DigitCompaction(text);
     final results = <DetectedEntity>[];
     final vus = <int>{};
@@ -321,9 +334,13 @@ final class NirCleInvalideDetector implements EntityDetector {
       // chiffres + « 1250 » = quinze chiffres) n'est pas un NIR : ses
       // coupures ne tombent pas entre les groupes d'un NIR.
       final brutAvecCoupures = text.substring(match.start, match.end);
-      if (coupuresLibres
-          ? _prefixeIdentifiantCourt(brutAvecCoupures)
-          : !_coupuresDeNir(brutAvecCoupures)) {
+      if (coupuresLibres) {
+        if (_prefixeIdentifiantCourt(brutAvecCoupures)) continue;
+      } else if (!_coupuresDeNir(brutAvecCoupures)) {
+        // Clé juste : NirDetector décide seul, rien n'est écarté ici.
+        if (ecartesCoupures != null && !NirDetector._cleJuste(normalise)) {
+          ecartesCoupures.add((start: match.start, end: match.end));
+        }
         continue;
       }
       // Clé juste : celui de NirDetector s'il est tout en chiffres ; avec des
