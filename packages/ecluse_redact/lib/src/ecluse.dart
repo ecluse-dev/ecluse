@@ -772,6 +772,14 @@ abstract final class Ecluse {
     final positions = [
       for (final e in NameDetector.homonymesEcartes(text))
         if (!resolved.any((r) => r.start < e.end && r.end > e.start) &&
+            // Le mot qui suit un nom complet déjà masqué (« rappel chloé
+            // martin est ») n'est pas un nom (P2-318, règle 2). L'entité doit
+            // commencer **avant** le mot précédent : « sophie porte » (seul
+            // « sophie » est masqué) reste signalé, « porte » peut être le
+            // patronyme (principe du 26 novembre, point 0).
+            !(e.avantDebut != null &&
+                resolved.any(
+                    (r) => r.start < e.avantDebut! && r.end >= e.avantFin!)) &&
             !(e.sansMajuscule &&
                 _suiviImmediatementDUneEntite(text, e.end, resolved)))
           e.start

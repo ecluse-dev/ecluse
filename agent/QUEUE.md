@@ -385,7 +385,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-315 | code | Homonymes en texte sans majuscule : 243 des 607 homonymes en clair des quatre listes ne sont pas signalés (chemins civilité et « le dossier de » qui exigent une majuscule, P2-314) | P2-314 | fusionnée |
 | P2-316 | code | Les neuf listes d'exclusion des noms encore silencieuses (P2-308) : signaler les homonymes écartés, dans les mêmes conditions que P2-310 | P2-310 | bloquée |
 | P2-317 | spec | Article de benchmark : section « Reproduire » rejouée commande par commande d'après `bench/README.md`, et phrase « transcriptions orales » nuancée ; texte prêt à reporter | — | fusionnée |
-| P2-318 | code | Reprise de P2-316 (branche de #581) : ne pas signaler derrière un prénom en minuscules qui est un faux ami connu, ni derrière un nom déjà masqué ; neuf listes signalées sans dépasser 5 % d'un témoin propre | P2-315 | à faire |
+| P2-318 | code | Reprise de P2-316 (branche de #581) : ne pas signaler derrière un prénom en minuscules qui est un faux ami connu, ni derrière un nom déjà masqué ; neuf listes signalées sans dépasser 5 % d'un témoin propre | P2-315 | PR ouverte |
 | P2-319 | code | Écarts relevés par P2-317 : `bench/README.md` (parties A, B, C), `LIMITES.md` (nombres dictés à 0,0 %), note de `bench/COMPARATIF.md`, chemins absolus de `bench/ETAT.md` | P2-317 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.

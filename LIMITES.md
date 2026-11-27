@@ -1210,6 +1210,30 @@ documents des corpus du dépôt, 0 autre avertissement nouveau. **Limite qui
 demeure** : une civilité **capitalisée** devant un mot en minuscules (« Madame fait
 un malaise ») n'est pas signalée ; ce chemin n'est pas celui du texte sans
 majuscule et n'a pas été mesuré.
+**Homonymes écartés : les treize listes signalées (P2-318, reprise de P2-316,
+27 novembre 2026).** Les neuf autres listes d'exclusion des noms (`non_noms`,
+`mots_structure`, `sigles_organismes`, `mots_contexte_non_noms`,
+`articles_capitalises`, `sigles_exclus`, `prenoms_insee_exclus`, `mots_neutres`,
+`outils_initiale`) laissaient aussi en clair, sans un mot, un patronyme qui s'écrit
+comme un de leurs mots (« le dossier de Sans », « Madame Ma »). Elles sont signalées
+comme les quatre premières : **aucune liste d'exclusion des noms n'est plus
+silencieuse**. Sonde de P2-308, chemin `Ecluse.redact` : neuf listes 2 → **148 / 148**
+patronymes en clair signalés, quatre listes 259 / 259 (inchangé) ; en minuscules
+607 / 607, en casse ordinaire 77 / 77 (inchangés). Aucun masquage ne change. Trois
+règles évitent le bruit : un faux ami de prénom écrit en minuscules (« iris sans
+particularité », liste de `NomMinusculesDetector`) n'est pas lu comme un prénom ;
+le mot qui suit un nom complet déjà masqué (« rappel chloé martin est ») n'est pas
+signalé, mais « sophie porte » (seul « sophie » masqué) l'est ; un article suivi d'un
+mot à majuscule (« à la demande de la Préfecture ») n'est pas signalé (règle ajoutée
+hors fiche : sans elle, 59 documents sur 400 du témoin `tournures_sans_nom`, 14,75 %,
+contre 8 avant). **Coût mesuré** (`bench/mesure_temoins_homonymes.sh`, 74 corpus,
+`Ecluse.redact`) : `corpus_flou_fauxamis` 0 / 400 (38 / 400 avec le code de P2-316) ;
+`tournures_sans_nom` 8 / 400 (inchangé) ; 0 en casse ordinaire sur les autres témoins
+propres ; en texte sans majuscule, en casse mixte ou de phrase, au plus 9 / 400
+(2,25 %, `flou_realiste_minuscules`), surtout « est », « pour », « au » derrière un
+prénom connu seul (« monsieur gauthier est »). **Limite
+qui demeure** : « le dossier de la » suivi d'un mot en minuscules reste signalé, voulu
+(« la » peut être un patronyme).
 **Prénom + verbe conjugué (P2-240).** « Sophie rappelle. » donnait un seul nom
 de deux mots, puis le verbe était retenu comme patronyme et masqué dans toute
 la suite d'un dossier (sonde reproductible `bench/generate_corpus_prenom_verbe.py` :
