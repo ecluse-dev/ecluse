@@ -551,9 +551,11 @@ octet. **Couvert** : NIR, RPPS, IBAN FR, FINESS, SIREN et SIRET nommés, dictés
 chiffre par chiffre, par paires ou par groupes, avec « double » et « triple »,
 « septante », « huitante », « nonante », le zéro dit « o », les traits d'union
 perdus, « fr » collé aux chiffres, les lettres d'un compte d'IBAN et la lettre
-d'un NIR corse. Mesuré sur le banc synthétique (graine 42, 943 identifiants, cinq
-variantes) : fuite au caractère de 97,4 à 98,0 % avant, de 0,0 à 0,1 % après ; au
-pire 1,1 % par type (FINESS). Voir `bench/ETAT.md`.
+d'un NIR corse. Mesuré sur le banc synthétique (graine 42, 943 identifiants, six
+variantes) : fuite au caractère de 97,4 à 98,0 % avant, **0,0 % après, pour chaque
+type** (FINESS compris, 129 / 129), par `Ecluse.redact` (chemin du produit ; valeur
+courante de `bench/ETAT.md`, rejouée par P2-319 ; le « au pire 1,1 % (FINESS) »
+d'avant P2-271 n'est plus d'actualité). Voir `bench/ETAT.md`.
 
 **Ce qui reste hors périmètre**, à ne pas promettre :
 

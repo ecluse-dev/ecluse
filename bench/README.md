@@ -940,25 +940,46 @@ Notes d'après le rejeu :
   établissements, identifiants et téléphones que `Ecluse.redact` masque dans des
   documents où ces types ne sont pas annotés. Ce n'est pas une mesure de
   précision ; la précision des types annotés se lit sur la ligne du moteur seul.
-- Le rejeu sur 200 000 documents ne demande que `--n 200000` aux deux
-  commandes (génération 3 s, moteur seul 27 s, `Ecluse.redact` 1 min 38 s,
-  score 4 à 7 s). Presidio : 9 s pour 1 000 documents, donc environ 30 minutes
-  extrapolées pour 200 000 (non lancé).
+- Rejeu sur 200 000 documents : écrire le corpus dans **`bench/corpus_200k.jsonl`**
+  (jamais dans `bench/corpus.jsonl`, que lit `melos run test` et que `etat.sh`
+  régénère à 1 000 documents) et passer `--n 200000` aux **quatre** commandes
+  (générateur, moteur seul, `Ecluse.redact`, Presidio), avec des fichiers de
+  sortie `*_200k.jsonl` :
 
-### B. Tableau de bord complet (`etat.sh`) : environ 7 minutes
+  ```bash
+  python3 bench/generate_corpus.py --n 200000 --seed 42 --out bench/corpus_200k.jsonl
+  (cd packages/ecluse_bench && dart run bin/run_ecluse.dart \
+    ../../bench/corpus_200k.jsonl ../../bench/predictions_ecluse_200k.jsonl)
+  (cd packages/ecluse_redact && dart run bin/run_redact_bench.dart \
+    ../../bench/corpus_200k.jsonl ../../bench/predictions_redact_200k.jsonl)
+  (cd bench && python3 run_presidio.py --corpus corpus_200k.jsonl --out predictions_presidio_200k.jsonl)
+  (cd bench && python3 score.py --corpus corpus_200k.jsonl \
+    --pred "Ecluse=predictions_ecluse_200k.jsonl" \
+    --pred "Presidio=predictions_presidio_200k.jsonl")
+  ```
+
+  Durées : génération 3 s, moteur seul 27 à 32 s, `Ecluse.redact` 1 min 38 s à
+  2 min 36 s (deux rejeux, deux machines), score 4 à 7 s. Presidio : 18 min 5 s
+  sur 2 cœurs (majorant : mesuré pendant un autre calcul ; 9 s pour 1 000
+  documents). Le rejeu de P2-319 a refait les trois premières commandes et le
+  score d'Écluse ; **Presidio sur 200 000 documents n'a pas été relancé**, sa
+  durée est celle mesurée par P2-317.
+
+### B. Tableau de bord complet (`etat.sh`) : environ 9 minutes
 
 ```bash
 bash bench/etat.sh > etat.log 2>&1   # corpus et prédictions dans bench/{flou,qi,dossiers,patho,transcrit,patronymes}/
 ```
 
 `etat.sh` génère lui-même tous les corpus de la section (graine 42) ; il sort
-avec un code non nul au premier « ÉCHEC ». Sur la machine neuve : 7 min 18 s,
-780 lignes, 0 échec. Il ne rejoue pas Presidio.
+avec un code non nul au premier « ÉCHEC ». Sur la machine neuve : 8 min 35 s,
+857 lignes, 0 échec (P2-317 ; 857 lignes confirmées par P2-319). Il ne rejoue pas Presidio.
 
 ### C. Comparatif (Presidio, spaCy, EDS-Pseudo) : environ 5 minutes
 
 À lancer **après** B : `comparatif.py` lit les corpus flou et dossiers générés
-par `etat.sh`.
+par `etat.sh`, et **lance `dart`** : il doit être dans le `PATH` (l'`export PATH`
+de l'étape A.1), sinon `FileNotFoundError`.
 
 ```bash
 pip install -r bench/requirements-comparatif.txt   # 3 min 13 s, voir l'avertissement

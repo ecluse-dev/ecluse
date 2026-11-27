@@ -25,6 +25,7 @@ Usage :
 
 import argparse
 import json
+import os
 import re
 import sys
 
@@ -69,6 +70,17 @@ def fuites(corpus, pred):
     return resultat
 
 
+def chemin_affiche(chemin, racine=None):
+    """Chemin imprimé dans la sortie (P2-319) : relatif à la racine du dépôt.
+    Un chemin absolu rendait `bench/ETAT.md` faux sur tout clone situé ailleurs
+    que le dépôt de référence. Hors du dépôt : le nom du fichier seul."""
+    racine = racine or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    rel = os.path.relpath(os.path.abspath(chemin), racine)
+    if rel.startswith('..'):
+        return os.path.basename(chemin)
+    return rel.replace(os.sep, '/')
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('--corpus', required=True)
@@ -79,7 +91,7 @@ def main():
     pred = charge(a.pred)
     docs_fuite = fuites(corpus, pred)
 
-    print(f'QI par Ecluse.redact : {a.corpus}')
+    print(f'QI par Ecluse.redact : {chemin_affiche(a.corpus)}')
     print(f'  documents            : {len(corpus)}')
     print(f'  patronyme en clair   : {len(docs_fuite)} document(s)')
     for doc_id, noms in docs_fuite[:10]:
