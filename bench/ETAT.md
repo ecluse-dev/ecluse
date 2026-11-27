@@ -3491,3 +3491,47 @@ un RPPS dont les neuf premiers chiffres sont aussi un FINESS de Luhn juste, masq
 0,5), où l'avertissement est le seul signe que deux chiffres d'un RPPS restent en
 clair. Les retirer rendait ces 16 cas silencieux (716 → 700 signalés). Aucun masquage
 ne change. Non rejoué : les 200 000 phrases sans personne.
+
+## Homonymes écartés : treize listes signalées, faux amis et nom déjà masqué (P2-318, 27 novembre 2026)
+
+Chemin mesuré : **`Ecluse.redact`** (`packages/ecluse_redact/bin/run_gardes_avertissements.dart`),
+pas le moteur seul. Aucun masquage ne change (voir le contrôle de fin de tâche de la PR).
+Reprise de P2-316 (PR #581, fermée) : les neuf listes sont signalées, avec deux règles
+de la fiche (faux ami de prénom en minuscules ; nom complet déjà masqué) et une règle
+ajoutée hors fiche (article suivi d'un mot à majuscule). La sonde de `bench/listes_exclusion.py`
+trouvait « Ma » dans « **Ma**dame » : positions corrigées (`position_mot`), deux faux
+silences retirés du décompte.
+
+Sonde de P2-308 (`bash bench/mesure_listes_exclusion.sh`), patronymes en clair signalés :
+
+| Liste(s) | Avant (main) | Après |
+|---|---|---|
+| neuf listes (`articles_capitalises` 22, `mots_contexte_non_noms` 20, `mots_neutres` 50, `outils_initiale` 30, `non_noms` 7, `mots_structure` 7, `sigles_exclus` 8, `prenoms_insee_exclus` 2, `sigles_organismes` 2) | 2 / 148 | **148 / 148** |
+| quatre listes de P2-310 | 259 / 259 | 259 / 259 |
+| minuscules (`bash bench/mesure_homonymes_minuscules.sh`, quatre listes) | 607 / 607 | 607 / 607 |
+| casse ordinaire (même script) | 77 / 77 | 77 / 77 |
+
+Documents avertis, `bash bench/mesure_temoins_homonymes.sh` (74 corpus de moins de
+31 200 documents, graine 42). « Règle 1 seule » : neuf listes et faux amis, sans les
+règles 2 et 3 (mesure intermédiaire de cette session) ; le code de P2-316 (#581),
+sans aucune règle, donnait 38 / 400 sur `corpus_flou_fauxamis` (chiffre de sa PR) :
+
+| Témoin | Documents | Main | Règle 1 seule | Après (règles 1 à 3) |
+|---|---|---|---|---|
+| `corpus_flou_fauxamis` (casse ordinaire) | 400 | 0 | 0 | **0** |
+| `tournures_sans_nom` | 400 | 8 | 59 | **8** |
+| `tournures_personne` (corpus fait de ces tournures, pas un témoin de bruit) | 480 | 33 | 36 | 36 |
+| tous les autres corpus en casse ordinaire ou majuscules (v3, mots neutres 31 200, réaliste, adversarial, commune neutre, neutre cedex, commune suivie, durci élargi, libellé fort…) | 85 465 | 0 | 0 | 0 |
+| `flou_realiste` minuscules / mixte / phrase | 3 × 400 | 0 | 9 / 6 / 7 | 9 / 5 / 3 |
+| `flou_adversarial` minuscules / mixte | 2 × 400 | 0 | 15 / 4 | 0 / 0 |
+| `flou_temoin_phrase` | 400 | 0 | 6 | 6 |
+| `dossiers_realiste` minuscules / mixte / phrase | 3 × 397 | 0 | 1 / 1 / 1 | 0 / 0 / 0 |
+| `dossiers_temoin` minuscules / mixte / phrase | 3 × 396 | 0 | 5 / 3 / 5 | 5 / 3 / 5 |
+| `transcrit_*` (6 corpus) | 6 × 1 000 | 0 | 6 chacun | 0 |
+
+Lecture : aucun témoin propre en casse ordinaire ne dépasse 5 % (le pire est
+`tournures_sans_nom`, 2,0 %, inchangé). En texte sans majuscule, en casse mixte ou de
+phrase, le pire est 9 / 400 (2,25 %) : surtout « est », « pour », « au » ou « ce » derrière
+un prénom connu seul (« monsieur gauthier est »), qu'on ne peut pas distinguer de
+« sophie porte » sans rendre un homonyme silencieux. Non rejoué : les balayages de CEDEX
+(139 500 documents chacun), les copies l60/l90.
