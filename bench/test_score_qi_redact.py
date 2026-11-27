@@ -7,7 +7,7 @@ de `generate_corpus_flou.NOMS` (aucun nom réel).
 
 import unittest
 
-from score_qi_redact import couvert, fuites
+from score_qi_redact import chemin_affiche, couvert, fuites
 
 
 class TestCouvert(unittest.TestCase):
@@ -68,6 +68,27 @@ class TestFuites(unittest.TestCase):
         resultat = fuites(corpus, pred)
         self.assertEqual(len(resultat), 1)
         self.assertEqual(resultat[0][1], ['Marchand'])
+
+
+class CheminAffiche(unittest.TestCase):
+    """P2-319 : la sortie d'`etat.sh` ne doit pas dépendre de l'endroit où le
+    dépôt est cloné (`controle_etat.py` compare ces lignes à `ETAT.md`)."""
+
+    def test_dans_le_depot_chemin_relatif_a_la_racine(self):
+        self.assertEqual(
+            chemin_affiche('/a/b/ecluse/bench/qi/corpus_qi_realiste.jsonl',
+                           '/a/b/ecluse'),
+            'bench/qi/corpus_qi_realiste.jsonl')
+
+    def test_autre_clone_meme_sortie(self):
+        self.assertEqual(
+            chemin_affiche('/tmp/x/ecluse/bench/qi/c.jsonl', '/tmp/x/ecluse'),
+            chemin_affiche('/home/claude/ecluse/bench/qi/c.jsonl',
+                           '/home/claude/ecluse'))
+
+    def test_hors_depot_nom_seul(self):
+        self.assertEqual(chemin_affiche('/tmp/zz/c.jsonl', '/a/b/ecluse'),
+                         'c.jsonl')
 
 
 if __name__ == '__main__':
