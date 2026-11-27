@@ -203,6 +203,20 @@ final class FinessDetector implements Detector {
     return ecartes;
   }
 
+  /// Empans des SIRET **de clé juste, écrits comme un SIRET** (quatorze chiffres
+  /// collés ou « 732 829 320 00009 » en 3-3-3-5), avec ou sans le mot « siret »
+  /// (P2-324). `AdresseDetector` s'en sert pour ne pas lire les cinq derniers
+  /// chiffres d'un tel SIRET, suivis d'un mot, comme un code postal et une
+  /// commune : l'« adresse » (20 caractères) était plus longue que le SIRET (17)
+  /// et gagnait dans `resolveOverlaps`, ce qui laissait le SIREN en clair.
+  /// Bornes seulement, jamais la valeur ; mêmes empans que ceux des SIRET que
+  /// [detect] masque à confiance 0,5 ou 0,9.
+  static List<({int start, int end})> siretsDeCleJuste(String text) {
+    final empans = <({int start, int end})>[];
+    _detectSync(text, null, null, null, true, empans);
+    return empans;
+  }
+
   /// Empans des numéros de TVA (« FR » + clé + SIREN) à clé fausse ou à lettre
   /// sans libellé « TVA » ni « intracommunautaire » dans la fenêtre (P2-307).
   /// Depuis P2-323 (décision du 27 novembre), le détecteur les **masque**
@@ -220,6 +234,7 @@ final class FinessDetector implements Detector {
     List<({int start, int end})>? ecartesSiret,
     List<({int start, int end})>? ecartesTva,
     bool ecarteDevantDate = true,
+    List<({int start, int end})>? siretsJustes,
   ]) {
     final compaction = DigitCompaction(raw, ecarteDevantDate: ecarteDevantDate);
     final results = <DetectedEntity>[];
@@ -284,6 +299,10 @@ final class FinessDetector implements Detector {
         if (!_formeSiret.hasMatch(raw.substring(match.start, match.end))) {
           continue;
         }
+      }
+      if (juste &&
+          _formeSiret.hasMatch(raw.substring(match.start, match.end))) {
+        siretsJustes?.add((start: match.start, end: match.end));
       }
       results.add(
         DetectedEntity(
