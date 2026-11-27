@@ -380,8 +380,11 @@ tâches copiées ici sont prises par l'agent.
 | P2-310 | code | Listes d'exclusion des noms coûteuses (`verbes_conjugues`, `statuts`, `mots_voisins_neutres`, `mots_de_role`) : un homonyme écarté est signalé (principe 0) | P2-308 | fusionnée |
 | P2-311 | mesure | Références de quatorze chiffres dans des textes logistiques synthétiques : coût d'un masquage des SIRET et TVA sans libellé, pour la décision du mainteneur ; rien corrigé | P2-307 | fusionnée |
 | P2-312 | code | Avertissement « suivi d'une date » (P2-309) : ne plus signaler un candidat dont l'identifiant réel est déjà masqué en entier par une lecture voisine (10 en trop sur 4 800) | P2-309 | fusionnée |
-| P2-313 | code | Signalement SIRET sans libellé (P2-307) : écarter les horodatages valides (−17 % de signalements sur le corpus de P2-311) | P2-311 | à faire |
+| P2-313 | code | Signalement SIRET sans libellé (P2-307) : écarter les horodatages valides (−17 % de signalements sur le corpus de P2-311) | P2-311 | abandonnée |
 | P2-314 | mesure | Avertissement des homonymes (P2-310) en texte tout en minuscules : 18,75 % des documents de la sonde de P2-240 ; options pour réduire le bruit sans rendre de silence ; rien corrigé | P2-310 | fusionnée |
+| P2-315 | code | Homonymes en texte sans majuscule : 243 des 607 homonymes en clair des quatre listes ne sont pas signalés (chemins civilité et « le dossier de » qui exigent une majuscule, P2-314) | P2-314 | à faire |
+| P2-316 | code | Les neuf listes d'exclusion des noms encore silencieuses (P2-308) : signaler les homonymes écartés, dans les mêmes conditions que P2-310 | P2-310 | à faire |
+| P2-317 | spec | Article de benchmark : section « Reproduire » rejouée commande par commande d'après `bench/README.md`, et phrase « transcriptions orales » nuancée ; texte prêt à reporter | — | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1872,6 +1875,11 @@ changé.
 
 ### P2-313 — Signalement SIRET : écarter les horodatages (code)
 
+**Abandonnée (PR #577, fermée sans fusion par le pilote)** : écarter les
+horodatages rendait silencieux un SIRET sur 6 000 à 15 000 environ, ce que le
+principe du 26 novembre (point 0) interdit. Le bruit visé (36 signalements sur
+3 000 documents logistiques) est accepté.
+
 P2-311 (`agent/specs/P2-311.md`) : sur 3 000 textes logistiques sans donnée
 personnelle, les 36 horodatages de quatorze chiffres de Luhn juste
 (« 20261127143005 ») sont tous des dates et heures valides et sont signalés comme
@@ -1897,3 +1905,50 @@ plus un avertissement général « texte sans majuscule : noms moins bien repér
 ou exiger un prénom confirmé. Rapport dans `agent/specs/P2-314.md`. **Rien n'est
 corrigé.** **Fini quand** : tableau option × (documents avertis en minuscules,
 homonymes signalés en casse ordinaire et en minuscules), recommandation chiffrée.
+
+### P2-315 — Homonymes en texte sans majuscule : signaler les chemins manquants (code)
+
+P2-314 (`agent/specs/P2-314.md`, trouvaille hors fiche) : en texte tout en
+minuscules, 243 des 607 homonymes laissés en clair par les quatre listes de P2-310
+ne sont pas signalés, parce que les chemins « civilité » et « le dossier de » de
+`NameDetector.homonymesEcartes` exigent une majuscule. Principe du 26 novembre,
+point 0. Travail : test d'abord (sonde de P2-314 en minuscules), puis signaler
+aussi ces chemins sans majuscule, avec le même avertissement. **Fini quand** : en
+minuscules, 607 / 607 homonymes en clair signalés (contre 364) ; en casse
+ordinaire, 77 / 77 inchangé ; documents avertis sur les témoins propres écrits
+dans la PR et dans `bench/ETAT.md`, avec la même condition d'arrêt que P2-310
+(plus de 5 % d'un témoin propre en casse ordinaire : s'arrêter et le dire) ; aucun
+masquage changé (`bench/equivalence_predictions.sh`) ; `LIMITES.md` à jour.
+
+### P2-316 — Les neuf autres listes d'exclusion des noms : signaler (code)
+
+P2-308 : neuf listes (`non_noms`, `articles_capitalises`, `outils_initiale`,
+`mots_contexte_non_noms`, `sigles_exclus`, `mots_structure`, `sigles_organismes`,
+`prenoms_insee_exclus`, `mots_neutres`) laissent encore des patronymes homonymes
+en clair sans avertissement (de 0,001 % à 0,015 % des naissances INSEE chacune).
+Travail : étendre l'avertissement de P2-310 à ces listes, avec le même filtre
+(patronyme d'au moins 30 naissances) et les mêmes positions (derrière une civilité,
+un prénom ou « le dossier de »). Test d'abord. **Fini quand** : sur la sonde de
+`bench/listes_exclusion.py`, 100 % des homonymes en clair de ces neuf listes
+signalés ; même condition d'arrêt que P2-310 sur les témoins propres ; aucun
+masquage changé ; `LIMITES.md` dit qu'aucune liste d'exclusion des noms n'est plus
+silencieuse, ou nomme celles qui le restent et pourquoi.
+
+### P2-317 — Article de benchmark : « Reproduire » et « transcriptions orales » (spec)
+
+L'article de benchmark n'est pas versionné tant qu'il n'est pas publié (le pilote le
+tient à part ; `bench/ARTICLE.md` porte l'avertissement « version dépassée » et ne
+doit pas être modifié ici). Deux points restent ouverts. (1) Sa section
+« Reproduire » ne suit plus `bench/README.md`, réécrit par P2-262 : rédiger une
+section « Reproduire » neuve, **chaque commande rejouée sur `main`** depuis un
+clone propre, pour les trois parties (200 000 documents d'identifiants, moteur
+seul et `Ecluse.redact` ; Presidio ; comparatif à six configurations et témoin de
+480 documents), avec la durée observée de chaque étape et tout prérequis manquant.
+(2) « Hors mesure » cite les « transcriptions orales » : depuis P2-267, les nombres
+dictés en lettres sont mesurés ; proposer une phrase qui donne le chiffre actuel
+et sa ligne de `bench/ETAT.md`, et dit que le vrai son reste hors mesure. Livrable :
+`agent/specs/P2-317.md`, en français et en anglais, prêt à reporter. Aucun autre
+fichier modifié. **Fini quand** : la spec contient les deux textes en deux
+langues, chaque commande porte la mention « rejouée le … sur … » et son résultat,
+et toute commande qui n'a pas pu être rejouée (par exemple l'accès réseau aux
+modèles) est dite comme telle, sans être présentée comme vérifiée.
