@@ -166,9 +166,33 @@ final class FinessDetector implements Detector {
     return ecartes;
   }
 
+  /// Empans des quatorze chiffres de **clé de Luhn juste** que le détecteur
+  /// ne masque pas faute du mot « siret » dans la fenêtre (P2-307, principe du
+  /// 26 novembre, point 0) : un SIRET d'entrepreneur individuel identifie une
+  /// personne, et le texte ne le dit pas. Quatorze chiffres de clé fausse ne
+  /// sont pas rendus : rien ne les distingue d'un nombre ordinaire. Bornes
+  /// seulement, jamais la valeur ; aucun masquage ne change.
+  static List<({int start, int end})> ecartesSiret(String text) {
+    final ecartes = <({int start, int end})>[];
+    _detectSync(text, null, ecartes);
+    return ecartes;
+  }
+
+  /// Empans des numéros de TVA (« FR » + clé + SIREN) à clé fausse ou à lettre
+  /// que le détecteur ne masque pas faute de libellé « TVA » ou
+  /// « intracommunautaire » dans la fenêtre (P2-307). Bornes seulement ; aucun
+  /// masquage ne change.
+  static List<({int start, int end})> ecartesTva(String text) {
+    final ecartes = <({int start, int end})>[];
+    _detectSync(text, null, null, ecartes);
+    return ecartes;
+  }
+
   static List<DetectedEntity> _detectSync(
     String raw, [
     List<({int start, int end})>? ecartes,
+    List<({int start, int end})>? ecartesSiret,
+    List<({int start, int end})>? ecartesTva,
   ]) {
     final compaction = DigitCompaction(raw);
     final results = <DetectedEntity>[];
@@ -213,8 +237,13 @@ final class FinessDetector implements Detector {
     ]..sort((a, b) => a.start - b.start);
     for (final match in siret) {
       if (!siretVus.add((match.start, match.end))) continue;
-      if (!_fenetre(raw, match.start, match.end).contains('siret')) continue;
       final juste = isLuhnValid(match.text.replaceAll(' ', ''));
+      if (!_fenetre(raw, match.start, match.end).contains('siret')) {
+        if (juste) {
+          ecartesSiret?.add((start: match.start, end: match.end));
+        }
+        continue;
+      }
       results.add(
         DetectedEntity(
           type: EntityType.siren,
@@ -234,6 +263,7 @@ final class FinessDetector implements Detector {
           RegExp(r'^[0-9]{2}$').hasMatch(cle) &&
           cleNumerique == (12 + 3 * (int.parse(siren) % 97)) % 97;
       if (!juste && !_tvaLibelle.hasMatch(_fenetre(raw, m.start, m.end))) {
+        ecartesTva?.add((start: m.start, end: m.end));
         continue;
       }
       results.add(
