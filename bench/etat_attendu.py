@@ -384,6 +384,18 @@ ATTENDU = [
         (r"^finess .* TOTAL \d+/\d+ \(", 4,
          "rappel du détecteur isolé et d'Ecluse.redact"),
     ]),
+    ("## avertissements homonymes sur les témoins", [
+        (r"^avertissements homonymes, casse ordinaire : \d+ corpus, \d+ documents, "
+         r"\d+ avertis, pire \d+\.\d+ %( \(\w+\))?$", 1,
+         "groupe casse ordinaire (P2-320)"),
+        (r"^avertissements homonymes, minuscules, mixte, phrase et transcrit : "
+         r"\d+ corpus, \d+ documents, \d+ avertis, pire \d+\.\d+ %( \(\w+\))?$", 1,
+         "groupe minuscules, mixte, phrase et transcrit (P2-320)"),
+        (r"^avertissements homonymes, tournures sans nom : \d+ / \d+ \(\d+\.\d+ %\)$", 1,
+         "tournures sans nom (P2-320)"),
+        (r"^avertissements homonymes, tournures de personne .*: \d+ / \d+ \(\d+\.\d+ %\)$", 1,
+         "tournures de personne, sans seuil (P2-320)"),
+    ]),
     ("## collage de fin de ligne hors du cœur", [
         (r"structurel_l\d+\.jsonl : \d+ doc\., \d+ coupures", 2,
          "corpus structurel recoupé à 60 et 90 colonnes"),
