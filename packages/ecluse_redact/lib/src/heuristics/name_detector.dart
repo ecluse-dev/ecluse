@@ -772,6 +772,45 @@ final class NameDetector implements EntityDetector {
     unicode: true,
   );
 
+  /// Civilité écrite **en minuscules** puis un mot en minuscules, pour
+  /// [homonymesEcartes] (P2-315) : « madame fait est venue » (dictée, courriel
+  /// pressé). [_civiliteDevantStatut] et [_contexteAvant] exigent une majuscule,
+  /// si bien qu'en texte sans majuscule un patronyme homonyme restait en clair
+  /// sans un mot (243 des 607 homonymes de la sonde de P2-308, mesure P2-314).
+  /// Seule la civilité **elle aussi en minuscules** déclenche ce chemin : une
+  /// civilité capitalisée devant un mot en minuscules est de la prose ordinaire
+  /// (« Madame fait un malaise »), qui n'est pas l'objet de cette tâche.
+  static final RegExp _civiliteMinusculeDevantMot = RegExp(
+    r'(?<![\wÀ-ÿ])(?:monsieur|madame|mademoiselle|docteure|docteur|doctoresse|'
+    r'professeure|professeur|mme|mlle|mdme|melle|maître|maitre)'
+    '$_h+'
+    r"(\p{Ll}[\p{Ll}'’-]*)(?![\wÀ-ÿ])",
+    unicode: true,
+  );
+
+  /// « dossier de », « à la demande de », « entretien avec » puis un mot en
+  /// minuscules, pour [homonymesEcartes] (P2-315) : « le dossier de avril ».
+  /// [_contexteAvant] exige une majuscule (« dossier de presse » n'est pas un
+  /// nom) ; ici le mot n'est signalé que s'il est un homonyme de patronyme **et**
+  /// écarté par une des quatre listes, ce qui laisse « dossier de presse » muet.
+  static final RegExp _contexteAvantMinuscule = RegExp(
+    r'(?<![\wÀ-ÿ-])(?:dossier[ \t\u00A0\u202F]+de|'
+    r'à[ \t\u00A0\u202F]+la[ \t\u00A0\u202F]+demande[ \t\u00A0\u202F]+de|'
+    r'entretien[ \t\u00A0\u202F]+avec)'
+    '$_h+'
+    r"(\p{Ll}[\p{Ll}'’-]*)(?![\wÀ-ÿ])",
+    unicode: true,
+  );
+
+  /// Le mot est-il écarté de la détection par une des quatre listes coûteuses
+  /// (P2-310) ? Verbes conjugués compris : en minuscules, rien ne distingue
+  /// « madame fait » d'un nom.
+  static bool _estMotEcarte(String mot) =>
+      estVerbeConjugue(mot) ||
+      _estStatut(mot) ||
+      _motsVoisinsNeutres.contains(mot) ||
+      _estMotDeRole(mot);
+
   /// Mots que [text] laisse en clair parce qu'une des quatre listes coûteuses
   /// d'exclusion des noms (`verbes_conjugues`, `statuts`,
   /// `mots_voisins_neutres`, `mots_de_role`) les retire, **là où un nom était
@@ -783,12 +822,20 @@ final class NameDetector implements EntityDetector {
   /// homonyme d'un mot courant part en clair, et rien ne le dit). Inventaire :
   /// `agent/specs/P2-308.md`.
   ///
-  /// L'appelant retire les mots qu'une entité couvre déjà.
-  static List<({int start, int end})> homonymesEcartes(String text) {
-    final sorties = <({int start, int end})>[];
+  /// L'appelant retire les mots qu'une entité couvre déjà. `sansMajuscule` marque
+  /// les mots trouvés par les chemins en minuscules (P2-315) : l'appelant en
+  /// retire aussi ceux qu'une entité suit immédiatement (« le dossier de monsieur
+  /// pelletan » : « monsieur » est un titre, le nom est masqué), ce que la
+  /// majuscule faisait déjà pour les chemins capitalisés (« Monsieur Pelletan »
+  /// est une unité de deux mots, jamais lue comme un mot seul).
+  static List<({int start, int end, bool sansMajuscule})> homonymesEcartes(
+      String text) {
+    final sorties = <({int start, int end, bool sansMajuscule})>[];
     final vus = <int>{};
-    void ajoute(int start, int end) {
-      if (vus.add(start)) sorties.add((start: start, end: end));
+    void ajoute(int start, int end, {bool sansMajuscule = false}) {
+      if (vus.add(start)) {
+        sorties.add((start: start, end: end, sansMajuscule: sansMajuscule));
+      }
     }
 
     for (final m in _civiliteDevantStatut.allMatches(text)) {
@@ -816,6 +863,21 @@ final class NameDetector implements EntityDetector {
           _motsVoisinsNeutres.contains(mot) ||
           _estMotDeRole(mot)) {
         ajoute(m.end - mot.length, m.end);
+      }
+    }
+    // Texte sans majuscule (P2-315) : les deux chemins ci-dessus exigent une
+    // majuscule ; sans elle, le mot homonyme d'un patronyme part en clair sans
+    // avertissement. Mêmes mots, mêmes listes, même avertissement.
+    for (final m in _civiliteMinusculeDevantMot.allMatches(text)) {
+      final mot = m.group(1)!;
+      if (_estHomonymeDePatronyme(mot) && _estMotEcarte(mot)) {
+        ajoute(m.end - mot.length, m.end, sansMajuscule: true);
+      }
+    }
+    for (final m in _contexteAvantMinuscule.allMatches(text)) {
+      final mot = m.group(1)!;
+      if (_estHomonymeDePatronyme(mot) && _estMotEcarte(mot)) {
+        ajoute(m.end - mot.length, m.end, sansMajuscule: true);
       }
     }
     sorties.sort((a, b) => a.start - b.start);

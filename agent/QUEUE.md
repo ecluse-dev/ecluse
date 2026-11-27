@@ -382,7 +382,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-312 | code | Avertissement « suivi d'une date » (P2-309) : ne plus signaler un candidat dont l'identifiant réel est déjà masqué en entier par une lecture voisine (10 en trop sur 4 800) | P2-309 | fusionnée |
 | P2-313 | code | Signalement SIRET sans libellé (P2-307) : écarter les horodatages valides (−17 % de signalements sur le corpus de P2-311) | P2-311 | abandonnée |
 | P2-314 | mesure | Avertissement des homonymes (P2-310) en texte tout en minuscules : 18,75 % des documents de la sonde de P2-240 ; options pour réduire le bruit sans rendre de silence ; rien corrigé | P2-310 | fusionnée |
-| P2-315 | code | Homonymes en texte sans majuscule : 243 des 607 homonymes en clair des quatre listes ne sont pas signalés (chemins civilité et « le dossier de » qui exigent une majuscule, P2-314) | P2-314 | à faire |
+| P2-315 | code | Homonymes en texte sans majuscule : 243 des 607 homonymes en clair des quatre listes ne sont pas signalés (chemins civilité et « le dossier de » qui exigent une majuscule, P2-314) | P2-314 | PR ouverte |
 | P2-316 | code | Les neuf listes d'exclusion des noms encore silencieuses (P2-308) : signaler les homonymes écartés, dans les mêmes conditions que P2-310 | P2-310 | à faire |
 | P2-317 | spec | Article de benchmark : section « Reproduire » rejouée commande par commande d'après `bench/README.md`, et phrase « transcriptions orales » nuancée ; texte prêt à reporter | — | à faire |
 

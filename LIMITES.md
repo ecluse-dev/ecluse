@@ -1193,6 +1193,23 @@ cedex 400, faux amis 400, réaliste 400, adversarial 400, v3 1 000, commune suiv
 480, durci élargi 5 000, mots-nombres durci élargi 5 600, libellé fort 3 000). Ces
 corpus ne contiennent aucune de ces tournures : le coût sur un texte naturel n'est
 pas mesuré.
+**Homonymes écartés, texte sans majuscule (P2-315, 27 novembre 2026).** Les chemins
+« civilité » et « le dossier de » de l'avertissement ci-dessus exigeaient une
+majuscule : dans un texte tout en minuscules (dictée, transcription, courriel
+pressé), 243 des 607 homonymes en clair de la sonde de P2-308 n'étaient pas
+signalés (« le dossier de avril », « madame fait est venue »). Ils le sont
+désormais : **607 / 607** (364 avant) ; en casse ordinaire, 77 / 77, inchangé.
+Chemin mesuré : `Ecluse.redact`. Aucun masquage ne change. Un mot suivi
+immédiatement d'une entité masquée n'est pas signalé (« le dossier de monsieur
+pelletan » : « monsieur » est un titre, le nom est masqué). **Coût** : un nom
+commun qui est aussi un verbe conjugué, un statut, un jour, un mois ou un mot de
+rôle **et** un patronyme INSEE est signalé derrière « dossier de », « à la demande
+de » ou « entretien avec » : « le dossier de contrôle » (8 documents sur 400 du
+témoin `tournures_sans_nom`, 2,0 %, tous « contrôle » ; 0 avant). Sur 100 992
+documents des corpus du dépôt, 0 autre avertissement nouveau. **Limite qui
+demeure** : une civilité **capitalisée** devant un mot en minuscules (« Madame fait
+un malaise ») n'est pas signalée ; ce chemin n'est pas celui du texte sans
+majuscule et n'a pas été mesuré.
 **Prénom + verbe conjugué (P2-240).** « Sophie rappelle. » donnait un seul nom
 de deux mots, puis le verbe était retenu comme patronyme et masqué dans toute
 la suite d'un dossier (sonde reproductible `bench/generate_corpus_prenom_verbe.py` :

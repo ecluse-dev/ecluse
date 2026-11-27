@@ -3356,6 +3356,55 @@ ces tournures ; il est massif sur du texte entièrement en minuscules, où le
 prénom suivi d'un verbe de la liste est signalé. Un document ne porte jamais
 plus d'un avertissement de ce type (compte et positions).
 
+## Homonymes écartés en texte sans majuscule : chemins « civilité » et « le dossier de » (P2-315, 27 novembre 2026)
+
+Chemin mesuré : **`Ecluse.redact`** (`packages/ecluse_redact/bin/run_gardes_avertissements.dart`),
+pas le moteur seul. Aucun masquage ne change : les 77 fichiers `pred*.jsonl` du
+tableau de bord sont identiques octet pour octet avant et après
+(`bench/equivalence_predictions.sh` : « identiques : 77 ; différents comme prévu : 0 »),
+et `controle_etat.py` est conforme. Rejeu complet de `bench/etat.sh` sur `main` (au
+commit `37dfe65`, dans un worktree propre) puis sur la branche : mêmes lignes, aucun
+`ÉCHEC`.
+
+Sonde de P2-308 (`bash bench/mesure_homonymes_minuscules.sh`, ligne « base »), homonymes
+laissés en clair et signalés :
+
+| Texte | Avant | Après |
+|---|---|---|
+| Entièrement en minuscules (quatre listes) | 364 / 607 | **607 / 607** |
+| dont `verbes_conjugues` | 340 / 514 | 514 / 514 |
+| dont `statuts` | 14 / 25 | 25 / 25 |
+| dont `mots_voisins_neutres` | 6 / 36 | 36 / 36 |
+| dont `mots_de_role` | 4 / 32 | 32 / 32 |
+| Casse ordinaire | 77 / 77 | 77 / 77 |
+
+Documents avertis sur les témoins propres (seuil d'arrêt : 5 % en casse ordinaire),
+mesurés sur les corpus générés par `bench/etat.sh` (100 992 documents au total) :
+
+| Témoin | Documents | Avertis avant | Avertis après |
+|---|---|---|---|
+| v3 (graine 42) | 1 000 | 0 | 0 |
+| mots neutres | 31 200 | 0 | 0 |
+| commune neutre, neutre cedex, réaliste, adversarial (casse ordinaire) | 4 × 400 | 0 | 0 |
+| commune suivie | 480 | 0 | 0 |
+| durci élargi (faux accords OCR), mots-nombres durci élargi | 5 000 + 5 600 | 0 | 0 |
+| libellé fort | 3 000 | 0 | 0 |
+| sonde prénom + verbe (P2-240), casse ordinaire | 1 280 | 0 | 0 |
+| dossiers, variantes minuscules, mixte et phrase | 12 × ≈ 400 | 0 | 0 (113 sur 396 avant d'écarter un mot suivi d'une entité : « le dossier de monsieur pelletan ») |
+| **tournures sans nom** (`corpus_tournures_sans_nom`) | 400 | 0 | **8** (2,0 %, tous « contrôle ») |
+| tournures de personne (`corpus_tournures_personne`) | 480 | 33 | 33 (inchangé : chemin capitalisé de P2-310) |
+
+Lecture : le coût nouveau est de 8 documents sur 400 du témoin « tournures sans nom »
+(« à la demande de contrôle », « le dossier de contrôle » : un nom commun qui est aussi
+un verbe et un patronyme), 2,0 %, sous le seuil de 5 %. Les 33 de « tournures de
+personne » existaient avant (mots de rôle capitalisés derrière la tournure, P2-310) ;
+ce corpus est fait de ces tournures, il n'est pas un témoin de bruit. Les options
+`O1` à `O5` de P2-314, qui filtrent le chemin « prénom + mot », jugent désormais aussi
+les mots des nouveaux chemins : leurs lignes ne sont plus celles du rapport de P2-314.
+Non rejoué : les 200 000 phrases sans personne, la casse « de phrase » (majuscule en
+début de phrase seulement), une civilité capitalisée devant un mot en minuscules
+(« Madame fait un malaise » : 0 avertissement, limite dans `LIMITES.md`).
+
 ## Garde `nir_coupures` : avertissement « à vérifier » (P2-305, 27 novembre 2026)
 
 Chemin mesuré : **`Ecluse.redact`** (`packages/ecluse_redact/bin/run_gardes_avertissements.dart`),
