@@ -379,6 +379,9 @@ tâches copiées ici sont prises par l'agent.
 | P2-309 | code | `DigitCompaction._finitDansUneDate` : un identifiant écarté parce qu'il touche une date complète est signalé (principe du 26 novembre, point 0) | P2-306 | fusionnée |
 | P2-310 | code | Listes d'exclusion des noms coûteuses (`verbes_conjugues`, `statuts`, `mots_voisins_neutres`, `mots_de_role`) : un homonyme écarté est signalé (principe 0) | P2-308 | fusionnée |
 | P2-311 | mesure | Références de quatorze chiffres dans des textes logistiques synthétiques : coût d'un masquage des SIRET et TVA sans libellé, pour la décision du mainteneur ; rien corrigé | P2-307 | fusionnée |
+| P2-312 | code | Avertissement « suivi d'une date » (P2-309) : ne plus signaler un candidat dont l'identifiant réel est déjà masqué en entier par une lecture voisine (10 en trop sur 4 800) | P2-309 | à faire |
+| P2-313 | code | Signalement SIRET sans libellé (P2-307) : écarter les horodatages valides (−17 % de signalements sur le corpus de P2-311) | P2-311 | à faire |
+| P2-314 | mesure | Avertissement des homonymes (P2-310) en texte tout en minuscules : 18,75 % des documents de la sonde de P2-240 ; options pour réduire le bruit sans rendre de silence ; rien corrigé | P2-310 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1854,3 +1857,43 @@ quatorze chiffres qui passent Luhn. Rapport dans `agent/specs/P2-311.md`.
 **Rien n'est corrigé.** **Fini quand** : tableau forme × (documents, masqués à
 tort si on masquait, signalés aujourd'hui), recommandation chiffrée pour la
 décision du mainteneur.
+
+### P2-312 — Avertissement devant une date : retirer les doublons (code)
+
+P2-309 (PR #572) : sur le témoin « identifiant suivi » (4 800 documents), 10
+documents (3 NIR, 7 RPPS) portent l'avertissement « suivi d'une date » alors que
+l'identifiant réel (RPPS ou FINESS) est déjà masqué en entier : le candidat signalé
+est une lecture voisine du même nombre, élargie aux chiffres de la date. Travail :
+test d'abord (ces 10 cas), puis ne pas signaler un candidat dont les chiffres
+d'identifiant sont déjà couverts par une entité masquée, même si le candidat
+déborde sur la date. **Fini quand** : 10 → 0 sur ce témoin ; sonde de P2-309
+toujours 716 / 716 signalés ; aucun autre témoin ne change ; aucun masquage
+changé.
+
+### P2-313 — Signalement SIRET : écarter les horodatages (code)
+
+P2-311 (`agent/specs/P2-311.md`) : sur 3 000 textes logistiques sans donnée
+personnelle, les 36 horodatages de quatorze chiffres de Luhn juste
+(« 20261127143005 ») sont tous des dates et heures valides et sont signalés comme
+SIRET possibles ; aucun des 19 736 nombres uniformes de Luhn juste n'en a la
+forme. Travail : test d'abord, puis ne pas signaler un quatorze chiffres qui se
+lit comme un horodatage valide (AAAAMMJJhhmmss, année 1900 à 2099). **Fini
+quand** : signalements du corpus de P2-311 réduits de l'ordre de 17 % ; sonde de
+P2-303 toujours 40 / 40 SIRET signalés ; aucun masquage changé ; `LIMITES.md`
+à jour (un SIRET qui aurait la forme d'un horodatage ne serait plus signalé :
+le dire et le chiffrer).
+
+### P2-314 — Homonymes en texte sans majuscule : réduire le bruit (mesure)
+
+P2-310 (PR #573) : sur la sonde prénom + verbe de P2-240 mise entièrement en
+minuscules (dictée, transcription), 240 documents sur 1 280 (18,75 %) portent
+l'avertissement « mot pris pour un nom commun… », tous des verbes légitimes qui
+sont aussi un patronyme ; en casse ordinaire, 0. Travail : mesurer par
+`Ecluse.redact`, sans rien commiter dans `lib/`, au plus quatre options qui
+réduiraient ce bruit **sans rendre un seul homonyme silencieux** sur la sonde de
+P2-308 en casse ordinaire, par exemple : seuil de fréquence du patronyme, un seul
+avertissement groupé par document, avertissement réservé au texte avec majuscules
+plus un avertissement général « texte sans majuscule : noms moins bien repérés »,
+ou exiger un prénom confirmé. Rapport dans `agent/specs/P2-314.md`. **Rien n'est
+corrigé.** **Fini quand** : tableau option × (documents avertis en minuscules,
+homonymes signalés en casse ordinaire et en minuscules), recommandation chiffrée.
