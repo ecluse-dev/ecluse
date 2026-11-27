@@ -260,6 +260,11 @@ final class NomMinusculesDetector implements EntityDetector {
     'noel', 'pierre', 'rose', 'victoire', 'violette', //
   };
 
+  /// Lecture seule de [_fauxAmis], pour le signalement des homonymes écartés
+  /// (P2-318, `NameDetector.homonymesEcartes`) : un faux ami de prénom écrit en
+  /// minuscules (« iris sans particularité ») est un nom commun, pas un prénom.
+  static Set<String> get fauxAmisDePrenoms => _fauxAmis;
+
   /// Terminaisons d'adjectif ou de participe qui ne finissent presque jamais
   /// un patronyme. « -al » n'y est pas (Duval, Laval), « -ale » si ; « -eux »
   /// non plus (Mérieux : mesure P2-124 sur le corpus adversarial).

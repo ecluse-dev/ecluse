@@ -6,7 +6,10 @@ import 'communes_grandes.dart';
 import 'etablissement_keywords.dart';
 import 'homonymes_patronymes.dart';
 import 'french_first_names.dart';
+import 'initiale_libelle_detector.dart';
 import 'mots_neutres.dart';
+import 'nom_minuscules_detector.dart';
+import 'prenom_insee_detector.dart';
 import 'tableau_csv.dart';
 import 'verbes_conjugues.dart';
 
@@ -744,10 +747,12 @@ final class NameDetector implements EntityDetector {
     return true;
   }
 
-  /// Civilité ou mot de parenté, puis un mot de [_statuts] écrit avec une
-  /// majuscule (« Madame Marié », « Famille Cadet ») : le lookahead de
+  /// Civilité ou mot de parenté, puis un mot écrit avec une majuscule (« Madame
+  /// Marié », « Famille Cadet ») : si ce mot est de [_statuts], le lookahead de
   /// [_civility] et de [_cueParente] l'écarte (P2-77), il n'est donc jamais
-  /// masqué. Sert au seul signalement de [homonymesEcartes].
+  /// masqué ; [homonymesEcartes] ne retient que les mots d'une liste
+  /// d'exclusion (P2-316 : tous les mots, pas seulement les statuts). Sert au
+  /// seul signalement de [homonymesEcartes].
   static final RegExp _civiliteDevantStatut = RegExp(
     r'(?<![\wÀ-ÿ])(?:M\.|Mrs\.?|Mr\.?|Ms\.?|Mme\.?|Mlle\.?|Mademoiselle|'
     r'Monsieur|Madame|Dre\.?|Dr\.?|Docteure|Docteur|Pr\.?|Professeure|'
@@ -755,7 +760,7 @@ final class NameDetector implements EntityDetector {
     r'MADAME|MADEMOISELLE|DOCTEUR|PROFESSEUR|'
     r'[Ff]amille|[EeÉé]poux|[Cc]onsorts|[SsŒœ]œur|[Ss]oeur|[Ff]rère|Père)'
     '$_h+'
-    '(?=[A-ZÀ-ÖØ-Þ])((?:$_statutsAlt))(?![\\wÀ-ÿ])',
+    "([A-ZÀ-ÖØ-Þ][\\wÀ-ÿ'’-]*)(?![\\wÀ-ÿ])",
   );
 
   /// Le mot est-il aussi un patronyme du fichier INSEE (P2-310) ? Sans cela, un
@@ -802,14 +807,50 @@ final class NameDetector implements EntityDetector {
     unicode: true,
   );
 
-  /// Le mot est-il écarté de la détection par une des quatre listes coûteuses
-  /// (P2-310) ? Verbes conjugués compris : en minuscules, rien ne distingue
-  /// « madame fait » d'un nom.
-  static bool _estMotEcarte(String mot) =>
-      estVerbeConjugue(mot) ||
-      _estStatut(mot) ||
-      _motsVoisinsNeutres.contains(mot) ||
-      _estMotDeRole(mot);
+  /// Articles et déterminants courts, pour la règle 3 de [homonymesEcartes].
+  static const Set<String> _articles = {
+    'le', 'la', 'les', 'un', 'une', 'du', 'des', //
+  };
+
+  /// Un mot à majuscule juste derrière (même ligne), pour la règle 3.
+  static final RegExp _motCapitaliseSuit =
+      RegExp(r'^[ \t\u00A0\u202F]+[A-ZÀ-ÖØ-Þ]');
+
+  /// Entrées d'un mot des neuf listes d'exclusion des noms que P2-310 ne
+  /// signalait pas (P2-316, inventaire `agent/specs/P2-308.md`) : `non_noms`,
+  /// `mots_structure`, `sigles_organismes`, `mots_contexte_non_noms`,
+  /// `articles_capitalises`, `sigles_exclus`, `prenoms_insee_exclus`,
+  /// `mots_neutres` et `outils_initiale`. En minuscules sans accent : seul le
+  /// signalement les lit, aucun masquage ne change.
+  static final Set<String> _motsDesNeufAutresListes = {
+    for (final liste in [
+      _nonNoms,
+      _motsStructure,
+      _siglesOrganismes,
+      _motsDeContexteNonNoms,
+      _articlesCapitalises,
+      _excludedAcronyms,
+      PrenomInseeDetector.exclus,
+      motsNeutres,
+      InitialeLibelleDetector.outilsEcartes,
+    ])
+      for (final mot in liste)
+        if (!mot.contains(RegExp(r'\s'))) _foldAccents(mot.toLowerCase()),
+  };
+
+  /// Le mot est-il retiré de la détection des noms par une des treize listes
+  /// d'exclusion qui ont des homonymes de patronymes : les quatre de P2-310
+  /// (`verbes_conjugues`, `statuts`, `mots_voisins_neutres`, `mots_de_role`) et
+  /// les neuf de P2-316 ? Comparaison sans casse : un mot qui est masqué malgré
+  /// la liste est couvert par une entité, et l'appelant le retire.
+  static bool _estMotEcarte(String mot) {
+    final bas = mot.toLowerCase();
+    return estVerbeConjugue(mot) ||
+        _estStatut(mot) ||
+        _motsVoisinsNeutres.contains(bas) ||
+        _estMotDeRole(mot) ||
+        _motsDesNeufAutresListes.contains(_foldAccents(bas));
+  }
 
   /// Mots que [text] laisse en clair parce qu'une des quatre listes coûteuses
   /// d'exclusion des noms (`verbes_conjugues`, `statuts`,
@@ -828,29 +869,44 @@ final class NameDetector implements EntityDetector {
   /// pelletan » : « monsieur » est un titre, le nom est masqué), ce que la
   /// majuscule faisait déjà pour les chemins capitalisés (« Monsieur Pelletan »
   /// est une unité de deux mots, jamais lue comme un mot seul).
-  static List<({int start, int end, bool sansMajuscule})> homonymesEcartes(
-      String text) {
-    final sorties = <({int start, int end, bool sansMajuscule})>[];
+  static List<
+      ({
+        int start,
+        int end,
+        bool sansMajuscule,
+        int? avantDebut,
+        int? avantFin
+      })> homonymesEcartes(String text) {
+    final sorties = <({
+      int start,
+      int end,
+      bool sansMajuscule,
+      int? avantDebut,
+      int? avantFin
+    })>[];
     final vus = <int>{};
-    void ajoute(int start, int end, {bool sansMajuscule = false}) {
+    void ajoute(int start, int end,
+        {bool sansMajuscule = false, int? avantDebut, int? avantFin}) {
       if (vus.add(start)) {
-        sorties.add((start: start, end: end, sansMajuscule: sansMajuscule));
+        sorties.add((
+          start: start,
+          end: end,
+          sansMajuscule: sansMajuscule,
+          avantDebut: avantDebut,
+          avantFin: avantFin
+        ));
       }
     }
 
     for (final m in _civiliteDevantStatut.allMatches(text)) {
-      if (!_estHomonymeDePatronyme(m.group(1)!)) continue;
-      ajoute(m.start + m.group(0)!.lastIndexOf(m.group(1)!), m.end);
+      final mot = m.group(1)!;
+      if (!_estHomonymeDePatronyme(mot) || !_estMotEcarte(mot)) continue;
+      ajoute(m.end - mot.length, m.end);
     }
     for (final m in _contexteAvant.allMatches(text)) {
       final unite = m.group(1)!;
       if (unite.contains(_ecart) || !_estHomonymeDePatronyme(unite)) continue;
-      final bas = unite.toLowerCase();
-      if (_estStatut(unite) ||
-          _motsVoisinsNeutres.contains(bas) ||
-          _estMotDeRole(unite)) {
-        ajoute(m.end - unite.length, m.end);
-      }
+      if (_estMotEcarte(unite)) ajoute(m.end - unite.length, m.end);
     }
     for (final m in _deuxMinuscules.allMatches(text)) {
       final premier = m.group(1)!;
@@ -858,11 +914,21 @@ final class NameDetector implements EntityDetector {
       if (!_looksLikeKnownFirstName(premier) || !_estHomonymeDePatronyme(mot)) {
         continue;
       }
-      if (estVerbeConjugue(mot) ||
-          _estStatut(mot) ||
-          _motsVoisinsNeutres.contains(mot) ||
-          _estMotDeRole(mot)) {
-        ajoute(m.end - mot.length, m.end);
+      // Un faux ami de prénom connu (« iris », « rose », « claire »…) écrit en
+      // minuscules est un nom commun : « iris sans particularité » n'est pas
+      // une personne (P2-318, 38 documents sur 400 avertis à tort sur
+      // `corpus_flou_fauxamis`). Même liste que `NomMinusculesDetector`.
+      if (NomMinusculesDetector.fauxAmisDePrenoms
+          .contains(_foldAccents(premier))) {
+        continue;
+      }
+      // Le prénom connu est repéré par la position du premier mot : si une
+      // entité le couvre (« rappel chloé martin est » : « martin » fait partie
+      // du nom masqué), le mot qui suit n'est pas un nom, l'appelant l'écarte
+      // (P2-318, règle 2).
+      if (_estMotEcarte(mot)) {
+        ajoute(m.end - mot.length, m.end,
+            avantDebut: m.start, avantFin: m.start + premier.length);
       }
     }
     // Texte sans majuscule (P2-315) : les deux chemins ci-dessus exigent une
@@ -876,6 +942,13 @@ final class NameDetector implements EntityDetector {
     }
     for (final m in _contexteAvantMinuscule.allMatches(text)) {
       final mot = m.group(1)!;
+      // Un article suivi d'un mot à majuscule ouvre un groupe nominal (« à la
+      // demande de la Préfecture ») : « la » et « le » sont aussi des
+      // patronymes, mais ici pas un nom (P2-318, règle 3, hors fiche).
+      if (_articles.contains(mot) &&
+          _motCapitaliseSuit.hasMatch(text.substring(m.end))) {
+        continue;
+      }
       if (_estHomonymeDePatronyme(mot) && _estMotEcarte(mot)) {
         ajoute(m.end - mot.length, m.end, sansMajuscule: true);
       }

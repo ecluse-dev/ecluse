@@ -42,6 +42,10 @@ final class InitialeLibelleDetector implements EntityDetector {
 
   static final RegExp _unNom = RegExp(_nom);
 
+  /// Mots outils écartés derrière une initiale. Lecture seule : sert au
+  /// signalement des homonymes de patronymes (P2-316, `NameDetector`).
+  static Set<String> get outilsEcartes => _outils;
+
   static const Set<String> _outils = {
     'Le', 'La', 'Les', 'Un', 'Une', 'De', 'Du', 'Des', 'Et', 'Ou', 'En', //
     'Au', 'Aux', 'Ce', 'Ces', 'Cette', 'Il', 'Elle', 'On', 'Par', 'Pour', //
