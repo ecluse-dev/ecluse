@@ -793,6 +793,26 @@ final class NameDetector implements EntityDetector {
     unicode: true,
   );
 
+  /// Civilité **capitalisée** (« Monsieur », « Madame », « M. », « Mme ») puis
+  /// un mot en minuscules (P2-325, mesure P2-322) : « Madame fait un malaise ».
+  /// Prose ordinaire dans l'immense majorité des cas ; seuls les sept mots de
+  /// [_motsPleinsDevantCivilite] sont relevés, car un mot-outil (« est », « de »,
+  /// « le »…) avertirait sur presque toute phrase (limite assumée, `LIMITES.md`).
+  static final RegExp _civiliteCapitaliseeDevantMinuscule = RegExp(
+    r'(?<![\wÀ-ÿ])(?:Monsieur|Madame|M\.|Mme)'
+    '$_h+'
+    r"(\p{Ll}[\p{Ll}'’-]*)(?![\wÀ-ÿ])",
+    unicode: true,
+  );
+
+  /// Les sept mots pleins de la mesure P2-322 qu'une civilité capitalisée laisse
+  /// en clair : quatre verbes de `verbes_conjugues`, trois mots de
+  /// `mots_voisins_neutres`. Les 67 autres mots en clair derrière une civilité
+  /// capitalisée sont des mots-outils (articles, prépositions, pronoms, « est »).
+  static const Set<String> _motsPleinsDevantCivilite = {
+    'doit', 'fait', 'va', 'vient', 'demain', 'matin', 'soir', //
+  };
+
   /// « dossier de », « à la demande de », « entretien avec » puis un mot en
   /// minuscules, pour [homonymesEcartes] (P2-315) : « le dossier de avril ».
   /// [_contexteAvant] exige une majuscule (« dossier de presse » n'est pas un
@@ -950,6 +970,17 @@ final class NameDetector implements EntityDetector {
         continue;
       }
       if (_estHomonymeDePatronyme(mot) && _estMotEcarte(mot)) {
+        ajoute(m.end - mot.length, m.end, sansMajuscule: true);
+      }
+    }
+    // P2-325 : civilité capitalisée puis un des sept mots pleins en minuscules.
+    // Marqué `sansMajuscule` : un nom masqué juste derrière le mot (« Madame va
+    // Pelletan ») en fait un titre, pas un patronyme laissé en clair.
+    for (final m in _civiliteCapitaliseeDevantMinuscule.allMatches(text)) {
+      final mot = m.group(1)!;
+      if (_motsPleinsDevantCivilite.contains(mot) &&
+          _estHomonymeDePatronyme(mot) &&
+          _estMotEcarte(mot)) {
         ajoute(m.end - mot.length, m.end, sansMajuscule: true);
       }
     }
