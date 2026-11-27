@@ -3313,8 +3313,28 @@ colonne de 2 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversa
 colonne de 10 nombres de 11 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
 colonne de 2 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
 colonne de 10 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
+## avertissements homonymes sur les témoins (P2-320) : Ecluse.redact (chemin du produit)
+avertissements homonymes, casse ordinaire : 42 corpus, 81296 documents, 0 avertis, pire 0.00 %
+avertissements homonymes, minuscules, mixte, phrase et transcrit : 27 corpus, 14613 documents, 36 avertis, pire 2.25 % (corpus_flou_realiste_minuscules)
+avertissements homonymes, tournures sans nom : 8 / 400 (2.00 %)
+avertissements homonymes, tournures de personne (corpus fait de ces tournures, sans seuil) : 36 / 480 (7.50 %)
 ```
 <!-- controle:fin -->
+
+## Tableau de bord : bruit des avertissements d'homonymes (P2-320, 27 novembre 2026)
+
+Chemin mesuré : **`Ecluse.redact`** (`packages/ecluse_redact/bin/run_gardes_avertissements.dart`
+via `bench/mesure_temoins_homonymes.sh`), pas le moteur seul. Aucun chiffre existant
+ne change : la sortie complète de `etat.sh` sur `main` et sur la branche ne diffère que
+par la nouvelle section (rejeu des deux, graine 42). Les lignes de la section viennent de
+`bench/resume_temoins_homonymes.py`, qui regroupe la sortie du script de P2-318 :
+casse ordinaire, minuscules / mixte / phrase / transcrit, tournures sans nom (seuil
+de 5 %, `ÉCHEC` au-delà, appliqué au pire corpus du groupe) et tournures de personne
+(corpus fait de ces tournures : compté, sans seuil). Un même corpus présent deux fois
+(tournures, sous `bench/flou/` et dans le dossier de travail du script) n'est compté
+qu'une fois : 74 corpus mesurés, 71 distincts, d'où 42 corpus en casse ordinaire ici
+et non 43. Coût ajouté à `etat.sh` : 874 s contre 645 s sur `main`, soit +229 s
+(3 min 49 s ; machine à 2 cœurs).
 
 ## Listes d'exclusion des noms : homonymes écartés signalés (P2-310, 27 novembre 2026)
 
