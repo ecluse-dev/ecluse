@@ -341,7 +341,8 @@ une coupure au milieu d'un groupe ne l'est pas.
   du numéro doivent tomber entre les groupes d'un NIR (1-2-2-2-3-3-2), former
   cinq groupes de trois (3-3-3-3-3, P2-263) ou n'exister nulle part, faute de quoi
   un RPPS suivi d'un nombre de quatre chiffres serait avalé ; un NIR à clé fausse
-  écrit en groupes d'une autre taille n'est pas masqué ; (2) un NIR à clé **juste**
+  écrit en groupes d'une autre taille n'est pas masqué, mais il est **signalé** « à
+  vérifier » depuis P2-305 (voir plus bas) ; (2) un NIR à clé **juste**
   avec des lettres « O » et sans libellé reste en clair (P2-191, inchangé) ; (3)
   **P2-263** : le NIR à clé fausse coupé par une fin de ligne (n'importe où dans le
   numéro) ou écrit en chiffres pleine chasse est lu sur la vue de détection (P2-29),
@@ -2768,8 +2769,17 @@ valeur). Sonde de 118 candidats : 0 / 118 signalés avant, 118 / 118 après ; au
 masquage ne change. Coût : 21 documents sur 5 000 du témoin durci portent cet
 avertissement sans aucun identifiant (code pièce de la même forme), 1 négatif sur
 1 000 du corpus à libellé fort. **Reste silencieux** (`agent/specs/P2-303.md`) : le
-NIR à clé fausse en groupes qui n'en sont pas (« 1850 5780 0608 436 »), le RPPS suivi
-d'une date, le SIRET et la TVA sans libellé ; chacun est une tâche à part.
+RPPS suivi d'une date, le SIRET et la TVA sans libellé ; chacun est une tâche à part.
+
+**La garde `nir_coupures` signale aussi ce qu'elle écarte (P2-305).** Un NIR à clé
+fausse écrit en groupes qui ne sont pas ceux d'un NIR ni cinq groupes de trois
+(« 1850 5780 0608 436 ») n'est **pas masqué** ; `Ecluse.redact` le signale « à
+vérifier » (compte et positions, jamais la valeur), sauf si une autre entité le
+couvre en entier. Sonde de 40 NIR : 0 / 40 signalés avant, 40 / 40 après ; les 642
+caractères sur 720 qui restent en clair le restent (aucun masquage ne change : 77
+fichiers de prédictions identiques). Coût : 2 documents sur 5 000 du témoin durci
+élargi (codes de colis) portent cet avertissement, 0 sur v3, libellé fort et
+mots-nombres. Un NIR à clé juste n'est pas concerné (il est masqué).
 
 ---
 

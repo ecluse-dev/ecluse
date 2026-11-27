@@ -610,6 +610,7 @@ abstract final class Ecluse {
         ..._avertissementNombreDicte(text, resolved),
         ..._avertissementIbanEcarte(text, resolved),
         ..._avertissementsSuiteAbimee(text, resolved),
+        ..._avertissementNirCoupures(text, resolved),
         if (_sansMajuscule(text))
           _avertissementSansMajuscule
         else if (_casseDePhrase(text, resolved))
@@ -714,6 +715,28 @@ abstract final class Ecluse {
             "adresse dont la commune est faite de chiffres et de lettres d'OCR",
             adresse,
             feminin: true),
+    ];
+  }
+
+  /// Avertissement d'un NIR à clé fausse que la garde `nir_coupures` n'a pas
+  /// masqué (P2-305, principe du 26 novembre, point 0) : écrit en groupes qui
+  /// ne sont pas ceux d'un NIR (de quatre par exemple), il est le plus souvent
+  /// un autre numéro, parfois un NIR recopié autrement. Signalé « à vérifier »
+  /// (compte et positions, **jamais la valeur**), sauf si une autre entité le
+  /// couvre déjà en entier. Aucun masquage ne change.
+  static List<String> _avertissementNirCoupures(
+      String text, List<DetectedEntity> resolved) {
+    if (!_contientChiffre.hasMatch(text)) return const [];
+    final positions = [
+      for (final e in const NirCleInvalideDetector().ecartesCoupures(text))
+        if (!_couvertEnEntier(resolved, e.start, e.end)) e.start
+    ];
+    if (positions.isEmpty) return const [];
+    final n = positions.length;
+    return [
+      'NIR à clé fausse écrit en groupes inhabituels, non masqué : à vérifier '
+          '($n occurrence${n > 1 ? "s" : ""}, position${n > 1 ? "s" : ""} '
+          '${positions.take(5).join(", ")}${n > 5 ? ", …" : ""}).'
     ];
   }
 
