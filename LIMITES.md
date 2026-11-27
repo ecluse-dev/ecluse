@@ -1210,6 +1210,30 @@ documents des corpus du dépôt, 0 autre avertissement nouveau. **Limite qui
 demeure** : une civilité **capitalisée** devant un mot en minuscules (« Madame fait
 un malaise ») n'est pas signalée ; ce chemin n'est pas celui du texte sans
 majuscule et n'a pas été mesuré.
+**Homonymes écartés par les neuf autres listes (P2-316, 27 novembre 2026).** Neuf
+listes (`non_noms`, `mots_structure`, `sigles_organismes`, `mots_contexte_non_noms`,
+`articles_capitalises`, `sigles_exclus`, `prenoms_insee_exclus`, `mots_neutres`,
+`outils_initiale`) laissaient aussi un patronyme homonyme en clair sans un mot. Elles
+sont signalées comme les quatre de P2-310 (même avertissement, compte et positions,
+jamais la valeur ; aucun masquage ne change ; chemin mesuré : `Ecluse.redact`). Pour
+tenir la condition d'arrêt (5 % d'un témoin propre), deux filtres ne touchent que le
+**signalement** : (1) un prénom qui est aussi un nom commun, écrit en minuscules
+(« iris sans particularité » : 38 documents sur 400 du témoin « faux amis », 9,5 % →
+0) ; (2) un article ou déterminant (« la », « le », « ma », « ce »…) derrière
+« dossier de », « à la demande de », « entretien avec » ou un prénom en minuscules
+(« à la demande de la Préfecture » : 59 documents sur 400 de `tournures_sans_nom`, casse
+ordinaire, 14,75 % → 8, le chiffre de P2-315 seul). **Limite qui demeure, et c'est un
+écart à la fiche** (« 100 % signalés ») : un patronyme homonyme **qui est un
+déterminant** (« sophie le », « le dossier de ma », en minuscules) reste en clair sans
+avertissement ; de même derrière un des prénoms-noms communs (iris, rose, olive…).
+Sonde de P2-308, neuf listes : 107 / 148 signalés en casse ordinaire (2 / 148 avant),
+193 / 316 en minuscules ; **tous** les cas non signalés sont des déterminants, les
+autres le sont. **Coût** (nouveaux documents avertis, par rapport à `main`) : en
+minuscules, `adversarial_minuscules` 10 / 400 (« gauthier pour / est »), `dossiers`
+5 / 396, mots-nombres dictés 6 / 1 000 (« martin est ») ; en casse ordinaire,
+`tournures_personne` 36 / 480 (33 sur `main`, +3 « de msa »), `tournures_sans_nom`
+8 / 400 (inchangé). Témoins « faux amis », réaliste et phrase : 0. Le coût sur un texte
+naturel n'est toujours pas mesuré.
 **Prénom + verbe conjugué (P2-240).** « Sophie rappelle. » donnait un seul nom
 de deux mots, puis le verbe était retenu comme patronyme et masqué dans toute
 la suite d'un dossier (sonde reproductible `bench/generate_corpus_prenom_verbe.py` :

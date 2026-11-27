@@ -3356,6 +3356,18 @@ ces tournures ; il est massif sur du texte entièrement en minuscules, où le
 prénom suivi d'un verbe de la liste est signalé. Un document ne porte jamais
 plus d'un avertissement de ce type (compte et positions).
 
+## Homonymes écartés : neuf autres listes (P2-316, 27 novembre 2026)
+
+Chemin mesuré : `Ecluse.redact` (`bin/run_gardes_avertissements.dart`). Documents avec un
+avertissement d'homonyme, `main` → branche : `faux amis` 0 → 0 (38 sans le filtre des
+prénoms-noms communs) ; `tournures_sans_nom` 8 → 8 (59 sans le filtre des déterminants,
+casse ordinaire) ; `tournures_personne` 33 → 36 ; `adversarial_minuscules` 0 → 10 ;
+`dossiers_temoin_minuscules` 0 → 5 ; `transcrit_en_lettres` 0 → 6 ; `realiste_minuscules`,
+`realiste_phrase`, `temoin_phrase` 0 → 0. Sonde de P2-308, neuf listes : 107 / 148 en casse
+ordinaire, 193 / 316 en minuscules ; tous les cas non signalés sont des déterminants.
+Quatre listes de P2-310 : inchangées (607 / 607 en minuscules, 77 / 77 en casse ordinaire).
+Aucun masquage ne change ; `etat.sh` conforme au bloc contrôlé.
+
 ## Homonymes écartés en texte sans majuscule : chemins « civilité » et « le dossier de » (P2-315, 27 novembre 2026)
 
 Chemin mesuré : **`Ecluse.redact`** (`packages/ecluse_redact/bin/run_gardes_avertissements.dart`),
