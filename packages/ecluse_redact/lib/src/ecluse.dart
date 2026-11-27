@@ -608,6 +608,7 @@ abstract final class Ecluse {
           "identifiant lu avec des lettres d'OCR masqué : à vérifier"
               '${ocrCount > 1 ? " ($ocrCount occurrences)" : ""}.',
         ..._avertissementNombreDicte(text, resolved),
+        ..._avertissementsSiretTva(text, resolved),
         ..._avertissementIbanEcarte(text, resolved),
         ..._avertissementsSuiteAbimee(text, resolved),
         ..._avertissementNirCoupures(text, resolved),
@@ -650,6 +651,41 @@ abstract final class Ecluse {
       if (suites.coupees.isNotEmpty)
         "suite de nombres dictés précédée d'un mot comme « code » : non "
             'masquée, à vérifier ${passages(suites.coupees)}.',
+    ];
+  }
+
+  /// Avertissements du SIRET de clé juste sans le mot « siret » et du numéro
+  /// de TVA à clé fausse sans libellé (P2-307, principe du 26 novembre,
+  /// point 0) : le détecteur de FINESS ne les masque pas sans ce contexte (un
+  /// SIRET d'entrepreneur individuel identifie pourtant une personne) ; ils
+  /// sont signalés « à vérifier » (compte et positions, **jamais la valeur**),
+  /// sauf si une autre entité les couvre déjà en entier. Aucun masquage ne
+  /// change.
+  static List<String> _avertissementsSiretTva(
+      String text, List<DetectedEntity> resolved) {
+    if (!_contientChiffre.hasMatch(text)) return const [];
+    String ligne(String quoi, List<int> positions) {
+      final n = positions.length;
+      return '$quoi, non masqué : à vérifier '
+          '($n occurrence${n > 1 ? "s" : ""}, position${n > 1 ? "s" : ""} '
+          '${positions.take(5).join(", ")}${n > 5 ? ", …" : ""}).';
+    }
+
+    List<int> positions(Iterable<({int start, int end})> ecartes) => [
+          for (final e in ecartes)
+            if (!_couvertEnEntier(resolved, e.start, e.end)) e.start
+        ];
+
+    final siret = positions(FinessDetector.ecartesSiret(text));
+    final tva = _contientFr.hasMatch(text)
+        ? positions(FinessDetector.ecartesTva(text))
+        : const <int>[];
+    return [
+      if (siret.isNotEmpty)
+        ligne('SIRET (quatorze chiffres de clé juste) sans le mot « siret »',
+            siret),
+      if (tva.isNotEmpty)
+        ligne('numéro de TVA à clé fausse sans libellé « TVA »', tva),
     ];
   }
 

@@ -374,7 +374,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-304 | code | Gardes de P2-276 (`nir_suitelettre`, `finess_suitelettre`, `adr_confusables`) : signaler ce qu'elles écartent (principe du 26 novembre, point 0) | P2-300 | fusionnée |
 | P2-305 | code | Garde `nir_coupures` : un NIR à clé fausse écarté pour coupures hors des groupes est signalé (principe du 26 novembre, point 0) | P2-303 | fusionnée |
 | P2-306 | code | Garde `rpps_finess_date` : le RPPS suivi d'une date est masqué en entier (les deux derniers chiffres restaient en clair) | P2-303 | fusionnée |
-| P2-307 | code | SIRET et TVA sans libellé : écartés et signalés (principe 0), avec mesure du coût d'un masquage pour une décision ultérieure | P2-303 | à faire |
+| P2-307 | code | SIRET et TVA sans libellé : écartés et signalés (principe 0), avec mesure du coût d'un masquage pour une décision ultérieure | P2-303 | fusionnée |
 | P2-308 | mesure | Listes d'exclusion des noms (`name_detector.dart` et voisins) : inventaire et coût de chacune ; rien corrigé | P2-303 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
