@@ -160,4 +160,52 @@ void main() {
       expect(c.where((x) => x.type == EntityType.iban), isEmpty);
     }
   });
+
+  // P2-312 : l'identifiant réel (RPPS ou FINESS) est déjà masqué en entier ;
+  // le candidat signalé n'est qu'une lecture voisine du même nombre, élargie
+  // aux deux premiers chiffres de la date. Ces dix textes sont ceux du témoin
+  // « identifiant suivi » (graine 42) qui portaient l'avertissement en trop.
+  // Identifiants fabriqués (clés calculées), jamais copiés d'une source réelle.
+  test('identifiant réel masqué en entier : pas d\'avertissement en trop',
+      () async {
+    const textes = [
+      'RPPS 11121 25902 9 07-11-2024 noté au dossier.',
+      'RPPS 19628936544 23/09/2023 noté au dossier.',
+      'Prescripteur 17399704695 21-03-2024 noté au dossier.',
+      'FINESS 192925386 18-08-2024 noté au dossier.',
+      'N° FINESS : 765653001 26.03.2026 noté au dossier.',
+      'FINESS 79 360 470 3 18/01/2022 noté au dossier.',
+      'N° FINESS : 147689228 18.03.2023 noté au dossier.',
+      'FINESS 879545895 18/06/2022 noté au dossier.',
+    ];
+    for (final texte in textes) {
+      final r = await Ecluse.redact(texte);
+      // L'identifiant réel est masqué (aucun masquage ne change)...
+      expect(
+          r.entities.where(
+              (e) => e.type == EntityType.rpps || e.type == EntityType.finess),
+          isNotEmpty,
+          reason: texte);
+      // ...et rien n'est signalé en plus.
+      expect(r.warnings.where(motif.hasMatch), isEmpty, reason: texte);
+    }
+  });
+
+  // Limite assumée de P2-312 : un FINESS à confiance 0,5 (pas de libellé) a la
+  // même forme que les neuf premiers chiffres d'un RPPS dont les deux derniers
+  // touchent la date (« Prescripteur 100033000 18/03/2024 » : RPPS 10003300018).
+  // L'avertissement reste, au prix de deux doublons du témoin « identifiant
+  // suivi » : mieux vaut un avertissement en trop que deux chiffres d'un RPPS
+  // laissés en clair sans un mot (principe du 26 novembre, point 0).
+  test('FINESS sans libellé (confiance 0,5) : l\'avertissement est conservé',
+      () async {
+    for (final texte in [
+      'Établissement 09 608 624 4 26/06/2020 noté au dossier.',
+      'Établissement 890284573 18/07/2020 noté au dossier.',
+      'Prescripteur 100033000 18/03/2024 noté',
+    ]) {
+      final r = await Ecluse.redact(texte);
+      expect(r.warnings.where(motif.hasMatch), isNotEmpty, reason: texte);
+    }
+  });
 }

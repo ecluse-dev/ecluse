@@ -697,13 +697,27 @@ abstract final class Ecluse {
   /// chiffres (« … 12/03/2024 »). Un NIR, un RPPS ou un FINESS à clé juste
   /// partait ainsi en clair sans un mot. Le candidat est signalé « à vérifier »
   /// (type, compte et positions, **jamais la valeur**), sauf si une autre entité
-  /// le couvre déjà en entier. Aucun masquage ne change. Le texte n'est
-  /// repassé aux détecteurs que s'il contient une date complète en chiffres.
+  /// le couvre déjà en entier (P2-312 : on regarde les chiffres de l'identifiant,
+  /// sans le début de la date que le candidat avale). Aucun masquage ne change.
+  /// Le texte n'est repassé aux détecteurs que s'il contient une date complète
+  /// en chiffres.
   static List<String> _avertissementsDevantDate(
       String text, List<DetectedEntity> resolved) {
     if (!_contientDateComplete.hasMatch(text)) return const [];
     final parType = <EntityType, List<int>>{};
     for (final c in candidatsEcartesDevantDate(text)) {
+      // P2-312 : « couvert » se lit sur les chiffres de l'identifiant, sans le
+      // début de la date que le candidat avale (`finIdentifiant`), et par des
+      // entités à confiance forte seulement. Un FINESS à 0,5 (neuf chiffres
+      // de Luhn juste sans libellé) a la même forme que les neuf premiers
+      // chiffres d'un RPPS dont les deux derniers touchent la date : s'y fier
+      // rendrait silencieux un RPPS dont deux chiffres restent en clair.
+      if (_couvertEnEntier([
+        for (final e in resolved)
+          if (e.confidence >= _confianceCouvertureSure) e
+      ], c.start, c.finIdentifiant)) {
+        continue;
+      }
       if (_couvertEnEntier(resolved, c.start, c.end)) continue;
       (parType[c.type] ??= []).add(c.start);
     }
@@ -722,6 +736,11 @@ abstract final class Ecluse {
             '${e.value.take(5).join(", ")}${e.value.length > 5 ? ", …" : ""}).'
     ];
   }
+
+  /// Confiance à partir de laquelle une entité couvrant l'identifiant d'un
+  /// candidat écarté devant une date suffit à taire l'avertissement (P2-312) :
+  /// 0,9 est le niveau d'un identifiant confirmé par son libellé ou sa forme.
+  static const double _confianceCouvertureSure = 0.9;
 
   static final RegExp _contientDateComplete =
       RegExp(r'[0-9][/.\-][0-9]{1,2}[/.\-](?:19|20)[0-9]{2}');

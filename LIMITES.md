@@ -2855,9 +2855,13 @@ fabriqués, clés calculées) : NIR 156 / 156, RPPS 160 / 160, FINESS 400 / 400
 signalés après, aucun avant (l'avertissement n'existait pas). Un IBAN n'est pas
 concerné par les groupements usuels (dernier groupe de trois caractères, ou
 paires) : aucun cas constructible. Les candidats de clé fausse ne sont pas
-signalés. Coût : 10 documents sur 4 800 du témoin « identifiant suivi » portent
+signalés. Coût : 10 documents sur 4 800 du témoin « identifiant suivi » portaient
 l'avertissement, tous à tort (l'identifiant réel y est déjà masqué en entier sous
 un autre type ; la lecture NIR du même nombre mord sur les chiffres de la date) ;
+**2 depuis P2-312** : l'avertissement n'est plus émis quand une entité à confiance
+≥ 0,9 masque déjà les chiffres d'identifiant ; les 2 restants (FINESS sans libellé,
+confiance 0,5) ont la forme de 16 cas de la sonde RPPS où il est le seul signe d'un
+RPPS en partie en clair, et sont conservés ;
 0 document sur 14 080 des autres témoins rejoués (durci élargi 5 000,
 mots-nombres durci élargi 5 600, « commune suivie » 480, v3 1 000, libellé fort
 3 000). Les 200 000 phrases sans personne n'ont pas été rejouées. L'ADELI, qui
