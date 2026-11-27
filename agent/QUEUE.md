@@ -372,6 +372,10 @@ tâches copiées ici sont prises par l'agent.
 | P2-302 | code | Rapport de risque : liste d'exclusion des mots courants en tête de phrase lus comme commune (décision du 26 novembre, point 6) | P2-287 | fusionnée |
 | P2-303 | mesure | Inventaire des gardes existantes qui retirent un masquage sans avertissement (principe du 26 novembre, point 0) ; rien corrigé | — | fusionnée |
 | P2-304 | code | Gardes de P2-276 (`nir_suitelettre`, `finess_suitelettre`, `adr_confusables`) : signaler ce qu'elles écartent (principe du 26 novembre, point 0) | P2-300 | fusionnée |
+| P2-305 | code | Garde `nir_coupures` : un NIR à clé fausse écarté pour coupures hors des groupes est signalé (principe du 26 novembre, point 0) | P2-303 | à faire |
+| P2-306 | code | Garde `rpps_finess_date` : le RPPS suivi d'une date est masqué en entier (les deux derniers chiffres restaient en clair) | P2-303 | à faire |
+| P2-307 | code | SIRET et TVA sans libellé : écartés et signalés (principe 0), avec mesure du coût d'un masquage pour une décision ultérieure | P2-303 | à faire |
+| P2-308 | mesure | Listes d'exclusion des noms (`name_detector.dart` et voisins) : inventaire et coût de chacune ; rien corrigé | P2-303 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -1742,3 +1746,59 @@ nombre d'avertissements sur le témoin durci et le témoin élargi écrit dans
 `bench/ETAT.md` ; prédictions identiques ailleurs
 (`bench/equivalence_predictions.sh`) ; aucune valeur dans les messages (test) ;
 `LIMITES.md` à jour. Si P2-303 est fusionnée avant, reprendre ses chiffres.
+
+### P2-305 — Garde `nir_coupures` : signaler (code)
+
+Inventaire P2-303 (`agent/specs/P2-303.md`) : `NirCleInvalideDetector._coupuresDeNir`
+écarte un NIR à clé fausse écrit en groupes qui ne sont pas ceux d'un NIR (par
+exemple par quatre) ; 40 vrais identifiants sur 40 de la sonde écartés sans
+avertissement, 642 caractères sur 720 en clair. Travail : test d'abord, puis,
+comme `iban_g45` (P2-300), un avertissement « à vérifier » dans
+`RedactResult.warnings` (type, positions, jamais la valeur), sauf si une autre
+entité couvre déjà le passage en entier. Aucun masquage ne change. **Fini
+quand** : 40 / 40 signalés sur la sonde de P2-303 ; nombre d'avertissements sur
+les témoins (durci élargi, mots-nombres, v3, libellé fort) écrit dans
+`bench/ETAT.md` ; prédictions identiques ailleurs
+(`bench/equivalence_predictions.sh`) ; `LIMITES.md` § 2 à jour.
+
+### P2-306 — RPPS suivi d'une date : masquer en entier (code)
+
+Inventaire P2-303 : la garde `rpps_finess_date` (P2-174) écarte un RPPS de onze
+chiffres de Luhn juste suivi de deux chiffres et d'un mois ; ses neuf premiers
+chiffres sont masqués comme FINESS et les deux derniers partent en clair (117
+caractères sur 468 sur la sonde). Décision du pilote, selon la règle « dans le
+doute, masquer » : le passage est masqué **en entier** (type `rpps`), sans
+garde silencieuse. Test d'abord. **Fini quand** : 0 caractère en clair sur les
+39 cas de la sonde de P2-303 ; aucun masquage à tort nouveau sur les témoins
+(durci, élargi, 480 documents, 200 000 phrases sans personne) ou, s'il y en a, leur
+nombre et leur forme écrits dans la PR et dans `LIMITES.md` ; prédictions
+identiques ailleurs ; `controle_etat.py` conforme.
+
+### P2-307 — SIRET et TVA sans libellé : signaler, mesurer le masquage (code)
+
+Inventaire P2-303 : un SIRET de clé juste sans le mot « siret » (40 / 40, 576
+caractères sur 680 en clair) et une TVA à clé fausse sans libellé (40 / 40, 476 sur
+520) sont écartés sans avertissement. Un SIRET d'entrepreneur individuel
+identifie une personne. Travail, en deux temps dans la même PR :
+1. **code** : test d'abord, puis un avertissement « à vérifier » pour chaque SIRET
+   et chaque TVA écartés (principe 0), sans changer aucun masquage ;
+2. **mesure** (non commitée dans le code produit) : si ces deux familles étaient
+   masquées au lieu d'être signalées, combien de masquages à tort sur le témoin de
+   480 documents, le témoin élargi et les 200 000 phrases sans personne ?
+**Fini quand** : 80 / 80 signalés sur la sonde ; avertissements sur les témoins
+écrits dans `bench/ETAT.md` ; tableau « signaler / masquer » × témoins dans la
+description de la PR, pour une décision du mainteneur ; prédictions identiques
+ailleurs ; `LIMITES.md` à jour.
+
+### P2-308 — Listes d'exclusion des noms : inventaire (mesure)
+
+Inventaire P2-303, proposition 5 : les listes qui retirent un mot de ce qui serait
+masqué comme nom (`name_detector.dart`, `verbes_conjugues.dart`,
+`french_first_names.dart`, `prenom_insee_detector.dart`, `patronymes_connus.dart`,
+`initiale_libelle_detector.dart`) ne sont pas inventoriées. Travail : pour chaque
+liste, ce qu'elle retire, sa taille, d'où elle vient, et, par `Ecluse.redact` sur
+une sonde synthétique de vrais noms homonymes de ses mots (« Monsieur Blanc »,
+« Mme Pierre »…), combien partent en clair et si un avertissement les accompagne.
+Rapport dans `agent/specs/P2-308.md`. **Rien n'est corrigé.** **Fini quand** :
+tableau liste × (taille, homonymes en clair sur la sonde, avertissement oui/non),
+et une proposition chiffrée par liste coûteuse.
