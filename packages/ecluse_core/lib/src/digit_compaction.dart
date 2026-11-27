@@ -229,14 +229,23 @@ final class DigitCompaction {
   static final RegExp _dateEnChiffres =
       RegExp(r'[0-3]?[0-9]([/.\-])[01]?[0-9]\1(?:19|20)[0-9]{2}(?![0-9])');
 
+  /// Début du dernier groupe (le dernier morceau sans blanc) du candidat
+  /// `[start, end)` de [texte] ; `start` si le candidat est d'un seul tenant.
+  /// Partagé avec l'avertissement de P2-309/P2-312, qui doit lire le candidat
+  /// exactement comme la garde.
+  static int debutDernierGroupe(String texte, int start, int end) {
+    var g = end;
+    while (g > start && !_whitespace.contains(texte[g - 1])) {
+      g--;
+    }
+    return g;
+  }
+
   /// Le candidat `[start, end)` s'arrête-t-il au milieu d'une date en
   /// chiffres qui commence à son dernier groupe (le dernier morceau séparé
   /// du reste par un blanc) ?
   bool _finitDansUneDate(int start, int end) {
-    var g = end;
-    while (g > start && !_whitespace.contains(original[g - 1])) {
-      g--;
-    }
+    final g = debutDernierGroupe(original, start, end);
     if (g == start) return false; // d'un seul tenant : pas de groupe à part
     final date = _dateEnChiffres.matchAsPrefix(original, g);
     return date != null && date.end > end;
