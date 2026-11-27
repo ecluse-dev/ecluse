@@ -2658,11 +2658,11 @@ Extractions totales : 0
 Extractions totales : 53
 ## quasi-identifiants par Ecluse.redact (P2-175) : patronyme en clair derrière un métier sans civilité
 # realiste
-QI par Ecluse.redact : /home/claude/ecluse/bench/qi/corpus_qi_realiste.jsonl
+QI par Ecluse.redact : bench/qi/corpus_qi_realiste.jsonl
 documents : 400
 patronyme en clair : 0 document(s)
 # adversarial
-QI par Ecluse.redact : /home/claude/ecluse/bench/qi/corpus_qi_adversarial.jsonl
+QI par Ecluse.redact : bench/qi/corpus_qi_adversarial.jsonl
 documents : 400
 patronyme en clair : 29 document(s)
 ## généralisation appliquée

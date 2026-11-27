@@ -193,7 +193,7 @@ Limites : la règle ne voit que les personnes posées par les listes du généra
 
 Chemin mesuré : `Ecluse.redact` (ce que reçoit le LLM) pour les deux colonnes Écluse ; la détection propre de chaque outil pour les autres.
 
-Mise à jour partielle (P2-301) : les deux colonnes Écluse de ce témoin, les familles ci-dessous et le décompte par famille ont été rejoués sur le code de P2-301 (liste fermée de mots génériques ; 9 → 0 documents) par `python3 bench/comparatif.py --temoin --outils ecluse_document,ecluse_session` ; les colonnes des autres outils sont celles du commit `c813ef4`, non rejouées. Les autres cellules Écluse du comparatif, rejouées dans le même appel, n'ont pas changé.
+Rejeu de P2-301 : les deux colonnes Écluse de ce témoin, les familles ci-dessous et le décompte par famille ont été rejoués sur le code de P2-301 (liste fermée de mots génériques ; 9 → 0 documents) par `python3 bench/comparatif.py --temoin --outils ecluse_document,ecluse_session`. Les colonnes des autres outils ont été rejouées et confirmées par le rejeu complet de P2-317 (`agent/specs/P2-317.md`) ; les autres cellules Écluse n'ont pas changé.
 
 | | Écluse, document par document | Écluse, session de dossier | Presidio par défaut | Presidio en français | spaCy fr_core_news_lg seul | EDS-Pseudo (règles) |
 |---|---:|---:|---:|---:|---:|---:|
