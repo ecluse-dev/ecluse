@@ -3311,3 +3311,32 @@ colonne de 2 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversa
 colonne de 10 nombres de 13 chiffres (tirage uniforme) : 0 détection(s) traversant une coupure sur 2000 colonnes
 ```
 <!-- controle:fin -->
+
+## Garde `nir_coupures` : avertissement « à vérifier » (P2-305, 27 novembre 2026)
+
+Chemin mesuré : **`Ecluse.redact`** (`packages/ecluse_redact/bin/run_gardes_avertissements.dart`),
+pas le moteur seul. Aucun masquage ne change : les 77 fichiers `pred*.jsonl` du
+tableau de bord sont identiques octet pour octet avant et après (rejeu complet de
+`bench/etat.sh` sur `main` au commit `9cd7cd2`, puis sur la branche), et le bloc
+« Valeurs courantes contrôlées » est inchangé (`controle_etat.py` : conforme).
+
+Sonde de P2-303 (`generate_sonde_gardes_silencieuses.py --n 40 --seed 42`, famille
+`nir_coupures`, 40 NIR à clé fausse en groupes de quatre) : signalés **0 / 40 avant,
+40 / 40 après** ; 642 caractères sur 720 restent en clair (le passage n'est pas
+masqué, il est signalé).
+
+Documents qui portent le nouvel avertissement (« NIR à clé fausse écrit en groupes
+inhabituels, non masqué : à vérifier »), sans qu'aucune entité ne le couvre :
+
+| Témoin | Documents avec l'avertissement | dont un NIR annoté |
+|---|---|---|
+| durci élargi (faux accords OCR, 5 000) | 2 | 0 (deux codes de colis) |
+| mots-nombres durci élargi (5 600) | 0 | 0 |
+| mots-nombres durci (630, graines 42 et 43) et d'origine (300) | 0 | 0 |
+| v3 (1 000, graine 42) | 0 | 0 |
+| libellé fort (3 000) | 0 | 0 |
+
+Lecture : le coût est de 2 documents sur 5 000 du témoin durci élargi, deux codes
+de colis écrits en groupes de quatre ; il n'y a pas de NIR annoté dans ces
+corpus qui soit écrit ainsi, donc rien à gagner non plus sur eux : le bénéfice est
+celui de la sonde (40 / 40), pas d'un corpus naturel.
