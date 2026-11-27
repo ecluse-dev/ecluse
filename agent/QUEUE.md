@@ -390,6 +390,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-320 | code | Tableau de bord : suivre le bruit des avertissements d'homonymes par groupe de témoins (`bench/mesure_temoins_homonymes.sh` dans `etat.sh`) | P2-318 | à faire |
 | P2-321 | spec | Politique unique des avertissements « à vérifier » : types, seuils de bruit, corpus de référence, coût mesuré, règle commune « avertir ou taire » | P2-318 | à faire |
 | P2-322 | mesure | Civilité capitalisée devant un mot en minuscules (« Madame fait un malaise ») : homonymes en clair signalés ou non, par liste ; rien corrigé | P2-318 | à faire |
+| P2-323 | code | SIRET (clé juste) et TVA (clé fausse) sans libellé : masqués comme `siren`, avertissement « à vérifier » conservé (décision du 27 novembre) | P2-311 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -2044,3 +2045,18 @@ clair sans avertissement, et le bruit qu'ajouterait un signalement sur les
 témoins propres. Rapport dans `agent/specs/P2-322.md`. **Rien n'est corrigé.**
 **Fini quand** : tableau liste × (masqués, signalés, silencieux) et coût estimé
 d'un signalement, recommandation chiffrée.
+
+### P2-323 — SIRET et TVA sans libellé : masquer (code)
+
+Décision du 27 novembre (DECISIONS.md). Aujourd'hui, un SIRET de clé juste sans le
+mot « siret » et une TVA à clé fausse sans libellé sont seulement signalés
+(P2-307). Travail : test d'abord (sonde de P2-303, 40 SIRET et 40 TVA), puis les
+masquer comme `siren`, en gardant l'avertissement « à vérifier » (sans la valeur).
+Rien d'autre ne change. **Fini quand** : sonde 80 / 80 masqués et signalés, 0
+caractère en clair ; masquages à tort nouveaux mesurés et écrits dans la PR, dans
+`bench/ETAT.md` et dans `LIMITES.md` sur : le corpus de P2-311 (attendu de l'ordre
+de 206 et 600), le témoin de 480 documents, le témoin durci élargi, les 200 000
+phrases sans personne ; v3 et 200 000 documents rejoués par `Ecluse.redact`
+(0 % de fuite tenu) ; si un chiffre de l'article de benchmark change (témoin de
+480 documents, partie 3), le dire en tête de la PR ; `controle_etat.py`
+conforme.

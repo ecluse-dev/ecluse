@@ -1040,3 +1040,21 @@ graine 42, corpus synthétiques).
 11. **Transmission masquée : rien n'est construit** sans un cas réel décrit par
     un utilisateur.
 
+## 2026-11 — SIRET et TVA sans libellé : masquer (décision du 27 novembre)
+
+Décision du mainteneur, sur les rapports `agent/specs/P2-307` (PR #569) et
+`agent/specs/P2-311.md` : un SIRET de clé juste écrit **sans** le mot « siret »,
+et un numéro de TVA intracommunautaire à clé fausse sans libellé, sont **masqués**
+(type `siren`), avec l'avertissement « à vérifier » déjà en place depuis P2-307.
+
+- Pourquoi : le SIRET d'un entrepreneur individuel contient son SIREN, qui
+  désigne une personne ; « dans le doute, masquer ».
+- Coût accepté, mesuré par P2-311 (`Ecluse.redact`, 3 000 textes logistiques
+  synthétiques sans donnée personnelle, graine 42) : environ une référence de
+  quatorze chiffres sur dix (206 sur 2 100, celles qui passent Luhn) et toutes les
+  références en forme de TVA (600 sur 600) seraient masquées à tort.
+- Avis du pilote, non retenu : seulement signaler, et rouvrir la question avec les
+  documents d'un pilote. Le coût réel sur des documents réels reste à mesurer chez
+  le premier client.
+- Tâche : P2-323.
+
