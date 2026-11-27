@@ -384,7 +384,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-314 | mesure | Avertissement des homonymes (P2-310) en texte tout en minuscules : 18,75 % des documents de la sonde de P2-240 ; options pour réduire le bruit sans rendre de silence ; rien corrigé | P2-310 | fusionnée |
 | P2-315 | code | Homonymes en texte sans majuscule : 243 des 607 homonymes en clair des quatre listes ne sont pas signalés (chemins civilité et « le dossier de » qui exigent une majuscule, P2-314) | P2-314 | PR ouverte |
 | P2-316 | code | Les neuf listes d'exclusion des noms encore silencieuses (P2-308) : signaler les homonymes écartés, dans les mêmes conditions que P2-310 | P2-310 | à faire |
-| P2-317 | spec | Article de benchmark : section « Reproduire » rejouée commande par commande d'après `bench/README.md`, et phrase « transcriptions orales » nuancée ; texte prêt à reporter | — | à faire |
+| P2-317 | spec | Article de benchmark : section « Reproduire » rejouée commande par commande d'après `bench/README.md`, et phrase « transcriptions orales » nuancée ; texte prêt à reporter | — | PR ouverte |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
