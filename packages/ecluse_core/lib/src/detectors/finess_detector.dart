@@ -46,18 +46,26 @@ import '../luhn.dart';
 /// Clé de Luhn sur les quatorze chiffres juste : confiance haute ; fausse :
 /// confiance [confianceSiretCleFausse] (0,3), que `Ecluse.redact` accompagne de
 /// l'avertissement « identifiant à clé invalide masqué : à vérifier ». Sans le
-/// mot « SIRET », quatorze chiffres ne sont jamais masqués (aucun gabarit
-/// propre) : le coût est un sur-masquage de quatorze chiffres que le texte
-/// appelle « SIRET », jamais une fuite.
+/// mot « SIRET » (P2-323, décision du 27 novembre), quatorze chiffres de clé
+/// **juste** sont masqués aussi, à confiance 0,5, avec l'avertissement « à
+/// vérifier » de `Ecluse.redact` : environ une référence de quatorze chiffres
+/// sur dix passe Luhn (P2-311), c'est un sur-masquage assumé, jamais une fuite.
+/// Seules les écritures propres d'un SIRET sont masquées sans le mot (collé ou
+/// 3-3-3-5) ; une autre écriture (4-4-4-2, suite soudée par la compaction à un
+/// nombre voisin) reste signalée sans être masquée. De clé fausse et sans le
+/// mot, ils ne sont ni masqués ni signalés (rien ne les distingue d'un nombre
+/// ordinaire).
 ///
 /// **Numéro de TVA intracommunautaire (P2-260).** « FR » + clé de deux
 /// caractères + SIREN de neuf chiffres (blancs simples admis entre les
 /// groupes) : masqué en entier, type [EntityType.siren], pour la même raison
 /// que le SIREN nommé. La clé se vérifie par calcul, `(12 + 3 × (SIREN mod 97))
 /// mod 97` : clé juste (deux chiffres) → confiance haute, sans libellé exigé ;
-/// clé fausse ou à lettre → seulement si « TVA » ou « intracommunautaire » est
-/// à moins de 40 caractères, confiance [confianceTvaCleFausse] (0,3) avec
-/// l'avertissement « à vérifier » de `Ecluse.redact`. L'entité (treize
+/// clé fausse ou à lettre → confiance [confianceTvaCleFausse] (0,3), avec
+/// l'avertissement « à vérifier » de `Ecluse.redact` ; sans « TVA » ni
+/// « intracommunautaire » à moins de 40 caractères, elle est masquée aussi
+/// depuis P2-323 (décision du 27 novembre) et l'avertissement dit « sans
+/// libellé ». L'entité (treize
 /// caractères) l'emporte dans `resolveOverlaps` sur le RPPS de onze chiffres
 /// qu'une clé et un SIREN formaient par hasard (6 cas sur 35 au corpus étendu,
 /// « FR » restait en clair). Coût : « FR » + onze chiffres dont la clé est
@@ -134,6 +142,11 @@ final class FinessDetector implements Detector {
   static final RegExp _siretGroupe =
       RegExp(r'(?<![0-9])[0-9]{3} [0-9]{3} [0-9]{3} [0-9]{5}(?![0-9])');
 
+  /// Écriture propre d'un SIRET : quatorze chiffres collés, ou « 732 829 320
+  /// 00009 » (3-3-3-5, espaces simples), lue sur le texte d'origine (P2-323).
+  static final RegExp _formeSiret =
+      RegExp(r'^(?:[0-9]{14}|[0-9]{3} [0-9]{3} [0-9]{3} [0-9]{5})$');
+
   /// Confiance d'un SIRET nommé dont la clé de Luhn est fausse (P2-259) : la
   /// même que les autres identifiants à clé invalide masqués à tort permis.
   static const double confianceSiretCleFausse = 0.3;
@@ -177,12 +190,13 @@ final class FinessDetector implements Detector {
     return ecartes;
   }
 
-  /// Empans des quatorze chiffres de **clé de Luhn juste** que le détecteur
-  /// ne masque pas faute du mot « siret » dans la fenêtre (P2-307, principe du
-  /// 26 novembre, point 0) : un SIRET d'entrepreneur individuel identifie une
-  /// personne, et le texte ne le dit pas. Quatorze chiffres de clé fausse ne
-  /// sont pas rendus : rien ne les distingue d'un nombre ordinaire. Bornes
-  /// seulement, jamais la valeur ; aucun masquage ne change.
+  /// Empans des quatorze chiffres de **clé de Luhn juste** sans le mot « siret »
+  /// dans la fenêtre (P2-307, principe du 26 novembre, point 0) : un SIRET
+  /// d'entrepreneur individuel identifie une personne, et le texte ne le dit
+  /// pas. Depuis P2-323 (décision du 27 novembre), le détecteur les **masque**
+  /// (confiance 0,5) ; cette liste reste celle de l'avertissement « à vérifier ».
+  /// Quatorze chiffres de clé fausse ne sont pas rendus : rien ne les distingue
+  /// d'un nombre ordinaire. Bornes seulement, jamais la valeur.
   static List<({int start, int end})> ecartesSiret(String text) {
     final ecartes = <({int start, int end})>[];
     _detectSync(text, null, ecartes);
@@ -190,9 +204,10 @@ final class FinessDetector implements Detector {
   }
 
   /// Empans des numéros de TVA (« FR » + clé + SIREN) à clé fausse ou à lettre
-  /// que le détecteur ne masque pas faute de libellé « TVA » ou
-  /// « intracommunautaire » dans la fenêtre (P2-307). Bornes seulement ; aucun
-  /// masquage ne change.
+  /// sans libellé « TVA » ni « intracommunautaire » dans la fenêtre (P2-307).
+  /// Depuis P2-323 (décision du 27 novembre), le détecteur les **masque**
+  /// (confiance 0,3) ; cette liste reste celle de l'avertissement « à vérifier ».
+  /// Bornes seulement, jamais la valeur.
   static List<({int start, int end})> ecartesTva(String text) {
     final ecartes = <({int start, int end})>[];
     _detectSync(text, null, null, ecartes);
@@ -250,11 +265,25 @@ final class FinessDetector implements Detector {
     for (final match in siret) {
       if (!siretVus.add((match.start, match.end))) continue;
       final juste = isLuhnValid(match.text.replaceAll(' ', ''));
-      if (!_fenetre(raw, match.start, match.end).contains('siret')) {
-        if (juste) {
-          ecartesSiret?.add((start: match.start, end: match.end));
+      final nomme = _fenetre(raw, match.start, match.end).contains('siret');
+      if (!nomme) {
+        // Sans le mot « siret », quatorze chiffres de clé fausse restent un
+        // nombre ordinaire (rien ne les distingue). De clé juste, ils sont
+        // masqués à confiance 0,5 (décision du 27 novembre, P2-323 : le SIRET
+        // d'un entrepreneur individuel contient son SIREN) **et** relevés pour
+        // l'avertissement « à vérifier » de `Ecluse.redact`.
+        if (!juste) continue;
+        ecartesSiret?.add((start: match.start, end: match.end));
+        // Masqué seulement écrit comme un SIRET : quatorze chiffres collés ou
+        // groupés 3-3-3-5. La compaction soude aussi un identifiant et le
+        // nombre voisin (« RPPS 12345678901 123 ») ; une telle suite de clé
+        // juste (un cas sur dix) passerait pour un SIRET plus long que
+        // l'identifiant, qui perdrait le chevauchement (P2-323 : RPPS lu
+        // « siren » sur 5 documents du témoin « identifiant suivi »). Elle
+        // reste signalée, jamais silencieuse.
+        if (!_formeSiret.hasMatch(raw.substring(match.start, match.end))) {
+          continue;
         }
-        continue;
       }
       results.add(
         DetectedEntity(
@@ -262,7 +291,9 @@ final class FinessDetector implements Detector {
           start: match.start,
           end: match.end,
           value: raw.substring(match.start, match.end),
-          confidence: juste ? _highConfidence : confianceSiretCleFausse,
+          confidence: !juste
+              ? confianceSiretCleFausse
+              : (nomme ? _highConfidence : _lowConfidence),
         ),
       );
     }
@@ -275,8 +306,10 @@ final class FinessDetector implements Detector {
           RegExp(r'^[0-9]{2}$').hasMatch(cle) &&
           cleNumerique == (12 + 3 * (int.parse(siren) % 97)) % 97;
       if (!juste && !_tvaLibelle.hasMatch(_fenetre(raw, m.start, m.end))) {
+        // Clé fausse sans libellé : masquée à confiance 0,3 comme avec le
+        // libellé (décision du 27 novembre, P2-323), et relevée pour
+        // l'avertissement « à vérifier » de `Ecluse.redact`.
         ecartesTva?.add((start: m.start, end: m.end));
-        continue;
       }
       results.add(
         DetectedEntity(

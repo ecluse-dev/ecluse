@@ -378,7 +378,8 @@ une coupure au milieu d'un groupe ne l'est pas.
   confiance 0,3 avec l'avertissement « identifiant à clé invalide masqué : à
   vérifier ». Mesure (`Ecluse.redact`, graine 42) : SIRET pièges 30 / 30 en
   clair → 0 (v3), 19 / 19 → 0 (extended). **Limites** : sans le mot « SIRET »,
-  quatorze chiffres ne sont pas masqués ; le motif groupé n'accepte que 3-3-3-5
+  quatorze chiffres de clé juste écrits collés ou en 3-3-3-5 sont masqués à
+  confiance 0,5 depuis P2-323 (27 novembre ; voir plus bas), les autres non ; le motif groupé n'accepte que 3-3-3-5
   (un autre groupement est lu seulement s'il se compacte en quatorze chiffres) ;
   le SIRET est annoté `siren` au banc depuis le 23 novembre (P2-261, décision
   du 23 novembre, point 8) : les 30 SIRET du corpus v3 ne comptent plus comme
@@ -397,7 +398,7 @@ une coupure au milieu d'un groupe ne l'est pas.
   (`Ecluse.redact`, corpus étendu, graine 42) : 29 / 35 en clair et 6 / 35 masqués
   en partie comme RPPS → **35 / 35 en entier**, type `siren` ; RPPS du corpus : 117 / 117
   inchangés, les 6 faux positifs RPPS du moteur seul disparaissent (95,1 % → 100 %).
-  **Limites** : une TVA à clé fausse sans libellé reste en clair ; « FR » + onze
+  **Limites** : une TVA à clé fausse sans libellé est masquée aussi depuis P2-323 (confiance 0,3, avertissement « à vérifier ») ; « FR » + onze
   chiffres de clé juste qui n'est pas une TVA (1 chance sur 97) est masqué à tort ;
   les autres pays de l'Union (« DE », « BE »…) ne sont pas traités ; la TVA est
   annotée `siren` au banc depuis le 23 novembre (P2-261), en entier (« FR », la
@@ -2885,6 +2886,38 @@ suivie », v3 1 000, libellé fort 3 000). Ces témoins ne contiennent aucun
 quatorze chiffres de Luhn juste hors libellé : le coût sur des textes naturels
 (numéros de suivi, références de 14 chiffres, dont un sur dix passe Luhn) n'est
 pas mesuré. La décision de masquer est au mainteneur.
+
+**P2-323 (27 novembre 2026) : le SIRET de clé juste sans le mot « siret » et la TVA
+sans libellé sont masqués (décision du 27 novembre, `DECISIONS.md`).** Type `siren` :
+SIRET à confiance 0,5, TVA à clé fausse à 0,3. L'avertissement « à vérifier » de
+P2-307 est conservé (compte et positions, jamais la valeur) et dit désormais
+« masqué » et non « non masqué » : il n'est tu que si une entité à confiance
+**forte** (≥ 0,9) couvre déjà le passage. **Masqué seulement écrit comme un
+SIRET** (quatorze chiffres collés, ou 3-3-3-5) : une suite écrite autrement
+(4-4-4-2, ou onze chiffres suivis d'un nombre que la compaction soude) reste
+**signalée sans être masquée** ; sans cette restriction, un RPPS suivi d'un nombre
+était lu « siren » dans 5 documents de plus du témoin « identifiant suivi » et le
+moteur seul gagnait 4 faux positifs sur le corpus structurel recoupé (rejeu d'`etat.sh`
+avant correction). Chemin mesuré : `Ecluse.redact`, graine 42.
+Sonde de P2-303 (`bash bench/mesure_gardes_silencieuses.sh`) : TVA **40 / 40** masquées
+en entier (0 / 40 avant) ; SIRET groupé **27 / 40** masqués en entier (0 / 40 avant), 13
+signalés. **Limite qui demeure, non corrigée (fiche : « sonde 80 / 80, 0 caractère en
+clair » non tenue)** : pour ces 13, le détecteur d'adresses lit les cinq derniers
+chiffres suivis d'un mot (« 33565 puis ») comme un code postal et une commune, l'entité
+adresse est plus longue que le SIRET (20 contre 17 caractères) et `resolveOverlaps`
+garde la plus longue : les neuf premiers chiffres (le SIREN) restent en clair, signalés ;
+156 caractères sur 221 en clair (576 / 680 avant). Coût mesuré
+(`bash bench/mesure_references_14.sh`, 3 000 textes logistiques sans donnée personnelle) :
+**186** références de quatorze chiffres masquées à tort sur les 206 de clé juste (144
+collées, 42 groupées 3-3-3-5 ; les 20 écrites 4-4-4-2 sont signalées, non masquées) et
+**600 / 600** TVA ; 206 SIRET et 600 TVA signalés comme avant. Témoins propres
+(`bash bench/mesure_siret_tva_a_tort.sh`, avant / après) : **0 / 214 560** documents
+avec une entité `siren` en plus (témoin de 480, 200 000 phrases sans personne, durci
+élargi 5 000, mots-nombres durci élargi 5 600, commune suivie 480, libellé fort 3 000) ;
+v3 : 72 / 72, inchangé. 200 000 documents d'identifiants rejoués par `Ecluse.redact` :
+prédictions identiques octet pour octet, rappel 100 % sur les cinq types (0 % de fuite
+tenu). Le coût sur des textes réels (numéros de suivi, références de quatorze chiffres)
+n'est pas mesuré : environ une sur dix passe Luhn (P2-311).
 
 **P2-309 (27 novembre 2026) : un identifiant qui finit au milieu d'une date
 complète est signalé.** `DigitCompaction` écarte, pour tous les détecteurs, un

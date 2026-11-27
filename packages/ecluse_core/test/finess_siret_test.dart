@@ -30,7 +30,9 @@ void main() {
   });
 
   test('rejets : sans le mot, 13 ou 15 chiffres, collé à un chiffre', () async {
-    expect(await detect('Référence 73282932000124'), isEmpty);
+    // Sans le mot, la clé juste est masquée depuis P2-323 (voir
+    // siret_tva_sans_libelle_masque_test.dart) ; la clé fausse ne l'est pas.
+    expect(await detect('Référence 73282932000127'), isEmpty);
     expect(await detect('SIRET 7328293200012'), isEmpty);
     expect(await detect('SIRET 732829320001245'), isEmpty);
     expect(await detect('SIRET 173282932000124'), isEmpty);
