@@ -391,6 +391,8 @@ tâches copiées ici sont prises par l'agent.
 | P2-321 | spec | Politique unique des avertissements « à vérifier » : types, seuils de bruit, corpus de référence, coût mesuré, règle commune « avertir ou taire » | P2-318 | fusionnée |
 | P2-322 | mesure | Civilité capitalisée devant un mot en minuscules (« Madame fait un malaise ») : homonymes en clair signalés ou non, par liste ; rien corrigé | P2-318 | fusionnée |
 | P2-323 | code | SIRET (clé juste) et TVA (clé fausse) sans libellé : masqués comme `siren`, avertissement « à vérifier » conservé (décision du 27 novembre) | P2-311 | fusionnée |
+| P2-324 | code | SIRET groupé recouvert par une adresse : 13 / 40 de la sonde gardent leurs neuf premiers chiffres en clair (signalés) ; le SIRET de clé juste l'emporte sur l'adresse qui le recouvre (décision du 27 novembre) | P2-323 | à faire |
+| P2-325 | code | Civilité capitalisée devant un mot en minuscules : signaler les 7 mots pleins de P2-322 (`doit, fait, va, vient, demain, matin, soir`) ; les 67 mots-outils restent une limite écrite | P2-322 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.
 
@@ -2060,3 +2062,36 @@ phrases sans personne ; v3 et 200 000 documents rejoués par `Ecluse.redact`
 (0 % de fuite tenu) ; si un chiffre de l'article de benchmark change (témoin de
 480 documents, partie 3), le dire en tête de la PR ; `controle_etat.py`
 conforme.
+
+### P2-324 — SIRET groupé recouvert par une adresse (code)
+
+P2-323 (PR #592) : sur la sonde de P2-303, 13 SIRET groupés de clé juste sur 40
+ne sont pas masqués comme `siren` : le détecteur d'adresses lit les cinq derniers
+chiffres suivis d'un mot (« 33565 puis ») comme code postal et commune,
+l'adresse (20 caractères) est plus longue que le SIRET (17), et `resolveOverlaps`
+garde la plus longue ; les neuf premiers chiffres (le SIREN) restent en clair,
+signalés. Décision du 27 novembre : masquer. Travail : test d'abord (ces 13 cas),
+puis, quand un SIRET de clé juste (collé ou 3-3-3-5) contient le code postal d'une
+adresse candidate, garder le SIRET et ne pas lire ses chiffres comme un code
+postal ; aucune autre règle de chevauchement ne change. **Fini quand** : sonde
+40 / 40 SIRET groupés masqués et signalés, 0 caractère en clair ; aucune adresse
+annotée perdue sur les corpus d'adresses (réaliste, adversarial, CEDEX, balayages
+de communes : chiffres écrits dans la PR) ; `bash bench/etat.sh` en entier, aucune
+ligne qui change hors celles prévues ; `controle_etat.py` conforme ;
+`LIMITES.md` à jour.
+
+### P2-325 — Civilité capitalisée : signaler les mots pleins (code)
+
+P2-322 (`agent/specs/P2-322.md`) : derrière « Monsieur », « Madame », « M. »,
+« Mme » capitalisés, 296 homonymes patronymes en minuscules sur 1 388 de la sonde
+partent en clair sans avertissement (21,3 %). 67 des 74 mots en cause sont des
+mots-outils (articles, prépositions, pronoms, « est ») dont le signalement
+avertirait sur presque toute phrase naturelle ; 7 sont des mots pleins (`doit,
+fait, va, vient` de `verbes_conjugues`, `demain, matin, soir` de
+`mots_voisins_neutres`). Recommandation de la mesure, retenue par le pilote : signaler
+ces 7 mots seulement, au niveau « à vérifier » le moins pressant de la politique
+P2-321. Test d'abord. **Fini quand** : sur la sonde de P2-322, les 28 cas des 7 mots
+pleins signalés (28 / 28), les 67 mots-outils inchangés et écrits dans
+`LIMITES.md` comme limite assumée ; bruit sur les témoins propres suivi par le
+tableau de bord de P2-320 sous 5 % ; aucun masquage changé
+(`bench/equivalence_predictions.sh`).
