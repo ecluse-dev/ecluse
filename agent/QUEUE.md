@@ -391,7 +391,7 @@ tâches copiées ici sont prises par l'agent.
 | P2-321 | spec | Politique unique des avertissements « à vérifier » : types, seuils de bruit, corpus de référence, coût mesuré, règle commune « avertir ou taire » | P2-318 | fusionnée |
 | P2-322 | mesure | Civilité capitalisée devant un mot en minuscules (« Madame fait un malaise ») : homonymes en clair signalés ou non, par liste ; rien corrigé | P2-318 | fusionnée |
 | P2-323 | code | SIRET (clé juste) et TVA (clé fausse) sans libellé : masqués comme `siren`, avertissement « à vérifier » conservé (décision du 27 novembre) | P2-311 | fusionnée |
-| P2-324 | code | SIRET groupé recouvert par une adresse : 13 / 40 de la sonde gardent leurs neuf premiers chiffres en clair (signalés) ; le SIRET de clé juste l'emporte sur l'adresse qui le recouvre (décision du 27 novembre) | P2-323 | à faire |
+| P2-324 | code | SIRET groupé recouvert par une adresse : 13 / 40 de la sonde gardent leurs neuf premiers chiffres en clair (signalés) ; le SIRET de clé juste l'emporte sur l'adresse qui le recouvre (décision du 27 novembre) | P2-323 | PR ouverte |
 | P2-325 | code | Civilité capitalisée devant un mot en minuscules : signaler les 7 mots pleins de P2-322 (`doit, fait, va, vient, demain, matin, soir`) ; les 67 mots-outils restent une limite écrite | P2-322 | à faire |
 
 La phase 3 sera découpée ici quand la phase 2 sera fusionnée.

@@ -2919,6 +2919,22 @@ prédictions identiques octet pour octet, rappel 100 % sur les cinq types (0 % d
 tenu). Le coût sur des textes réels (numéros de suivi, références de quatorze chiffres)
 n'est pas mesuré : environ une sur dix passe Luhn (P2-311).
 
+**P2-324 (27 novembre 2026) : le SIRET groupé que recouvrait une « adresse » est
+masqué en entier.** Les 13 cas de la sonde de P2-303 (`siret_sans_mot`, « 449 562 131
+33565 puis signature ») : le détecteur d'adresses lisait les cinq derniers chiffres et le
+mot suivant comme code postal et commune, et l'adresse (20 caractères) l'emportait sur le
+SIRET (17). Règle ajoutée, et elle seule : une adresse qui **commence à l'intérieur** d'un
+SIRET de clé juste écrit collé ou en 3-3-3-5 (avec ou sans le mot « siret ») est écartée
+par `AdresseDetector` ; `resolveOverlaps` n'a pas changé. Chemin mesuré :
+`Ecluse.redact`, graine 42. Sonde (`bash bench/mesure_gardes_silencieuses.sh`) : SIRET
+groupé **40 / 40** masqués en entier et **40 / 40** signalés (27 / 40 avant), 0 caractère
+en clair (156 / 221 avant) ; TVA 40 / 40 inchangée. `bash bench/etat.sh` rejoué en entier :
+`controle_etat.py` conforme, aucune ligne ne change (adresses : réaliste 159 / 159,
+adversarial 155 / 155, balayages CEDEX et communes inchangés). **Limite** : un SIRET de
+clé juste écrit autrement (4-4-4-2, ou soudé à un nombre voisin) reste signalé sans être
+masqué (P2-323) ; une vraie adresse dont le code postal tomberait à l'intérieur d'un
+SIRET de clé juste n'existe pas dans les corpus, mais ne serait plus lue.
+
 **P2-309 (27 novembre 2026) : un identifiant qui finit au milieu d'une date
 complète est signalé.** `DigitCompaction` écarte, pour tous les détecteurs, un
 candidat dont les deux derniers chiffres ouvrent une date complète en chiffres
