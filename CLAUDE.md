@@ -138,3 +138,10 @@ Mieux vaut une PR « bloqué, voici pourquoi » qu'un contournement.
 - Tout détecteur livré avec ses tests : cas valides, rejets, positions.
 - Tests reproductibles : seeds explicites, aucune dépendance à l'heure ou
   au réseau.
+
+## Bibliothèques natives (FFI / onnxruntime)
+- Le skill dart-setup-ffi-assets est autorisé, avec ces garde-fous :
+- Priorité à la compilation locale (méthode 1) ou à un binaire versionné et documenté.
+- Jamais de téléchargement de binaire pendant le build sans validation explicite de Laurent.
+- Si un téléchargement est validé : version épinglée et empreinte SHA-256 vérifiée. Jamais MD5.
+- Aucun appel réseau au runtime : Écluse traite tout en local.

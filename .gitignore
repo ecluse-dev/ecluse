@@ -73,3 +73,5 @@ __pycache__/
 .claude/settings.local.json
 
 ner_*.txt
+
+.agents/
