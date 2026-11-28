@@ -69,3 +69,5 @@ graphify-out/
 __pycache__/
 
 .claude/settings.local.json
+
+ner_*.txt
